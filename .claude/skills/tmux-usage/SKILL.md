@@ -148,10 +148,16 @@ Source: [tmux send-keys reference](https://blog.damonkelley.me/2016/09/07/tmux-s
 
 5. **Enter included in the quoted string** — Per the gotcha above, `"text Enter"` sends literal characters, not a key press.
 
-**Observed in this session:** An attempt to send `tmux send-keys` to a Claude Code teammate pane (to make the QA agent report its name) did not result in the command being submitted. The pane showed the text was typed but it was never processed by the Claude Code session.
+6. **Claude Code requires a second Enter** — Even when `send-keys` correctly types text and sends `Enter`, Claude Code may display the text at the prompt but not process it until a **second `Enter` is sent**. This is a timing/buffering issue — Claude Code's input handler may not have been ready when the first Enter arrived, so it queued the text but didn't submit it.
+
+**Observed in this session (two incidents):**
+
+- An attempt to send `tmux send-keys` to a Claude Code teammate pane (QA agent) did not result in the command being submitted. The pane showed the text was typed but it was never processed.
+- Foghorn (Ops Engineer) confirmed the same behavior: "The text was displayed at the prompt but wasn't processed until I sent an additional Enter keypress."
 
 **Mitigation strategies:**
 
+- Send a second `Enter` after a short delay: `tmux send-keys -t %3 "text" Enter && sleep 1 && tmux send-keys -t %3 Enter`
 - Add a `sleep` delay before `send-keys` to let the process initialize
 - Use `tmux capture-pane` to check if the application is ready before sending
 - For Claude Code sessions, prefer the `SendMessage` tool over `send-keys` for inter-agent communication
@@ -322,6 +328,23 @@ tmux kill-session -t agent-team
 # Kill everything
 tmux kill-server
 ```
+
+## Known Claude Code + tmux Issues
+
+Issues documented in the Claude Code GitHub repository that affect agent teams using tmux. These were discovered through research and direct experience.
+
+| Issue | Description | Impact |
+|:------|:------------|:-------|
+| [#25375](https://github.com/anthropics/claude-code/issues/25375) | Pane index mismatch — Claude Code hardcodes 0-based indexing, conflicts with user's `pane-base-index` setting | Messages target wrong teammate pane |
+| [#23415](https://github.com/anthropics/claude-code/issues/23415), [#24108](https://github.com/anthropics/claude-code/issues/24108) | Teammate inbox never polled — spawned teammates never read inbox files on macOS tmux backend | Teammates stuck idle, never receive instructions |
+| [#24771](https://github.com/anthropics/claude-code/issues/24771) | Messaging disconnection with iTerm2 -CC — lead's messaging system disconnects from teammate sessions in control mode | Teammates launch but don't communicate |
+| [#23615](https://github.com/anthropics/claude-code/issues/23615) | Send-keys corruption at scale — splitting current pane for many teammates garbles output | Garbled pane content |
+
+**Workaround for pane index:** Query `pane-base-index` at runtime rather than assuming 0-based indexing. Any orchestration script should use `tmux show-options -g pane-base-index` to get the actual value.
+
+**Workaround for inbox polling:** If teammates aren't receiving messages, check that the inbox JSON files are being written to `~/.claude/teams/{team-name}/inboxes/`. The issue may be specific to certain tmux + macOS configurations.
+
+Source: [Claude Code Agent Teams Issues](https://github.com/anthropics/claude-code/issues?q=label%3Aagent-teams)
 
 ## References
 
