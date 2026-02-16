@@ -15,3 +15,19 @@
 - shared notebooks and knowledge bases
 - self updating? ai reviewed before publish?
 - ai review
+- gh apps per agent, name "persona (agent-team@org-name)"
+  - can ops agent do that?
+- task tracking with a system
+  - ordered/dependent tasks
+  - require tracking for modt tasks
+- "meetings"
+  - grooming
+  - planning
+  - retro
+  - design review
+  - incidents
+  - customer meetings
+- "behaviors" aka sub agents
+  - research
+  - incident commander
+  - manager
