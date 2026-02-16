@@ -1,0 +1,20 @@
+[tools]
+node = "lts"
+yarn = "4"
+"npm:prettier" = "latest"
+
+[tasks.fmt]
+description = "Format markdown files with prettier"
+run = "prettier --write '**/*.md'"
+
+[tasks.fmt-check]
+description = "Check markdown formatting with prettier"
+run = "prettier --check '**/*.md'"
+
+[tasks.lint]
+description = "Run all linting checks"
+run = "prettier --check '**/*.md'"
+
+[tasks.test]
+description = "Run tests"
+run = "echo 'No tests configured yet'"
