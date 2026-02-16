@@ -6,6 +6,7 @@ Provider-agnostic multi-agent orchestration framework. Currently uses Claude Cod
 
 @docs/team-structure.md
 @docs/communication-protocol.md
+@docs/team-rules.md
 
 ## Key Conventions
 
