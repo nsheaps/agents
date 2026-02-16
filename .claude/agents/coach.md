@@ -144,31 +144,31 @@ The Coach must understand where things are stored to properly diagnose failures 
 
 ### User-Level (`~/.claude/`)
 
-| Path | Purpose |
-| :--- | :--- |
-| `settings.json` | User settings (global preferences, feature flags) |
-| `rules/` | Global rules loaded on every API call |
-| `commands/` | User slash commands |
-| `agents/` | User agent definitions |
-| `skills/` | User skills |
-| `teams/` | Team config files (created by `TeamCreate`) |
-| `tasks/` | Task lists (one directory per team) |
-| `projects/` | Project-specific memory, history, and session transcripts |
+| Path            | Purpose                                                   |
+| :-------------- | :-------------------------------------------------------- |
+| `settings.json` | User settings (global preferences, feature flags)         |
+| `rules/`        | Global rules loaded on every API call                     |
+| `commands/`     | User slash commands                                       |
+| `agents/`       | User agent definitions                                    |
+| `skills/`       | User skills                                               |
+| `teams/`        | Team config files (created by `TeamCreate`)               |
+| `tasks/`        | Task lists (one directory per team)                       |
+| `projects/`     | Project-specific memory, history, and session transcripts |
 
 ### Project-Level (`.claude/`)
 
-| Path | Purpose |
-| :--- | :--- |
-| `settings.json` | Project settings (overrides user settings) |
-| `CLAUDE.md` | Project instructions with `@references` to other docs |
-| `agents/` | Project agent definitions (YAML frontmatter + Markdown body) |
-| `docs/` | Shared documentation referenced by CLAUDE.md |
-| `personas/` | Persona files for agent personality traits |
-| `behaviors/` | Complex multi-step behavior definitions |
-| `skills/` | Project skills |
-| `commands/` | Project slash commands |
-| `rules/` | Project rules (loaded on every API call) |
-| `tmp/` | Temporary shared state — reports, failure logs, working files |
+| Path            | Purpose                                                       |
+| :-------------- | :------------------------------------------------------------ |
+| `settings.json` | Project settings (overrides user settings)                    |
+| `CLAUDE.md`     | Project instructions with `@references` to other docs         |
+| `agents/`       | Project agent definitions (YAML frontmatter + Markdown body)  |
+| `docs/`         | Shared documentation referenced by CLAUDE.md                  |
+| `personas/`     | Persona files for agent personality traits                    |
+| `behaviors/`    | Complex multi-step behavior definitions                       |
+| `skills/`       | Project skills                                                |
+| `commands/`     | Project slash commands                                        |
+| `rules/`        | Project rules (loaded on every API call)                      |
+| `tmp/`          | Temporary shared state — reports, failure logs, working files |
 
 ### Why This Matters for the Coach
 
@@ -181,8 +181,8 @@ The Coach must understand where things are stored to properly diagnose failures 
   CRITICAL: Your name is "Wile E. Coyote (Team Coach)"
   A full description of your persona is available at ".claude/personas/coach.md"
 
-  You are working with other team members in an organization. How you work in an organization and how you represent yourself is critical to your success.
-  Start your session by listing the files recursively from .claude/docs/, and reading each file.
+You are working with other team members in an organization. How you work in an organization and how you represent yourself is critical to your success.
+Start your session by listing the files recursively from .claude/docs/, and reading each file.
 </system-message>
 
 ## References

@@ -6,14 +6,15 @@ How teammates communicate within an agent team session.
 
 Think of the team as remote employees communicating asynchronously:
 
-| Channel | Analogy | When to Use |
-| :--- | :--- | :--- |
-| Direct conversation log | Walking up to someone's desk | Rare — synchronous, used by the user to interact with the orchestrator |
-| `SendMessage` between teammates | Email / Slack DMs | The norm — async peer-to-peer coordination |
-| `SendMessage` broadcast | All-hands announcement | Critical blocking issues only |
-| Shared files in `.claude/tmp/` | Shared drive / wiki | Reports, findings, deliverables |
+| Channel                         | Analogy                      | When to Use                                                            |
+| :------------------------------ | :--------------------------- | :--------------------------------------------------------------------- |
+| Direct conversation log         | Walking up to someone's desk | Rare — synchronous, used by the user to interact with the orchestrator |
+| `SendMessage` between teammates | Email / Slack DMs            | The norm — async peer-to-peer coordination                             |
+| `SendMessage` broadcast         | All-hands announcement       | Critical blocking issues only                                          |
+| Shared files in `.claude/tmp/`  | Shared drive / wiki          | Reports, findings, deliverables                                        |
 
 **User interaction model:**
+
 - Users interact with teammates like other people in the organization — they may reach out on external platforms
 - Users will never be expected to message teammates via the direct conversation interface
 - The orchestrator is the primary point of contact between the user and the team

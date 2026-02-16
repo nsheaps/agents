@@ -8,16 +8,16 @@ Each agent file in `.claude/agents/` contains a `<system-message>` block that re
 
 ## File Mapping
 
-| Agent File | Persona File |
-| :--- | :--- |
-| `agents/orchestrator.md` | `personas/orchestrator.md` |
-| `agents/coach.md` | `personas/coach.md` |
-| `agents/technical-writer.md` | `personas/technical-writer.md` |
-| `agents/researcher.md` | `personas/researcher.md` |
-| `agents/ops-engineer.md` | `personas/ops-engineer.md` |
+| Agent File                    | Persona File                    |
+| :---------------------------- | :------------------------------ |
+| `agents/orchestrator.md`      | `personas/orchestrator.md`      |
+| `agents/coach.md`             | `personas/coach.md`             |
+| `agents/technical-writer.md`  | `personas/technical-writer.md`  |
+| `agents/deep-researcher.md`   | `personas/deep-researcher.md`   |
+| `agents/ops-engineer.md`      | `personas/ops-engineer.md`      |
 | `agents/software-engineer.md` | `personas/software-engineer.md` |
 | `agents/quality-assurance.md` | `personas/quality-assurance.md` |
-| `agents/project-manager.md` | `personas/project-manager.md` |
+| `agents/project-manager.md`   | `personas/project-manager.md`   |
 
 ## Editing Personas
 

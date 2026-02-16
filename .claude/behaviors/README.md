@@ -8,7 +8,7 @@ A behavior is not a role (that's an agent). A behavior is not a single action (t
 
 ### Example: Research
 
-Research is a behavior, not a role. While the Researcher agent specializes in it, any teammate may need to perform research. The research behavior combines:
+Research is a behavior, not a role. While the Deep Researcher agent specializes in it, any teammate may need to perform research. The research behavior combines:
 
 - **Evaluating peer research** — reading another teammate's report and assessing its quality, completeness, and accuracy
 - **Looking stuff up on the internet** — using web search and web fetch tools with appropriate sub-agents to avoid context bloat
@@ -20,10 +20,10 @@ No single skill covers all of this. The behavior file ties these sub-components 
 
 ## Behavior vs Agent vs Skill
 
-| Concept | What It Is | Example |
-|:--------|:-----------|:--------|
-| **Agent** | A role with responsibilities and personality | `researcher.md` — the Researcher role |
-| **Skill** | A single, focused capability | "How to use web search effectively" |
+| Concept      | What It Is                                            | Example                                                                                   |
+| :----------- | :---------------------------------------------------- | :---------------------------------------------------------------------------------------- |
+| **Agent**    | A role with responsibilities and personality          | `deep-researcher.md` — the Deep Researcher role                                           |
+| **Skill**    | A single, focused capability                          | "How to use web search effectively"                                                       |
 | **Behavior** | A complex procedure combining multiple sub-components | "How to conduct research" — evaluating, searching, fact-checking, synthesizing, reporting |
 
 ## File Format

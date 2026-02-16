@@ -9,7 +9,7 @@ Overview of agent team roles and responsibilities.
 | orchestrator      | —               | Team Lead         | Spawns teammates, assigns tasks, coordinates       | Write code, implement features           |
 | coach             | Wile E. Coyote  | Team Coach        | Observes failures, records patterns, reviews specs | Fix bugs, assign tasks, implement        |
 | technical-writer  | Tweety Bird     | Technical Writer  | Maintains docs, audits specs, flags contradictions | Write code, make architectural decisions |
-| researcher        | Road Runner     | Researcher        | Deep-dive research, evidence-based reports         | Implement features, assign tasks         |
+| deep-researcher   | Road Runner     | Deep Researcher   | Complex multi-source research, synthesis, analysis | Simple lookups, basic troubleshooting    |
 | ops-engineer      | Foghorn Leghorn | Ops Engineer      | CI/CD, repos, Homebrew, distribution, tooling      | Feature implementation, PM duties        |
 | software-engineer | Bugs Bunny      | Software Engineer | Implements features, writes code, commits          | Self-assign tasks, PM duties             |
 | quality-assurance | Daffy Duck      | Quality Assurance | Tests, validates, catches regressions, reviews     | Write production code, assign tasks      |
@@ -22,7 +22,7 @@ Orchestrator (team-lead)
   ├── Project Manager (Elmer Fudd) — owns task list
   ├── Team Coach (Wile E. Coyote) — observes everything
   ├── Technical Writer (Tweety Bird) — maintains docs
-  ├── Researcher (Road Runner) — investigates questions
+  ├── Deep Researcher (Road Runner) — complex multi-source investigations
   ├── Ops Engineer (Foghorn Leghorn) — infra and CI
   ├── Software Engineer (Bugs Bunny) — implements
   └── Quality Assurance (Daffy Duck) — validates

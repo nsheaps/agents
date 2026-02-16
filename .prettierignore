@@ -3,8 +3,3 @@ node_modules
 *.lock
 package-lock.json
 CHANGELOG.md
-# Claude Code directories with YAML frontmatter that prettier mangles
-.claude/agents/
-.claude/skills/
-.claude/commands/
-.claude/personas/
