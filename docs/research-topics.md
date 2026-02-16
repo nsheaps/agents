@@ -1,0 +1,17 @@
+- launching agents in other environments, is there an option to replace which bin or add different flags?
+- how do they communicate in background
+- how to keep active without full claude ui, can you stream io in json without the ui?
+- give each their own settings > vault key > passwords
+- scheduled tasks
+- self created tasks
+- safety, important to catch before execution
+- resuming sessions
+- 'agent' cli and treat agent team as coordinator.
+- giving orchestrator tools to message user
+- removing tools from agent/orchestrator context and replacing them
+- using mcp tools to add info to prompt
+- ui to monitor...web? happy? mobile?
+- parallelizing tasks in one agent...vs two different agents with the same role
+- shared notebooks and knowledge bases
+- self updating? ai reviewed before publish?
+- ai review
