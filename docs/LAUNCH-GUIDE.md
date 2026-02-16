@@ -85,6 +85,29 @@ Task(
 
 Each agent file's body (everything below the YAML frontmatter) becomes that teammate's system prompt.
 
+### How teammates are actually spawned
+
+In **tmux mode**, Claude Code creates a new tmux pane and runs a command like:
+
+```bash
+cd /path/to/project && CLAUDECODE=1 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 /path/to/claude --agent-id ...
+```
+
+Key implications:
+
+- **The spawn command cannot be customized.** Claude Code calls the `claude` binary directly — no wrappers, no hooks. If the lead is launched via `claude-team`, teammates do NOT go through `claude-team`.
+- **All teammates share the lead's working directory.** There is no `cwd` parameter on the Task tool.
+- **Environment inheritance (tmux)**: Teammates inherit the tmux server's environment plus specific inline vars. Use the `env` block in `.claude/settings.json` to reliably pass env vars to teammates.
+- **Environment inheritance (in-process)**: Teammates run inside the lead's Node.js process and inherit its full `process.env`.
+
+In **in-process mode**, teammates run as hidden sessions within the same process (navigate with Shift+Up/Down). No separate binary is spawned.
+
+### Known issues
+
+- **Delegate mode bug**: Teammates may inherit the lead's delegate-mode restrictions incorrectly instead of getting full tool access ([#25037](https://github.com/anthropics/claude-code/issues/25037))
+- **Simultaneous spawning**: Spawning many teammates at once via tmux can garble `send-keys` commands ([#23615](https://github.com/anthropics/claude-code/issues/23615)). Spawn sequentially if you hit this.
+- **iTerm2 detection prompts**: Set `teammateMode` in settings.json (see Prerequisites) to avoid repeated prompts ([#24301](https://github.com/anthropics/claude-code/issues/24301))
+
 ## Team Roster
 
 | Agent Name          | Character       | Role              | What They Do                                 |
