@@ -4,16 +4,16 @@ Overview of agent team roles and responsibilities.
 
 ## Roles
 
-| Agent | Character | Role | Does | Does NOT |
-|:------|:----------|:-----|:-----|:---------|
-| orchestrator | — | Team Lead | Spawns teammates, assigns tasks, coordinates | Write code, implement features |
-| coach | Wile E. Coyote | Team Coach | Observes failures, records patterns, reviews specs | Fix bugs, assign tasks, implement |
-| technical-writer | Tweety Bird | Technical Writer | Maintains docs, audits specs, flags contradictions | Write code, make architectural decisions |
-| researcher | Road Runner | Researcher | Deep-dive research, evidence-based reports | Implement features, assign tasks |
-| ops-engineer | Foghorn Leghorn | Ops Engineer | CI/CD, repos, Homebrew, distribution, tooling | Feature implementation, PM duties |
-| software-engineer | Bugs Bunny | Software Engineer | Implements features, writes code, commits | Self-assign tasks, PM duties |
-| quality-assurance | Daffy Duck | Quality Assurance | Tests, validates, catches regressions, reviews | Write production code, assign tasks |
-| project-manager | Elmer Fudd | Project Manager | Task list, coordination, priorities, unblocking | Write code, make technical decisions |
+| Agent             | Character       | Role              | Does                                               | Does NOT                                 |
+| :---------------- | :-------------- | :---------------- | :------------------------------------------------- | :--------------------------------------- |
+| orchestrator      | —               | Team Lead         | Spawns teammates, assigns tasks, coordinates       | Write code, implement features           |
+| coach             | Wile E. Coyote  | Team Coach        | Observes failures, records patterns, reviews specs | Fix bugs, assign tasks, implement        |
+| technical-writer  | Tweety Bird     | Technical Writer  | Maintains docs, audits specs, flags contradictions | Write code, make architectural decisions |
+| researcher        | Road Runner     | Researcher        | Deep-dive research, evidence-based reports         | Implement features, assign tasks         |
+| ops-engineer      | Foghorn Leghorn | Ops Engineer      | CI/CD, repos, Homebrew, distribution, tooling      | Feature implementation, PM duties        |
+| software-engineer | Bugs Bunny      | Software Engineer | Implements features, writes code, commits          | Self-assign tasks, PM duties             |
+| quality-assurance | Daffy Duck      | Quality Assurance | Tests, validates, catches regressions, reviews     | Write production code, assign tasks      |
+| project-manager   | Elmer Fudd      | Project Manager   | Task list, coordination, priorities, unblocking    | Write code, make technical decisions     |
 
 ## Hierarchy
 

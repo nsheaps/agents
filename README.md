@@ -10,7 +10,7 @@ Reusable agent prompts and orchestration patterns for multi-agent teams. Current
 
 ```bash
 # Install dependencies
-yarn install
+bun install
 
 # Format markdown
 mise run fmt

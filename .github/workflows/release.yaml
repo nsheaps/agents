@@ -31,7 +31,7 @@ jobs:
         uses: jdx/mise-action@v2
 
       - name: Install dependencies
-        run: yarn install
+        run: bun install
 
       - name: Run release-it
-        run: yarn release-it --ci
+        run: bun run release-it --ci

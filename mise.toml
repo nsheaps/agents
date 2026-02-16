@@ -1,19 +1,17 @@
 [tools]
-node = "lts"
-yarn = "4"
-"npm:prettier" = "latest"
+bun = "latest"
 
 [tasks.fmt]
 description = "Format markdown files with prettier"
-run = "prettier --write '**/*.md'"
+run = "bun run prettier --write '**/*.md'"
 
 [tasks.fmt-check]
 description = "Check markdown formatting with prettier"
-run = "prettier --check '**/*.md'"
+run = "bun run prettier --check '**/*.md'"
 
 [tasks.lint]
 description = "Run all linting checks"
-run = "prettier --check '**/*.md'"
+run = "bun run prettier --check '**/*.md'"
 
 [tasks.test]
 description = "Run tests"

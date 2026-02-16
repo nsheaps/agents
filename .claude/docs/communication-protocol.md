@@ -4,15 +4,15 @@ How teammates communicate within an agent team session.
 
 ## Message Routing
 
-| Situation | Send To | Tool |
-|:----------|:--------|:-----|
-| Task complete | Team lead or PM | `SendMessage` type `message` |
-| Something went wrong | Coach (Wile E. Coyote) AND team lead | `SendMessage` type `message` |
-| Status update | PM (Elmer Fudd) if launched, otherwise team lead | `SendMessage` type `message` |
-| Spec contradiction or undocumented behavior | Coach AND Technical Writer | `SendMessage` type `message` |
-| Defect found | PM or team lead | `SendMessage` type `message` |
-| Research findings | Team lead (summary), save full report to file | `SendMessage` type `message` |
-| Critical blocking issue for everyone | All teammates | `SendMessage` type `broadcast` (use sparingly) |
+| Situation                                   | Send To                                          | Tool                                           |
+| :------------------------------------------ | :----------------------------------------------- | :--------------------------------------------- |
+| Task complete                               | Team lead or PM                                  | `SendMessage` type `message`                   |
+| Something went wrong                        | Coach (Wile E. Coyote) AND team lead             | `SendMessage` type `message`                   |
+| Status update                               | PM (Elmer Fudd) if launched, otherwise team lead | `SendMessage` type `message`                   |
+| Spec contradiction or undocumented behavior | Coach AND Technical Writer                       | `SendMessage` type `message`                   |
+| Defect found                                | PM or team lead                                  | `SendMessage` type `message`                   |
+| Research findings                           | Team lead (summary), save full report to file    | `SendMessage` type `message`                   |
+| Critical blocking issue for everyone        | All teammates                                    | `SendMessage` type `broadcast` (use sparingly) |
 
 ## Rules
 
