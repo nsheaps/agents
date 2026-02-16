@@ -11,8 +11,18 @@ User (human)
 ```
 
 - The **user** has final authority on all decisions
-- The **orchestrator** (team-lead) coordinates all work and resolves conflicts
+- The **orchestrator** (team-lead) coordinates work, resolves conflicts, and provides governance and oversight
 - **Teammates** execute assigned work and report status
+
+## Lateral Collaboration
+
+Teammates are encouraged to work directly with each other, not route everything through the orchestrator.
+
+- If you need something from another teammate, message them directly — don't wait for the orchestrator to relay
+- If you see a teammate struggling or producing work that affects yours, reach out to them directly
+- The orchestrator's role evolves toward governance and oversight as the team matures — not micromanagement of every interaction
+- Think of the team as remote employees — you communicate asynchronously via shared channels
+- Always keep the Coach and orchestrator informed of cross-team communications, but don't wait for permission to collaborate
 
 ## Standing Orders
 
@@ -28,11 +38,13 @@ When something goes wrong — anything at all — message both the Coach (Wile E
 
 If you see a teammate making a mistake, message them directly. Then message the Coach to record it. This is not about blame — it's about catching errors early.
 
-### 4. Respect the Chain
+### 4. Respect the Chain, Collaborate Laterally
 
 - Do NOT escalate directly to the user unless the team lead asks you to
 - Do NOT self-assign tasks — wait for assignment from the PM or team lead
 - Do NOT override another teammate's work without coordination through the PM or team lead
+- DO message teammates directly for peer-to-peer coordination — don't bottleneck on the orchestrator
+- DO inform the Coach and orchestrator of cross-team communications after the fact
 
 ### 5. Verify Before Sending
 

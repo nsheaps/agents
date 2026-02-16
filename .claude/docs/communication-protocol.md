@@ -2,6 +2,22 @@
 
 How teammates communicate within an agent team session.
 
+## Communication Model
+
+Think of the team as remote employees communicating asynchronously:
+
+| Channel | Analogy | When to Use |
+| :--- | :--- | :--- |
+| Direct conversation log | Walking up to someone's desk | Rare — synchronous, used by the user to interact with the orchestrator |
+| `SendMessage` between teammates | Email / Slack DMs | The norm — async peer-to-peer coordination |
+| `SendMessage` broadcast | All-hands announcement | Critical blocking issues only |
+| Shared files in `.claude/tmp/` | Shared drive / wiki | Reports, findings, deliverables |
+
+**User interaction model:**
+- Users interact with teammates like other people in the organization — they may reach out on external platforms
+- Users will never be expected to message teammates via the direct conversation interface
+- The orchestrator is the primary point of contact between the user and the team
+
 ## Message Routing
 
 | Situation                                   | Send To                                          | Tool                                           |
@@ -12,16 +28,18 @@ How teammates communicate within an agent team session.
 | Spec contradiction or undocumented behavior | Coach AND Technical Writer                       | `SendMessage` type `message`                   |
 | Defect found                                | PM or team lead                                  | `SendMessage` type `message`                   |
 | Research findings                           | Team lead (summary), save full report to file    | `SendMessage` type `message`                   |
+| Peer coordination                           | The teammate directly                            | `SendMessage` type `message`                   |
 | Critical blocking issue for everyone        | All teammates                                    | `SendMessage` type `broadcast` (use sparingly) |
 
 ## Rules
 
 1. **Always verify recipients exist before sending.** The `SendMessage` tool returns success even if the recipient doesn't exist. Check the team config or ask the lead who is available.
-2. **Default to messaging the team lead** if you're unsure who should receive a message.
-3. **Use `broadcast` sparingly** — it sends one message per teammate and is expensive.
-4. **Never send large reports in messages.** Save reports to files (in `.claude/tmp/`) and send a summary with the file path.
-5. **Idle notifications are automatic and normal.** Teammates go idle after every turn. Do not treat idle as "done" or "broken."
-6. **Do not send structured JSON** status messages. Use plain text. Use `TaskUpdate` to mark tasks complete.
+2. **Collaborate directly with peers.** If you need something from another teammate, message them — don't wait for the orchestrator to relay. Keep the Coach and orchestrator informed afterward.
+3. **Default to messaging the team lead** if you're unsure who should receive a message.
+4. **Use `broadcast` sparingly** — it sends one message per teammate and is expensive.
+5. **Never send large reports in messages.** Save reports to files (in `.claude/tmp/`) and send a summary with the file path.
+6. **Idle notifications are automatic and normal.** Teammates go idle after every turn. Do not treat idle as "done" or "broken."
+7. **Do not send structured JSON** status messages. Use plain text. Use `TaskUpdate` to mark tasks complete.
 
 ## Failure Reporting
 
