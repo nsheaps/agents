@@ -3,7 +3,7 @@
 > **Status**: Draft
 > **Author**: Elmer Fudd (Project Manager)
 > **Date**: 2026-02-17
-> **Revised**: 2026-02-17 — incorporated tool stripping research (#111) and REPLACE mode reliability findings
+> **Revised**: 2026-02-17 — v3: tmux -CC flow, permissions default fix, resolved open questions, MEDIUM gaps
 > **Task**: #104 (PHASE1-002)
 > **Phase**: 1 — Agent Launcher MVP
 > **Language**: TypeScript + Bun
@@ -96,7 +96,7 @@ The existing `.claude/agents/*.md` files have Claude Code native frontmatter fie
 | `framework` | `"claude-code"` | `"claude-code"` | Agent framework (only `claude-code` supported in Phase 1) |
 | `model` | string | (framework default) | Model override, e.g., `"claude-opus-4-6"`, `"sonnet"` |
 | `permission_mode` | `"default"` \| `"delegate"` \| `"plan"` \| `"bypassPermissions"` | `"delegate"` | Claude Code permission mode |
-| `dangerously_skip_permissions` | boolean | `false` | If true, passes `--dangerously-skip-permissions` |
+| `dangerously_skip_permissions` | boolean | `true` for orchestrator, `false` otherwise | If true, passes `--dangerously-skip-permissions`. **Migration note**: `claude-team` always passes this flag. The orchestrator defaults to `true` to match; other agents default to `false` as a deliberate security improvement. |
 | `display_name` | string | (derived from name) | Display name for team UI, format: "First L (role)" |
 | `teammate_mode` | `"auto"` \| `"in-process"` \| `"tmux"` | (inherited from lead) | Override teammate display mode |
 | `continue_session` | boolean | `false` | If true, passes `--continue` to resume most recent session |
@@ -518,15 +518,50 @@ jq '.members = [.members[] | select(.name != "Bugs B (software-eng)")]' \
 
 ## 9. Orchestrator Self-Configuration
 
-The orchestrator agent is special — it's the lead that manages the team. The launcher configures the lead session with:
+The orchestrator agent is special — it's the lead that manages the team. The launcher identifies the orchestrator by a `role: orchestrator` field in frontmatter (or by file name `orchestrator.md` as fallback). The orchestrator is always launched first.
+
+The launcher configures the lead session with:
 
 1. `--append-system-prompt` with the orchestrator's agent file content
 2. `--teammate-mode` from CLI flag or orchestrator agent definition
 3. `--permission-mode delegate` (or from definition)
-4. `--dangerously-skip-permissions` if specified
+4. `--dangerously-skip-permissions` (defaults `true` for orchestrator — see §3 schema)
 5. `--continue` to resume the team session
 6. `--settings` with hooks (SessionStart, Stop) for team lifecycle events
 7. `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` environment variable
+
+### tmux -CC Auto-Launch Flow
+
+When `--teammate-mode tmux` is selected and the user is **not already inside a tmux session** (`$TMUX` env var is empty), the launcher auto-launches tmux in iTerm2 control mode. This allows iTerm2 to render tmux panes as native tabs/windows.
+
+**Detection and launch algorithm:**
+
+```
+1. If teammate_mode == "tmux":
+   a. Verify tmux is installed (error if not)
+   b. If $TMUX is set → already in tmux, proceed normally
+   c. If $TMUX is empty:
+      - Log: "Not in a tmux session. Auto-launching tmux -CC."
+      - exec tmux -CC new-session -- <claude command with all flags>
+      - The `exec` replaces the current process (no orphan shell)
+      - CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 must be exported before exec
+        (inherited by the tmux session)
+2. If teammate_mode != "tmux":
+   - Launch claude directly (no tmux)
+```
+
+**Key details from `claude-team` script (`bin/claude-team:188-196`):**
+
+```bash
+# Auto-launch tmux -CC for iTerm2 native integration
+if [[ "$LAUNCH_TMUX_CC" == true ]]; then
+  exec tmux -CC new-session -- claude --dangerously-skip-permissions "${TEAM_FLAGS[@]}" "${CLAUDE_ARGS[@]}"
+else
+  command claude --dangerously-skip-permissions "${TEAM_FLAGS[@]}" "${CLAUDE_ARGS[@]}"
+fi
+```
+
+The `exec` pattern is critical — it replaces the shell process so the tmux session ends cleanly when claude exits. Without `exec`, the parent shell lingers after the tmux session ends.
 
 ### Hooks Configuration
 
@@ -574,8 +609,11 @@ Commands:
 | Flag | Env Var | Description |
 |:--|:--|:--|
 | `--team-name <name>` | `AGENT_TEAM_NAME` | Team name (required) |
+| `--teammate-mode <mode>` | `CLAUDE_TEAM_DEFAULT_MODE` | Teammate display mode: `auto`, `in-process`, `tmux` (default: `auto`) |
+| `--no-interactive` | — | Skip interactive prompts, use defaults. Without this, launcher prompts for teammate mode if not specified. |
 | `--project-root <path>` | — | Override project root (default: git root or cwd) |
 | `--verbose` | — | Verbose output |
+| `--` | — | Separator. Everything after `--` is passed through to the claude CLI as extra args. |
 
 ### `start` Command (Orchestrator)
 
@@ -603,11 +641,14 @@ The launcher replaces `claude-team` from the claude-utils repo. Feature mapping:
 | Hardcoded orchestrator prompt | Read from `.claude/agents/orchestrator.md` |
 | `--permission-mode delegate` | Per-agent `permission_mode` in frontmatter |
 | `--continue` | Per-agent `continue_session` in frontmatter |
-| `--dangerously-skip-permissions` | Per-agent `dangerously_skip_permissions` in frontmatter |
+| `--dangerously-skip-permissions` (always on) | Per-agent `dangerously_skip_permissions` in frontmatter. **Breaking change**: orchestrator defaults `true` (matches old behavior), other agents default `false` (new security improvement — users will see permission prompts for non-orchestrator agents). |
 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | Always set by launcher |
 | Hooks (SessionStart, Stop) | Configurable via orchestrator agent definition or `--settings` |
 | Brew update check | Retained in entry point script (not in launcher core) |
 | `gum` dependency | Optional — only for interactive mode selection |
+| `--no-interactive` flag | `--no-interactive` global flag (same semantics) |
+| `CLAUDE_TEAM_DEFAULT_MODE` env var | `CLAUDE_TEAM_DEFAULT_MODE` env var for `--teammate-mode` (same) |
+| `--` passthrough to claude | `--` separator passes remaining args to claude CLI |
 | `claude_check_settings_backup` | Not carried over (previously rejected by user) |
 
 ---
@@ -639,13 +680,22 @@ Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 
 ---
 
-## 13. Open Questions
+## 13. Resolved Decisions
 
-1. **Launcher packaging**: Is this a Bun script in agent-team repo, or an npm package? Phase 1 starts as a script; Phase 2+ may move to `nsheaps/agent` CLI.
-2. **Tmux pane ID tracking**: How to reliably track which tmux pane belongs to which agent? Parse `tmux list-panes`?
-3. **Graceful shutdown timeout**: 10 seconds reasonable? Should it be configurable?
-4. **Batch launch ordering**: Alphabetical, or defined in a team config file?
-5. **Orchestrator agent file**: Should the orchestrator be a `.claude/agents/orchestrator.md` file like other agents, or treated specially?
+Answers provided by team-lead. These were previously open questions.
+
+| # | Question | Decision |
+|:--|:--|:--|
+| 1 | Launcher packaging | **Bun script in agent-team repo** for MVP. Package as npm module later if it proves useful. |
+| 2 | Tmux pane ID tracking | Capture from `tmux split-window -P -F "#{pane_id}"` at spawn time. Store in agent metadata. |
+| 3 | Graceful shutdown timeout | **10 seconds** — fine for MVP. |
+| 4 | Batch launch ordering | **Sequential** for MVP. Parallel launch is a later optimization. |
+| 5 | Orchestrator agent file | **Agent file like any other** (`.claude/agents/orchestrator.md`), but with `role: orchestrator` in frontmatter. Launcher recognizes this role as special: launches first, gets team management tools. |
+
+### Remaining Open Questions
+
+1. **`role` field in frontmatter**: Should this be a new field, or reuse `name` / derive from file name? The orchestrator needs to be identifiable as special.
+2. **Interactive fallback dependency**: If `gum` is not installed, should the launcher fall back to a basic `read -p` prompt, or require `--teammate-mode` / `--no-interactive`?
 
 ---
 
