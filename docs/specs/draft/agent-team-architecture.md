@@ -6,6 +6,20 @@
 
 This document captures design topics raised during the looney-tunes team session. Each section is a discussion topic that needs further research, design, and specification before implementation.
 
+## MVP Priority: Reliable Agent Lifecycle
+
+> **First goal**: The ability to launch an agent, kill it, and relaunch it reliably on the same system — without stale entries, name collisions, or manual config surgery.
+
+Before any of the features below, the foundational lifecycle must work:
+
+1. **Launch**: Spawn an agent by name with specified permissions and framework
+2. **Kill**: Cleanly terminate an agent, removing it from team config
+3. **Relaunch**: Spawn the same agent name again without `-2` suffixes or stale entries
+4. **Health check**: Detect when an agent's backend (tmux pane, container, process) has died
+5. **Auto-cleanup**: Remove dead agents from config automatically
+
+This is currently broken in Claude Code's agent teams system (see `.claude/behaviors/team-member-cleanup.md` for the manual workaround). The agent wrapper and management tooling must solve this before adding session restoration, Docker containers, or cross-machine capabilities.
+
 ---
 
 ## 1. Security Consultant Agent
