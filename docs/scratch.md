@@ -31,6 +31,15 @@
 - Probably need to think of where to actually run this... on the cloud?
 - while agents _can_ message each other through the agent-team system, the default mechanism should be the org preference for text based communication, such as slack or matrix, with preferences on rooms, threads, etc (llm evaluated). The default local setup is them messaging each other but the web UI lets you message them, and they're also actually just running in tmux so the dashboard guides you through connecting to them (or provides a web based tty interface to them, like tty-share?)
 - Prefer yaml over json. Perhaps perfer some form of yamll? for jsonl? See if toon fits in anywhere. Human readability, and comments, are key for comprehension by agents and humans alike. Don't convert, just prefer within the app (but support the basic alternatives for interoperability)
+- Agent-team needs a **persistent task tracking system** separate from both:
+  1. **Claude Code TaskCreate** (ephemeral, dies with the session/team)
+  2. **Project tickets in docs/tickets/** (project planning, long-lived, git-tracked)
+  - This third layer is **operational task tracking** — tasks assigned to agents that survive agent stop/start cycles
+  - When an agent is killed and relaunched, it should be able to pick up where it left off
+  - The controller/launcher should own this state, not the individual agent sessions
+  - Could be file-based (YAML in a known location), database-backed, or managed by the agent-controller process
+  - Must support: assignment, status, dependencies, context/notes per task
+  - Think of it like a persistent work queue that outlives any single agent session
 - Context length / conversation bloat is a serious operational concern with multi-agent teams
   - 8 agents all running concurrently causes rapid context accumulation on the lead
   - Every teammate message, idle notification, and system event adds to lead's context
