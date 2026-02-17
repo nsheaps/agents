@@ -30,6 +30,12 @@ description: |
   </commentary>
   </example>
 color: red
+prompt_mode: extend
+base_prompt: _builtin
+framework: claude-code
+model: claude-opus-4-6
+permission_mode: delegate
+display_name: "Wile E (ai-agent-eng)"
 ---
 
 <system-message>

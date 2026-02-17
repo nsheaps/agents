@@ -30,6 +30,21 @@ description: |
   </commentary>
   </example>
 color: green
+prompt_mode: extend
+base_prompt: _builtin
+framework: claude-code
+model: claude-opus-4-6
+permission_mode: delegate
+display_name: "Bugs B (software-eng)"
+tools:
+  - Read
+  - Edit
+  - Write
+  - Bash
+  - Grep
+  - Glob
+  - WebSearch
+  - WebFetch
 ---
 
 <system-message>

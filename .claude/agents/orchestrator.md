@@ -31,6 +31,28 @@ description: |
   </example>
 model: opus
 color: blue
+prompt_mode: extend
+base_prompt: _builtin
+framework: claude-code
+model: claude-opus-4-6
+permission_mode: delegate
+display_name: "Orchestrator"
+tools:
+  - Read
+  - Grep
+  - Glob
+  - Task
+  - SendMessage
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
+  - TeamCreate
+  - AskUserQuestion
+disallowed_tools:
+  - Edit
+  - Write
+  - Bash
 ---
 
 <system-message>
