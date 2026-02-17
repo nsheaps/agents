@@ -31,7 +31,7 @@ A specialized agent that acts as a runtime permission gate and agent configurati
 - **Approve/deny one-time actions**: "Agent X wants to run `git push --force`. Approve?"
 - **Modify agent configurations**: Add needed permissions to an agent's definition when the lack of permission is a recurring pattern
 - **Defer to the user**: When uncertain, escalate to the human via the agent's interface
-- **Work with the AI Agent Eng**: Collaborate on agent modifications — security consultant handles permission changes, AI Agent Eng handles behavioral changes
+- **Work with the AI Agent Eng**: Collaborate on agent modifications — security consultant handles permission changes, AI Agent Eng handles behavioral changes (see §1b: Agent Creation Workflow)
 
 ### Interface
 
@@ -52,6 +52,115 @@ A specialized agent that acts as a runtime permission gate and agent configurati
 - Claude Code permission modes: https://code.claude.com/docs/en/permissions
 - A2A protocol: https://google.github.io/A2A/
 - Existing `PreToolUse` hooks for permission gating
+
+---
+
+## 1b. Agent Creation Workflow
+
+### Concept
+
+Creating a new agent is a **collaborative process** involving three specialized roles. No single role owns the full agent definition — each contributes their domain expertise to produce a well-rounded, secure, and operationally sound agent.
+
+### The Three Roles
+
+| Role | Agent | Owns | Focus |
+|:--|:--|:--|:--|
+| **AI Agent Eng** | `ai-agent-eng` | Behavior, prompt, role definition | What the agent does and how it thinks |
+| **Security Consultant** | (future — see §1) | Permissions, access control, trust model | What the agent is allowed to do |
+| **Ops Eng** | `ops-eng` | Infrastructure, credentials, runtime config | How the agent runs |
+
+### Field Ownership in agent.yaml / Agent Frontmatter
+
+Each role owns specific fields in the agent definition. This prevents conflicts and ensures appropriate expertise is applied to each concern.
+
+#### AI Agent Eng Fields
+
+| Field | Description |
+|:--|:--|
+| `name` | Agent identifier |
+| `description` | When to invoke this agent (trigger conditions) |
+| `prompt_mode` | EXTEND vs REPLACE |
+| `base_prompt` | Base prompt source |
+| `model` | Model selection for the role |
+| `display_name` | Display name format |
+| `color` | UI color |
+| Markdown body | Full system prompt (role, responsibilities, process, boundaries) |
+| `<system-message>` block | Core identity/personality traits |
+
+#### Security Consultant Fields
+
+| Field | Description |
+|:--|:--|
+| `permission_mode` | default / delegate / plan / bypassPermissions |
+| `dangerously_skip_permissions` | Whether to bypass all permission checks |
+| `tools` | Whitelist of available tools |
+| `disallowed_tools` | Blacklist of tools (with pattern support) |
+| `permissions.allowed` | Allowed command patterns (Phase 2 agent.yaml) |
+| `permissions.denied` | Denied command patterns (Phase 2 agent.yaml) |
+
+#### Ops Eng Fields
+
+| Field | Description |
+|:--|:--|
+| `framework` | Agent framework (claude-code, codex, custom) |
+| `teammate_mode` | Display mode (auto, in-process, tmux) |
+| `continue_session` | Session resumption |
+| `container` | Docker/K8s configuration (Phase 2+) |
+| `workspace` | Volume mounts, repo clones (Phase 2+) |
+| `mesh` | Mesh MCP connection groups (Phase 2+) |
+| Environment variables | Runtime env setup |
+
+### Creation Workflow
+
+```
+1. AI Agent Eng: Design the role
+   - Define responsibilities, boundaries, process
+   - Write system prompt (markdown body)
+   - Choose model and prompt mode
+   - Create persona file (.claude/personas/)
+
+2. Security Consultant: Set permissions
+   - Review responsibilities → determine minimum required tools
+   - Set permission_mode (principle of least privilege)
+   - Define tool whitelist/blacklist
+   - Review system prompt for unsafe instructions
+   - Flag any prompt content that could lead to permission escalation
+
+3. Ops Eng: Configure runtime
+   - Set framework and teammate_mode
+   - Configure infrastructure (container, workspace — Phase 2+)
+   - Set up app credentials and environment variables
+   - Validate the agent can actually run with given permissions
+
+4. Cross-review
+   - AI Agent Eng verifies permissions don't cripple the agent's ability to do its job
+   - Security Consultant verifies prompt doesn't instruct the agent to bypass controls
+   - Ops Eng verifies the runtime environment supports the required tools
+```
+
+### Phase 1 Reality
+
+In Phase 1 (agent launcher MVP), the security consultant agent doesn't exist yet. The workflow simplifies to:
+
+- **AI Agent Eng** handles behavior + prompt + a first pass at tool sets
+- **Ops Eng** handles runtime config
+- **Team lead / user** reviews permissions (standing in for security consultant)
+
+The three-role workflow becomes fully operational when the security consultant agent is implemented (Phase 2+).
+
+### Why This Matters
+
+Without defined ownership:
+- Agents get created with overly broad permissions (no security review)
+- Tool sets don't match responsibilities (behavior/permissions mismatch)
+- Infrastructure assumptions are baked into prompts (coupling)
+- Runtime failures are hard to diagnose (no single owner for operational concerns)
+
+### References
+
+- Agent launcher spec: `docs/specs/draft/agent-launcher.md` §3 (schema), §7 (tool control)
+- Writing agent files skill: `plugins/agent-team-skills/skills/writing-agent-team-agents/SKILL.md`
+- Security consultant concept: §1 of this document
 
 ---
 
