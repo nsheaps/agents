@@ -22,6 +22,7 @@ Linear has explicitly built for AI agents in 2026, providing a complete stack fo
 **Documentation**: [linear.app/docs/agents-in-linear](https://linear.app/docs/agents-in-linear)
 
 Agents operate as "app users" in the workspace:
+
 - Can be @-mentioned in comments
 - Issue assignment triggers delegation (agent acts, human remains responsible)
 - Create and reply to comments
@@ -30,6 +31,7 @@ Agents operate as "app users" in the workspace:
 - **Limitations**: Cannot sign in, no admin functionality, cannot manage users
 
 Agent management:
+
 - Install via Integrations Directory
 - Configure team-level guidance (overrides workspace guidance)
 - Suspend agents via Settings > Administration > Members
@@ -41,16 +43,17 @@ Agent management:
 
 32+ tools covering the full Linear API:
 
-| Category | Capabilities |
-|:---------|:-------------|
-| Issues | Find, create, update |
-| Projects | Full management |
-| Comments | Add, edit |
-| Attachments | Manage |
-| Cycles | Management |
-| Labels | Management |
+| Category    | Capabilities         |
+| :---------- | :------------------- |
+| Issues      | Find, create, update |
+| Projects    | Full management      |
+| Comments    | Add, edit            |
+| Attachments | Manage               |
+| Cycles      | Management           |
+| Labels      | Management           |
 
 **Authentication**:
+
 - OAuth 2.1 with dynamic client registration
 - Direct API key via Authorization headers
 - Hosted at `https://mcp.linear.app/mcp` (HTTP) and `https://mcp.linear.app/sse` (SSE)
@@ -62,6 +65,7 @@ Agent management:
 **Documentation**: [linear.app/developers/webhooks](https://linear.app/developers/webhooks)
 
 Event-driven automation supporting:
+
 - Issues (created, updated, deleted)
 - Comments (created, updated)
 - Attachments, Documents, Projects, Cycles, Labels, Users
@@ -111,16 +115,17 @@ This solves "context fragmentation" — teams no longer context-switch between p
 
 ## 4. Community MCP Implementations
 
-| Project | Repo | Focus |
-|:--------|:-----|:------|
-| mcp-linear (TacticLaunch) | [tacticlaunch/mcp-linear](https://github.com/tacticlaunch/mcp-linear) | Natural language issue interaction |
-| linear-mcp-integration (Touchlab) | [touchlab/linear-mcp-integration](https://github.com/touchlab/linear-mcp-integration) | Alternative integration layer |
+| Project                           | Repo                                                                                  | Focus                              |
+| :-------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------- |
+| mcp-linear (TacticLaunch)         | [tacticlaunch/mcp-linear](https://github.com/tacticlaunch/mcp-linear)                 | Natural language issue interaction |
+| linear-mcp-integration (Touchlab) | [touchlab/linear-mcp-integration](https://github.com/touchlab/linear-mcp-integration) | Alternative integration layer      |
 
 ## 5. Why Linear Built for Agents
 
 **Source**: [The New Stack](https://thenewstack.io/why-linear-built-an-api-for-agents/)
 
 Linear's rationale:
+
 1. **Context fragmentation is pain**: Developers context-switch between tools
 2. **Agents need structured data**: Linear provides issue schema, status, assignees as agent input
 3. **Feedback loops**: Agents need to close loops (read issue → execute → update issue)
@@ -129,24 +134,26 @@ Linear's rationale:
 
 ## 6. Comparison to Claude Code Agent Teams
 
-| Dimension | Linear Integration | Claude Code Task System |
-|:----------|:------------------|:-----------------------|
-| **Task storage** | Database-backed, persistent | File-based (`~/.claude/tasks/`) |
-| **Visibility** | Web UI, mobile, API | CLI only (Ctrl+T) |
-| **Dependencies** | Custom fields, project hierarchy | `blockedBy` / `blocks` fields |
-| **External events** | Webhooks trigger workflows | No external event system |
-| **Agent identity** | App users in workspace | Named agents in team config |
-| **Communication** | Comments, @-mentions | SendMessage tool |
-| **History** | Full activity timeline | Conversation history |
-| **Multi-project** | Native | One team per session |
+| Dimension           | Linear Integration               | Claude Code Task System         |
+| :------------------ | :------------------------------- | :------------------------------ |
+| **Task storage**    | Database-backed, persistent      | File-based (`~/.claude/tasks/`) |
+| **Visibility**      | Web UI, mobile, API              | CLI only (Ctrl+T)               |
+| **Dependencies**    | Custom fields, project hierarchy | `blockedBy` / `blocks` fields   |
+| **External events** | Webhooks trigger workflows       | No external event system        |
+| **Agent identity**  | App users in workspace           | Named agents in team config     |
+| **Communication**   | Comments, @-mentions             | SendMessage tool                |
+| **History**         | Full activity timeline           | Conversation history            |
+| **Multi-project**   | Native                           | One team per session            |
 
 ### Complementary Strengths
 
 Linear and Claude Code Agent Teams solve different layers:
+
 - **Linear**: External task coordination, cross-team visibility, persistent history
 - **Claude Code Tasks**: In-session coordination, dependency tracking, real-time status
 
 A production workflow could use both:
+
 ```
 Linear (source of truth, external visibility)
   ↓ Issue created → webhook fires
@@ -187,6 +194,7 @@ The most valuable pattern: agents read context from Linear, execute work, update
 ## 8. Links and Sources
 
 ### Official Documentation
+
 - [Linear Agent API](https://linear.app/docs/agents-in-linear)
 - [Linear MCP Server](https://linear.app/docs/mcp)
 - [Linear Webhooks](https://linear.app/developers/webhooks)
@@ -194,10 +202,12 @@ The most valuable pattern: agents read context from Linear, execute work, update
 - [How Cursor Integrated with Linear for Agents](https://linear.app/now/how-cursor-integrated-with-linear-for-agents)
 
 ### Community
+
 - [mcp-linear (TacticLaunch)](https://github.com/tacticlaunch/mcp-linear)
 - [linear-mcp-integration (Touchlab)](https://github.com/touchlab/linear-mcp-integration)
 - [Composio Linear MCP](https://mcp.composio.dev/linear)
 
 ### Articles
+
 - [Why Linear Built an API For Agents](https://thenewstack.io/why-linear-built-an-api-for-agents/)
 - [How to set up the Linear MCP server](https://www.builder.io/blog/linear-mcp-server)

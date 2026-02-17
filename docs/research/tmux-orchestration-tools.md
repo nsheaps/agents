@@ -13,11 +13,11 @@ tmux has emerged as the **de facto standard** for orchestrating multiple concurr
 
 Three distinct architecture patterns have emerged:
 
-| Pattern | Tools | Description |
-|:--------|:------|:------------|
+| Pattern                         | Tools                                    | Description                                               |
+| :------------------------------ | :--------------------------------------- | :-------------------------------------------------------- |
 | **Named Session Orchestration** | NTM, Agent of Empires, Tmux Orchestrator | Named panes within a tmux session, programmatic targeting |
-| **Web Dashboard + Kanban** | Agent Viewer, KanVibe | Browser UI with embedded/detached tmux backend |
-| **IDE as Control Plane** | tmux-agents | VS Code sidebar managing tmux panes |
+| **Web Dashboard + Kanban**      | Agent Viewer, KanVibe                    | Browser UI with embedded/detached tmux backend            |
+| **IDE as Control Plane**        | tmux-agents                              | VS Code sidebar managing tmux panes                       |
 
 ## 2. Architecture and Design Patterns
 
@@ -33,6 +33,7 @@ Session: "project_name"
 ```
 
 **Named Tmux Manager (NTM)** — Go CLI with command palette TUI
+
 - Repo: [github.com/Dicklesworthstone/ntm](https://github.com/Dicklesworthstone/ntm)
 - Spawn: `ntm spawn myproject --cc=4 --cod=2 --gmi=1`
 - Broadcast: `ntm send myproject --cc "please review this code"`
@@ -40,6 +41,7 @@ Session: "project_name"
 - Safety guards to prevent dangerous commands
 
 **Agent of Empires** — Rust-based terminal session manager
+
 - Repo: [github.com/njbrake/agent-of-empires](https://github.com/njbrake/agent-of-empires)
 - Visual dashboard with status detection
 - Git worktree integration for branch isolation
@@ -57,12 +59,14 @@ Web UI (Browser)
 ```
 
 **Agent Viewer** — SSE-driven Kanban board
+
 - Repo: [github.com/hallucinogen/agent-viewer](https://github.com/hallucinogen/agent-viewer)
 - Spawns agents via `tmux new-session`, captures via `tmux capture-pane`, sends via `tmux send-keys`
 - Uses Claude Haiku for label generation (async, non-blocking)
 - Two-file architecture: server.js + single-file HTML frontend
 
 **KanVibe** — Self-hosted Kanban with browser terminals
+
 - Repo: [github.com/rookedsysc/kanvibe](https://github.com/rookedsysc/kanvibe)
 - Hook-driven auto-tracking of tmux/zellij sessions
 - Git worktree integration
@@ -70,6 +74,7 @@ Web UI (Browser)
 ### Pattern C: VS Code as Control Plane
 
 **tmux-agents** — VS Code sidebar extension
+
 - Repo: [github.com/super-agent-ai/tmux-agents](https://github.com/super-agent-ai/tmux-agents)
 - Tree view, Kanban board view, and AI chat interface
 - Each agent runs in its own tmux pane
@@ -88,16 +93,17 @@ ERROR states: NEEDS_INPUT, STUCK, FAILED
 
 ### Core Operations
 
-| Operation | Mechanism |
-|:----------|:----------|
-| **Spawning** | Define agent counts by type; tools auto-calculate pane layout |
-| **Monitoring** | Parse terminal output for state detection (regex patterns), token velocity metrics |
+| Operation         | Mechanism                                                                              |
+| :---------------- | :------------------------------------------------------------------------------------- |
+| **Spawning**      | Define agent counts by type; tools auto-calculate pane layout                          |
+| **Monitoring**    | Parse terminal output for state detection (regex patterns), token velocity metrics     |
 | **Communication** | Broadcast (all agents of type) or targeted (named pane), message queue for busy agents |
-| **Termination** | Soft kill (`Ctrl+C` via send-keys), hard kill (`tmux kill-session`), auto-cleanup |
+| **Termination**   | Soft kill (`Ctrl+C` via send-keys), hard kill (`tmux kill-session`), auto-cleanup      |
 
 ### Session Persistence
 
 tmux's server-side session model provides resilience:
+
 - SSH drops don't lose agent state
 - `tmux attach-session -t project_name` restores entire session
 - All orchestration tools leverage this for session recovery
@@ -105,6 +111,7 @@ tmux's server-side session model provides resilience:
 ## 4. MCP Server for tmux
 
 **tmux-mcp-server** — MCP interface to tmux
+
 - Repo: [github.com/lox/tmux-mcp-server](https://github.com/lox/tmux-mcp-server)
 - Enables AI agents to orchestrate other agents via tmux programmatically
 - Agents can spawn sessions, send commands, capture output
@@ -113,6 +120,7 @@ tmux's server-side session model provides resilience:
 ## 5. Emerging Platforms
 
 **Warp: The Agentic Development Environment**
+
 - Site: [warp.dev](https://www.warp.dev/)
 - Evolved from terminal into full agent development environment
 - **Oz Platform**: Cloud orchestration for multi-agent coordination
@@ -121,17 +129,17 @@ tmux's server-side session model provides resilience:
 
 ## 6. Comparison to Claude Code Agent Teams
 
-| Dimension | tmux Community Tools | Claude Code Agent Teams |
-|:----------|:--------------------|:-----------------------|
-| **Session model** | Named tmux sessions/panes | tmux panes or in-process |
-| **State detection** | Regex on terminal output | Internal event system |
-| **Communication** | `tmux send-keys` broadcast/targeted | SendMessage + file inbox |
-| **Multi-provider** | NTM supports Codex + Gemini + Claude | Claude only |
-| **Monitoring** | Token velocity, visual dashboards | Ctrl+O verbose transcript |
-| **Task management** | External (Kanban, task queues) | Built-in TaskCreate/TaskList |
-| **Git isolation** | Worktrees (Agent of Empires, KanVibe) | Shared workspace |
-| **Web UI** | Agent Viewer, KanVibe | CLI only |
-| **IDE integration** | tmux-agents (VS Code) | VS Code extension (separate) |
+| Dimension           | tmux Community Tools                  | Claude Code Agent Teams      |
+| :------------------ | :------------------------------------ | :--------------------------- |
+| **Session model**   | Named tmux sessions/panes             | tmux panes or in-process     |
+| **State detection** | Regex on terminal output              | Internal event system        |
+| **Communication**   | `tmux send-keys` broadcast/targeted   | SendMessage + file inbox     |
+| **Multi-provider**  | NTM supports Codex + Gemini + Claude  | Claude only                  |
+| **Monitoring**      | Token velocity, visual dashboards     | Ctrl+O verbose transcript    |
+| **Task management** | External (Kanban, task queues)        | Built-in TaskCreate/TaskList |
+| **Git isolation**   | Worktrees (Agent of Empires, KanVibe) | Shared workspace             |
+| **Web UI**          | Agent Viewer, KanVibe                 | CLI only                     |
+| **IDE integration** | tmux-agents (VS Code)                 | VS Code extension (separate) |
 
 ### What Community Tools Add
 
@@ -181,18 +189,18 @@ tmux-mcp-server shows that agents can orchestrate other agents via MCP + tmux. R
 
 ### Key Tools
 
-| Tool | Repo | Language |
-|:-----|:-----|:---------|
-| Named Tmux Manager (NTM) | [Dicklesworthstone/ntm](https://github.com/Dicklesworthstone/ntm) | Go |
-| Agent of Empires | [njbrake/agent-of-empires](https://github.com/njbrake/agent-of-empires) | Rust |
-| Agent Viewer | [hallucinogen/agent-viewer](https://github.com/hallucinogen/agent-viewer) | JavaScript |
-| Tmux Orchestrator | [Jedward23/Tmux-Orchestrator](https://github.com/Jedward23/Tmux-Orchestrator) | Python |
-| KanVibe | [rookedsysc/kanvibe](https://github.com/rookedsysc/kanvibe) | Rust |
-| tmux-agents | [super-agent-ai/tmux-agents](https://github.com/super-agent-ai/tmux-agents) | TypeScript |
-| Agent Manager Skill | [fractalmind-ai/agent-manager-skill](https://github.com/fractalmind-ai/agent-manager-skill) | Python |
-| tmux-mcp-server | [lox/tmux-mcp-server](https://github.com/lox/tmux-mcp-server) | — |
-| Agent Deck | [asheshgoplani/agent-deck](https://github.com/asheshgoplani/agent-deck) | — |
-| CLI Agent Orchestrator | [awslabs/cli-agent-orchestrator](https://github.com/awslabs/cli-agent-orchestrator) | Python |
+| Tool                     | Repo                                                                                        | Language   |
+| :----------------------- | :------------------------------------------------------------------------------------------ | :--------- |
+| Named Tmux Manager (NTM) | [Dicklesworthstone/ntm](https://github.com/Dicklesworthstone/ntm)                           | Go         |
+| Agent of Empires         | [njbrake/agent-of-empires](https://github.com/njbrake/agent-of-empires)                     | Rust       |
+| Agent Viewer             | [hallucinogen/agent-viewer](https://github.com/hallucinogen/agent-viewer)                   | JavaScript |
+| Tmux Orchestrator        | [Jedward23/Tmux-Orchestrator](https://github.com/Jedward23/Tmux-Orchestrator)               | Python     |
+| KanVibe                  | [rookedsysc/kanvibe](https://github.com/rookedsysc/kanvibe)                                 | Rust       |
+| tmux-agents              | [super-agent-ai/tmux-agents](https://github.com/super-agent-ai/tmux-agents)                 | TypeScript |
+| Agent Manager Skill      | [fractalmind-ai/agent-manager-skill](https://github.com/fractalmind-ai/agent-manager-skill) | Python     |
+| tmux-mcp-server          | [lox/tmux-mcp-server](https://github.com/lox/tmux-mcp-server)                               | —          |
+| Agent Deck               | [asheshgoplani/agent-deck](https://github.com/asheshgoplani/agent-deck)                     | —          |
+| CLI Agent Orchestrator   | [awslabs/cli-agent-orchestrator](https://github.com/awslabs/cli-agent-orchestrator)         | Python     |
 
 ### Articles
 

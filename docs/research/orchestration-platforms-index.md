@@ -16,37 +16,37 @@ Comprehensive survey of the agent orchestration landscape in February 2026, cove
 
 ### Commercial / Major Platforms
 
-| Report | Platform | Key Finding |
-|:-------|:---------|:------------|
-| [openai-codex.md](openai-codex.md) | OpenAI Codex | MCP-first service design; dual-layer OS+policy security; 30-min autonomy windows |
-| [gemini-code.md](gemini-code.md) | Google Gemini Code (CLI + Code Assist + Jules) | Thought Signatures for reasoning preservation; async VM execution; MCP-first migration |
-| [openhands.md](openhands.md) | OpenHands (All Hands AI) | Event-sourced immutable state; type-safe Pydantic actions; pluggable workspaces; 67.9k stars |
+| Report                             | Platform                                       | Key Finding                                                                                  |
+| :--------------------------------- | :--------------------------------------------- | :------------------------------------------------------------------------------------------- |
+| [openai-codex.md](openai-codex.md) | OpenAI Codex                                   | MCP-first service design; dual-layer OS+policy security; 30-min autonomy windows             |
+| [gemini-code.md](gemini-code.md)   | Google Gemini Code (CLI + Code Assist + Jules) | Thought Signatures for reasoning preservation; async VM execution; MCP-first migration       |
+| [openhands.md](openhands.md)       | OpenHands (All Hands AI)                       | Event-sourced immutable state; type-safe Pydantic actions; pluggable workspaces; 67.9k stars |
 
 ### Orchestration Frameworks
 
-| Report | Framework | Key Finding |
-|:-------|:----------|:------------|
-| [enterprise-frameworks.md](enterprise-frameworks.md) | LangGraph, CrewAI, AutoGen | Three complementary approaches: graph state machines, role-based teams, conversation-driven |
-| [community-orchestration-tools.md](community-orchestration-tools.md) | 18+ Claude Code orchestrators | Claude Flow (14.1k★), Oh My Claude Code (6.4k★); stage-based pipelines validated |
+| Report                                                               | Framework                     | Key Finding                                                                                 |
+| :------------------------------------------------------------------- | :---------------------------- | :------------------------------------------------------------------------------------------ |
+| [enterprise-frameworks.md](enterprise-frameworks.md)                 | LangGraph, CrewAI, AutoGen    | Three complementary approaches: graph state machines, role-based teams, conversation-driven |
+| [community-orchestration-tools.md](community-orchestration-tools.md) | 18+ Claude Code orchestrators | Claude Flow (14.1k★), Oh My Claude Code (6.4k★); stage-based pipelines validated            |
 
 ### Infrastructure & Integration
 
-| Report | Topic | Key Finding |
-|:-------|:------|:------------|
-| [tmux-orchestration-tools.md](tmux-orchestration-tools.md) | tmux-based agent orchestration (10+ tools) | Three patterns: named sessions, web dashboards, IDE control planes |
-| [linear-integrations.md](linear-integrations.md) | Linear Agent API + MCP Server + Webhooks | Event-driven agent spawning; feedback loop closure; task coordination layer |
+| Report                                                     | Topic                                      | Key Finding                                                                 |
+| :--------------------------------------------------------- | :----------------------------------------- | :-------------------------------------------------------------------------- |
+| [tmux-orchestration-tools.md](tmux-orchestration-tools.md) | tmux-based agent orchestration (10+ tools) | Three patterns: named sessions, web dashboards, IDE control planes          |
+| [linear-integrations.md](linear-integrations.md)           | Linear Agent API + MCP Server + Webhooks   | Event-driven agent spawning; feedback loop closure; task coordination layer |
 
 ---
 
 ## Related Research (Prior Tasks)
 
-| Report | Task | Topic |
-|:-------|:-----|:------|
-| [systemprompt-playbooks.md](systemprompt-playbooks.md) | #41 | SystemPrompt.io: deterministic self-repairing playbooks, A2A protocol, hub-and-spoke |
-| [opencode-agent-teams-porting.md](opencode-agent-teams-porting.md) | #37 | OpenCode: porting Claude Code agent teams to Go-based alternative |
-| [claude-flow.md](claude-flow.md) | #38 | Claude Flow: self-optimizing orchestration, RuVector, knowledge graphs |
-| [language-comparison.md](language-comparison.md) | #45 | bunx vs Rust vs Go for agent/MCP tooling |
-| [team-storage-internals.md](team-storage-internals.md) | #39 | Claude Code internal team/task file storage format |
+| Report                                                             | Task | Topic                                                                                |
+| :----------------------------------------------------------------- | :--- | :----------------------------------------------------------------------------------- |
+| [systemprompt-playbooks.md](systemprompt-playbooks.md)             | #41  | SystemPrompt.io: deterministic self-repairing playbooks, A2A protocol, hub-and-spoke |
+| [opencode-agent-teams-porting.md](opencode-agent-teams-porting.md) | #37  | OpenCode: porting Claude Code agent teams to Go-based alternative                    |
+| [claude-flow.md](claude-flow.md)                                   | #38  | Claude Flow: self-optimizing orchestration, RuVector, knowledge graphs               |
+| [language-comparison.md](language-comparison.md)                   | #45  | bunx vs Rust vs Go for agent/MCP tooling                                             |
+| [team-storage-internals.md](team-storage-internals.md)             | #39  | Claude Code internal team/task file storage format                                   |
 
 ---
 
@@ -58,30 +58,30 @@ Every major platform is adopting MCP. Codex exposes itself as an MCP server. Gem
 
 ### 2. Three Orchestration Philosophies
 
-| Philosophy | Platforms | Trade-off |
-|:-----------|:----------|:----------|
+| Philosophy                  | Platforms                                                         | Trade-off                                |
+| :-------------------------- | :---------------------------------------------------------------- | :--------------------------------------- |
 | **Hierarchical/Supervisor** | Codex (PM agent), LangGraph (supervisor), Claude Code (team-lead) | Maximum control, single point of failure |
-| **Peer-to-Peer/Autonomous** | CrewAI (delegation), Claude Code Teams (SendMessage) | Maximum autonomy, harder to coordinate |
-| **Conversation-Driven** | AutoGen (group chat), Gemini CLI (ReAct) | Natural flow, less predictable |
+| **Peer-to-Peer/Autonomous** | CrewAI (delegation), Claude Code Teams (SendMessage)              | Maximum autonomy, harder to coordinate   |
+| **Conversation-Driven**     | AutoGen (group chat), Gemini CLI (ReAct)                          | Natural flow, less predictable           |
 
 ### 3. State Management Spectrum
 
-| Approach | Platforms | Best For |
-|:---------|:----------|:---------|
-| **Event-sourced immutable** | OpenHands | Deterministic replay, pause/resume |
-| **Centralized mutable** | LangGraph (StateGraph) | Complex shared state, race prevention |
-| **Distributed per-agent** | CrewAI, Claude Code Teams | Agent autonomy, simple implementation |
-| **Message passing** | AutoGen | Conversational workflows |
-| **Thread ID handoffs** | Codex | Stateful multi-agent handoffs |
+| Approach                    | Platforms                 | Best For                              |
+| :-------------------------- | :------------------------ | :------------------------------------ |
+| **Event-sourced immutable** | OpenHands                 | Deterministic replay, pause/resume    |
+| **Centralized mutable**     | LangGraph (StateGraph)    | Complex shared state, race prevention |
+| **Distributed per-agent**   | CrewAI, Claude Code Teams | Agent autonomy, simple implementation |
+| **Message passing**         | AutoGen                   | Conversational workflows              |
+| **Thread ID handoffs**      | Codex                     | Stateful multi-agent handoffs         |
 
 ### 4. Security Models
 
-| Model | Platforms |
-|:------|:---------|
+| Model                            | Platforms                            |
+| :------------------------------- | :----------------------------------- |
 | **OS-enforced sandbox + policy** | Codex (Seatbelt/Landlock + approval) |
-| **Docker container isolation** | OpenHands |
-| **Policy-only approval** | Claude Code |
-| **Git worktree isolation** | Community tools (reshashi, ccswarm) |
+| **Docker container isolation**   | OpenHands                            |
+| **Policy-only approval**         | Claude Code                          |
+| **Git worktree isolation**       | Community tools (reshashi, ccswarm)  |
 
 ### 5. Async / Background Execution
 

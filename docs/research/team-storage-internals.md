@@ -10,10 +10,10 @@ Research into the on-disk storage format used by Claude Code agent teams, based 
 
 Claude Code agent teams persist state in two directory trees under `~/.claude/`:
 
-| Path                                | Purpose                                  |
-| ----------------------------------- | ---------------------------------------- |
-| `~/.claude/teams/{team-name}/`      | Team configuration and agent inboxes     |
-| `~/.claude/tasks/{team-name}/`      | Shared task board with file-based locking |
+| Path                           | Purpose                                   |
+| ------------------------------ | ----------------------------------------- |
+| `~/.claude/teams/{team-name}/` | Team configuration and agent inboxes      |
+| `~/.claude/tasks/{team-name}/` | Shared task board with file-based locking |
 
 Both directories are keyed by team name (e.g., `looney-tunes`). State is stored as JSON files with no database layer -- purely file-based.
 
@@ -41,14 +41,17 @@ The team configuration file. Contains team metadata and the full member roster.
 
 ```jsonc
 {
-  "name": "string",              // Team name, used as directory key
-  "description": "string",       // Human-readable description
-  "createdAt": 1771213849309,    // Epoch milliseconds (team creation time)
-  "leadAgentId": "string",       // Agent ID of the team lead (format: "{name}@{team-name}")
-  "leadSessionId": "string",     // UUID of the lead's Claude Code session
-  "members": [                   // Array of member objects (includes the lead)
-    { /* member object */ }
-  ]
+  "name": "string", // Team name, used as directory key
+  "description": "string", // Human-readable description
+  "createdAt": 1771213849309, // Epoch milliseconds (team creation time)
+  "leadAgentId": "string", // Agent ID of the team lead (format: "{name}@{team-name}")
+  "leadSessionId": "string", // UUID of the lead's Claude Code session
+  "members": [
+    // Array of member objects (includes the lead)
+    {
+      /* member object */
+    },
+  ],
 }
 ```
 
@@ -60,14 +63,14 @@ Members come in two variants: **team-lead** and **teammate**.
 
 ```jsonc
 {
-  "agentId": "team-lead@looney-tunes",   // Format: "{name}@{team-name}"
-  "name": "team-lead",                    // Always "team-lead" for the lead
-  "agentType": "team-lead",               // Always "team-lead"
-  "model": "claude-opus-4-6",             // Model ID
-  "joinedAt": 1771213849309,              // Epoch ms (same as team createdAt)
-  "tmuxPaneId": "",                        // Empty string for the lead
-  "cwd": "/path/to/working/dir",          // Working directory
-  "subscriptions": []                      // Always empty array (observed)
+  "agentId": "team-lead@looney-tunes", // Format: "{name}@{team-name}"
+  "name": "team-lead", // Always "team-lead" for the lead
+  "agentType": "team-lead", // Always "team-lead"
+  "model": "claude-opus-4-6", // Model ID
+  "joinedAt": 1771213849309, // Epoch ms (same as team createdAt)
+  "tmuxPaneId": "", // Empty string for the lead
+  "cwd": "/path/to/working/dir", // Working directory
+  "subscriptions": [], // Always empty array (observed)
 }
 ```
 
@@ -75,32 +78,32 @@ Members come in two variants: **team-lead** and **teammate**.
 
 ```jsonc
 {
-  "agentId": "Wile E. Coyote (Team Coach)@looney-tunes",  // Full display name @ team
-  "name": "Wile E. Coyote (Team Coach)",                   // Display name
-  "agentType": "general-purpose",                           // Agent type (matches .claude/agents/ filename stem)
+  "agentId": "Wile E. Coyote (Team Coach)@looney-tunes", // Full display name @ team
+  "name": "Wile E. Coyote (Team Coach)", // Display name
+  "agentType": "general-purpose", // Agent type (matches .claude/agents/ filename stem)
   "model": "claude-opus-4-6",
-  "prompt": "You are Wile E. Coyote, the Team Coach...",   // Full system prompt (can be very long)
-  "color": "blue",                                          // Terminal color for output
-  "planModeRequired": false,                                // Whether agent needs plan approval
-  "joinedAt": 1771213868407,                                // Epoch ms (when spawned)
-  "tmuxPaneId": "%1",                                       // tmux pane identifier
+  "prompt": "You are Wile E. Coyote, the Team Coach...", // Full system prompt (can be very long)
+  "color": "blue", // Terminal color for output
+  "planModeRequired": false, // Whether agent needs plan approval
+  "joinedAt": 1771213868407, // Epoch ms (when spawned)
+  "tmuxPaneId": "%1", // tmux pane identifier
   "cwd": "/path/to/working/dir",
-  "subscriptions": [],                                      // Always empty (observed)
-  "backendType": "tmux",                                    // "tmux" or "in-process"
-  "isActive": false                                         // Whether currently running
+  "subscriptions": [], // Always empty (observed)
+  "backendType": "tmux", // "tmux" or "in-process"
+  "isActive": false, // Whether currently running
 }
 ```
 
 #### Field Differences: Lead vs Teammate
 
-| Field             | Team Lead    | Teammate               |
-| ----------------- | ------------ | ---------------------- |
-| `prompt`          | Absent       | Present (full prompt)  |
-| `color`           | Absent       | Present                |
-| `planModeRequired`| Absent       | Present                |
-| `backendType`     | Absent       | Present ("tmux")       |
-| `isActive`        | Absent       | Present (boolean)      |
-| `tmuxPaneId`      | Empty `""`   | tmux pane ID (e.g., "%1") |
+| Field              | Team Lead  | Teammate                  |
+| ------------------ | ---------- | ------------------------- |
+| `prompt`           | Absent     | Present (full prompt)     |
+| `color`            | Absent     | Present                   |
+| `planModeRequired` | Absent     | Present                   |
+| `backendType`      | Absent     | Present ("tmux")          |
+| `isActive`         | Absent     | Present (boolean)         |
+| `tmuxPaneId`       | Empty `""` | tmux pane ID (e.g., "%1") |
 
 #### Observations
 
@@ -125,13 +128,13 @@ Agent names are transformed into filenames by:
 
 **Observed pattern (regex):** The transformation appears to be: replace `[ ()]` with `-`, then append `.json`.
 
-| Agent Name                          | Inbox Filename                            |
-| ----------------------------------- | ----------------------------------------- |
-| `team-lead`                         | `team-lead.json`                          |
-| `Wile E. Coyote (Team Coach)`      | `Wile-E--Coyote--Team-Coach-.json`        |
-| `Tweety Bird (Technical Writer)`    | `Tweety-Bird--Technical-Writer-.json`      |
-| `Road Runner (Researcher)`          | `Road-Runner--Researcher-.json`            |
-| `Foghorn Leghorn (Ops Engineer)`    | `Foghorn-Leghorn--Ops-Engineer-.json`      |
+| Agent Name                       | Inbox Filename                        |
+| -------------------------------- | ------------------------------------- |
+| `team-lead`                      | `team-lead.json`                      |
+| `Wile E. Coyote (Team Coach)`    | `Wile-E--Coyote--Team-Coach-.json`    |
+| `Tweety Bird (Technical Writer)` | `Tweety-Bird--Technical-Writer-.json` |
+| `Road Runner (Researcher)`       | `Road-Runner--Researcher-.json`       |
+| `Foghorn Leghorn (Ops Engineer)` | `Foghorn-Leghorn--Ops-Engineer-.json` |
 
 **Note on double hyphens:** The double hyphens (`--`) result from a space followed by a parenthesis. For example, `Coyote (Team` becomes `Coyote--Team` because the space becomes `-` and the `(` becomes `-`.
 
@@ -139,14 +142,14 @@ Agent names are transformed into filenames by:
 
 ```jsonc
 {
-  "from": "string",              // Sender's display name (e.g., "team-lead", "Wile E. Coyote (Team Coach)")
-  "text": "string",              // Message content (plain text or JSON-encoded structured message)
-  "timestamp": "string",         // ISO 8601 timestamp (e.g., "2026-02-16T03:51:08.407Z")
-  "read": true,                  // Boolean: whether the recipient has read the message
+  "from": "string", // Sender's display name (e.g., "team-lead", "Wile E. Coyote (Team Coach)")
+  "text": "string", // Message content (plain text or JSON-encoded structured message)
+  "timestamp": "string", // ISO 8601 timestamp (e.g., "2026-02-16T03:51:08.407Z")
+  "read": true, // Boolean: whether the recipient has read the message
 
   // Optional fields (present on some messages):
-  "summary": "string",           // Short summary (appears when sender provides one via SendMessage)
-  "color": "string"              // Sender's team color (absent for team-lead messages, present for teammate messages)
+  "summary": "string", // Short summary (appears when sender provides one via SendMessage)
+  "color": "string", // Sender's team color (absent for team-lead messages, present for teammate messages)
 }
 ```
 
@@ -161,6 +164,7 @@ The `text` field carries several types of content:
 3. **Structured JSON messages** -- Some messages contain JSON-encoded objects in the `text` field:
 
    **Task assignment:**
+
    ```jsonc
    {
      "type": "task_assignment",
@@ -168,18 +172,19 @@ The `text` field carries several types of content:
      "subject": "Create nsheaps/agent-team repo with CI and prettier",
      "description": "Full task description...",
      "assignedBy": "team-lead",
-     "timestamp": "2026-02-16T04:14:22.026Z"
+     "timestamp": "2026-02-16T04:14:22.026Z",
    }
    ```
 
    **Idle notification:**
+
    ```jsonc
    {
      "type": "idle_notification",
      "from": "Road Runner (Researcher)",
      "timestamp": "2026-02-16T03:52:47.066Z",
      "idleReason": "available",
-     "summary": "[to Elmer Fudd (Project Manager)] Research in progress, 3 sub-agents running"  // Optional
+     "summary": "[to Elmer Fudd (Project Manager)] Research in progress, 3 sub-agents running", // Optional
    }
    ```
 
@@ -206,31 +211,31 @@ The `text` field carries several types of content:
 
 Inbox sizes vary dramatically based on communication volume:
 
-| Inbox                                | Size       | Notes                                    |
-| ------------------------------------ | ---------- | ---------------------------------------- |
-| `team-lead.json`                     | 189 KB     | Receives ALL teammate messages           |
-| `Tweety-Bird--Technical-Writer-.json`| 62 KB      | Heavy communication (writer role)        |
-| `Wile-E--Coyote--Team-Coach-.json`  | 45 KB      | Receives failure reports from all agents |
-| `Road-Runner--Researcher-.json`      | 34 KB      | Research assignments + follow-ups        |
-| `Foghorn-Leghorn--Ops-Engineer-.json`| 28 KB      | Ops tasks + status messages              |
-| `Bugs-Bunny--Team-Lead-.json`       | 5 KB       | Orphaned -- wrong recipient messages     |
-| `orchestrator.json`                  | 4 KB       | Stale -- alternate lead name             |
-| `Elmer-Fudd--Project-Manager-.json` | 3 KB       | Orphaned -- agent never launched         |
-| `Tweety-Bird--Docs-Writer-.json`    | 1 KB       | New name after rename                    |
-| `coach.json`                         | 1 KB       | Stale -- old name before rename          |
+| Inbox                                 | Size   | Notes                                    |
+| ------------------------------------- | ------ | ---------------------------------------- |
+| `team-lead.json`                      | 189 KB | Receives ALL teammate messages           |
+| `Tweety-Bird--Technical-Writer-.json` | 62 KB  | Heavy communication (writer role)        |
+| `Wile-E--Coyote--Team-Coach-.json`    | 45 KB  | Receives failure reports from all agents |
+| `Road-Runner--Researcher-.json`       | 34 KB  | Research assignments + follow-ups        |
+| `Foghorn-Leghorn--Ops-Engineer-.json` | 28 KB  | Ops tasks + status messages              |
+| `Bugs-Bunny--Team-Lead-.json`         | 5 KB   | Orphaned -- wrong recipient messages     |
+| `orchestrator.json`                   | 4 KB   | Stale -- alternate lead name             |
+| `Elmer-Fudd--Project-Manager-.json`   | 3 KB   | Orphaned -- agent never launched         |
+| `Tweety-Bird--Docs-Writer-.json`      | 1 KB   | New name after rename                    |
+| `coach.json`                          | 1 KB   | Stale -- old name before rename          |
 
 #### Stale and Orphaned Inboxes
 
 The inbox system creates files on-demand when a message is sent to any recipient name, regardless of whether that agent exists. This leads to several categories of stale inboxes:
 
-| Inbox File                          | Category     | Explanation                                                     |
-| ----------------------------------- | ------------ | --------------------------------------------------------------- |
-| `coach.json`                        | Stale/renamed| Old inbox before Wile E. Coyote was renamed from "coach"        |
-| `orchestrator.json`                 | Stale/alias  | Alternate name someone used for the team-lead                   |
-| `Bugs-Bunny--Team-Lead-.json`      | Orphaned     | Road Runner repeatedly messaged "Bugs Bunny (Team Lead)" thinking that was the team lead. Agent was never launched. |
-| `Elmer-Fudd--Project-Manager-.json`| Orphaned     | Road Runner messaged PM before it was launched. Agent never spawned. |
-| `Tweety-Bird--Docs-Writer-.json`   | Current      | New inbox after role rename from "Technical Writer" to "Docs Writer" |
-| `Tweety-Bird--Technical-Writer-.json`| Stale/renamed| Old inbox from before the rename                                |
+| Inbox File                            | Category      | Explanation                                                                                                         |
+| ------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `coach.json`                          | Stale/renamed | Old inbox before Wile E. Coyote was renamed from "coach"                                                            |
+| `orchestrator.json`                   | Stale/alias   | Alternate name someone used for the team-lead                                                                       |
+| `Bugs-Bunny--Team-Lead-.json`         | Orphaned      | Road Runner repeatedly messaged "Bugs Bunny (Team Lead)" thinking that was the team lead. Agent was never launched. |
+| `Elmer-Fudd--Project-Manager-.json`   | Orphaned      | Road Runner messaged PM before it was launched. Agent never spawned.                                                |
+| `Tweety-Bird--Docs-Writer-.json`      | Current       | New inbox after role rename from "Technical Writer" to "Docs Writer"                                                |
+| `Tweety-Bird--Technical-Writer-.json` | Stale/renamed | Old inbox from before the rename                                                                                    |
 
 **Key finding:** The `SendMessage` tool silently succeeds when sending to a non-existent recipient. The message is written to an inbox file (creating it if needed), but no agent ever reads it. This was identified as a platform-level issue during the looney-tunes session -- it caused significant communication failures (messages to unlaunched Elmer Fudd and non-existent "Bugs Bunny (Team Lead)" were silently lost).
 
@@ -259,39 +264,39 @@ Each task is stored as a separate JSON file named `{id}.json`.
 
 ```jsonc
 {
-  "id": "string",               // Task ID (string, not number, matches filename)
-  "subject": "string",          // Short task title
-  "description": "string",      // Full task description (can be very long)
-  "activeForm": "string",       // Present-tense gerund describing current activity (e.g., "Creating agent-team repo")
-  "status": "string",           // One of: "pending", "in_progress", "completed"
-  "blocks": ["string"],         // Array of task IDs that THIS task blocks (downstream dependencies)
-  "blockedBy": ["string"],      // Array of task IDs that block THIS task (upstream dependencies)
+  "id": "string", // Task ID (string, not number, matches filename)
+  "subject": "string", // Short task title
+  "description": "string", // Full task description (can be very long)
+  "activeForm": "string", // Present-tense gerund describing current activity (e.g., "Creating agent-team repo")
+  "status": "string", // One of: "pending", "in_progress", "completed"
+  "blocks": ["string"], // Array of task IDs that THIS task blocks (downstream dependencies)
+  "blockedBy": ["string"], // Array of task IDs that block THIS task (upstream dependencies)
 
   // Optional:
-  "owner": "string"             // Agent display name (e.g., "Foghorn Leghorn (Ops Engineer)")
+  "owner": "string", // Agent display name (e.g., "Foghorn Leghorn (Ops Engineer)")
 }
 ```
 
 #### Field Details
 
-| Field         | Required | Description                                                          |
-| ------------- | -------- | -------------------------------------------------------------------- |
-| `id`          | Yes      | String ID matching the filename (without `.json`)                    |
-| `subject`     | Yes      | Short title, typically 5-15 words                                    |
-| `description` | Yes      | Full description; can include markdown, instructions, file paths     |
+| Field         | Required | Description                                                                      |
+| ------------- | -------- | -------------------------------------------------------------------------------- |
+| `id`          | Yes      | String ID matching the filename (without `.json`)                                |
+| `subject`     | Yes      | Short title, typically 5-15 words                                                |
+| `description` | Yes      | Full description; can include markdown, instructions, file paths                 |
 | `activeForm`  | Yes      | Gerund phrase describing current work (e.g., "Analyzing team storage internals") |
-| `status`      | Yes      | `"pending"`, `"in_progress"`, or `"completed"`                       |
-| `blocks`      | Yes      | Array of task ID strings this task blocks (empty array `[]` if none) |
-| `blockedBy`   | Yes      | Array of task ID strings blocking this task (empty array `[]` if none) |
-| `owner`       | No       | Present on most tasks, absent on some (e.g., task #6 and #9 have no owner) |
+| `status`      | Yes      | `"pending"`, `"in_progress"`, or `"completed"`                                   |
+| `blocks`      | Yes      | Array of task ID strings this task blocks (empty array `[]` if none)             |
+| `blockedBy`   | Yes      | Array of task ID strings blocking this task (empty array `[]` if none)           |
+| `owner`       | No       | Present on most tasks, absent on some (e.g., task #6 and #9 have no owner)       |
 
 #### Status Values Observed
 
-| Status        | Meaning                                          | Count |
-| ------------- | ------------------------------------------------ | ----- |
-| `completed`   | Work is done                                     | ~25   |
-| `in_progress` | Agent is actively working on this                | 2     |
-| `pending`     | Not yet started or awaiting dependencies         | ~4    |
+| Status        | Meaning                                  | Count |
+| ------------- | ---------------------------------------- | ----- |
+| `completed`   | Work is done                             | ~25   |
+| `in_progress` | Agent is actively working on this        | 2     |
+| `pending`     | Not yet started or awaiting dependencies | ~4    |
 
 **Note:** There is no `cancelled` or `deleted` status. Cancelled tasks are deleted from disk entirely (their `.json` file is removed). This explains the gaps in the ID sequence.
 
@@ -303,6 +308,7 @@ Tasks use a bidirectional dependency system:
 - `blockedBy`: "I cannot start until these tasks are done" (upstream)
 
 Example from the observed team:
+
 - Task #4 (create repo) has `"blocks": ["6", "7", "10"]` -- three tasks depend on it
 - Task #10 (write agent files) has `"blockedBy": ["4"]` -- needs the repo first
 
@@ -312,13 +318,13 @@ Both directions must be maintained manually. There is no automatic consistency e
 
 The following task IDs have no corresponding `.json` file on disk:
 
-| Missing IDs | Likely Explanation                                                |
-| ----------- | ----------------------------------------------------------------- |
-| 1, 2, 3     | Early tasks that were self-assigned by teammates and later deleted |
-| 8            | Unknown -- possibly a cancelled duplicate                         |
-| 14           | Skipped or deleted                                                |
-| 31, 32       | Explicitly cancelled by team-lead ("marketplace research" and "marketplace implementation") |
-| 34           | The .highwatermark says "34" but no 34.json exists -- this was likely allocated and immediately deleted |
+| Missing IDs | Likely Explanation                                                                                      |
+| ----------- | ------------------------------------------------------------------------------------------------------- |
+| 1, 2, 3     | Early tasks that were self-assigned by teammates and later deleted                                      |
+| 8           | Unknown -- possibly a cancelled duplicate                                                               |
+| 14          | Skipped or deleted                                                                                      |
+| 31, 32      | Explicitly cancelled by team-lead ("marketplace research" and "marketplace implementation")             |
+| 34          | The .highwatermark says "34" but no 34.json exists -- this was likely allocated and immediately deleted |
 
 ### Metadata Files
 
@@ -374,10 +380,10 @@ The config.json appears to be written at team creation and updated when members 
 
 Two timestamp formats coexist:
 
-| Context               | Format                           | Example                       |
-| --------------------- | -------------------------------- | ----------------------------- |
-| config.json fields    | Epoch milliseconds (number)      | `1771213849309`               |
-| Inbox message fields  | ISO 8601 string                  | `"2026-02-16T03:51:08.407Z"` |
+| Context              | Format                      | Example                      |
+| -------------------- | --------------------------- | ---------------------------- |
+| config.json fields   | Epoch milliseconds (number) | `1771213849309`              |
+| Inbox message fields | ISO 8601 string             | `"2026-02-16T03:51:08.407Z"` |
 
 This inconsistency suggests different parts of the codebase handle timestamp serialization differently.
 

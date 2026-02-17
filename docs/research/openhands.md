@@ -12,6 +12,7 @@
 **OpenHands** is an open-source, model-agnostic platform for AI software developers operating as generalist agents. Created by All-Hands-AI, it enables agents to interact with digital environments like humans: writing code, executing shell commands, browsing the web, and calling APIs.
 
 **Key metrics:**
+
 - 67,900 GitHub stars | 469 contributors | 98 releases
 - **Status**: Production-ready, ICLR 2025 peer-reviewed
 - **License**: MIT (core) + enterprise licensing
@@ -74,6 +75,7 @@ ConversationState:
 ```
 
 **Benefits**:
+
 - Deterministic replay for full session recovery
 - Pause/resume capability (pause at step N, deploy new agent version, resume with exact context)
 - Fully serializable over network (local, remote, Docker)
@@ -82,11 +84,11 @@ ConversationState:
 
 Three implementations, same agent code:
 
-| Workspace | Backend | Use Case |
-|-----------|---------|----------|
-| **LocalWorkspace** | Direct filesystem/shell | Development, single-user |
-| **RemoteWorkspace** | HTTP/gRPC to server | Distributed, multi-user |
-| **DockerWorkspace** | Container sandbox | Isolation, resource limits |
+| Workspace           | Backend                 | Use Case                   |
+| ------------------- | ----------------------- | -------------------------- |
+| **LocalWorkspace**  | Direct filesystem/shell | Development, single-user   |
+| **RemoteWorkspace** | HTTP/gRPC to server     | Distributed, multi-user    |
+| **DockerWorkspace** | Container sandbox       | Isolation, resource limits |
 
 ---
 
@@ -118,6 +120,7 @@ class AgentDelegateAction(Action):
 ```
 
 **Execution**:
+
 1. Parent identifies task needs specialization
 2. Creates AgentDelegateAction with task + agent name
 3. Framework spawns sub-agent (inherits parent LLM config, shares workspace)
@@ -147,6 +150,7 @@ RemoteConversation (Client)
 ## 4. Task Management
 
 **Current**: No native task management. Task is **implicit in conversation history**:
+
 - User's initial message = task definition
 - All subsequent messages/actions = task progress
 - Event stream = task execution trace
@@ -154,6 +158,7 @@ RemoteConversation (Client)
 **Planned**: GitHub issue #7290 proposes explicit `TASK` microagents (under development, not production).
 
 **Evaluation harness** (for benchmarking):
+
 ```python
 @dataclass
 class EvaluationTask:
@@ -185,28 +190,30 @@ Used for SWE-Bench (GitHub issue resolution) and WebArena (web interaction tasks
 
 ## 6. Comparison to Claude Code Agent Teams
 
-| Aspect | Claude Code Teams | OpenHands |
-|--------|-------------------|-----------|
-| **Spawning** | Fire-and-forget subprocess | Explicit agent lifecycle management |
-| **Communication** | File-based inbox + settings.json | Type-safe event stream (JSON, Pydantic) |
-| **State Model** | Process mutable state | Event-sourced immutable log |
-| **Coordination** | Leader sends files, workers read/write | Parent waits on AgentDelegateAction observation |
-| **Backend** | tmux -CC or in-process | Docker sandbox (configurable) |
-| **Pause/Resume** | Process-level (kill/restart) | Resume from event log |
-| **Serialization** | Implicit (file paths) | Explicit (JSON over network) |
-| **Multi-Agent Parallelism** | Independent agents (true parallelism) | Sub-agents inherit parent context (sequential) |
-| **Error Recovery** | Restart required | Replay event log |
-| **Remote Deployment** | Difficult (process-bound) | Built-in RemoteConversation |
+| Aspect                      | Claude Code Teams                      | OpenHands                                       |
+| --------------------------- | -------------------------------------- | ----------------------------------------------- |
+| **Spawning**                | Fire-and-forget subprocess             | Explicit agent lifecycle management             |
+| **Communication**           | File-based inbox + settings.json       | Type-safe event stream (JSON, Pydantic)         |
+| **State Model**             | Process mutable state                  | Event-sourced immutable log                     |
+| **Coordination**            | Leader sends files, workers read/write | Parent waits on AgentDelegateAction observation |
+| **Backend**                 | tmux -CC or in-process                 | Docker sandbox (configurable)                   |
+| **Pause/Resume**            | Process-level (kill/restart)           | Resume from event log                           |
+| **Serialization**           | Implicit (file paths)                  | Explicit (JSON over network)                    |
+| **Multi-Agent Parallelism** | Independent agents (true parallelism)  | Sub-agents inherit parent context (sequential)  |
+| **Error Recovery**          | Restart required                       | Replay event log                                |
+| **Remote Deployment**       | Difficult (process-bound)              | Built-in RemoteConversation                     |
 
 ### State Management Contrast
 
 **Claude Code Teams** (Distributed files, eventual consistency):
+
 ```
 leader.py ← → settings.json ← → worker.py
             (shared disk)
 ```
 
 **OpenHands** (Centralized event log, strong consistency):
+
 ```
 ConversationState (single source of truth)
   ├─ messages[]
@@ -249,21 +256,25 @@ Sub-agents inherit, read-only reference
 ## 8. Links and Sources
 
 ### Official Resources
+
 - **Home**: https://openhands.dev/
 - **GitHub**: https://github.com/OpenHands/OpenHands
 - **Documentation**: https://docs.openhands.dev/
 
 ### Technical Papers
+
 - **ICLR 2025**: [OpenHands: An Open Platform for AI Software Developers as Generalist Agents](https://openreview.net/pdf/95990590797cff8b93c33af989ecf4ac58bde9bb.pdf)
 - **SDK Paper**: [The OpenHands Software Agent SDK: A Composable and Extensible Foundation for Production Agents](https://arxiv.org/html/2511.03690v1)
 
 ### Key Documentation
+
 - [Agent Architecture](https://docs.openhands.dev/sdk/arch/agent)
 - [Sub-Agent Delegation](https://docs.openhands.dev/sdk/guides/agent-delegation)
 - [MCP Integration](https://docs.openhands.dev/sdk/guides/mcp)
 - [Docker Sandbox](https://docs.openhands.dev/openhands/usage/sandboxes/docker)
 
 ### Performance
+
 - **SWE-Bench Leaderboard**: https://www.swebench.com/
 - **SWE-Bench Verified**: 66.4% (Feb 2026, with critic model selection)
 

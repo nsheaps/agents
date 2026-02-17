@@ -12,6 +12,7 @@
 Google's coding agent ecosystem consists of **three distinct products**:
 
 ### Gemini CLI
+
 - **Type**: Open-source terminal AI agent
 - **Maker**: Google (google-gemini on GitHub)
 - **Maturity**: Production-ready, active development
@@ -20,11 +21,13 @@ Google's coding agent ecosystem consists of **three distinct products**:
 - **Repo**: [google-gemini/gemini-cli](https://github.com/google-gemini/gemini-cli)
 
 ### Gemini Code Assist
+
 - **Type**: IDE-native AI coding assistant (VS Code, IntelliJ)
 - **Maturity**: GA; Agent Mode stable in IntelliJ, preview in VS Code
 - **Key change**: Deprecated Tool Calling API; migrating to MCP by March 2026
 
 ### Jules
+
 - **Type**: Autonomous, asynchronous coding agent
 - **Maturity**: Out of public beta (2025)
 - **Model**: Gemini 3 Pro
@@ -32,11 +35,11 @@ Google's coding agent ecosystem consists of **three distinct products**:
 - **Pricing**: 15-300 tasks/day depending on tier
 - **Site**: [jules.google](https://jules.google)
 
-| Product | Mode | Context | Best For |
-|:--------|:-----|:--------|:---------|
-| Gemini CLI | Sync/Interactive | Terminal + MCP | Developer workflows, scripting |
-| Code Assist | Sync/Interactive | IDE | In-IDE coding, multi-file refactoring |
-| Jules | Async/Autonomous | Google Cloud VM | Background automation, batch operations |
+| Product     | Mode             | Context         | Best For                                |
+| :---------- | :--------------- | :-------------- | :-------------------------------------- |
+| Gemini CLI  | Sync/Interactive | Terminal + MCP  | Developer workflows, scripting          |
+| Code Assist | Sync/Interactive | IDE             | In-IDE coding, multi-file refactoring   |
+| Jules       | Async/Autonomous | Google Cloud VM | Background automation, batch operations |
 
 ## 2. Architecture and Design Patterns
 
@@ -49,6 +52,7 @@ Observation → Thought → Action → Observation → ...
 ```
 
 Architecture layers:
+
 1. **Authentication**: OAuth, API keys, Vertex AI
 2. **Tool system**: Built-in (file I/O, shell, web, grep) + extensible via MCP servers
 3. **Conversation engine**: Stateful with checkpointing and token caching
@@ -77,6 +81,7 @@ Jules extension for Gemini CLI enables delegation: `/julius` command to spawn as
 ### Current: Experimental Sub-Agents
 
 Sub-agents exist but are **experimental** (not production):
+
 - Specialized agents with own system prompt, persona, and restricted tool set
 - Operate within main session context
 - Tool calls execute **sequentially by default** (no native parallel execution)
@@ -84,6 +89,7 @@ Sub-agents exist but are **experimental** (not production):
 ### Community Orchestration
 
 **Maestro-Gemini** ([github.com/josstei/maestro-gemini](https://github.com/josstei/maestro-gemini)):
+
 - 12 specialized subagents with TechLead orchestrator
 - 4-phase workflow: Design → Plan → Execute → Complete
 - Parallel dispatch via shell scripts (workaround for sequential limitation)
@@ -95,6 +101,7 @@ Sub-agents exist but are **experimental** (not production):
 ### Enterprise: ADK Multi-Agent
 
 Google's **Agent Development Kit** (ADK) provides:
+
 - Workflow agents: Sequential, Parallel, Loop patterns
 - LLM-driven dynamic routing
 - Modular composition of specialized agents
@@ -102,11 +109,11 @@ Google's **Agent Development Kit** (ADK) provides:
 
 ## 4. Task Management
 
-| Product | Approach |
-|:--------|:---------|
-| Gemini CLI | Implicit — ReAct loop state in conversation history; `/memory` for long-term context |
-| Code Assist | Plan-based — agent generates plan, user approves, agent executes with checkpointing |
-| Jules | Explicit — `/jules-tools` CLI for task lifecycle, async queue with status tracking |
+| Product     | Approach                                                                             |
+| :---------- | :----------------------------------------------------------------------------------- |
+| Gemini CLI  | Implicit — ReAct loop state in conversation history; `/memory` for long-term context |
+| Code Assist | Plan-based — agent generates plan, user approves, agent executes with checkpointing  |
+| Jules       | Explicit — `/jules-tools` CLI for task lifecycle, async queue with status tracking   |
 
 ## 5. Unique Features
 
@@ -134,19 +141,19 @@ Native Google Search, Vertex AI, Cloud Logging, Cloud Storage. Not available in 
 
 ## 6. Comparison to Claude Code Agent Teams
 
-| Dimension | Claude Code | Gemini |
-|:----------|:-----------|:-------|
-| **Native subagents** | Yes (parallel execution) | Experimental only |
-| **Execution model** | Autonomous, parallel | Sequential, user-guided |
-| **Communication** | SendMessage + file-based inbox | No native inter-agent messaging |
-| **Spawn model** | Fire-and-forget (tmux/in-process) | No native spawn model |
-| **Task management** | Built-in task list with dependencies | Implicit (CLI) or plan-based (IDE) |
-| **Recovery** | Git-based | Checkpointing + rollback |
-| **Supervision** | Low (junior dev autonomy) | High (ongoing approval) |
-| **Async execution** | Not available | Jules (background VMs) |
-| **Reasoning preservation** | Context window only | Thought Signatures (encrypted) |
-| **MCP integration** | Yes | Yes (migrating fully) |
-| **Multi-model** | Single provider | Single provider (Google only) |
+| Dimension                  | Claude Code                          | Gemini                             |
+| :------------------------- | :----------------------------------- | :--------------------------------- |
+| **Native subagents**       | Yes (parallel execution)             | Experimental only                  |
+| **Execution model**        | Autonomous, parallel                 | Sequential, user-guided            |
+| **Communication**          | SendMessage + file-based inbox       | No native inter-agent messaging    |
+| **Spawn model**            | Fire-and-forget (tmux/in-process)    | No native spawn model              |
+| **Task management**        | Built-in task list with dependencies | Implicit (CLI) or plan-based (IDE) |
+| **Recovery**               | Git-based                            | Checkpointing + rollback           |
+| **Supervision**            | Low (junior dev autonomy)            | High (ongoing approval)            |
+| **Async execution**        | Not available                        | Jules (background VMs)             |
+| **Reasoning preservation** | Context window only                  | Thought Signatures (encrypted)     |
+| **MCP integration**        | Yes                                  | Yes (migrating fully)              |
+| **Multi-model**            | Single provider                      | Single provider (Google only)      |
 
 **Key gap in Gemini**: No native multi-agent communication or team coordination. Community tools (Maestro) fill this gap but aren't official.
 
@@ -177,6 +184,7 @@ Each agent should produce reviewable artifacts at phase boundaries. Human approv
 ## 8. Links and Sources
 
 ### Official Documentation
+
 - [Gemini CLI Documentation](https://developers.google.com/gemini-code-assist/docs/gemini-cli)
 - [Gemini CLI GitHub](https://github.com/google-gemini/gemini-cli)
 - [Agent Mode Overview](https://developers.google.com/gemini-code-assist/docs/agent-mode)
@@ -185,15 +193,18 @@ Each agent should produce reviewable artifacts at phase boundaries. Human approv
 - [Agent Development Kit](https://google.github.io/adk-docs/)
 
 ### Jules
+
 - [Jules Official](https://jules.google)
 - [Jules Tools CLI](https://developers.googleblog.com/en/meet-jules-tools-a-command-line-companion-for-googles-async-coding-agent/)
 - [Jules GitHub Extension](https://github.com/gemini-cli-extensions/jules)
 
 ### Multi-Agent
+
 - [Maestro-Gemini](https://github.com/josstei/maestro-gemini) — Community multi-agent platform
 - [Gemini CLI Multi-Agent Discussion](https://github.com/google-gemini/gemini-cli/discussions/7637)
 - [Building Multi-Agent Systems with ADK](https://medium.com/google-cloud/building-a-multi-agent-assistant-with-gemini-and-the-agent-development-kit-cc448d0cfa1b)
 
 ### Comparisons
+
 - [Gemini vs Claude Code 2026](https://www.educative.io/blog/claude-code-vs-gemini-code-assist)
 - [Claude Code vs Gemini CLI](https://shipyard.build/blog/claude-code-vs-gemini-cli-who-is-winning-in-january-2026/)

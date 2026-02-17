@@ -22,6 +22,7 @@ All support multi-agent coordination, state management, and integration with Mod
 **Coordinator Pattern**: Supervisor agent makes routing decisions; workers always report back to supervisor (hierarchical hub-and-spoke)
 
 **State Management**:
+
 - Centralized immutable state updates (new version per update, preventing race conditions)
 - All agents read/write to shared StateGraph
 - Complete state visibility for complex reasoning
@@ -39,6 +40,7 @@ All support multi-agent coordination, state management, and integration with Mod
 **Role System**: Each agent assigned role (title), goal, backstory, tools, delegation permissions, and memory persistence
 
 **Process Types**:
+
 - Sequential: Tasks execute one after another
 - Hierarchical: Tree structure with supervisor agent delegating to child tasks
 - Parallel: Multiple tasks simultaneously with result merging
@@ -54,6 +56,7 @@ All support multi-agent coordination, state management, and integration with Mod
 **Architecture**: Conversable entities communicating via asynchronous message passing
 
 **Conversation Patterns**:
+
 - Two-agent chat (direct sequential exchange)
 - Sequential chat (chained conversations with context carryover)
 - Group chat (multiple agents, manager broadcasts messages and selects speakers)
@@ -66,36 +69,37 @@ All support multi-agent coordination, state management, and integration with Mod
 
 ## 5. Cross-Framework Comparison
 
-| Feature | LangGraph | CrewAI | AutoGen |
-|---------|-----------|--------|---------|
-| **Architecture** | State machine graphs | Role-based teams | Conversation patterns |
-| **Control Flow** | Explicit, developer-specified | Agent-autonomous delegation | Conversation-driven role emergence |
-| **State Model** | Centralized StateGraph | Distributed per-agent memory | Message passing |
-| **Learning Curve** | Moderate | Low (intuitive) | Moderate |
-| **Flexibility** | Very high | Good | High |
-| **Production Readiness** | v1.0 stable | Production-ready | Mature, transitioning |
-| **Primary Use Case** | Complex workflows | Rapid role-based teams | Conversational workflows |
-| **GitHub Stars** | 24.7k | 44k+ | ~24k |
-| **Human-in-the-Loop** | Built-in pause points | Supported | Natural (human agent type) |
-| **Code Execution** | Via tools | Via tools | Native capability |
-| **Checkpointing** | Full support | Basic | Limited |
+| Feature                  | LangGraph                     | CrewAI                       | AutoGen                            |
+| ------------------------ | ----------------------------- | ---------------------------- | ---------------------------------- |
+| **Architecture**         | State machine graphs          | Role-based teams             | Conversation patterns              |
+| **Control Flow**         | Explicit, developer-specified | Agent-autonomous delegation  | Conversation-driven role emergence |
+| **State Model**          | Centralized StateGraph        | Distributed per-agent memory | Message passing                    |
+| **Learning Curve**       | Moderate                      | Low (intuitive)              | Moderate                           |
+| **Flexibility**          | Very high                     | Good                         | High                               |
+| **Production Readiness** | v1.0 stable                   | Production-ready             | Mature, transitioning              |
+| **Primary Use Case**     | Complex workflows             | Rapid role-based teams       | Conversational workflows           |
+| **GitHub Stars**         | 24.7k                         | 44k+                         | ~24k                               |
+| **Human-in-the-Loop**    | Built-in pause points         | Supported                    | Natural (human agent type)         |
+| **Code Execution**       | Via tools                     | Via tools                    | Native capability                  |
+| **Checkpointing**        | Full support                  | Basic                        | Limited                            |
 
 **When to Use:**
+
 - **LangGraph**: Complex orchestration with conditional logic, feedback loops, fine-grained monitoring, sophisticated decision trees
 - **CrewAI**: Rapid prototyping, clear roles, autonomous agents, content/data analysis pipelines, less LLM expertise required
 - **AutoGen**: Conversational systems, human-AI collaboration, dynamic role-playing, pair-programming, interactive data analysis
 
 ## 6. Comparison to Claude Code Agent Teams
 
-| Aspect | Claude Code Teams | Enterprise Frameworks |
-|--------|------------------|----------------------|
-| **Orchestration Model** | Lead agent + subagents (hierarchical) | LangGraph (supervisor), CrewAI (autonomous), AutoGen (conversation-driven) |
-| **Integration** | IDE-native, terminal/file access | Python libraries, cloud platforms |
-| **Provider Lock-in** | Claude-specific | Framework-agnostic (any LLM via adapter) |
-| **State Sharing** | Centralized (similar to LangGraph) | LangGraph centralized, CrewAI distributed, AutoGen messages |
-| **Tool Integration** | Claude Code ecosystem | MCP servers + framework tools |
-| **Execution Model** | Nested agent spawning in tmux | Python processes or managed platforms |
-| **Context Preservation** | Session-based checkpointing | Framework-specific (LangGraph full, others basic) |
+| Aspect                   | Claude Code Teams                     | Enterprise Frameworks                                                      |
+| ------------------------ | ------------------------------------- | -------------------------------------------------------------------------- |
+| **Orchestration Model**  | Lead agent + subagents (hierarchical) | LangGraph (supervisor), CrewAI (autonomous), AutoGen (conversation-driven) |
+| **Integration**          | IDE-native, terminal/file access      | Python libraries, cloud platforms                                          |
+| **Provider Lock-in**     | Claude-specific                       | Framework-agnostic (any LLM via adapter)                                   |
+| **State Sharing**        | Centralized (similar to LangGraph)    | LangGraph centralized, CrewAI distributed, AutoGen messages                |
+| **Tool Integration**     | Claude Code ecosystem                 | MCP servers + framework tools                                              |
+| **Execution Model**      | Nested agent spawning in tmux         | Python processes or managed platforms                                      |
+| **Context Preservation** | Session-based checkpointing           | Framework-specific (LangGraph full, others basic)                          |
 
 **Key Difference**: Claude Code integrates into IDE workflow; frameworks are library-based and deployable to production infrastructure independently.
 
@@ -112,22 +116,26 @@ All support multi-agent coordination, state management, and integration with Mod
 ## 8. Links and Sources
 
 **Official Documentation**:
+
 - [LangGraph Docs](https://langchain-ai.github.io/langgraph/)
 - [CrewAI Docs](https://docs.crewai.com/)
 - [AutoGen Docs](https://microsoft.github.io/autogen/)
 - [Microsoft Agent Framework](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/)
 
 **Key Comparisons**:
+
 - [LangGraph vs CrewAI vs AutoGen - DataCamp](https://www.datacamp.com/tutorial/crewai-vs-langgraph-vs-autogen)
 - [Agent Orchestration 2026 Guide - Iterathon](https://iterathon.tech/blog/ai-agent-orchestration-frameworks-2026)
 - [MCP vs Orchestration Frameworks - ITNEXT](https://itnext.io/mcp-vs-agent-orchestration-frameworks-langgraph-crewai-etc-ec6bd611aa4d)
 
 **GitHub Repositories**:
+
 - [langchain-ai/langgraph](https://github.com/langchain-ai/langgraph)
 - [crewAIInc/crewAI](https://github.com/crewAIInc/crewAI)
 - [microsoft/autogen](https://github.com/microsoft/autogen)
 
 **Enterprise Adoption**:
+
 - [LangGraph Platform](https://www.langchain.com/langgraph)
 - [CrewAI Enterprise Survey](https://www.businesswire.com/news/home/20260211693427/en/Agentic-AI-Reaches-Tipping-Point-100-of-Enterprises-Plan-to-Expand-Adoption-in-2026-New-CrewAI-Survey-Finds)
 - [Microsoft Agent Framework GA Roadmap](https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/)
