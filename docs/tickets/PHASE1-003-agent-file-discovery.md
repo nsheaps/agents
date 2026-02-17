@@ -2,7 +2,7 @@
 id: PHASE1-003
 title: "Implement: agent file discovery + YAML frontmatter parsing"
 status: open
-assignee: Bugs Bunny (Software Engineer)
+assignee: Bugs Bunny (Software Eng)
 priority: high
 phase: 1
 blocked_by: [PHASE1-002]

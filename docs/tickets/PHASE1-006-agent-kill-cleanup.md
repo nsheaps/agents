@@ -2,7 +2,7 @@
 id: PHASE1-006
 title: "Implement: agent kill + team config cleanup"
 status: open
-assignee: Bugs Bunny (Software Engineer)
+assignee: Bugs Bunny (Software Eng)
 priority: high
 phase: 1
 blocked_by: [PHASE1-005]

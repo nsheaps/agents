@@ -50,7 +50,7 @@ Ensure root cause diagnoses are evidence-based, not assumption-based. The team's
 
 6. **Get independent verification** — Before committing to a diagnosis:
    - Ask another agent to reproduce the issue
-   - Or ask the AI Agent Engineer to review your root cause analysis
+   - Or ask the AI Agent Eng to review your root cause analysis
    - A diagnosis confirmed by one person and accepted by everyone is not "verified"
 
 7. **Only then report or act** — After steps 1-5:

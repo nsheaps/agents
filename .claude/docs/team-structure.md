@@ -7,11 +7,11 @@ Overview of agent team roles and responsibilities.
 | Agent             | Character       | Role              | Does                                               | Does NOT                                 |
 | :---------------- | :-------------- | :---------------- | :------------------------------------------------- | :--------------------------------------- |
 | orchestrator      | —               | Team Lead         | Spawns teammates, assigns tasks, coordinates       | Write code, implement features           |
-| ai-agent-engineer | Wile E. Coyote  | AI Agent Engineer | Observes failures, records patterns, reviews specs | Fix bugs, assign tasks, implement        |
+| ai-agent-eng | Wile E. Coyote  | AI Agent Eng | Observes failures, records patterns, reviews specs | Fix bugs, assign tasks, implement        |
 | docs-writer       | Tweety Bird     | Docs Writer       | Maintains docs, audits specs, flags contradictions | Write code, make architectural decisions |
 | deep-researcher   | Road Runner     | Deep Researcher   | Complex multi-source research, synthesis, analysis | Simple lookups, basic troubleshooting    |
-| ops-engineer      | Foghorn Leghorn | Ops Engineer      | CI/CD, repos, Homebrew, distribution, tooling      | Feature implementation, PM duties        |
-| software-engineer | Bugs Bunny      | Software Engineer | Implements features, writes code, commits          | Self-assign tasks, PM duties             |
+| ops-eng      | Foghorn Leghorn | Ops Eng      | CI/CD, repos, Homebrew, distribution, tooling      | Feature implementation, PM duties        |
+| software-eng | Bugs Bunny      | Software Eng | Implements features, writes code, commits          | Self-assign tasks, PM duties             |
 | quality-assurance | Daffy Duck      | Quality Assurance | Tests, validates, catches regressions, reviews     | Write production code, assign tasks      |
 | project-manager   | Elmer Fudd      | Project Manager   | Task list, coordination, priorities, unblocking    | Write code, make technical decisions     |
 
@@ -20,15 +20,15 @@ Overview of agent team roles and responsibilities.
 ```
 Orchestrator (team-lead)
   ├── Project Manager (Elmer Fudd) — owns task list
-  ├── AI Agent Engineer (Wile E. Coyote) — observes everything
+  ├── AI Agent Eng (Wile E. Coyote) — observes everything
   ├── Docs Writer (Tweety Bird) — maintains docs
   ├── Deep Researcher (Road Runner) — complex multi-source investigations
-  ├── Ops Engineer (Foghorn Leghorn) — infra and CI
-  ├── Software Engineer (Bugs Bunny) — implements
+  ├── Ops Eng (Foghorn Leghorn) — infra and CI
+  ├── Software Eng (Bugs Bunny) — implements
   └── Quality Assurance (Daffy Duck) — validates
 ```
 
-The orchestrator spawns all teammates and coordinates at the top level. The PM manages the task list and day-to-day coordination. The AI Agent Engineer observes the entire session and records issues.
+The orchestrator spawns all teammates and coordinates at the top level. The PM manages the task list and day-to-day coordination. The AI Agent Eng observes the entire session and records issues.
 
 ## Agent vs Persona
 
@@ -49,7 +49,7 @@ Agent files and persona files serve different purposes:
 
 - **Orchestrator** receives messages from all teammates and makes coordination decisions
 - **PM** receives status updates and manages task assignments
-- **AI Agent Engineer** receives failure reports from all teammates and records them
+- **AI Agent Eng** receives failure reports from all teammates and records them
 - **All teammates** can message each other directly for coordination
 
 See `communication-protocol.md` for detailed routing rules.

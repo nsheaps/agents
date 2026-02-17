@@ -153,7 +153,7 @@ Source: [tmux send-keys reference](https://blog.damonkelley.me/2016/09/07/tmux-s
 **Observed in this session (two incidents):**
 
 - An attempt to send `tmux send-keys` to a Claude Code teammate pane (QA agent) did not result in the command being submitted. The pane showed the text was typed but it was never processed.
-- Foghorn (Ops Engineer) confirmed the same behavior: "The text was displayed at the prompt but wasn't processed until I sent an additional Enter keypress."
+- Foghorn (Ops Eng) confirmed the same behavior: "The text was displayed at the prompt but wasn't processed until I sent an additional Enter keypress."
 
 **Mitigation strategies:**
 

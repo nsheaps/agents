@@ -3,6 +3,7 @@
 > **Status**: Draft
 > **Author**: Elmer Fudd (Project Manager)
 > **Date**: 2026-02-17
+> **Revised**: 2026-02-17 — incorporated tool stripping research (#111) and REPLACE mode reliability findings
 > **Task**: #104 (PHASE1-002)
 > **Phase**: 1 — Agent Launcher MVP
 > **Language**: TypeScript + Bun
@@ -23,10 +24,22 @@ The agent launcher is a CLI tool that reads `.claude/agents/*.md` files and auto
 ### Non-Goals (this phase)
 
 - Docker container backend (Phase 9)
-- Per-agent tool set restriction via `--tools`/`--disallowedTools` (Phase 2)
 - Session save/restore (Phase 7)
 - Multi-framework support (Claude Code only for now)
 - Cross-machine agent mobility
+- Runtime tool stripping via I/O proxy (Phase 2+ — see architecture doc §7)
+
+### Agent File Format Disambiguation
+
+Three agent definition formats exist across the project. This spec uses **format 1** only:
+
+| Format | Location | Used By | Phase |
+|:--|:--|:--|:--|
+| **`.claude/agents/*.md`** (this spec) | Project `.claude/agents/` | Claude Code native agent system + launcher | Phase 1 (MVP) |
+| **`agents/{name}/agent.yaml`** | Proposed directory structure | Structured agent definitions with Dockerfile, behaviors/ | Phase 2+ |
+| **`.agent.yaml`** (wrapper PRD) | Agent wrapper config | Config composition, profiles | Future (`nsheaps/agent` CLI) |
+
+Phase 1 reads `.claude/agents/*.md` files. Phase 2 introduces `agent.yaml` for richer definitions. The wrapper `.agent.yaml` is a separate concern in the `nsheaps/agent` repo.
 
 ---
 
@@ -87,6 +100,8 @@ The existing `.claude/agents/*.md` files have Claude Code native frontmatter fie
 | `display_name` | string | (derived from name) | Display name for team UI, format: "First L (role)" |
 | `teammate_mode` | `"auto"` \| `"in-process"` \| `"tmux"` | (inherited from lead) | Override teammate display mode |
 | `continue_session` | boolean | `false` | If true, passes `--continue` to resume most recent session |
+| `tools` | string[] | (all tools) | Whitelist of tools available to this agent. Maps to `--tools`. Removes unlisted tools from context. |
+| `disallowed_tools` | string[] | `[]` | Blacklist of tools to remove from context. Maps to `--disallowedTools`. Supports patterns. |
 
 #### Preserved Claude Code Fields
 
@@ -101,7 +116,7 @@ These fields are native to Claude Code's agent system and are preserved as-is:
 Agent display names follow the format: **"First L (role)"**
 
 Examples:
-- `Bugs B (software-eng)` — not "Bugs Bunny (Software Engineer)"
+- `Bugs B (software-eng)` — not "Bugs Bunny (Software Eng)"
 - `Wile E (ai-agent-eng)` — abbreviated role
 - `Tweety B (docs-writer)`
 - `Daffy D (qa)`
@@ -112,9 +127,9 @@ Examples:
 Role abbreviations:
 | Full Role | Abbreviated |
 |:--|:--|
-| Software Engineer | software-eng |
-| AI Agent Engineer | ai-agent-eng |
-| Ops Engineer | ops-eng |
+| Software Eng | software-eng |
+| AI Agent Eng | ai-agent-eng |
+| Ops Eng | ops-eng |
 | Quality Assurance | qa |
 | Project Manager | pm |
 | Technical Writer | docs-writer |
@@ -126,7 +141,7 @@ The `display_name` field in frontmatter overrides the default derivation.
 
 ```yaml
 ---
-name: software-engineer
+name: software-eng
 description: |
   Use this agent for implementation tasks: writing code, fixing bugs,
   running tests, and committing changes.
@@ -139,7 +154,7 @@ permission_mode: delegate
 display_name: "Bugs B (software-eng)"
 ---
 
-# Bugs Bunny (Software Engineer)
+# Bugs Bunny (Software Eng)
 
 You are a software engineer...
 [rest of agent prompt markdown body]
@@ -151,7 +166,7 @@ You are a software engineer...
 
 ### Modes
 
-#### EXTEND Mode (default)
+#### EXTEND Mode (default — recommended for MVP)
 
 The agent's prompt content is **appended** to the base system prompt. This preserves all Claude Code defaults (tool usage, memory, CLAUDE.md loading, etc.).
 
@@ -161,7 +176,26 @@ Final prompt = base_prompt + "\n\n" + agent_markdown_body
 
 CLI mapping: `--append-system-prompt "<agent_markdown_body>"`
 
-#### REPLACE Mode
+This is the **recommended approach** for all agents in Phase 1. It is reliable in both interactive and print modes.
+
+For per-agent customization beyond the prompt, combine EXTEND mode with tool control flags:
+
+```bash
+claude \
+  --append-system-prompt "AGENT ROLE: You are the Orchestrator..." \
+  --tools "Read,Grep,Glob,Task,SendMessage" \
+  --disallowedTools "Edit" "Write" "Bash"
+```
+
+This preserves Claude Code's built-in tool descriptions for kept tools while removing the rest — saving context tokens.
+
+#### REPLACE Mode (experimental — unreliable in interactive mode)
+
+> **WARNING**: `--system-prompt` (REPLACE) is **unreliable in interactive mode** per [GitHub Issue #2692](https://github.com/anthropics/claude-code/issues/2692). Users report Claude Code still uses default instructions even when `--system-prompt` is specified. It works reliably in print mode (`-p`) but not interactive.
+>
+> Since agent team teammates are **interactive sessions**, REPLACE mode is risky for Phase 1. Use EXTEND mode instead. REPLACE will be revisited when:
+> 1. The GitHub issue is resolved, or
+> 2. We migrate to the Agent SDK's `systemPrompt` parameter (which is reliable for full replacement)
 
 The agent's prompt content **replaces** the entire system prompt. Use for specialized agents that need full control.
 
@@ -170,6 +204,8 @@ Final prompt = agent_markdown_body
 ```
 
 CLI mapping: `--system-prompt "<agent_markdown_body>"`
+
+**Additional risk**: When using REPLACE, ALL tool descriptions are removed since they're part of the default prompt. You'd need to reconstruct any tool guidance in the agent prompt — which is fragile and version-dependent.
 
 ### Base Prompt Selection
 
@@ -231,7 +267,7 @@ The launcher should warn if assembled prompt exceeds 200KB.
 The team name is a **required parameter** to the launcher. It is never hardcoded.
 
 ```bash
-agent-launcher --team-name looney-tunes launch software-engineer
+agent-launcher --team-name looney-tunes launch software-eng
 ```
 
 If not provided via flag, the launcher checks:
@@ -254,12 +290,14 @@ If not provided via flag, the launcher checks:
 
 | Agent Field | Claude CLI Flag |
 |:--|:--|
-| (prompt assembly) | `--system-prompt` or `--append-system-prompt` |
+| (prompt assembly) | `--append-system-prompt` (EXTEND) or `--system-prompt` (REPLACE, experimental) |
 | `model` | `--model <value>` |
 | `permission_mode` | `--permission-mode <value>` |
 | `dangerously_skip_permissions` | `--dangerously-skip-permissions` |
 | `teammate_mode` | `--teammate-mode <value>` |
 | `continue_session` | `--continue` |
+| `tools` | `--tools "<comma-separated>"` |
+| `disallowed_tools` | `--disallowedTools "<tool1>" "<tool2>" ...` |
 
 ### Environment Variables
 
@@ -365,14 +403,14 @@ Shows all agents: both discovered (from files) and running (from config).
 
 ```
 Agent                    File    Config   Status
-ai-agent-engineer        yes     yes      RUNNING
+ai-agent-eng             yes     yes      RUNNING
 deep-researcher          yes     yes      RUNNING
 docs-writer              yes     no       NOT SPAWNED
-ops-engineer             yes     no       NOT SPAWNED
+ops-eng                  yes     no       NOT SPAWNED
 orchestrator             yes     yes      RUNNING
 project-manager          yes     no       NOT SPAWNED
 quality-assurance        yes     no       NOT SPAWNED
-software-engineer        yes     yes      DEAD (stale)
+software-eng             yes     yes      DEAD (stale)
 ```
 
 ### 6.5 Relaunch
@@ -390,7 +428,59 @@ This guarantees no `-2` suffix entries because the old entry is fully removed be
 
 ---
 
-## 7. Team Config Interaction
+## 7. Tool Control
+
+Per-agent tool control is available in Phase 1 via `tools` and `disallowed_tools` frontmatter fields.
+
+### How Tool Control Works
+
+Tool control affects **two things simultaneously** ([tool stripping research](../../docs/research/tool-stripping.md)):
+
+1. **Execution**: The agent cannot invoke removed tools
+2. **Context**: Tool descriptions are removed from the system prompt, saving tokens (~5,000-10,000 tokens for a full tool set)
+
+This is different from hooks or permission rules, which only block execution but leave descriptions in context.
+
+### Tool Control Levels
+
+| Mechanism | Saves Context? | Phase |
+|:--|:--|:--|
+| `--tools` / `--disallowedTools` CLI flags | **Yes** | Phase 1 (this spec) |
+| Agent frontmatter `tools` / `disallowedTools` (subagent only) | **Yes** | Phase 1 (for subagents) |
+| PreToolUse hooks | No | N/A (blocking only) |
+| Permission deny rules | No | N/A (blocking only) |
+| Runtime I/O proxy stripping | **Yes** | Phase 2+ (architecture doc §7) |
+
+### Example Tool Sets by Role
+
+```yaml
+# Orchestrator: coordination tools only, no code editing
+tools: [Read, Grep, Glob, Task, SendMessage, TaskCreate, TaskUpdate, TaskList, AskUserQuestion]
+disallowed_tools: [Edit, Write, Bash]
+
+# Software engineer: full implementation tools, no team management
+tools: [Read, Edit, Write, Bash, Grep, Glob, WebSearch, WebFetch]
+
+# Researcher: read-only + web access
+tools: [Read, Grep, Glob, WebSearch, WebFetch, Bash]
+disallowed_tools: [Edit, Write]
+
+# QA: read + execute, no write
+tools: [Read, Grep, Glob, Bash, WebFetch]
+disallowed_tools: [Edit, Write]
+```
+
+### Pattern Support
+
+`disallowed_tools` supports patterns per Claude Code's permission rule syntax:
+- `Bash(rm -rf *)` — block specific command patterns
+- `Read(./.env)` — block reading sensitive files
+- `Task(Explore)` — disable specific subagent types
+- `WebFetch(domain:api.private.com)` — block specific domains
+
+---
+
+## 8. Team Config Interaction
 
 ### Config File Location
 
@@ -426,7 +516,7 @@ jq '.members = [.members[] | select(.name != "Bugs B (software-eng)")]' \
 
 ---
 
-## 8. Orchestrator Self-Configuration
+## 9. Orchestrator Self-Configuration
 
 The orchestrator agent is special — it's the lead that manages the team. The launcher configures the lead session with:
 
@@ -461,7 +551,7 @@ The orchestrator agent is special — it's the lead that manages the team. The l
 
 ---
 
-## 9. CLI Interface
+## 10. CLI Interface
 
 ### Commands
 
@@ -502,7 +592,7 @@ agent-launcher --team-name looney-tunes start
 
 ---
 
-## 10. Migration from claude-team
+## 11. Migration from claude-team
 
 The launcher replaces `claude-team` from the claude-utils repo. Feature mapping:
 
@@ -522,7 +612,7 @@ The launcher replaces `claude-team` from the claude-utils repo. Feature mapping:
 
 ---
 
-## 11. Implementation Phases
+## 12. Implementation Phases
 
 Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 
@@ -549,7 +639,7 @@ Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 
 ---
 
-## 12. Open Questions
+## 13. Open Questions
 
 1. **Launcher packaging**: Is this a Bun script in agent-team repo, or an npm package? Phase 1 starts as a script; Phase 2+ may move to `nsheaps/agent` CLI.
 2. **Tmux pane ID tracking**: How to reliably track which tmux pane belongs to which agent? Parse `tmux list-panes`?
@@ -559,11 +649,14 @@ Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 
 ---
 
-## 13. References
+## 14. References
 
 - [Multi-Repo Phase Plan](multi-repo-phase-plan.md) — Phase 1 breakdown
 - [Agent Team Architecture](agent-team-architecture.md) — Design topics
 - [System Prompt Flags Research](../../.claude/tmp/system-prompt-flags-research.md) — Task #103 findings
+- [Tool Stripping Research](../../docs/research/tool-stripping.md) — Task #111: three levels of tool control
+- [System Prompt Flags Deep Dive](../../docs/research/system-prompt-flags.md) — REPLACE mode reliability analysis
+- [GitHub Issue #2692](https://github.com/anthropics/claude-code/issues/2692) — `--system-prompt` unreliable in interactive mode
 - [Current claude-team Script](https://github.com/nsheaps/claude-utils/blob/main/bin/claude-team)
 - [Claude Code CLI Reference](https://code.claude.com/docs/en/cli-usage)
 - [Claude Code Agent Teams](https://code.claude.com/docs/en/agent-teams)

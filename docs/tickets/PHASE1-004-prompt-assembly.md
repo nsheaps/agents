@@ -2,7 +2,7 @@
 id: PHASE1-004
 title: "Implement: prompt assembly (extend/replace modes + base prompt selection)"
 status: open
-assignee: Bugs Bunny (Software Engineer)
+assignee: Bugs Bunny (Software Eng)
 priority: high
 phase: 1
 blocked_by: [PHASE1-001, PHASE1-003]

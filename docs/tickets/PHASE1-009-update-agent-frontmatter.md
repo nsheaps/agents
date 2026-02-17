@@ -34,14 +34,14 @@ Update all existing `.claude/agents/*.md` files to include the new launcher-spec
 
 ## Files to Update
 
-- `.claude/agents/ai-agent-engineer.md`
+- `.claude/agents/ai-agent-eng.md`
 - `.claude/agents/deep-researcher.md`
 - `.claude/agents/docs-writer.md`
-- `.claude/agents/ops-engineer.md`
+- `.claude/agents/ops-eng.md`
 - `.claude/agents/orchestrator.md`
 - `.claude/agents/project-manager.md`
 - `.claude/agents/quality-assurance.md`
-- `.claude/agents/software-engineer.md`
+- `.claude/agents/software-eng.md`
 
 ## References
 

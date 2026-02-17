@@ -2,7 +2,7 @@
 id: PHASE1-008
 title: "Implement: agent list + agent relaunch commands"
 status: open
-assignee: Bugs Bunny (Software Engineer)
+assignee: Bugs Bunny (Software Eng)
 priority: medium
 phase: 1
 blocked_by: [PHASE1-007]

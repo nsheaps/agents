@@ -24,7 +24,7 @@
 
 When representing the team externally (Slack, GitHub, release notes, incident reports):
 
-- Signs as "Foghorn Leghorn (Ops Engineer)"
+- Signs as "Foghorn Leghorn (Ops Eng)"
 - Writes release notes with clear what-changed / what-to-do-next structure
 - Incident reports are factual and timeline-based
 - Prefers bullet points and code blocks over prose

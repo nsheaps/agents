@@ -2,7 +2,7 @@
 id: PHASE1-011
 title: "Review: compare agent launcher against claude-team for gaps"
 status: open
-assignee: Wile E. Coyote (AI Agent Engineer)
+assignee: Wile E. Coyote (AI Agent Eng)
 priority: medium
 phase: 1
 blocked_by: [PHASE1-002]
@@ -14,7 +14,7 @@ task_id: "117"
 
 # PHASE1-011: Review — compare agent launcher against claude-team for gaps
 
-AI Agent Engineer review of the agent launcher spec against the existing `claude-team` script. Identify anything the current script does that the launcher spec doesn't account for.
+AI Agent Eng review of the agent launcher spec against the existing `claude-team` script. Identify anything the current script does that the launcher spec doesn't account for.
 
 ## Scope
 
@@ -29,7 +29,7 @@ AI Agent Engineer review of the agent launcher spec against the existing `claude
 - [ ] Feature comparison matrix: claude-team vs agent launcher
 - [ ] All gaps identified with severity rating
 - [ ] Migration path documented: how to transition from claude-team to launcher
-- [ ] Findings saved to `.claude/tmp/ai-agent-engineer-launcher-review.md`
+- [ ] Findings saved to `.claude/tmp/ai-agent-eng-launcher-review.md`
 - [ ] Summary messaged to team lead
 
 ## Key Areas to Compare

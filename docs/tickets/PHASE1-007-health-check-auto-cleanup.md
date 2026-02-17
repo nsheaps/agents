@@ -2,7 +2,7 @@
 id: PHASE1-007
 title: "Implement: health check + auto-cleanup of stale agents"
 status: open
-assignee: Bugs Bunny (Software Engineer)
+assignee: Bugs Bunny (Software Eng)
 priority: medium
 phase: 1
 blocked_by: [PHASE1-006]

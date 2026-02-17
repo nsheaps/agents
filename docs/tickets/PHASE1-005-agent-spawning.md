@@ -2,7 +2,7 @@
 id: PHASE1-005
 title: "Implement: agent spawning via Claude CLI (Claude Code backend)"
 status: open
-assignee: Bugs Bunny (Software Engineer)
+assignee: Bugs Bunny (Software Eng)
 priority: high
 phase: 1
 blocked_by: [PHASE1-004]

@@ -31,7 +31,7 @@ A specialized agent that acts as a runtime permission gate and agent configurati
 - **Approve/deny one-time actions**: "Agent X wants to run `git push --force`. Approve?"
 - **Modify agent configurations**: Add needed permissions to an agent's definition when the lack of permission is a recurring pattern
 - **Defer to the user**: When uncertain, escalate to the human via the agent's interface
-- **Work with the AI Agent Engineer**: Collaborate on agent modifications — security consultant handles permission changes, AI Agent Engineer handles behavioral changes
+- **Work with the AI Agent Eng**: Collaborate on agent modifications — security consultant handles permission changes, AI Agent Eng handles behavioral changes
 
 ### Interface
 
@@ -182,9 +182,9 @@ agents/
 ### agent.yaml Schema
 
 ```yaml
-name: software-engineer
+name: software-eng
 character: Bugs Bunny
-role: Software Engineer
+role: Software Eng
 framework: claude-code
 model: claude-opus-4-6
 
@@ -373,6 +373,6 @@ Tool stripping and replacement as a proxy feature means:
 
 1. Research A2A protocol in depth (Road Runner)
 2. Prototype agent.yaml schema as TypeScript types (Bugs Bunny)
-3. Design security consultant agent definition (AI Agent Engineer + team lead)
+3. Design security consultant agent definition (AI Agent Eng + team lead)
 4. Evaluate session serialization formats and S3 SDK options
 5. Integrate these topics into the 14-phase plan (Elmer Fudd)

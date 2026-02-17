@@ -54,7 +54,7 @@ The concrete deliverable is an **agent launcher** that reads `.claude/agents/*.m
 
 #### 1A: Agent File Discovery + Prompt Assembly
 
-The launcher reads `.claude/agents/*.md` files (8 exist today: ai-agent-engineer, deep-researcher, docs-writer, ops-engineer, orchestrator, project-manager, quality-assurance, software-engineer) and uses their content to configure spawned agents.
+The launcher reads `.claude/agents/*.md` files (8 exist today: ai-agent-eng, deep-researcher, docs-writer, ops-eng, orchestrator, project-manager, quality-assurance, software-eng) and uses their content to configure spawned agents.
 
 | Task | Description                                                                                                                 |
 | :--- | :-------------------------------------------------------------------------------------------------------------------------- |
@@ -98,7 +98,7 @@ Base: path/to/custom-base.md
 | 1B.2 | Map agent frontmatter to Claude Code flags: `--append-system-prompt`, `--permission-mode`, `--teammate-mode` |
 | 1B.3 | Support `--team <name>` flag to join an existing team                                                        |
 | 1B.4 | Support launching all agents from a team config file (batch spawn)                                           |
-| 1B.5 | Integration test: `agent launch software-engineer` spawns with correct prompt                                |
+| 1B.5 | Integration test: `agent launch software-eng` spawns with correct prompt                                |
 
 #### 1C: Lifecycle Management
 
@@ -123,7 +123,7 @@ Base: path/to/custom-base.md
 | Graceful crash handling   | Health check polling + auto-cleanup                     |
 | Manual Task tool spawning | `agent launch <name>` reads agent files automatically   |
 
-**Exit criteria**: `agent launch software-engineer` reads `.claude/agents/software-engineer.md`, assembles the correct prompt (extend/replace mode), spawns a Claude Code agent, and the agent joins the team. `agent kill`, `agent relaunch`, and `agent list` all work reliably with no stale entries.
+**Exit criteria**: `agent launch software-eng` reads `.claude/agents/software-eng.md`, assembles the correct prompt (extend/replace mode), spawns a Claude Code agent, and the agent joins the team. `agent kill`, `agent relaunch`, and `agent list` all work reliably with no stale entries.
 
 ---
 
@@ -147,9 +147,9 @@ Base: path/to/custom-base.md
 **Agent.yaml schema** (from architecture doc):
 
 ```yaml
-name: software-engineer
+name: software-eng
 character: Bugs Bunny
-role: Software Engineer
+role: Software Eng
 framework: claude-code
 model: claude-opus-4-6
 tools: [messaging, tasks, filesystem, execution]
