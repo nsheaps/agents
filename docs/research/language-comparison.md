@@ -7,15 +7,19 @@
 
 ---
 
+> **Decision (2026-02-17)**: The user has decided on **TypeScript/Bun for all components** except the K8s controller (which remains Go). This overrides the research recommendation of Go as primary. The rationale prioritizes developer experience, ecosystem familiarity, and the TypeScript MCP SDK's larger community over Go's binary size and cross-compile advantages. The research analysis below remains valid as reference material.
+
+---
+
 ## Executive Summary
 
-Go is the pragmatic default for agent and MCP tooling. It dominates the Kubernetes ecosystem, produces small static binaries, has an official Google-backed MCP SDK, and offers the fastest path from zero to production. Rust trades development velocity for peak performance and memory safety — a worthwhile trade for long-running, resource-constrained agent infrastructure. Bun/TypeScript offers the best developer experience and fastest prototyping but carries binary size overhead and limited production precedent for orchestration workloads.
+Go is the pragmatic default for agent and MCP tooling. It dominates the Kubernetes ecosystem, produces small static binaries, has an official Google-backed MCP SDK[^9], and offers the fastest path from zero to production. Rust trades development velocity for peak performance and memory safety — a worthwhile trade for long-running, resource-constrained agent infrastructure.[^11] Bun/TypeScript offers the best developer experience and fastest prototyping but carries binary size overhead and limited production precedent for orchestration workloads.[^1]
 
 **Quick verdict by use case:**
 
 | Use Case                         | Recommended        | Runner-Up      |
 | :------------------------------- | :----------------- | :------------- |
-| K8s controller / operator        | **Go**             | Rust (kube-rs) |
+| K8s controller / operator        | **Go**             | Rust (kube-rs)[^5] |
 | MCP server                       | **Go** or **Rust** | Bun/TS         |
 | CLI orchestrator (`claude-team`) | **Go**             | Rust           |
 | Rapid prototype / internal tool  | **Bun/TS**         | Go             |
@@ -27,13 +31,13 @@ Go is the pragmatic default for agent and MCP tooling. It dominates the Kubernet
 
 | Factor                    | Bun/TypeScript             | Rust                       | Go                        |
 | :------------------------ | :------------------------- | :------------------------- | :------------------------ |
-| **Typical binary size**   | 57-105 MB                  | 5-15 MB (3-5 MB optimized) | 5-10 MB (1-3 MB stripped) |
+| **Typical binary size**   | 57-105 MB[^1]              | 5-15 MB (3-5 MB optimized)[^2] | 5-10 MB (1-3 MB stripped)[^3] |
 | **Runtime deps**          | None (JSC embedded)        | None (musl static)         | None (CGO_ENABLED=0)      |
 | **Cross-compile**         | `--target=bun-<os>-<arch>` | cargo-zigbuild, cross      | `GOOS/GOARCH` env vars    |
 | **Ease of cross-compile** | Good (5 targets)           | Moderate (toolchain setup) | Trivial (one-liner)       |
 | **Homebrew-friendly**     | Yes, but large bottle      | Yes, small bottle          | Yes, small bottle         |
 
-**Analysis**: Go and Rust produce binaries 5-20x smaller than Bun. Go's cross-compilation is the simplest — a single env-var one-liner with no extra toolchains. Rust requires toolchain setup (cargo-zigbuild or cross) but produces the smallest optimized binaries. Bun embeds the full JavaScriptCore runtime, making binaries 57 MB+ even for hello-world.
+**Analysis**: Go and Rust produce binaries 5-20x smaller than Bun.[^3][^2] Go's cross-compilation is the simplest — a single env-var one-liner with no extra toolchains. Rust requires toolchain setup (cargo-zigbuild or cross) but produces the smallest optimized binaries.[^2] Bun embeds the full JavaScriptCore runtime, making binaries 57 MB+ even for hello-world.[^1]
 
 **Winner**: **Go** (simplest cross-compile, small binaries). Rust close second (smallest optimized).
 
@@ -43,13 +47,13 @@ Go is the pragmatic default for agent and MCP tooling. It dominates the Kubernet
 
 | Factor                   | Bun/TypeScript               | Rust                                    | Go                               |
 | :----------------------- | :--------------------------- | :-------------------------------------- | :------------------------------- |
-| **Primary framework**    | Pepr (admission-focused)     | kube-rs (CNCF Sandbox)                  | controller-runtime + kubebuilder |
+| **Primary framework**    | Pepr (admission-focused)[^4] | kube-rs (CNCF Sandbox)[^5]             | controller-runtime + kubebuilder[^6] |
 | **Maturity**             | Growing, niche               | Production-ready, growing               | Industry standard (gold)         |
-| **Dependent projects**   | Small                        | 33 active contributors                  | 23,210+ importing projects       |
-| **Production operators** | Limited (admission webhooks) | Emerging (68% resource reduction cited) | 1,000+ on OperatorHub            |
+| **Dependent projects**   | Small                        | 33 active contributors                  | 23,210+ importing projects[^6]   |
+| **Production operators** | Limited (admission webhooks) | Emerging (68% resource reduction cited)[^5] | 1,000+ on OperatorHub        |
 | **Corporate backing**    | Community                    | CNCF                                    | Google, Red Hat, CNCF            |
 
-**Analysis**: Go is THE language for Kubernetes. kubectl, etcd, containerd, Helm, Prometheus — all Go. The controller-runtime + kubebuilder + operator-sdk stack has no equivalent in any other language. Rust's kube-rs is a CNCF Sandbox project with real production success stories (68% resource reduction, zero crashes), but the ecosystem is orders of magnitude smaller. Bun/TypeScript via Pepr is viable for admission webhooks and lightweight controllers but not for stateful operators.
+**Analysis**: Go is THE language for Kubernetes. kubectl, etcd, containerd, Helm, Prometheus — all Go.[^6] The controller-runtime + kubebuilder + operator-sdk stack has no equivalent in any other language. Rust's kube-rs is a CNCF Sandbox project with real production success stories (68% resource reduction, zero crashes), but the ecosystem is orders of magnitude smaller.[^5] Bun/TypeScript via Pepr is viable for admission webhooks and lightweight controllers but not for stateful operators.[^4]
 
 **Winner**: **Go** (uncontested). Rust viable for new projects prioritizing resource efficiency.
 
@@ -63,10 +67,10 @@ Go is the pragmatic default for agent and MCP tooling. It dominates the Kubernet
 | **Memory footprint**  | 2-3x higher than Go  | 2-3x lower than Go         | Baseline                  |
 | **Throughput (HTTP)** | 52k req/sec (Elysia) | Highest (tokio async)      | Good (goroutines)         |
 | **Concurrency model** | Event loop (JSC)     | tokio async (zero-cost)    | Goroutines (2 KB stack)   |
-| **GC pauses**         | Yes (JSC GC)         | None                       | Yes (improved in Go 1.26) |
-| **CPU-bound perf**    | Moderate             | Best (~30% faster than Go) | Good                      |
+| **GC pauses**         | Yes (JSC GC)         | None                       | Yes (improved in Go 1.26)[^12] |
+| **CPU-bound perf**    | Moderate             | Best (~30% faster than Go)[^11] | Good                 |
 
-**Analysis**: For agent orchestration — which is primarily I/O-bound (LLM API calls, file ops, subprocess management) with occasional CPU bursts — all three are adequate. Rust offers the best raw performance and memory efficiency, critical when running many concurrent agents per host. Go's goroutines (2 KB each, millions possible) are excellent for concurrent I/O. Bun is faster than Node.js but slower than both compiled languages. Go 1.26's Green Tea GC reduces pause latency significantly.
+**Analysis**: For agent orchestration — which is primarily I/O-bound (LLM API calls, file ops, subprocess management) with occasional CPU bursts — all three are adequate. Rust offers the best raw performance and memory efficiency, critical when running many concurrent agents per host.[^11] Go's goroutines (2 KB each, millions possible) are excellent for concurrent I/O. Bun is faster than Node.js but slower than both compiled languages.[^10] Go 1.26's Green Tea GC reduces pause latency significantly.[^12]
 
 For startup-sensitive CLI tools, Go wins (<50 ms). For long-running daemons (MCP servers, controllers), startup is negligible and Rust's memory advantage matters more.
 
@@ -87,7 +91,7 @@ For startup-sensitive CLI tools, Go wins (<50 ms). For long-running daemons (MCP
 | **CLI frameworks**       | Various npm packages                 | clap + tokio                   | Cobra + Viper + Bubbletea              |
 | **Toolchain**            | All-in-one (bun)                     | cargo (all-in-one)             | go tool (all-in-one)                   |
 
-**Analysis**: Bun offers the best DX for TypeScript developers — native execution, zero config, instant feedback loops. Go offers the fastest ramp for newcomers — 25 keywords, simple syntax, gofmt enforced consistency, and near-instant compilation. Rust's borrow checker adds weeks to the learning curve but eliminates entire classes of bugs. For a team that may include contributors with varying experience levels, Go's simplicity is a significant advantage.
+**Analysis**: Bun offers the best DX for TypeScript developers — native execution, zero config, instant feedback loops.[^1] Go offers the fastest ramp for newcomers — 25 keywords, simple syntax, gofmt enforced consistency, and near-instant compilation. Rust's borrow checker adds weeks to the learning curve but eliminates entire classes of bugs.[^11] For a team that may include contributors with varying experience levels, Go's simplicity is a significant advantage.
 
 Compile times are a critical differentiator: Go rebuilds in seconds, Bun is instant, Rust takes 3-8 minutes clean (30-60s cached). For CI/CD iteration speed, this matters.
 
@@ -99,14 +103,14 @@ Compile times are a critical differentiator: Go rebuilds in seconds, Bun is inst
 
 | Factor                 | Bun/TypeScript                      | Rust                                    | Go                                   |
 | :--------------------- | :---------------------------------- | :-------------------------------------- | :----------------------------------- |
-| **Official SDK**       | `@modelcontextprotocol/sdk` v1.27.0 | `modelcontextprotocol/rust-sdk` v0.15.0 | `modelcontextprotocol/go-sdk` v1.3.0 |
-| **GitHub stars**       | (part of larger TS ecosystem)       | 3,000+                                  | 3,900+                               |
-| **Dependent projects** | 25,840+ (npm)                       | 136 contributors                        | 836 dependent projects               |
-| **Maintainer**         | Anthropic                           | Anthropic                               | Anthropic + Google                   |
+| **Official SDK**       | `@modelcontextprotocol/sdk` v1.27.0[^7] | `modelcontextprotocol/rust-sdk` v0.15.0[^8] | `modelcontextprotocol/go-sdk` v1.3.0[^9] |
+| **GitHub stars**       | (part of larger TS ecosystem)       | 3,000+[^8]                              | 3,900+[^9]                           |
+| **Dependent projects** | 25,840+ (npm)[^7]                   | 136 contributors                        | 836 dependent projects               |
+| **Maintainer**         | Anthropic                           | Anthropic                               | Anthropic + Google[^9]               |
 | **Transports**         | stdio, HTTP, WebSocket              | stdio, HTTP, child process              | stdio, SSE, WebSocket, gRPC          |
 | **Production-ready**   | Yes (v1.x stable)                   | Yes (active releases)                   | Yes (Google co-maintained)           |
 
-**Analysis**: All three have official, production-ready MCP SDKs. The TypeScript SDK has the most dependents (25K+ npm projects) by virtue of the larger JS ecosystem. The Go SDK is notable for being co-maintained with Google, signaling long-term institutional commitment. The Rust SDK has the richest community ecosystem (rust-mcp-sdk, Prism MCP SDK) alongside the official one.
+**Analysis**: All three have official, production-ready MCP SDKs.[^7][^8][^9] The TypeScript SDK has the most dependents (25K+ npm projects) by virtue of the larger JS ecosystem. The Go SDK is notable for being co-maintained with Google, signaling long-term institutional commitment.[^9] The Rust SDK has the richest community ecosystem (rust-mcp-sdk, Prism MCP SDK) alongside the official one.
 
 For MCP server development specifically, all three are viable first-class choices.
 
@@ -126,7 +130,7 @@ For MCP server development specifically, all three are viable first-class choice
 | **Windows ARM64** | **No**         | Tier 2        | Yes                       |
 | **Additional**    | —              | FreeBSD, WASM | Android, iOS, WASM, Plan9 |
 
-**Analysis**: Go covers the widest platform matrix with the simplest toolchain — including Windows ARM64 and mobile platforms. Rust covers all major platforms at Tier 1/2 with some toolchain setup required for cross-compilation. Bun is missing Windows ARM64, which is an edge case but a gap.
+**Analysis**: Go covers the widest platform matrix with the simplest toolchain — including Windows ARM64 and mobile platforms. Rust covers all major platforms at Tier 1/2 with some toolchain setup required for cross-compilation. Bun is missing Windows ARM64, which is an edge case but a gap.[^1]
 
 **Winner**: **Go** (widest coverage, simplest toolchain). Rust close second.
 
@@ -139,11 +143,11 @@ For MCP server development specifically, all three are viable first-class choice
 | **Config files needed** | 1-2            | 1-2 (Cargo.toml)             | 1 (go.mod) + GoReleaser        |
 | **Clean build time**    | 2-2.5 min      | 3-8 min                      | 2-5 min (multi-platform)       |
 | **Incremental build**   | Instant        | 30-60s (cached)              | Seconds                        |
-| **Docker image size**   | 300-450 MB     | 8-45 MB (scratch/distroless) | 5-15 MB (scratch)              |
-| **Release automation**  | npm publish    | cargo-release                | GoReleaser (industry standard) |
-| **Multi-arch Docker**   | Supported      | cargo-chef + multi-stage     | GoReleaser + buildx            |
+| **Docker image size**   | 300-450 MB[^15] | 8-45 MB (scratch/distroless)[^14] | 5-15 MB (scratch)         |
+| **Release automation**  | npm publish    | cargo-release                | GoReleaser (industry standard)[^13] |
+| **Multi-arch Docker**   | Supported      | cargo-chef + multi-stage[^14] | GoReleaser + buildx           |
 
-**Analysis**: Go's GoReleaser is the industry standard for multi-platform release automation — it handles cross-compilation, Docker multi-arch images, Homebrew taps, Scoop manifests, code signing, and SBOM generation in one tool. Rust's cargo-chef + multi-stage builds produce the smallest Docker images (8 MB with scratch) but require more CI setup. Bun's Docker images are 300-450 MB, 20-60x larger than Go/Rust alternatives.
+**Analysis**: Go's GoReleaser is the industry standard for multi-platform release automation — it handles cross-compilation, Docker multi-arch images, Homebrew taps, Scoop manifests, code signing, and SBOM generation in one tool.[^13] Rust's cargo-chef + multi-stage builds produce the smallest Docker images (8 MB with scratch) but require more CI setup.[^14] Bun's Docker images are 300-450 MB, 20-60x larger than Go/Rust alternatives.[^15]
 
 Build times favor Go and Bun for iteration speed. Rust's 3-8 minute clean builds are a known pain point, though Swatinem/rust-cache mitigates this in CI.
 
@@ -157,12 +161,12 @@ Build times favor Go and Bun for iteration speed. Rust's 3-8 minute clean builds
 | :------------------------------ | :--------------------- | :----------------------------- | :-------------------------------- |
 | **Language popularity**         | TS: Top 5              | Top 15, growing                | Top 10                            |
 | **Infra/cloud-native presence** | Limited                | Growing (ripgrep, bat, etc.)   | Dominant (K8s, Docker, Terraform) |
-| **Agent frameworks**            | Limited Bun-specific   | Rig, AutoAgents, agentai       | Google ADK, LangChainGo, Genkit   |
+| **Agent frameworks**            | Limited Bun-specific   | Rig, AutoAgents, agentai[^17]  | Google ADK, LangChainGo, Genkit[^16] |
 | **CLI tool precedent**          | Emerging               | Strong (ripgrep, starship, fd) | Strong (kubectl, gh, terraform)   |
 | **Corporate backing**           | Oven (Bun)             | Mozilla → community            | Google                            |
 | **Hiring market**               | TS developers abundant | Smaller talent pool            | Strong demand, growing supply     |
 
-**Analysis**: Go dominates cloud-native infrastructure. Every major tool in the Kubernetes ecosystem is Go. For agent-specific frameworks, Go has institutional backing from Google (ADK, Genkit) while Rust has emerging but strong community projects (Rig, AutoAgents). Bun/TypeScript has the largest general developer base but limited precedent for orchestration-class workloads.
+**Analysis**: Go dominates cloud-native infrastructure. Every major tool in the Kubernetes ecosystem is Go.[^6] For agent-specific frameworks, Go has institutional backing from Google (ADK, Genkit)[^16] while Rust has emerging but strong community projects (Rig, AutoAgents).[^17] Bun/TypeScript has the largest general developer base but limited precedent for orchestration-class workloads.
 
 Rust has proven its CLI credentials (ripgrep used by VS Code for search, starship prompt, fd, bat), but Go has proven its infrastructure credentials (kubectl, Docker, Terraform, Helm).
 
@@ -188,97 +192,66 @@ Rust has proven its CLI credentials (ripgrep used by VS Code for search, starshi
 
 ## Recommendation
 
-### Primary: Go
+> **Note**: The original research recommended Go as primary. The user decided on TypeScript/Bun instead (see Decision box at top). The updated recommendation below reflects this decision.
 
-Go is the clear choice for the agent-team project's core infrastructure:
+### Primary: TypeScript/Bun (user decision)
 
-- **Agent launch wrapper** (`claude-team`): Small static binary, trivial cross-compile, fast startup
-- **MCP servers**: Official Google-co-maintained SDK, goroutines for concurrent tool handling
-- **K8s controller**: No realistic alternative — controller-runtime is the standard
-- **CLI distribution**: GoReleaser → Homebrew tap, Scoop, Docker multi-arch in one pipeline
+TypeScript/Bun for all agent-team project components:
 
-### Secondary: Rust (for performance-critical components)
+- **Agent launch wrapper** (`claude-team`): Fastest DX, instant iteration, familiar ecosystem[^1]
+- **MCP servers**: TypeScript SDK has most examples and largest community (25K+ npm dependents)[^7]
+- **Mesh MCP server**: TypeScript + Socket.io is a natural fit for real-time communication
+- **CLI tools**: All orchestration and developer tooling in TypeScript
 
-Consider Rust for components where memory efficiency or crash safety is paramount:
+### Exception: Go (K8s controller only)
 
-- **Long-running agent daemons**: 2-3x less memory than Go, no GC pauses
-- **High-concurrency scenarios**: tokio async is more efficient than goroutines at extreme scale
-- **Embedded/resource-constrained**: Smallest possible binaries (3-5 MB)
+Go remains the only choice for Kubernetes controllers:
 
-### Tertiary: Bun/TypeScript (for prototyping and internal tools)
+- **K8s controller**: controller-runtime + kubebuilder is the uncontested standard[^6]
+- No other component uses Go
 
-Use Bun/TypeScript for rapid iteration when binary size and resource efficiency don't matter:
+### Secondary: Rust (for performance-critical components, if needed)
 
-- **Internal developer tools**: Fastest time-to-working-code
-- **Prototype MCP servers**: TypeScript SDK has most examples and community
-- **Integration tests / scripts**: Leverage existing TS ecosystem
+Consider Rust only if a specific component proves to need extreme performance:
 
-### Hybrid Architecture
+- **Long-running agent daemons**: 2-3x less memory than Go, no GC pauses[^11]
+- **High-concurrency scenarios**: tokio async at extreme scale
+- **Embedded/resource-constrained**: Smallest possible binaries (3-5 MB)[^2]
 
-The recommended approach for the agent-team project:
+### Architecture (updated)
 
 ```
 ┌─────────────────────────────────────────┐
-│         User-Facing CLI (Go)            │
+│      User-Facing CLI (TypeScript/Bun)   │
 │  claude-team, agent launch, MCP client  │
 ├─────────────────────────────────────────┤
-│       MCP Servers (Go or Rust)          │
-│  Team memory, orchestration tools       │
+│     MCP Servers (TypeScript/Bun)        │
+│  Team memory, orchestration, persona    │
 ├─────────────────────────────────────────┤
 │      K8s Controller (Go)                │
 │  Agent lifecycle, scaling, scheduling   │
-├─────────────────────────────────────────┤
-│    Prototypes / Internal Tools (Bun)    │
-│  Quick experiments, integration tests   │
 └─────────────────────────────────────────┘
 ```
 
 ---
 
-## Sources
+## References
 
-### Individual Research Reports
-
-Sub-agent research reports conducted during looney-tunes session (Feb 2026). Original reports stored in claude-utils `.claude/tmp/`:
-
-- Bun/TypeScript Research — 526 lines, covering binary distribution, Pepr K8s framework, MCP SDK v1.27.0
-- Rust Research — 649 lines, covering kube-rs, MCP SDK v0.15.0, memory efficiency, compile times
-- Go Research — 644 lines, covering controller-runtime, MCP SDK v1.3.0 (Google co-maintained), goroutines
-
-### Key References by Dimension
-
-**Binary Distribution**
-
-- [Bun: Single-file executable](https://bun.com/docs/bundler/executables)
-- [min-sized-rust: How to minimize Rust binary size](https://github.com/johnthagen/min-sized-rust)
-- [Building static binaries with Go on Linux](https://eli.thegreenplace.net/2024/building-static-binaries-with-go-on-linux/)
-
-**Kubernetes**
-
-- [Pepr Framework (TypeScript)](https://pepr.dev)
-- [kube.rs (Rust)](https://kube.rs/)
-- [kubebuilder (Go)](https://github.com/kubernetes-sigs/kubebuilder)
-
-**MCP SDKs**
-
-- [TypeScript SDK](https://github.com/modelcontextprotocol/typescript-sdk) — v1.27.0, 25,840+ npm dependents
-- [Rust SDK](https://github.com/modelcontextprotocol/rust-sdk) — v0.15.0, 3,000+ stars
-- [Go SDK](https://github.com/modelcontextprotocol/go-sdk) — v1.3.0, 3,900+ stars, Google co-maintained
-
-**Performance**
-
-- [Bun vs Node.js 2025 comparison](https://strapi.io/blog/bun-vs-nodejs-performance-comparison-guide)
-- [Rust vs Go: Systems Programming Showdown](https://langpop.com/blog/rust-vs-go-systems-programming)
-- [Go 1.26 Release Notes](https://go.dev/doc/go1.26)
-
-**CI/CD**
-
-- [GoReleaser](https://goreleaser.com/)
-- [cargo-chef for Docker caching](https://azzamsa.com/n/rust-docker/)
-- [Docker: Containerize a Bun application](https://docs.docker.com/guides/bun/containerize/)
-
-**Agent Frameworks**
-
-- [Google Agent Development Kit for Go](https://developers.googleblog.com/announcing-the-agent-development-kit-for-go-build-powerful-ai-agents-with-your-favorite-languages/)
-- [Rig: Build LLM Apps in Rust](https://rig.rs/)
-- [AWS CLI Agent Orchestrator](https://aws.amazon.com/blogs/opensource/introducing-cli-agent-orchestrator-transforming-developer-cli-tools-into-a-multi-agent-powerhouse/)
+[^1]: https://bun.com/docs/bundler/executables
+[^2]: https://github.com/johnthagen/min-sized-rust
+[^3]: https://eli.thegreenplace.net/2024/building-static-binaries-with-go-on-linux/
+[^4]: https://pepr.dev
+[^5]: https://kube.rs/
+[^6]: https://github.com/kubernetes-sigs/kubebuilder
+[^7]: https://github.com/modelcontextprotocol/typescript-sdk
+[^8]: https://github.com/modelcontextprotocol/rust-sdk
+[^9]: https://github.com/modelcontextprotocol/go-sdk
+[^10]: https://strapi.io/blog/bun-vs-nodejs-performance-comparison-guide
+[^11]: https://langpop.com/blog/rust-vs-go-systems-programming
+[^12]: https://go.dev/doc/go1.26
+[^13]: https://goreleaser.com/
+[^14]: https://azzamsa.com/n/rust-docker/
+[^15]: https://docs.docker.com/guides/bun/containerize/
+[^16]: https://developers.googleblog.com/announcing-the-agent-development-kit-for-go-build-powerful-ai-agents-with-your-favorite-languages/
+[^17]: https://rig.rs/
+[^18]: https://aws.amazon.com/blogs/opensource/introducing-cli-agent-orchestrator-transforming-developer-cli-tools-into-a-multi-agent-powerhouse/
