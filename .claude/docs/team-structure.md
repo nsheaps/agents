@@ -45,6 +45,35 @@ Agent files and persona files serve different purposes:
 - The persona file adds public-facing details: communication style, external voice, avatar concept
 - Both are needed — the `<system-message>` is embedded in the system prompt, the persona is referenced for external actions
 
+## Display Names
+
+Agent display names follow the format: **"First L (role)"**
+
+| Character       | Display Name          |
+| :-------------- | :-------------------- |
+| Bugs Bunny      | Bugs B (software-eng) |
+| Wile E. Coyote  | Wile E (ai-agent-eng) |
+| Tweety Bird     | Tweety B (docs-writer)|
+| Daffy Duck      | Daffy D (qa)          |
+| Elmer Fudd      | Elmer F (pm)          |
+| Road Runner     | Road R (researcher)   |
+| Foghorn Leghorn | Foghorn L (ops-eng)   |
+
+**Where display names are used:**
+- Team config (`~/.claude/teams/{team-name}/config.json` member names)
+- SendMessage recipient/sender
+- Task ownership
+- Commit authorship (Co-Authored-By)
+
+**Derivation rules:**
+1. First name + last initial (or middle initial for "Wile E.")
+2. Role slug in parentheses (kebab-case, abbreviated)
+3. The `display_name` field in agent frontmatter overrides the default
+
+Full character names live in persona files (`.claude/personas/`). Display names are the compact form used in team operations.
+
+See [Agent Launcher Spec §3](../../docs/specs/draft/agent-launcher.md) for the schema definition.
+
 ## Communication Flow
 
 - **Orchestrator** receives messages from all teammates and makes coordination decisions
