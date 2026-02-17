@@ -40,6 +40,19 @@
   - Could be file-based (YAML in a known location), database-backed, or managed by the agent-controller process
   - Must support: assignment, status, dependencies, context/notes per task
   - Think of it like a persistent work queue that outlives any single agent session
+- **Claude Code project isolation vs agent teams**: Claude treats each folder as a separate project, including sibling worktree folders. This creates several challenges:
+  - **Conversation history silos**: agents running in different folders have separate conversation histories, even if they're the same git repo (worktrees). Searching history across projects requires awareness of this.
+  - **`--additionalDirectories`**: the launcher must manage this flag so agents can access files across repos/worktrees without being siloed to one folder
+  - **`~/.claude.json` / `githubRepoPaths`**: needs to include worktree paths so Claude recognizes them as the same repo. Currently `~/.claude.json` is symlinked from `~/.claude/home-claude.json`.
+  - **Plugin opportunity for nsheaps/ai**: Turn `~/.claude.json` management into a plugin that:
+    - Auto-discovers worktrees for configured repos and adds them to `githubRepoPaths`
+    - Manages `additionalDirectories` settings
+    - Keeps the config in sync as worktrees are created/deleted
+    - Currently manual config work — should be automated
+  - **Agent conversation history search**: agents must be trained to search conversation history across project boundaries, not just their own project folder. The `conversation-search` behavior needs to account for this — search `~/.claude/projects/` broadly, not just the current project subfolder.
+  - **Ephemeral agent instances**: agents launched in temporary/container workspaces will have fresh project context. The launcher needs to either:
+    1. Pre-populate `~/.claude/projects/<hash>/` with relevant history from prior sessions
+    2. Or give agents access to a shared history store (relates to session save/restore in architecture doc §5)
 - Context length / conversation bloat is a serious operational concern with multi-agent teams
   - 8 agents all running concurrently causes rapid context accumulation on the lead
   - Every teammate message, idle notification, and system event adds to lead's context
