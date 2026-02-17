@@ -1,0 +1,2 @@
+- can claude write a .claude/agents/xxx.md and then immediately launch an agent with subagent-type xxx without restarting? Is it aware of it as something it can use? If so, can/should it modify them as it launches for any runtime info?
+- Can/should it start from least privelidge security, and then maybe have another team member that deems if it's safe or not?
