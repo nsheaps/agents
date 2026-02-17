@@ -29,7 +29,6 @@ description: |
   Orderly shutdown requires coordinating across all teammates.
   </commentary>
   </example>
-model: opus
 color: blue
 prompt_mode: extend
 base_prompt: _builtin
