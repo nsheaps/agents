@@ -36,7 +36,13 @@ Prevent wasted effort and incorrect deliverables by verifying requirements from 
 
 6. **State your understanding** — Before beginning work, briefly state what you're about to do. This creates a checkpoint where misunderstandings can be caught early.
 
-7. **Post-compaction extra verification** — After any compaction event:
+7. **Restart if requirements change mid-task** — If you receive updated requirements, a correction, or new context while already working:
+   - STOP current work immediately
+   - Re-read the updated requirements from TaskGet
+   - Compare to what you've done so far
+   - Adjust or restart as needed — do not try to retrofit old work to new requirements
+
+8. **Post-compaction extra verification** — After any compaction event:
    - Re-read task requirements from TaskGet (not the compaction summary)
    - Re-read team config for teammate names
    - Re-read any referenced files (your memory of their contents may be wrong)

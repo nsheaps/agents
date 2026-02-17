@@ -37,17 +37,19 @@ Prevent data loss from communication errors. Every message should reach its inte
    - Find the intended recipient in the `members` array
    - Use the exact `name` field value — do not guess, abbreviate, or assume
 
-3. **Use "team-lead" as fallback** — If you cannot find the intended recipient in the config:
+3. **Know that SendMessage silently succeeds for invalid recipients** — The platform returns success even when the recipient doesn't exist. You will NOT get an error. This is why step 2 is mandatory — you cannot rely on the tool to catch mistakes.
+
+4. **Use "team-lead" as fallback** — If you cannot find the intended recipient in the config:
    - Send to "team-lead" instead
    - Explain who you were trying to reach and why
    - Do NOT send to a guessed name
 
-4. **Post-compaction name refresh** — After any compaction:
+5. **Post-compaction name refresh** — After any compaction:
    - Re-read team config before sending ANY messages
    - Your memory of teammate names may be corrupted by the compaction summary
    - Verify every name, even ones you're "sure" about
 
-5. **Escalate on silence** — If you send an important message and get no response within a reasonable time:
+6. **Escalate on silence** — If you send an important message and get no response within a reasonable time:
    - Do NOT re-send to the same recipient
    - Escalate to team-lead: "I sent [summary] to [recipient] but got no response. Can you verify they received it?"
 
