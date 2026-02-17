@@ -115,7 +115,7 @@ In **in-process mode**, teammates run as hidden sessions within the same process
 | `orchestrator`      | —               | Team Lead         | Spawns teammates, assigns tasks, coordinates |
 | `project-manager`   | Elmer Fudd      | Project Manager   | Owns task list, manages priorities           |
 | `coach`             | Wile E. Coyote  | Team Coach        | Observes failures, records patterns          |
-| `technical-writer`  | Tweety Bird     | Technical Writer  | Maintains docs, audits specs                 |
+| `docs-writer`       | Tweety Bird     | Docs Writer       | Maintains docs, audits specs                 |
 | `deep-researcher`   | Road Runner     | Deep Researcher   | Complex multi-source investigations          |
 | `ops-engineer`      | Foghorn Leghorn | Ops Engineer      | CI/CD, repos, Homebrew, distribution         |
 | `software-engineer` | Bugs Bunny      | Software Engineer | Implements features, writes code             |

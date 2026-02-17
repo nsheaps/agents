@@ -1,7 +1,7 @@
 # PRD: Marketplace Structure for agent-team
 
 **Status**: Draft
-**Author**: Tweety Bird (Technical Writer)
+**Author**: Tweety Bird (Docs Writer)
 **Date**: 2026-02-16
 
 ## Vision

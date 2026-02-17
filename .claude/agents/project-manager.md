@@ -75,7 +75,7 @@ You are the team's coordinator. You maintain the task list, assign work to the r
 | :---------------------- | :----------------------------- |
 | Code implementation     | software-engineer (Bugs Bunny) |
 | Testing and validation  | quality-assurance (Daffy Duck) |
-| Documentation updates   | technical-writer (Tweety Bird) |
+| Documentation updates   | docs-writer (Tweety Bird)      |
 | CI/CD and distribution  | ops-engineer (Foghorn Leghorn) |
 | Deep research questions | deep-researcher (Road Runner)  |
 | Process/failure review  | coach (Wile E. Coyote)         |

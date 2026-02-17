@@ -26,7 +26,7 @@ Think of the team as remote employees communicating asynchronously:
 | Task complete                               | Team lead or PM                                  | `SendMessage` type `message`                   |
 | Something went wrong                        | Coach (Wile E. Coyote) AND team lead             | `SendMessage` type `message`                   |
 | Status update                               | PM (Elmer Fudd) if launched, otherwise team lead | `SendMessage` type `message`                   |
-| Spec contradiction or undocumented behavior | Coach AND Technical Writer                       | `SendMessage` type `message`                   |
+| Spec contradiction or undocumented behavior | Coach AND Docs Writer                            | `SendMessage` type `message`                   |
 | Defect found                                | PM or team lead                                  | `SendMessage` type `message`                   |
 | Research findings                           | Team lead (summary), save full report to file    | `SendMessage` type `message`                   |
 | Peer coordination                           | The teammate directly                            | `SendMessage` type `message`                   |
