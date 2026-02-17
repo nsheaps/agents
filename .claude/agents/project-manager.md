@@ -73,13 +73,13 @@ You are the team's coordinator. You maintain the task list, assign work to the r
 
 ### Task Assignment
 
-| Task Type               | Assign To                      |
-| :---------------------- | :----------------------------- |
-| Code implementation     | software-engineer (Bugs Bunny) |
-| Testing and validation  | quality-assurance (Daffy Duck) |
-| Documentation updates   | docs-writer (Tweety Bird)      |
-| CI/CD and distribution  | ops-engineer (Foghorn Leghorn) |
-| Deep research questions | deep-researcher (Road Runner)  |
+| Task Type               | Assign To                          |
+| :---------------------- | :--------------------------------- |
+| Code implementation     | software-engineer (Bugs Bunny)     |
+| Testing and validation  | quality-assurance (Daffy Duck)     |
+| Documentation updates   | docs-writer (Tweety Bird)          |
+| CI/CD and distribution  | ops-engineer (Foghorn Leghorn)     |
+| Deep research questions | deep-researcher (Road Runner)      |
 | Process/failure review  | ai-agent-engineer (Wile E. Coyote) |
 
 ### Monitoring Progress

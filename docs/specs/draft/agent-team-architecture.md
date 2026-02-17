@@ -63,15 +63,15 @@ Agent management tool sets should be optionally enabled/disabled per agent. Not 
 
 ### Tool Categories
 
-| Category | Tools | Who Needs It |
-|:---|:---|:---|
-| Team management | TeamCreate, TeamRemoveMember, TeamCleanup | Orchestrators, team leads |
-| Task management | TaskCreate, TaskUpdate, TaskList | PMs, team leads, coordinators |
-| Messaging | SendMessage (all types) | All agents |
-| Agent spawning | Task (with team_name) | Orchestrators, nested orchestrators |
-| Shutdown control | SendMessage (shutdown_request) | Team leads only |
-| File system | Read, Write, Edit, Glob, Grep | Most agents (configurable) |
-| Execution | Bash | Engineers, ops (restricted for others) |
+| Category         | Tools                                     | Who Needs It                           |
+| :--------------- | :---------------------------------------- | :------------------------------------- |
+| Team management  | TeamCreate, TeamRemoveMember, TeamCleanup | Orchestrators, team leads              |
+| Task management  | TaskCreate, TaskUpdate, TaskList          | PMs, team leads, coordinators          |
+| Messaging        | SendMessage (all types)                   | All agents                             |
+| Agent spawning   | Task (with team_name)                     | Orchestrators, nested orchestrators    |
+| Shutdown control | SendMessage (shutdown_request)            | Team leads only                        |
+| File system      | Read, Write, Edit, Glob, Grep             | Most agents (configurable)             |
+| Execution        | Bash                                      | Engineers, ops (restricted for others) |
 
 ### Why This Matters
 
@@ -87,8 +87,8 @@ Tool sets defined in agent configuration:
 ```yaml
 # In .agent.yaml or agent frontmatter
 tools:
-  - messaging        # SendMessage
-  - tasks            # TaskCreate, TaskUpdate, TaskList
+  - messaging # SendMessage
+  - tasks # TaskCreate, TaskUpdate, TaskList
   # - team-management  # TeamCreate, etc. — disabled for this agent
   # - spawning         # Task with team_name — disabled
 ```
@@ -134,6 +134,7 @@ Agent Definition (.agent.yaml)
 ### Per-Agent Containers
 
 Each agent can have its own container image tailored to its framework and tools:
+
 - Engineer: full dev environment (Node, Bun, Git, build tools)
 - Researcher: lightweight with web access tools
 - Ops: Docker-in-Docker, kubectl, Helm
@@ -194,7 +195,7 @@ tools:
   - execution
 
 permissions:
-  mode: bypassPermissions  # or default, delegate
+  mode: bypassPermissions # or default, delegate
   allowed:
     - "git *"
     - "bun *"
@@ -222,7 +223,7 @@ mesh:
 
 session:
   persist: true
-  backend: local  # or s3
+  backend: local # or s3
 ```
 
 ---
@@ -232,18 +233,19 @@ session:
 ### Concept
 
 When an agent finishes, it saves its state. On next interaction, the agent resumes with context from previous sessions — even if not resuming that specific session. This enables:
+
 - Mobility across machines
 - Continuity across team sessions
 - Per-agent persistent memory
 
 ### What Gets Saved
 
-| Data | Location | Format |
-|:---|:---|:---|
-| Conversation transcript | `sessions/{agent-id}/{session-id}.jsonl` | JSONL |
-| Agent memory/notes | `sessions/{agent-id}/memory.md` | Markdown |
-| Task state | `sessions/{agent-id}/tasks.json` | JSON |
-| Team context | `sessions/{agent-id}/team-context.json` | JSON |
+| Data                    | Location                                   | Format                              |
+| :---------------------- | :----------------------------------------- | :---------------------------------- |
+| Conversation transcript | `sessions/{agent-id}/{session-id}.jsonl`   | JSONL                               |
+| Agent memory/notes      | `sessions/{agent-id}/memory.md`            | Markdown                            |
+| Task state              | `sessions/{agent-id}/tasks.json`           | JSON                                |
+| Team context            | `sessions/{agent-id}/team-context.json`    | JSON                                |
 | Working directory state | `sessions/{agent-id}/workspace-state.json` | JSON (modified files, branch, etc.) |
 
 ### Backends
@@ -264,6 +266,7 @@ When an agent finishes, it saves its state. On next interaction, the agent resum
 ### Per-Agent Persistent Memory
 
 Each agent maintains its own memory file (like Claude Code's auto-memory but per-agent):
+
 - What they learned about the codebase
 - Patterns they've observed
 - Preferences and working style notes
@@ -286,6 +289,7 @@ This memory persists across sessions and is loaded on every spawn.
 ### Concept
 
 Use Google's [Agent-to-Agent (A2A) protocol](https://google.github.io/A2A/) as a standardized way for agents to communicate, especially for:
+
 - Permission escalation (agent → security consultant → user)
 - Cross-framework agent communication (Claude Code agent ↔ OpenAI Codex agent)
 - Structured task delegation between agents
@@ -293,6 +297,7 @@ Use Google's [Agent-to-Agent (A2A) protocol](https://google.github.io/A2A/) as a
 ### Relationship to Mesh MCP
 
 The mesh MCP server handles real-time communication within a team. A2A could provide:
+
 - A higher-level protocol for structured interactions (not just messages)
 - Cross-team and cross-framework compatibility
 - Standardized agent discovery and capability advertisement
@@ -306,18 +311,65 @@ The mesh MCP server handles real-time communication within a team. A2A could pro
 
 ---
 
-## 7. Relationship to Existing PRDs
+## 7. Agent CLI as I/O Proxy
 
-| PRD | Location | Relationship |
-|:---|:---|:---|
-| Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md` | Section 3 (containers) and 5 (sessions) extend this |
-| Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Section 4 (agent.yaml) replaces/extends this |
-| MCP Tooling | `~/src/nsheaps/mcp/docs/specs/draft/mcp-tooling.md` | Section 6 (A2A) may complement this |
-| 14-Phase Plan | Elmer Fudd's plan (in team lead context) | All sections feed into phase refinement |
+### Concept
+
+The `agent` CLI is not just a launcher — it's a runtime I/O proxy that sits between the user and the underlying agent framework (Claude Code, Codex, etc.). It wraps the framework binary, intercepts all inputs and outputs, and can modify them in transit.
+
+### Architecture
+
+```
+User ←→ agent CLI (proxy) ←→ claude / codex / custom framework
+              │
+              ├── Input interception: shell emulation, prompt injection
+              ├── Output monitoring: all responses pass through
+              └── Tool manipulation: strip/replace tool definitions at runtime
+```
+
+### Key Capabilities
+
+1. **Wraps any agent framework**: The proxy calls the underlying binary (`claude`, `codex`, etc.) and mediates all communication
+2. **Input/shell emulation**: Provides a consistent input interface regardless of the underlying framework
+3. **Full I/O monitoring**: Every input and output passes through the proxy — enables logging, auditing, cost tracking
+4. **Runtime tool stripping**: Can remove tool definitions from the prompt before they reach the framework — this is a proxy capability, not just a config toggle
+5. **Tool replacement**: Can substitute tool definitions at runtime (e.g., replace a real GitHub tool with a dry-run mock)
+
+### Why This Matters
+
+Tool stripping and replacement as a proxy feature means:
+
+- Agents can be sandboxed at the I/O level, not just via framework permissions
+- Tool sets can be modified without restarting the agent
+- The same agent definition can run with different tool sets based on runtime context
+- Cross-framework compatibility: proxy handles tool translation between Claude Code and Codex
+
+### Design Questions
+
+1. How does the proxy handle streaming responses from the framework?
+2. What's the latency overhead of proxying all I/O?
+3. How does tool stripping interact with the framework's own tool validation?
+4. Can the proxy inject tools that the framework doesn't natively support (via MCP bridging)?
+
+### References
+
+- Agent wrapper spec: `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md`
+- Per-agent tool sets: Section 2 of this document
 
 ---
 
-## Next Steps
+## 8. Relationship to Existing PRDs
+
+| PRD             | Location                                                | Relationship                                        |
+| :-------------- | :------------------------------------------------------ | :-------------------------------------------------- |
+| Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md`                   | Section 3 (containers) and 5 (sessions) extend this |
+| Agent Wrapper   | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Section 4 (agent.yaml) replaces/extends this        |
+| MCP Tooling     | `~/src/nsheaps/mcp/docs/specs/draft/mcp-tooling.md`     | Section 6 (A2A) may complement this                 |
+| 14-Phase Plan   | Elmer Fudd's plan (in team lead context)                | All sections feed into phase refinement             |
+
+---
+
+## 9. Next Steps
 
 1. Research A2A protocol in depth (Road Runner)
 2. Prototype agent.yaml schema as TypeScript types (Bugs Bunny)

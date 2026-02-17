@@ -16,24 +16,24 @@ Comprehensive survey of the agent orchestration landscape in February 2026, cove
 
 ### Commercial / Major Platforms
 
-| Report                             | Platform                                       | Key Finding                                                                                  |
-| :--------------------------------- | :--------------------------------------------- | :------------------------------------------------------------------------------------------- |
-| [openai-codex.md](openai-codex.md) | OpenAI Codex                                   | MCP-first service design; dual-layer OS+policy security; 30-min autonomy windows[^1][^2]     |
-| [gemini-code.md](gemini-code.md)   | Google Gemini Code (CLI + Code Assist + Jules) | Thought Signatures for reasoning preservation; async VM execution; MCP-first migration[^3][^4] |
+| Report                             | Platform                                       | Key Finding                                                                                          |
+| :--------------------------------- | :--------------------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| [openai-codex.md](openai-codex.md) | OpenAI Codex                                   | MCP-first service design; dual-layer OS+policy security; 30-min autonomy windows[^1][^2]             |
+| [gemini-code.md](gemini-code.md)   | Google Gemini Code (CLI + Code Assist + Jules) | Thought Signatures for reasoning preservation; async VM execution; MCP-first migration[^3][^4]       |
 | [openhands.md](openhands.md)       | OpenHands (All Hands AI)                       | Event-sourced immutable state; type-safe Pydantic actions; pluggable workspaces; 67.9k stars[^5][^6] |
 
 ### Orchestration Frameworks
 
-| Report                                                               | Framework                     | Key Finding                                                                                 |
-| :------------------------------------------------------------------- | :---------------------------- | :------------------------------------------------------------------------------------------ |
+| Report                                                               | Framework                     | Key Finding                                                                                             |
+| :------------------------------------------------------------------- | :---------------------------- | :------------------------------------------------------------------------------------------------------ |
 | [enterprise-frameworks.md](enterprise-frameworks.md)                 | LangGraph, CrewAI, AutoGen    | Three complementary approaches: graph state machines, role-based teams, conversation-driven[^7][^8][^9] |
-| [community-orchestration-tools.md](community-orchestration-tools.md) | 18+ Claude Code orchestrators | Claude Flow (14.1k★), Oh My Claude Code (6.4k★); stage-based pipelines validated[^10][^11]  |
+| [community-orchestration-tools.md](community-orchestration-tools.md) | 18+ Claude Code orchestrators | Claude Flow (14.1k★), Oh My Claude Code (6.4k★); stage-based pipelines validated[^10][^11]              |
 
 ### Infrastructure & Integration
 
-| Report                                                     | Topic                                      | Key Finding                                                                 |
-| :--------------------------------------------------------- | :----------------------------------------- | :-------------------------------------------------------------------------- |
-| [tmux-orchestration-tools.md](tmux-orchestration-tools.md) | tmux-based agent orchestration (10+ tools) | Three patterns: named sessions, web dashboards, IDE control planes[^12]     |
+| Report                                                     | Topic                                      | Key Finding                                                                           |
+| :--------------------------------------------------------- | :----------------------------------------- | :------------------------------------------------------------------------------------ |
+| [tmux-orchestration-tools.md](tmux-orchestration-tools.md) | tmux-based agent orchestration (10+ tools) | Three patterns: named sessions, web dashboards, IDE control planes[^12]               |
 | [linear-integrations.md](linear-integrations.md)           | Linear Agent API + MCP Server + Webhooks   | Event-driven agent spawning; feedback loop closure; task coordination layer[^13][^14] |
 
 ---
@@ -66,22 +66,22 @@ Every major platform is adopting MCP. Codex exposes itself as an MCP server.[^1]
 
 ### 3. State Management Spectrum
 
-| Approach                    | Platforms                 | Best For                              |
-| :-------------------------- | :------------------------ | :------------------------------------ |
-| **Event-sourced immutable** | OpenHands[^6]             | Deterministic replay, pause/resume    |
-| **Centralized mutable**     | LangGraph (StateGraph)[^7] | Complex shared state, race prevention |
+| Approach                    | Platforms                     | Best For                              |
+| :-------------------------- | :---------------------------- | :------------------------------------ |
+| **Event-sourced immutable** | OpenHands[^6]                 | Deterministic replay, pause/resume    |
+| **Centralized mutable**     | LangGraph (StateGraph)[^7]    | Complex shared state, race prevention |
 | **Distributed per-agent**   | CrewAI, Claude Code Teams[^8] | Agent autonomy, simple implementation |
-| **Message passing**         | AutoGen[^9]               | Conversational workflows              |
-| **Thread ID handoffs**      | Codex[^2]                 | Stateful multi-agent handoffs         |
+| **Message passing**         | AutoGen[^9]                   | Conversational workflows              |
+| **Thread ID handoffs**      | Codex[^2]                     | Stateful multi-agent handoffs         |
 
 ### 4. Security Models
 
-| Model                            | Platforms                            |
-| :------------------------------- | :----------------------------------- |
+| Model                            | Platforms                                 |
+| :------------------------------- | :---------------------------------------- |
 | **OS-enforced sandbox + policy** | Codex (Seatbelt/Landlock + approval)[^16] |
-| **Docker container isolation**   | OpenHands[^5]                        |
-| **Policy-only approval**         | Claude Code                          |
-| **Git worktree isolation**       | Community tools (reshashi, ccswarm)  |
+| **Docker container isolation**   | OpenHands[^5]                             |
+| **Policy-only approval**         | Claude Code                               |
+| **Git worktree isolation**       | Community tools (reshashi, ccswarm)       |
 
 ### 5. Async / Background Execution
 
@@ -121,18 +121,33 @@ Based on the full survey, key patterns for our agent-team project:
 ## References
 
 [^1]: https://developers.openai.com/codex/mcp
+
 [^2]: https://openai.com/index/unrolling-the-codex-agent-loop/
+
 [^3]: https://jules.google
+
 [^4]: https://developers.google.com/gemini-code-assist/resources/release-notes
+
 [^5]: https://docs.openhands.dev/
+
 [^6]: https://arxiv.org/html/2511.03690v1
+
 [^7]: https://langchain-ai.github.io/langgraph/
+
 [^8]: https://docs.crewai.com/
+
 [^9]: https://microsoft.github.io/autogen/
+
 [^10]: https://github.com/ruvnet/claude-flow
+
 [^11]: https://github.com/Yeachan-Heo/oh-my-claudecode
+
 [^12]: https://github.com/Dicklesworthstone/ntm
+
 [^13]: https://linear.app/docs/agents-in-linear
+
 [^14]: https://linear.app/docs/mcp
+
 [^15]: https://itnext.io/mcp-vs-agent-orchestration-frameworks-langgraph-crewai-etc-ec6bd611aa4d
+
 [^16]: https://developers.openai.com/codex/security/

@@ -169,41 +169,43 @@ Claude Code makes a simpler tradeoff: `markMessagesAsRead` flips a local flag wi
 
 ### Patterns to Adopt
 
-| Pattern                         | Rationale                                                                                              |
-| :------------------------------ | :----------------------------------------------------------------------------------------------------- |
-| **Auto-wake for idle sessions** | Solves the spawn problem without blocking. Critical for multi-agent coordination.[^1]                  |
-| **JSONL append-only inbox**     | O(1) writes vs O(N) for JSON arrays. Significant at scale.[^1]                                        |
-| **Peer-to-peer messaging**      | Reduces lead bottleneck. Teammates can cross-reference findings directly.[^1]                          |
-| **Two-level state machine**     | Separates UI concerns (fine-grained) from recovery logic (coarse-grained).[^1]                        |
+| Pattern                         | Rationale                                                                                                  |
+| :------------------------------ | :--------------------------------------------------------------------------------------------------------- |
+| **Auto-wake for idle sessions** | Solves the spawn problem without blocking. Critical for multi-agent coordination.[^1]                      |
+| **JSONL append-only inbox**     | O(1) writes vs O(N) for JSON arrays. Significant at scale.[^1]                                             |
+| **Peer-to-peer messaging**      | Reduces lead bottleneck. Teammates can cross-reference findings directly.[^1]                              |
+| **Two-level state machine**     | Separates UI concerns (fine-grained) from recovery logic (coarse-grained).[^1]                             |
 | **Dual sub-agent isolation**    | Permission deny + visibility hiding. Belt and suspenders after security audit found inheritance leaks.[^1] |
-| **Manual recovery after crash** | Intentional safety — prevents runaway agents burning credits on stale tasks.[^1]                      |
-| **Ordered bootstrap sequence**  | Permission handlers → state transition → event subscription. Order prevents spurious cleanup.[^1]     |
+| **Manual recovery after crash** | Intentional safety — prevents runaway agents burning credits on stale tasks.[^1]                           |
+| **Ordered bootstrap sequence**  | Permission handlers → state transition → event subscription. Order prevents spurious cleanup.[^1]          |
 
 ### Anti-Patterns to Avoid
 
-| Anti-Pattern                      | What Happened                                                                                                                                                                |
-| :-------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **No backpressure**               | "A fast sender can flood a slow receiver. There's a 10KB per-message limit but no bounded queue."[^1]                                                                       |
-| **Single-process locking**        | "All locks are in-memory, so you can't run multiple server instances against the same storage."[^1] Our architecture should support multi-process from the start.            |
-| **No cross-team communication**   | "Teams are isolated. No inter-team messaging primitive."[^1] Our nested orchestrator design should plan for inter-team coordination.                                        |
+| Anti-Pattern                      | What Happened                                                                                                                                                                    |
+| :-------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **No backpressure**               | "A fast sender can flood a slow receiver. There's a 10KB per-message limit but no bounded queue."[^1]                                                                            |
+| **Single-process locking**        | "All locks are in-memory, so you can't run multiple server instances against the same storage."[^1] Our architecture should support multi-process from the start.                |
+| **No cross-team communication**   | "Teams are isolated. No inter-team messaging primitive."[^1] Our nested orchestrator design should plan for inter-team coordination.                                             |
 | **Model-specific behavior loops** | "the model generated ~50 near-identical 'task complete' messages in a loop, unable to stop. No unit test catches that."[^1] Integration testing with actual models is essential. |
 
 ### Comparative Summary
 
-| Dimension            | Claude Code                  | OpenCode                           | Our Target                       |
-| :------------------- | :--------------------------- | :--------------------------------- | :------------------------------- |
-| Message storage      | JSON array (O(N))[^3]       | JSONL append (O(1))[^1]           | JSONL or event stream            |
-| Message notification | Polling[^3]                  | Event-driven auto-wake[^1]        | Event-driven                     |
-| Spawn model          | Fire-and-forget (3 backends)[^3] | Fire-and-forget (in-process)[^1] | Fire-and-forget (multi-backend) |
-| Communication        | Leader-centric[^3]           | Full mesh peer-to-peer[^1]        | Full mesh                        |
-| State tracking       | Implicit[^3]                 | Two-level state machine[^1]       | Explicit state machine           |
-| Multi-model          | Single provider[^3]          | Multi-provider per team[^1]       | Multi-provider (MCP)             |
-| Locking              | File locks[^3]               | In-memory RW lock[^1]             | TBD (multi-process capable)      |
-| Recovery             | Not documented               | Ordered bootstrap + manual restart[^1] | Ordered bootstrap + configurable |
-| Cross-team           | Not supported                | Not supported[^1]                  | Nested orchestrators (planned)   |
+| Dimension            | Claude Code                      | OpenCode                               | Our Target                       |
+| :------------------- | :------------------------------- | :------------------------------------- | :------------------------------- |
+| Message storage      | JSON array (O(N))[^3]            | JSONL append (O(1))[^1]                | JSONL or event stream            |
+| Message notification | Polling[^3]                      | Event-driven auto-wake[^1]             | Event-driven                     |
+| Spawn model          | Fire-and-forget (3 backends)[^3] | Fire-and-forget (in-process)[^1]       | Fire-and-forget (multi-backend)  |
+| Communication        | Leader-centric[^3]               | Full mesh peer-to-peer[^1]             | Full mesh                        |
+| State tracking       | Implicit[^3]                     | Two-level state machine[^1]            | Explicit state machine           |
+| Multi-model          | Single provider[^3]              | Multi-provider per team[^1]            | Multi-provider (MCP)             |
+| Locking              | File locks[^3]                   | In-memory RW lock[^1]                  | TBD (multi-process capable)      |
+| Recovery             | Not documented                   | Ordered bootstrap + manual restart[^1] | Ordered bootstrap + configurable |
+| Cross-team           | Not supported                    | Not supported[^1]                      | Nested orchestrators (planned)   |
 
 ## References
 
 [^1]: https://dev.to/uenyioha/porting-claude-codes-agent-teams-to-opencode-4hol
+
 [^2]: https://github.com/sst/opencode
+
 [^3]: https://code.claude.com/docs/en/agent-teams

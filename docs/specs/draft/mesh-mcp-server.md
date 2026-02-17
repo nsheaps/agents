@@ -61,15 +61,15 @@ Each agent connects to a shared MCP server that provides:
 
 ### 3.2 Component Breakdown
 
-| Component | Responsibility |
-| :--- | :--- |
-| **Auth Module** | Token-based authentication; issue/validate agent credentials |
-| **Presence Manager** | Track online/offline status; heartbeat monitoring |
-| **Message Router** | Route messages between agents; direct, group, and broadcast |
-| **Group/Channel Manager** | Create/join/leave groups; scope messaging to subsets |
-| **File Dumper** | Write received messages to a local file for hook consumption |
-| **Hook Integration Bridge** | Interface between dumped files and Claude Code hooks |
-| **Transport Layer** | Socket.io for reliable messaging; Redis adapter for clustering |
+| Component                   | Responsibility                                                 |
+| :-------------------------- | :------------------------------------------------------------- |
+| **Auth Module**             | Token-based authentication; issue/validate agent credentials   |
+| **Presence Manager**        | Track online/offline status; heartbeat monitoring              |
+| **Message Router**          | Route messages between agents; direct, group, and broadcast    |
+| **Group/Channel Manager**   | Create/join/leave groups; scope messaging to subsets           |
+| **File Dumper**             | Write received messages to a local file for hook consumption   |
+| **Hook Integration Bridge** | Interface between dumped files and Claude Code hooks           |
+| **Transport Layer**         | Socket.io for reliable messaging; Redis adapter for clustering |
 
 ### 3.3 MCP Server Interface
 
@@ -107,16 +107,16 @@ mesh://groups        — Available groups (subscribable)
     C ──── D
 ```
 
-| Metric | Value |
-| :--- | :--- |
-| **Connections** | N×(N-1)/2 |
-| **5 agents** | 10 connections |
-| **10 agents** | 45 connections |
-| **50 agents** | 1,225 connections |
-| **Latency** | Lowest (direct P2P) |
-| **SPOF** | None (fully decentralized) |
-| **NAT traversal** | Required per connection pair |
-| **Bandwidth** | O(N²) for broadcasts |
+| Metric                | Value                           |
+| :-------------------- | :------------------------------ |
+| **Connections**       | N×(N-1)/2                       |
+| **5 agents**          | 10 connections                  |
+| **10 agents**         | 45 connections                  |
+| **50 agents**         | 1,225 connections               |
+| **Latency**           | Lowest (direct P2P)             |
+| **SPOF**              | None (fully decentralized)      |
+| **NAT traversal**     | Required per connection pair    |
+| **Bandwidth**         | O(N²) for broadcasts            |
 | **Service discovery** | Each agent must know all others |
 
 **Verdict**: Impractical beyond ~10 agents. Connection count explodes quadratically. NAT traversal required for every pair. No central point of coordination.
@@ -131,16 +131,16 @@ mesh://groups        — Available groups (subscribable)
       D       E
 ```
 
-| Metric | Value |
-| :--- | :--- |
-| **Connections** | N (one per agent) |
-| **5 agents** | 5 connections |
-| **10 agents** | 10 connections |
-| **50 agents** | 50 connections |
-| **Latency** | Low (1 hop through server) |
-| **SPOF** | Server is single point of failure |
-| **NAT traversal** | Only agent→server (simpler) |
-| **Bandwidth** | O(N) for broadcasts |
+| Metric                | Value                             |
+| :-------------------- | :-------------------------------- |
+| **Connections**       | N (one per agent)                 |
+| **5 agents**          | 5 connections                     |
+| **10 agents**         | 10 connections                    |
+| **50 agents**         | 50 connections                    |
+| **Latency**           | Low (1 hop through server)        |
+| **SPOF**              | Server is single point of failure |
+| **NAT traversal**     | Only agent→server (simpler)       |
+| **Bandwidth**         | O(N) for broadcasts               |
 | **Service discovery** | Central — server knows all agents |
 
 **Verdict**: Scales linearly. Single NAT traversal path. Central presence tracking. Server is SPOF but can be HA with clustering.
@@ -155,12 +155,12 @@ mesh://groups        — Available groups (subscribable)
       D       E
 ```
 
-| Metric | Value |
-| :--- | :--- |
-| **Connections** | N (server) + selective P2P pairs |
-| **Latency** | Lowest for P2P pairs, low for server-routed |
-| **SPOF** | Server is SPOF for non-P2P communication |
-| **Complexity** | Highest — two communication paths |
+| Metric          | Value                                       |
+| :-------------- | :------------------------------------------ |
+| **Connections** | N (server) + selective P2P pairs            |
+| **Latency**     | Lowest for P2P pairs, low for server-routed |
+| **SPOF**        | Server is SPOF for non-P2P communication    |
+| **Complexity**  | Highest — two communication paths           |
 
 **Verdict**: Best of both worlds but highest complexity. Use for latency-critical pairs only.
 
@@ -214,11 +214,11 @@ mesh://groups        — Available groups (subscribable)
 
 ### 5.2 Auth Modes
 
-| Mode | Description | Use Case |
-| :--- | :--- | :--- |
-| **Team token** | Shared secret per team; all agents in a team use same token | Simple local teams |
-| **Agent token** | Per-agent JWT issued by auth service | Production, multi-team |
-| **mTLS** | Mutual TLS with agent certificates | K8s service mesh (Istio/Linkerd) |
+| Mode            | Description                                                 | Use Case                         |
+| :-------------- | :---------------------------------------------------------- | :------------------------------- |
+| **Team token**  | Shared secret per team; all agents in a team use same token | Simple local teams               |
+| **Agent token** | Per-agent JWT issued by auth service                        | Production, multi-team           |
+| **mTLS**        | Mutual TLS with agent certificates                          | K8s service mesh (Istio/Linkerd) |
 
 ### 5.3 Group Membership
 
@@ -314,12 +314,12 @@ CONNECTING → ONLINE → IDLE → OFFLINE
                 └───────┘ (activity detected)
 ```
 
-| State | Meaning | Detection |
-| :--- | :--- | :--- |
-| **CONNECTING** | Agent is establishing connection | Socket.io `connecting` event |
-| **ONLINE** | Agent is connected and active | Heartbeat + recent message activity |
-| **IDLE** | Agent is connected but inactive | Heartbeat OK, no messages for N seconds |
-| **OFFLINE** | Agent is disconnected | Socket.io `disconnect` event or heartbeat timeout |
+| State          | Meaning                          | Detection                                         |
+| :------------- | :------------------------------- | :------------------------------------------------ |
+| **CONNECTING** | Agent is establishing connection | Socket.io `connecting` event                      |
+| **ONLINE**     | Agent is connected and active    | Heartbeat + recent message activity               |
+| **IDLE**       | Agent is connected but inactive  | Heartbeat OK, no messages for N seconds           |
+| **OFFLINE**    | Agent is disconnected            | Socket.io `disconnect` event or heartbeat timeout |
 
 ### 7.2 Heartbeat
 
@@ -459,26 +459,26 @@ All messages through the mesh use this envelope:
 }
 ```
 
-| Field | Required | Description |
-| :--- | :--- | :--- |
-| `id` | Yes | Unique message ID (UUID v4) |
-| `type` | Yes | `message`, `presence`, `ack`, `system` |
-| `from` | Yes | Sender agent ID |
-| `to` | No | Recipient agent ID (null for group/broadcast) |
-| `group` | No | Target group (null for direct messages) |
-| `text` | Yes | Message content (plain text or JSON string) |
-| `metadata` | No | Arbitrary key-value pairs |
-| `timestamp` | Yes | ISO 8601 timestamp |
-| `ttl` | No | Time-to-live in seconds (default: 300) |
+| Field       | Required | Description                                   |
+| :---------- | :------- | :-------------------------------------------- |
+| `id`        | Yes      | Unique message ID (UUID v4)                   |
+| `type`      | Yes      | `message`, `presence`, `ack`, `system`        |
+| `from`      | Yes      | Sender agent ID                               |
+| `to`        | No       | Recipient agent ID (null for group/broadcast) |
+| `group`     | No       | Target group (null for direct messages)       |
+| `text`      | Yes      | Message content (plain text or JSON string)   |
+| `metadata`  | No       | Arbitrary key-value pairs                     |
+| `timestamp` | Yes      | ISO 8601 timestamp                            |
+| `ttl`       | No       | Time-to-live in seconds (default: 300)        |
 
 ### 9.2 Delivery Semantics
 
-| Message Type | Guarantee | Implementation |
-| :--- | :--- | :--- |
-| **Direct message** | At-least-once | Socket.io ack + retry on timeout |
-| **Group broadcast** | At-most-once | Socket.io room emit (fire-and-forget) |
-| **Presence update** | At-most-once | Periodic reconciliation corrects drift |
-| **System message** | At-least-once | Ack required |
+| Message Type        | Guarantee     | Implementation                         |
+| :------------------ | :------------ | :------------------------------------- |
+| **Direct message**  | At-least-once | Socket.io ack + retry on timeout       |
+| **Group broadcast** | At-most-once  | Socket.io room emit (fire-and-forget)  |
+| **Presence update** | At-most-once  | Periodic reconciliation corrects drift |
+| **System message**  | At-least-once | Ack required                           |
 
 ### 9.3 Message Deduplication
 
@@ -535,35 +535,35 @@ The mesh server exposes its MCP tools/resources via Streamable HTTP transport:
 
 ## 11. Scalability Characteristics
 
-| Metric | Value | Notes |
-| :--- | :--- | :--- |
-| **Agents per server** | 10,000-30,000 | Socket.io with OS tuning |
-| **Message throughput** | 3,000-10,000 msgs/sec | Per server instance |
-| **Horizontal scaling** | Add server replicas | Redis adapter coordinates |
-| **Connection overhead** | 30-100 KB per agent | Socket.io connection state |
-| **Message latency (in-cluster)** | <5ms | Pod-to-pod via k8s service |
-| **Message latency (remote)** | 50-200ms | Depends on network path |
-| **Reconnection time** | 1-5 seconds | Socket.io exponential backoff |
+| Metric                           | Value                 | Notes                         |
+| :------------------------------- | :-------------------- | :---------------------------- |
+| **Agents per server**            | 10,000-30,000         | Socket.io with OS tuning      |
+| **Message throughput**           | 3,000-10,000 msgs/sec | Per server instance           |
+| **Horizontal scaling**           | Add server replicas   | Redis adapter coordinates     |
+| **Connection overhead**          | 30-100 KB per agent   | Socket.io connection state    |
+| **Message latency (in-cluster)** | <5ms                  | Pod-to-pod via k8s service    |
+| **Message latency (remote)**     | 50-200ms              | Depends on network path       |
+| **Reconnection time**            | 1-5 seconds           | Socket.io exponential backoff |
 
 **Practical team sizes** this architecture supports:
 
-| Team Size | Server Instances | Redis | Notes |
-| :--- | :--- | :--- | :--- |
-| 1-10 agents | 1 | Optional | Single server, no clustering needed |
-| 10-100 agents | 1-2 | Recommended | Clustering for HA |
-| 100-1,000 agents | 3-5 | Required | Full clustering, sticky sessions |
-| 1,000+ agents | 5+ | Required (sharded) | Enterprise scale |
+| Team Size        | Server Instances | Redis              | Notes                               |
+| :--------------- | :--------------- | :----------------- | :---------------------------------- |
+| 1-10 agents      | 1                | Optional           | Single server, no clustering needed |
+| 10-100 agents    | 1-2              | Recommended        | Clustering for HA                   |
+| 100-1,000 agents | 3-5              | Required           | Full clustering, sticky sessions    |
+| 1,000+ agents    | 5+               | Required (sharded) | Enterprise scale                    |
 
 ## 12. Security Model
 
 ### 12.1 Transport Security
 
-| Layer | Mechanism |
-| :--- | :--- |
-| **In-cluster** | K8s network policy + optional mTLS (Istio/Linkerd) |
-| **Remote** | WSS (WebSocket over TLS) via Ingress |
-| **Auth** | JWT token validated on connection |
-| **Message** | No message-level encryption (transport-level TLS is sufficient) |
+| Layer          | Mechanism                                                       |
+| :------------- | :-------------------------------------------------------------- |
+| **In-cluster** | K8s network policy + optional mTLS (Istio/Linkerd)              |
+| **Remote**     | WSS (WebSocket over TLS) via Ingress                            |
+| **Auth**       | JWT token validated on connection                               |
+| **Message**    | No message-level encryption (transport-level TLS is sufficient) |
 
 ### 12.2 Authorization
 
@@ -580,11 +580,11 @@ Agent connects with JWT
 
 ### 12.3 Rate Limiting
 
-| Action | Default Limit | Rationale |
-| :--- | :--- | :--- |
-| **Messages per second** | 100/agent | Prevent runaway agent flooding |
-| **Group broadcasts per minute** | 30/agent | Broadcasts are expensive (fan-out) |
-| **Connections per team** | 100 | Prevent resource exhaustion |
+| Action                          | Default Limit | Rationale                          |
+| :------------------------------ | :------------ | :--------------------------------- |
+| **Messages per second**         | 100/agent     | Prevent runaway agent flooding     |
+| **Group broadcasts per minute** | 30/agent      | Broadcasts are expensive (fan-out) |
+| **Connections per team**        | 100           | Prevent resource exhaustion        |
 
 ## 13. Relationship to Existing Systems
 
@@ -592,15 +592,15 @@ Agent connects with JWT
 
 The mesh MCP server **complements**, not replaces, the existing file-based system:
 
-| Capability | File-Based Inbox | Mesh MCP Server |
-| :--- | :--- | :--- |
-| **Real-time** | No (polling) | Yes (push) |
-| **Presence** | No | Yes |
-| **Groups** | No | Yes |
-| **Cross-machine** | No (shared filesystem) | Yes (network) |
-| **Delivery guarantee** | Write-to-file | At-least-once with ack |
-| **Claude Code native** | Yes (SendMessage tool) | Via MCP tools |
-| **No infrastructure** | Yes | Requires server + Redis |
+| Capability             | File-Based Inbox       | Mesh MCP Server         |
+| :--------------------- | :--------------------- | :---------------------- |
+| **Real-time**          | No (polling)           | Yes (push)              |
+| **Presence**           | No                     | Yes                     |
+| **Groups**             | No                     | Yes                     |
+| **Cross-machine**      | No (shared filesystem) | Yes (network)           |
+| **Delivery guarantee** | Write-to-file          | At-least-once with ack  |
+| **Claude Code native** | Yes (SendMessage tool) | Via MCP tools           |
+| **No infrastructure**  | Yes                    | Requires server + Redis |
 
 **Migration path**: The File Dumper component writes messages to the local filesystem in a format compatible with Claude Code hooks, preserving backward compatibility.
 

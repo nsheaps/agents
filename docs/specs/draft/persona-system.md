@@ -24,11 +24,11 @@ Without a persona system, autonomous agents will:
 
 ### What Exists Today
 
-| Component | Location | Purpose |
-|:--|:--|:--|
-| `<system-message>` block | `.claude/agents/<name>.md` | Core identity in system prompt (persists through compaction) |
-| Persona file | `.claude/personas/<name>.md` | Public-facing identity (communication style, public voice, avatar) |
-| Persona reference | Agent file body | `**Persona**: .claude/personas/<name>.md` pointer |
+| Component                | Location                     | Purpose                                                            |
+| :----------------------- | :--------------------------- | :----------------------------------------------------------------- |
+| `<system-message>` block | `.claude/agents/<name>.md`   | Core identity in system prompt (persists through compaction)       |
+| Persona file             | `.claude/personas/<name>.md` | Public-facing identity (communication style, public voice, avatar) |
+| Persona reference        | Agent file body              | `**Persona**: .claude/personas/<name>.md` pointer                  |
 
 ### How Personas Are Used Today
 
@@ -52,24 +52,30 @@ Personas are **documentation only**. An agent must manually read its persona fil
 # Character Name
 
 ## Identity
+
 - **Full Name**: ...
 - **Character Inspiration**: ...
 - **Disclaimer**: ...
 
 ## Personality Traits
+
 - Trait 1
 - Trait 2
 
 ## Communication Style
+
 - Style guideline 1
 - Style guideline 2
 
 ## Public Voice
+
 When representing the team externally:
+
 - Guideline 1
 - Guideline 2
 
 ## Avatar Concept
+
 Description of visual identity.
 ```
 
@@ -79,49 +85,59 @@ Description of visual identity.
 # Character Name
 
 ## Identity
+
 - **Full Name**: ...
 - **Character Inspiration**: ...
 - **Disclaimer**: ...
 
 ## Personality Traits
+
 - Trait 1
 - Trait 2
 
 ## Communication Style
+
 - Style guideline 1
 - Style guideline 2
 
 ## Channel Voices
 
 ### Slack
+
 - **Tone**: Conversational, concise
 - **Format**: Short messages, emoji reactions, thread-aware
 - **Signature**: First name only (e.g., "— Tweety")
 - **Constraints**: Max 2000 chars per message, use threads for long content
 
 ### GitHub
+
 - **Tone**: Professional, technical
 - **Format**: Markdown with headers, code blocks, task lists
 - **Signature**: "Character Name (Role)" in PR/issue bodies
 - **Constraints**: Follow repo's PR template, link to issues
 
 ### Blog / Long-Form
+
 - **Tone**: Authoritative but approachable
 - **Format**: Full markdown with sections, examples, references
 - **Signature**: Full byline with role and team attribution
 - **Constraints**: 500-2000 words, include TL;DR
 
 ### Reddit / Forums
+
 - **Tone**: Casual, community-aware
 - **Format**: Plain text with minimal formatting
 - **Signature**: Username-based, no formal signature
 - **Constraints**: Match subreddit conventions, avoid corporate voice
 
 ## Avatar Concept
+
 Description of visual identity.
 
 ## Evolution Log
+
 <!-- Append entries as persona adapts -->
+
 - **2026-02-16**: Initial persona created
 ```
 
@@ -167,6 +183,7 @@ If/when Claude Code supports per-agent CLAUDE.md inheritance or conditional `@re
 
 ```markdown
 <!-- In a hypothetical per-agent CLAUDE.md override -->
+
 @personas/docs-writer.md
 ```
 
@@ -189,11 +206,11 @@ Returns: { voice guidelines, formatting rules, constraints, signature }
 
 ### Recommended Phased Approach
 
-| Phase | Mechanism | When |
-|:--|:--|:--|
-| **Now** | Manual read + SessionStart hook | Current implementation |
-| **Soon** | MCP tool for channel-specific persona queries | When agents start posting externally |
-| **Later** | CLAUDE.md per-agent inheritance | When/if Claude Code supports it |
+| Phase     | Mechanism                                     | When                                 |
+| :-------- | :-------------------------------------------- | :----------------------------------- |
+| **Now**   | Manual read + SessionStart hook               | Current implementation               |
+| **Soon**  | MCP tool for channel-specific persona queries | When agents start posting externally |
+| **Later** | CLAUDE.md per-agent inheritance               | When/if Claude Code supports it      |
 
 ---
 
@@ -227,15 +244,15 @@ Each public channel has different conventions, audiences, and formatting require
 
 ### Channel-Specific Behaviors
 
-| Aspect | Slack | GitHub | Blog | Reddit |
-|:--|:--|:--|:--|:--|
-| **Formality** | Low-medium | Medium-high | High | Low |
-| **Length** | Short (1-3 sentences) | Medium (structured) | Long (sections) | Medium (conversational) |
-| **Formatting** | Slack mrkdwn | GitHub Markdown | Full Markdown/HTML | Plain text |
-| **Emoji** | Encouraged | Sparingly | Avoid | Contextual |
-| **Signature** | First name | Name (Role) | Full byline | Username |
-| **Response time expectation** | Fast | Reasonable | Async | Async |
-| **Error handling** | Acknowledge quickly, fix in thread | File follow-up issue | Errata/correction post | Edit or reply |
+| Aspect                        | Slack                              | GitHub               | Blog                   | Reddit                  |
+| :---------------------------- | :--------------------------------- | :------------------- | :--------------------- | :---------------------- |
+| **Formality**                 | Low-medium                         | Medium-high          | High                   | Low                     |
+| **Length**                    | Short (1-3 sentences)              | Medium (structured)  | Long (sections)        | Medium (conversational) |
+| **Formatting**                | Slack mrkdwn                       | GitHub Markdown      | Full Markdown/HTML     | Plain text              |
+| **Emoji**                     | Encouraged                         | Sparingly            | Avoid                  | Contextual              |
+| **Signature**                 | First name                         | Name (Role)          | Full byline            | Username                |
+| **Response time expectation** | Fast                               | Reasonable           | Async                  | Async                   |
+| **Error handling**            | Acknowledge quickly, fix in thread | File follow-up issue | Errata/correction post | Edit or reply           |
 
 ### Consistency Rule
 
@@ -347,14 +364,14 @@ Yes, but with guardrails. Personas should evolve based on evidence, not drift ba
 
 ### What Can Evolve
 
-| Aspect | Can Evolve? | Approval Required? |
-|:--|:--|:--|
-| Communication style details | Yes | Team lead |
-| Channel-specific guidelines | Yes | Team lead |
-| Avatar concept | Yes | User (human) |
-| Core personality traits | Rarely | User (human) |
-| Full name / identity | No | N/A — immutable |
-| Character inspiration | No | N/A — immutable |
+| Aspect                      | Can Evolve? | Approval Required? |
+| :-------------------------- | :---------- | :----------------- |
+| Communication style details | Yes         | Team lead          |
+| Channel-specific guidelines | Yes         | Team lead          |
+| Avatar concept              | Yes         | User (human)       |
+| Core personality traits     | Rarely      | User (human)       |
+| Full name / identity        | No          | N/A — immutable    |
+| Character inspiration       | No          | N/A — immutable    |
 
 ### Evolution Log
 
@@ -362,6 +379,7 @@ Every persona change is recorded in the Evolution Log section at the bottom of t
 
 ```markdown
 ## Evolution Log
+
 - **2026-02-16**: Initial persona created
 - **2026-03-01**: Added Reddit voice section based on first community posts
 - **2026-03-15**: Softened Slack tone after feedback that messages felt too formal
@@ -389,12 +407,12 @@ The current design assumes 1:1 mapping between agent and persona. This is simple
 
 ### When Multi-Persona Makes Sense
 
-| Scenario | Example | Value |
-|:--|:--|:--|
+| Scenario                | Example                                                          | Value                              |
+| :---------------------- | :--------------------------------------------------------------- | :--------------------------------- |
 | **Audience adaptation** | Technical persona for GitHub, casual persona for community Slack | Same agent, different presentation |
-| **Role rotation** | An agent fills both "docs writer" and "community manager" roles | Different voice for different jobs |
-| **A/B testing** | Testing which persona resonates better with an audience | Experimentation |
-| **Anonymity** | Agent posts without team attribution | Privacy/security |
+| **Role rotation**       | An agent fills both "docs writer" and "community manager" roles  | Different voice for different jobs |
+| **A/B testing**         | Testing which persona resonates better with an audience          | Experimentation                    |
+| **Anonymity**           | Agent posts without team attribution                             | Privacy/security                   |
 
 ### v2 Multi-Persona Design (Future)
 
@@ -407,8 +425,10 @@ If implemented, multi-persona would work as:
 
 ```markdown
 # In agent file (v2 hypothetical)
+
 **Default Persona**: `.claude/personas/docs-writer.md`
 **Context Personas**:
+
 - Community channels: `.claude/personas/community-writer.md`
 - Internal docs: `.claude/personas/docs-writer.md` (default)
 ```
@@ -421,15 +441,15 @@ If implemented, multi-persona would work as:
 
 ## 9. Implementation Phases
 
-| Phase | Scope | Deliverable |
-|:--|:--|:--|
-| **Phase 0** (Done) | Static persona files, manual loading | `.claude/personas/` with 8 files |
-| **Phase 1** | SessionStart hook for auto-loading | Hook config in agent settings |
-| **Phase 2** | Channel-aware persona format (v2) | Updated persona files with Channel Voices sections |
-| **Phase 3** | Public-facing action behavior | `.claude/behaviors/public-action.md` |
-| **Phase 4** | MCP persona tool | MCP server returning persona data per channel |
-| **Phase 5** | Evolution framework | AI Agent Engineer review process, feedback loop, Evolution Log |
-| **Phase 6** | Multi-persona support (v2) | Context persona selection, per-channel persona mapping |
+| Phase              | Scope                                | Deliverable                                                    |
+| :----------------- | :----------------------------------- | :------------------------------------------------------------- |
+| **Phase 0** (Done) | Static persona files, manual loading | `.claude/personas/` with 8 files                               |
+| **Phase 1**        | SessionStart hook for auto-loading   | Hook config in agent settings                                  |
+| **Phase 2**        | Channel-aware persona format (v2)    | Updated persona files with Channel Voices sections             |
+| **Phase 3**        | Public-facing action behavior        | `.claude/behaviors/public-action.md`                           |
+| **Phase 4**        | MCP persona tool                     | MCP server returning persona data per channel                  |
+| **Phase 5**        | Evolution framework                  | AI Agent Engineer review process, feedback loop, Evolution Log |
+| **Phase 6**        | Multi-persona support (v2)           | Context persona selection, per-channel persona mapping         |
 
 ---
 

@@ -109,10 +109,10 @@ Google's **Agent Development Kit** (ADK) provides:[^7]
 
 ## 4. Task Management
 
-| Product     | Approach                                                                             |
-| :---------- | :----------------------------------------------------------------------------------- |
-| Gemini CLI  | Implicit — ReAct loop state in conversation history; `/memory` for long-term context |
-| Code Assist | Plan-based — agent generates plan, user approves, agent executes with checkpointing  |
+| Product     | Approach                                                                               |
+| :---------- | :------------------------------------------------------------------------------------- |
+| Gemini CLI  | Implicit — ReAct loop state in conversation history; `/memory` for long-term context   |
+| Code Assist | Plan-based — agent generates plan, user approves, agent executes with checkpointing    |
 | Jules       | Explicit — `/jules-tools` CLI for task lifecycle, async queue with status tracking[^6] |
 
 ## 5. Unique Features
@@ -184,16 +184,29 @@ Each agent should produce reviewable artifacts at phase boundaries. Human approv
 ## References
 
 [^1]: https://developers.google.com/gemini-code-assist/docs/gemini-cli
+
 [^2]: https://github.com/google-gemini/gemini-cli
+
 [^3]: https://developers.google.com/gemini-code-assist/docs/agent-mode
+
 [^4]: https://developers.google.com/gemini-code-assist/resources/release-notes
+
 [^5]: https://jules.google
+
 [^6]: https://developers.googleblog.com/en/meet-jules-tools-a-command-line-companion-for-googles-async-coding-agent/
+
 [^7]: https://google.github.io/adk-docs/
+
 [^8]: https://github.com/google-gemini/gemini-cli/discussions/7637
+
 [^9]: https://github.com/josstei/maestro-gemini
+
 [^10]: https://medium.com/google-cloud/building-a-multi-agent-assistant-with-gemini-and-the-agent-development-kit-cc448d0cfa1b
+
 [^11]: https://ai.google.dev/gemini-api/docs/thought-signatures
+
 [^12]: https://www.educative.io/blog/claude-code-vs-gemini-code-assist
+
 [^13]: https://shipyard.build/blog/claude-code-vs-gemini-cli-who-is-winning-in-january-2026/
+
 [^14]: https://github.com/gemini-cli-extensions/jules

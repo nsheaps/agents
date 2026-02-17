@@ -256,12 +256,19 @@ Sub-agents inherit, read-only reference
 ## References
 
 [^1]: https://openhands.dev/
+
 [^2]: https://github.com/OpenHands/OpenHands
+
 [^3]: https://docs.openhands.dev/
+
 [^4]: https://openreview.net/pdf/95990590797cff8b93c33af989ecf4ac58bde9bb.pdf
+
 [^5]: https://arxiv.org/html/2511.03690v1
+
 [^6]: https://docs.openhands.dev/sdk/guides/agent-delegation
+
 [^7]: https://docs.openhands.dev/sdk/guides/mcp
+
 [^8]: https://www.swebench.com/
 
 ---

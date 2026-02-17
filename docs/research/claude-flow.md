@@ -77,13 +77,13 @@ The orchestrator learns from work performed by executors through cross-learning.
 
 ### Key Design Patterns
 
-| Pattern                        | Description                                                                        |
-| :----------------------------- | :--------------------------------------------------------------------------------- |
-| **Hive-Mind Swarm**            | Collective intelligence through aggregation and Byzantine fault tolerance[^5]      |
+| Pattern                        | Description                                                                            |
+| :----------------------------- | :------------------------------------------------------------------------------------- |
+| **Hive-Mind Swarm**            | Collective intelligence through aggregation and Byzantine fault tolerance[^5]          |
 | **Blackboard Pattern**         | Shared state board with TTL-based hints (1800s default), non-blocking coordination[^4] |
-| **Producer-Consumer Chaining** | Stream-JSON for real-time agent-to-agent output piping (40-60% faster than files)[^1] |
-| **Queen-Led Hierarchies**      | Central coordinator prevents drift, maintains authoritative state[^5]              |
-| **Artifact-Centric Design**    | Lightweight manifests (id, kind, tags, checksum) instead of copying large content[^4] |
+| **Producer-Consumer Chaining** | Stream-JSON for real-time agent-to-agent output piping (40-60% faster than files)[^1]  |
+| **Queen-Led Hierarchies**      | Central coordinator prevents drift, maintains authoritative state[^5]                  |
+| **Artifact-Centric Design**    | Lightweight manifests (id, kind, tags, checksum) instead of copying large content[^4]  |
 
 ---
 
@@ -93,15 +93,15 @@ The orchestrator learns from work performed by executors through cross-learning.
 
 A [comparison gist by the author](https://gist.github.com/ruvnet/18dc8d060194017b989d1f8993919ee4)[^6] claims **92% architectural similarity** to Claude Code's TeammateTool:
 
-| Aspect           | Claude-Flow                                 | Native Agent Teams                   |
-| :--------------- | :------------------------------------------ | :----------------------------------- |
-| Team Abstraction | "Swarm"                                     | "Team"                               |
-| Topologies       | Hierarchical, mesh, adaptive[^5]            | Hierarchical, mesh                   |
-| Agent Roles      | Coordinator, coder, tester, reviewer, etc.  | Identical role patterns              |
-| Messaging        | Direct send, broadcast, priority[^4]        | Direct send, broadcast               |
-| Consensus        | Raft, Byzantine, Gossip, Paxos[^5]          | Simple voting via messaging          |
-| Execution        | In-process or tmux-based                    | In-process or tmux-based             |
-| File Persistence | Optional (`.swarm/memory.db`)[^1]           | Required (`~/.claude/teams/`)        |
+| Aspect           | Claude-Flow                                     | Native Agent Teams                   |
+| :--------------- | :---------------------------------------------- | :----------------------------------- |
+| Team Abstraction | "Swarm"                                         | "Team"                               |
+| Topologies       | Hierarchical, mesh, adaptive[^5]                | Hierarchical, mesh                   |
+| Agent Roles      | Coordinator, coder, tester, reviewer, etc.      | Identical role patterns              |
+| Messaging        | Direct send, broadcast, priority[^4]            | Direct send, broadcast               |
+| Consensus        | Raft, Byzantine, Gossip, Paxos[^5]              | Simple voting via messaging          |
+| Execution        | In-process or tmux-based                        | In-process or tmux-based             |
+| File Persistence | Optional (`.swarm/memory.db`)[^1]               | Required (`~/.claude/teams/`)        |
 | Memory           | HNSW-indexed vector DB, survives compaction[^1] | Context-window bound, no persistence |
 
 ### Where Claude-Flow Goes Further
@@ -269,19 +269,35 @@ These metrics are from the project's own documentation and should be treated as 
 ## References
 
 [^1]: https://github.com/ruvnet/claude-flow
+
 [^2]: https://www.npmjs.com/package/claude-flow
+
 [^3]: https://claude-flow.ruv.io/
+
 [^4]: https://github.com/ruvnet/claude-flow/wiki/Workflow-Orchestration
+
 [^5]: https://github.com/ruvnet/claude-flow/wiki/Agent-System-Overview
+
 [^6]: https://gist.github.com/ruvnet/18dc8d060194017b989d1f8993919ee4
+
 [^7]: https://gist.github.com/ruvnet/9b066e77dd2980bfdcc5adf3bc082281
+
 [^8]: https://medium.com/@derekcashmore/claude-code-agent-teams-vs-claude-flow-a-real-world-bake-off-97e24f6ca9b9
+
 [^9]: https://alexop.dev/posts/from-tasks-to-swarms-in-claude-code/
+
 [^10]: https://darasoba.medium.com/how-to-set-up-and-use-claude-code-agent-teams-and-actually-get-great-results-9a34f8648f6d
+
 [^11]: https://github.com/ruvnet/agentic-flow
+
 [^12]: https://github.com/bobmatnyc/claude-pm
+
 [^13]: https://github.com/ananddtyagi/claude-code-marketplace
+
 [^14]: https://github.com/ruvnet/claude-flow/issues/1082
+
 [^15]: https://github.com/ruvnet/claude-flow/issues/1098
+
 [^16]: https://github.com/ruvnet/claude-flow/issues/958
+
 [^17]: https://github.com/ruvnet/claude-flow/issues/559

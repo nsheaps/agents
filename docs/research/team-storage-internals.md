@@ -427,8 +427,13 @@ This file-based architecture is a significant advantage for the agent-team proje
 ## References
 
 [^1]: https://code.claude.com/docs/en/agent-teams
+
 [^2]: https://code.claude.com/docs/en/plugins
+
 [^3]: https://github.com/anthropics/claude-code/issues/25037
+
 [^4]: https://github.com/anthropics/claude-code/issues/23615
+
 [^5]: ./opencode-agent-teams-porting.md
+
 [^6]: ./claude-flow.md

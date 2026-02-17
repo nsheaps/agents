@@ -188,21 +188,39 @@ tmux-mcp-server shows that agents can orchestrate other agents via MCP + tmux.[^
 ## References
 
 [^1]: https://github.com/Dicklesworthstone/ntm
+
 [^2]: https://github.com/njbrake/agent-of-empires
+
 [^3]: https://github.com/hallucinogen/agent-viewer
+
 [^4]: https://github.com/Jedward23/Tmux-Orchestrator
+
 [^5]: https://github.com/rookedsysc/kanvibe
+
 [^6]: https://github.com/super-agent-ai/tmux-agents
+
 [^7]: https://github.com/lox/tmux-mcp-server
+
 [^8]: https://www.warp.dev/
+
 [^9]: https://addyosmani.com/blog/claude-code-agent-teams/
+
 [^10]: https://code.claude.com/docs/en/agent-teams
+
 [^11]: https://time.com/collections/best-inventions-2025/7318249/warp-agentic-development-environment/
+
 [^12]: https://thenewstack.io/how-warp-went-from-terminal-to-agentic-development-environment/
+
 [^13]: https://www.dariuszparys.com/claude-code-multi-agent-tmux-setup/
+
 [^14]: https://www.javieraguilar.ai/en/blog/claude-code-agent-teams
+
 [^15]: https://scuti.asia/combining-tmux-and-claude-to-build-an-automated-ai-agent-system-for-mac-linux/
+
 [^16]: https://github.com/anthropics/claude-code/issues/23615
+
 [^17]: https://github.com/fractalmind-ai/agent-manager-skill
+
 [^18]: https://github.com/asheshgoplani/agent-deck
+
 [^19]: https://github.com/awslabs/cli-agent-orchestrator

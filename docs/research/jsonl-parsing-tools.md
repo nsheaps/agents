@@ -22,32 +22,32 @@ Example: `~/.claude/projects/-Users-nathan-heaps-src-nsheaps-claude-utils/f848e7
 
 Every JSONL entry contains these fields:
 
-| Key | Type | Description |
-|:----|:-----|:------------|
-| `uuid` | string | Unique identifier for this entry |
-| `parentUuid` | string | UUID of the parent entry (conversation threading) |
-| `type` | string | Entry type: `user`, `assistant`, `system`, `progress`, `queue-operation`, `summary` |
-| `timestamp` | string | ISO 8601 timestamp |
-| `sessionId` | string | Session identifier |
-| `version` | string | Schema version |
-| `cwd` | string | Working directory at time of entry |
-| `gitBranch` | string | Git branch at time of entry |
-| `isSidechain` | boolean | Whether entry is part of a sidechain |
-| `teamName` | string | Team name (when using agent teams) |
-| `agentName` | string | Agent name within the team |
-| `userType` | string | Type of user interaction |
+| Key           | Type    | Description                                                                         |
+| :------------ | :------ | :---------------------------------------------------------------------------------- |
+| `uuid`        | string  | Unique identifier for this entry                                                    |
+| `parentUuid`  | string  | UUID of the parent entry (conversation threading)                                   |
+| `type`        | string  | Entry type: `user`, `assistant`, `system`, `progress`, `queue-operation`, `summary` |
+| `timestamp`   | string  | ISO 8601 timestamp                                                                  |
+| `sessionId`   | string  | Session identifier                                                                  |
+| `version`     | string  | Schema version                                                                      |
+| `cwd`         | string  | Working directory at time of entry                                                  |
+| `gitBranch`   | string  | Git branch at time of entry                                                         |
+| `isSidechain` | boolean | Whether entry is part of a sidechain                                                |
+| `teamName`    | string  | Team name (when using agent teams)                                                  |
+| `agentName`   | string  | Agent name within the team                                                          |
+| `userType`    | string  | Type of user interaction                                                            |
 
 ### Entry Type Distribution
 
 From a 38MB transcript (~12,000 entries):[^1]
 
-| Type | Count | Percentage | Description |
-|:-----|------:|:-----------|:------------|
-| `queue-operation` | 10,602 | ~86% | Internal queue management |
-| `progress` | 599 | ~5% | Hook progress, waiting states |
-| `assistant` | 563 | ~5% | LLM responses |
-| `user` | 359 | ~3% | User messages and tool results |
-| `system` | 68 | ~1% | System events (hooks, compaction) |
+| Type              |  Count | Percentage | Description                       |
+| :---------------- | -----: | :--------- | :-------------------------------- |
+| `queue-operation` | 10,602 | ~86%       | Internal queue management         |
+| `progress`        |    599 | ~5%        | Hook progress, waiting states     |
+| `assistant`       |    563 | ~5%        | LLM responses                     |
+| `user`            |    359 | ~3%        | User messages and tool results    |
+| `system`          |     68 | ~1%        | System events (hooks, compaction) |
 
 ### Entry Type Details
 
@@ -108,25 +108,25 @@ Content is either a plain string (user text) or an array of tool result objects:
 
 Content block types observed:
 
-| Content Blocks | Count | Description |
-|:---------------|------:|:------------|
-| `["tool_use"]` | 345 | Tool invocation only |
-| `["text"]` | 217 | Text response only |
-| `["thinking"]` | 37 | Internal reasoning |
+| Content Blocks | Count | Description          |
+| :------------- | ----: | :------------------- |
+| `["tool_use"]` |   345 | Tool invocation only |
+| `["text"]`     |   217 | Text response only   |
+| `["thinking"]` |    37 | Internal reasoning   |
 
 Most-used tools (from sample):
 
-| Tool | Count |
-|:-----|------:|
-| Bash | 82 |
-| Read | 69 |
-| TaskOutput | 34 |
-| Task | 32 |
-| SendMessage | 29 |
-| Write | 26 |
-| TaskUpdate | 24 |
-| Glob | 14 |
-| TaskList | 12 |
+| Tool        | Count |
+| :---------- | ----: |
+| Bash        |    82 |
+| Read        |    69 |
+| TaskOutput  |    34 |
+| Task        |    32 |
+| SendMessage |    29 |
+| Write       |    26 |
+| TaskUpdate  |    24 |
+| Glob        |    14 |
+| TaskList    |    12 |
 
 #### `system` Entries
 
@@ -225,10 +225,10 @@ jq --arg start "2026-02-15T10:00" 'select(.timestamp > $start and .type == "assi
 
 **Streaming & performance**:
 
-| File Size | Approach | Memory |
-|:----------|:---------|:-------|
-| < 100MB | Standard `jq 'select(...)'` | Low — line-by-line |
-| 100MB–5GB | `jq --stream` for memory safety | Constant |
+| File Size    | Approach                        | Memory                      |
+| :----------- | :------------------------------ | :-------------------------- |
+| < 100MB      | Standard `jq 'select(...)'`     | Low — line-by-line          |
+| 100MB–5GB    | `jq --stream` for memory safety | Constant                    |
 | Aggregations | `jq -s` (loads all into memory) | High — avoid on large files |
 
 **Strengths**: Full JSON structural awareness, nested field access, aggregations, transformations.[^2]
@@ -294,11 +294,11 @@ rg -F '"type":"assistant"' transcript.jsonl | jq '.message.usage'
 
 **Performance on 1GB JSONL**:[^4]
 
-| Task | grep | rg | jq |
-|:-----|:-----|:---|:---|
-| Count matches | 0.5s | 0.3s | 8–12s |
-| Return matching lines | 1.2s | 0.8s | 15–20s |
-| Filter + extract field | N/A | N/A | 20–25s |
+| Task                   | grep | rg   | jq     |
+| :--------------------- | :--- | :--- | :----- |
+| Count matches          | 0.5s | 0.3s | 8–12s  |
+| Return matching lines  | 1.2s | 0.8s | 15–20s |
+| Filter + extract field | N/A  | N/A  | 20–25s |
 
 **Strengths**: Speed for simple text patterns, UUIDs, timestamps. No JSON parsing overhead.[^4]
 **Weaknesses**: No structural awareness, no numeric comparisons, no nested field queries. String value collisions (matches anywhere in the line).[^4]
@@ -313,60 +313,60 @@ All streaming approaches handle 100MB+ files with ~1–5MB constant memory usage
 
 ### Recommended by Runtime
 
-| Runtime | Primary Choice | Fallback |
-|:--------|:---------------|:---------|
-| **Bun** | `Bun.JSONL.parseChunk()` (native, fastest) | `Bun.file().stream()` (no deps) |
+| Runtime     | Primary Choice                                | Fallback                         |
+| :---------- | :-------------------------------------------- | :------------------------------- |
+| **Bun**     | `Bun.JSONL.parseChunk()` (native, fastest)    | `Bun.file().stream()` (no deps)  |
 | **Node.js** | `ndjson` (147k dependents, industry standard) | `readline` (built-in, zero deps) |
 
 ### Package Comparison
 
-| Package | Install | Streaming | Gzip | Error Handling | Best For |
-|:--------|:--------|:----------|:-----|:---------------|:---------|
-| **Bun.JSONL** | Built-in | Chunk-based | No | Non-throwing (returns error object) | Bun runtime, maximum speed |
-| **ndjson** | `bun add ndjson` | Full stream | No | `strict: false` skips invalid lines | Industry standard, proven |
-| **@jsonlines/core** | `bun add @jsonlines/core` | Full stream | Yes | Configurable | Compressed files, custom serializers |
-| **readline** | Built-in (Node) | Line-by-line | No | Manual try/catch | Zero dependencies |
+| Package             | Install                   | Streaming    | Gzip | Error Handling                      | Best For                             |
+| :------------------ | :------------------------ | :----------- | :--- | :---------------------------------- | :----------------------------------- |
+| **Bun.JSONL**       | Built-in                  | Chunk-based  | No   | Non-throwing (returns error object) | Bun runtime, maximum speed           |
+| **ndjson**          | `bun add ndjson`          | Full stream  | No   | `strict: false` skips invalid lines | Industry standard, proven            |
+| **@jsonlines/core** | `bun add @jsonlines/core` | Full stream  | Yes  | Configurable                        | Compressed files, custom serializers |
+| **readline**        | Built-in (Node)           | Line-by-line | No   | Manual try/catch                    | Zero dependencies                    |
 
 ### Bun.JSONL.parseChunk() Example
 
 ```typescript
-const file = Bun.file('transcript.jsonl')
-const stream = file.stream()
-const reader = stream.getReader()
-const decoder = new TextDecoder()
-let buffer = ''
+const file = Bun.file("transcript.jsonl");
+const stream = file.stream();
+const reader = stream.getReader();
+const decoder = new TextDecoder();
+let buffer = "";
 
 while (true) {
-  const { done, value } = await reader.read()
-  if (done) break
+  const { done, value } = await reader.read();
+  if (done) break;
 
-  buffer += decoder.decode(value)
-  const result = Bun.JSONL.parseChunk(buffer)
+  buffer += decoder.decode(value);
+  const result = Bun.JSONL.parseChunk(buffer);
 
   for (const entry of result.values) {
-    if (entry.type === 'assistant') {
-      const usage = entry.message?.usage
-      console.log(`${entry.timestamp}: ${usage?.output_tokens} tokens`)
+    if (entry.type === "assistant") {
+      const usage = entry.message?.usage;
+      console.log(`${entry.timestamp}: ${usage?.output_tokens} tokens`);
     }
   }
 
-  buffer = buffer.slice(result.read)
+  buffer = buffer.slice(result.read);
 }
 ```
 
 ### ndjson Example (Node.js / Bun)
 
 ```typescript
-import { createReadStream } from 'fs'
-import ndjson from 'ndjson'
+import { createReadStream } from "fs";
+import ndjson from "ndjson";
 
-createReadStream('transcript.jsonl')
+createReadStream("transcript.jsonl")
   .pipe(ndjson.parse({ strict: false }))
-  .on('data', (entry) => {
-    if (entry.type === 'assistant') {
-      console.log(entry.message?.usage)
+  .on("data", (entry) => {
+    if (entry.type === "assistant") {
+      console.log(entry.message?.usage);
     }
-  })
+  });
 ```
 
 ---
@@ -377,12 +377,12 @@ For scripting and data analysis workflows.[^6]
 
 ### Recommended by Use Case
 
-| Use Case | Tool | Why |
-|:---------|:-----|:----|
-| Simple streaming | Built-in `json` | Zero deps, minimal memory |
-| JSONL-specific API | `jsonlines` | Clean API, type validation |
-| DataFrames / aggregation | `pandas` | Familiar, powerful filtering |
-| Speed-critical / large files | `polars` | Rust-based, 3–7x faster, streaming >RAM |
+| Use Case                     | Tool            | Why                                     |
+| :--------------------------- | :-------------- | :-------------------------------------- |
+| Simple streaming             | Built-in `json` | Zero deps, minimal memory               |
+| JSONL-specific API           | `jsonlines`     | Clean API, type validation              |
+| DataFrames / aggregation     | `pandas`        | Familiar, powerful filtering            |
+| Speed-critical / large files | `polars`        | Rust-based, 3–7x faster, streaming >RAM |
 
 ### Quick Patterns
 
@@ -415,34 +415,34 @@ print(f"Assistant turns: {len(assistants)}")
 
 ### By Task Type
 
-| Task | Best Tool | Why |
-|:-----|:----------|:----|
-| **Quick text search** (UUID, session ID) | `rg` | 5–50x faster than jq |
-| **Type-based filtering** | `rg` + `jq` pipe | rg pre-filters, jq extracts |
-| **Nested field extraction** | `jq` | Full structural JSON access |
-| **Token usage analysis** | `jq` or `polars` | Numeric aggregation needed |
-| **Format conversion** (to CSV) | `mlr` | Streaming, handles large files |
-| **Programmatic processing** | `Bun.JSONL` | Native, fastest in TypeScript |
-| **Data science / visualization** | `polars` or `pandas` | DataFrame ecosystem |
-| **Aggregation / grouping** | `jq -s` (small files) or `mlr` (large) | Memory constraints |
+| Task                                     | Best Tool                              | Why                            |
+| :--------------------------------------- | :------------------------------------- | :----------------------------- |
+| **Quick text search** (UUID, session ID) | `rg`                                   | 5–50x faster than jq           |
+| **Type-based filtering**                 | `rg` + `jq` pipe                       | rg pre-filters, jq extracts    |
+| **Nested field extraction**              | `jq`                                   | Full structural JSON access    |
+| **Token usage analysis**                 | `jq` or `polars`                       | Numeric aggregation needed     |
+| **Format conversion** (to CSV)           | `mlr`                                  | Streaming, handles large files |
+| **Programmatic processing**              | `Bun.JSONL`                            | Native, fastest in TypeScript  |
+| **Data science / visualization**         | `polars` or `pandas`                   | DataFrame ecosystem            |
+| **Aggregation / grouping**               | `jq -s` (small files) or `mlr` (large) | Memory constraints             |
 
 ### By File Size
 
-| File Size | Recommended Approach |
-|:----------|:---------------------|
-| < 10MB | Any tool works fine |
-| 10–100MB | `jq` (line-by-line), `rg` for text search |
-| 100MB–1GB | `rg` pre-filter + `jq`, or `mlr` streaming, or `Bun.JSONL` |
-| > 1GB | `rg` for search, `jq --stream`, `mlr --no-mmap`, `polars` streaming |
+| File Size | Recommended Approach                                                |
+| :-------- | :------------------------------------------------------------------ |
+| < 10MB    | Any tool works fine                                                 |
+| 10–100MB  | `jq` (line-by-line), `rg` for text search                           |
+| 100MB–1GB | `rg` pre-filter + `jq`, or `mlr` streaming, or `Bun.JSONL`          |
+| > 1GB     | `rg` for search, `jq --stream`, `mlr --no-mmap`, `polars` streaming |
 
 ### By Language Ecosystem
 
-| Ecosystem | Primary | Secondary |
-|:----------|:--------|:----------|
-| **Shell / CLI** | `jq` + `rg` | `mlr` for tabular ops |
+| Ecosystem            | Primary                  | Secondary                |
+| :------------------- | :----------------------- | :----------------------- |
+| **Shell / CLI**      | `jq` + `rg`              | `mlr` for tabular ops    |
 | **TypeScript / Bun** | `Bun.JSONL.parseChunk()` | `ndjson` (cross-runtime) |
-| **Node.js** | `ndjson` | `readline` (zero deps) |
-| **Python** | `polars` (speed) | `jsonlines` (simplicity) |
+| **Node.js**          | `ndjson`                 | `readline` (zero deps)   |
+| **Python**           | `polars` (speed)         | `jsonlines` (simplicity) |
 
 ---
 
@@ -505,8 +505,13 @@ jq -r 'select(.type == "assistant" or (.type == "user" and (.message.content | t
 ## References
 
 [^1]: Analysis of `~/.claude/projects/-Users-nathan-heaps-src-nsheaps-claude-utils/f848e71b-ec98-44bb-84ef-c6a0ade9e480.jsonl` (38MB, ~12,000 entries)
+
 [^2]: [jq 1.8 Manual](https://jqlang.org/manual/), [JSON Lines Format](https://jsonlines.org/examples/), [JQ Select Explained](https://earthly.dev/blog/jq-select/)
+
 [^3]: [Miller Documentation](https://miller.readthedocs.io/), [Miller GitHub](https://github.com/johnkerl/miller)
+
 [^4]: [ripgrep GitHub](https://github.com/BurntSushi/ripgrep), [JSON, JSONlines, and jq as a better grep](https://zxvf.org/post/jq-as-grep/), [Ripgrep vs Grep Performance](https://www.codeant.ai/blogs/ripgrep-vs-grep-performance)
+
 [^5]: [ndjson npm](https://www.npmjs.com/package/ndjson), [@jsonlines/core npm](https://www.npmjs.com/package/@jsonlines/core), [Bun JSONL API](https://bun.sh/docs/api/jsonl)
+
 [^6]: [jsonlines PyPI](https://pypi.org/project/jsonlines/), [polars documentation](https://docs.pola.rs/), [pandas read_json](https://pandas.pydata.org/docs/reference/api/pandas.read_json.html)

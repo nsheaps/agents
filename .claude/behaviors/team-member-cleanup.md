@@ -88,12 +88,12 @@ After removing stale entries, you can spawn a fresh agent with the same name wit
 
 The following agent management tools do not exist yet but would prevent the need for manual cleanup:
 
-| Missing Tool | What It Would Do |
-|:---|:---|
-| `TeamRemoveMember` | Remove a specific member from the team config by name |
-| `TeamListMembers` | List team members with live/dead status (cross-referencing tmux panes) |
-| `TeamCleanup` | Auto-detect and remove all stale members whose backends are gone |
-| Graceful crash handling | System detects when a tmux pane exits and auto-deactivates the member |
+| Missing Tool            | What It Would Do                                                       |
+| :---------------------- | :--------------------------------------------------------------------- |
+| `TeamRemoveMember`      | Remove a specific member from the team config by name                  |
+| `TeamListMembers`       | List team members with live/dead status (cross-referencing tmux panes) |
+| `TeamCleanup`           | Auto-detect and remove all stale members whose backends are gone       |
+| Graceful crash handling | System detects when a tmux pane exits and auto-deactivates the member  |
 
 See also: `docs/to-research.md` for broader agent management tool gaps.
 

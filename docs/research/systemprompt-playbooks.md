@@ -56,25 +56,25 @@ Mandatory rules: "DO NOT skip steps. DO NOT guess commands. ALWAYS use playbooks
 
 ### Guide Category (9 playbooks)
 
-| Playbook                                                      | Description                                                                                                          |
-| :------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------- |
-| **START HERE** (`guide-start`)                                | Required foundational reading. Master index mapping tasks to playbook IDs. Establishes mandatory rules.[^2]          |
+| Playbook                                                      | Description                                                                                                              |
+| :------------------------------------------------------------ | :----------------------------------------------------------------------------------------------------------------------- |
+| **START HERE** (`guide-start`)                                | Required foundational reading. Master index mapping tasks to playbook IDs. Establishes mandatory rules.[^2]              |
 | **Playbook Authoring Guide** (`guide-playbook`)               | How to write machine-executable playbooks. Five rules: deterministic, testable, bounded, self-repairing, bloat-free.[^2] |
-| **Multi-Agent Mesh Architecture** (`guide-mesh-architecture`) | Hub-and-spoke coordination. A2A protocol. Port allocation strategy. The most relevant guide for our work.[^2]        |
-| **Workflow Recipes** (`guide-recipes`)                        | Complete examples: blog publishing, CSS/JS integration, homepage config, content refresh.[^2]                        |
-| **AI Provider Configuration** (`guide-ai-provider`)           | Setup for Anthropic, OpenAI, Gemini. Provider capabilities matrix.[^2]                                               |
-| **Coding Standards** (`guide-coding-standards`)               | Master index linking to language-specific standards.[^3]                                                             |
-| **Documentation Authoring** (`guide-documentation`)           | Standards for creating and editing documentation.[^3]                                                                |
-| **Discord Integration** (`guide-discord`)                     | Discord messaging and gateway integration for notifications.[^2]                                                     |
-| **Migrate from OpenClaw** (`guide-migrate-openclaw`)          | Migration path preserving operational context.[^2]                                                                   |
+| **Multi-Agent Mesh Architecture** (`guide-mesh-architecture`) | Hub-and-spoke coordination. A2A protocol. Port allocation strategy. The most relevant guide for our work.[^2]            |
+| **Workflow Recipes** (`guide-recipes`)                        | Complete examples: blog publishing, CSS/JS integration, homepage config, content refresh.[^2]                            |
+| **AI Provider Configuration** (`guide-ai-provider`)           | Setup for Anthropic, OpenAI, Gemini. Provider capabilities matrix.[^2]                                                   |
+| **Coding Standards** (`guide-coding-standards`)               | Master index linking to language-specific standards.[^3]                                                                 |
+| **Documentation Authoring** (`guide-documentation`)           | Standards for creating and editing documentation.[^3]                                                                    |
+| **Discord Integration** (`guide-discord`)                     | Discord messaging and gateway integration for notifications.[^2]                                                         |
+| **Migrate from OpenClaw** (`guide-migrate-openclaw`)          | Migration path preserving operational context.[^2]                                                                       |
 
 ### Other Categories
 
-| Category    | Count | Focus                                                                                     |
-| :---------- | :---- | :---------------------------------------------------------------------------------------- |
-| **CLI**     | 23    | Command operations: agents, sessions, mesh, skills, MCP, cloud, analytics[^2]             |
-| **Build**   | 37    | Extensions, MCP servers, web infrastructure, Rust standards, checklists[^3]               |
-| **Domain**  | 12    | Operations and troubleshooting: agents, AI, MCP, skills, content, scheduling[^2]          |
+| Category    | Count | Focus                                                                                         |
+| :---------- | :---- | :-------------------------------------------------------------------------------------------- |
+| **CLI**     | 23    | Command operations: agents, sessions, mesh, skills, MCP, cloud, analytics[^2]                 |
+| **Build**   | 37    | Extensions, MCP servers, web infrastructure, Rust standards, checklists[^3]                   |
+| **Domain**  | 12    | Operations and troubleshooting: agents, AI, MCP, skills, content, scheduling[^2]              |
 | **Content** | 10    | Platform-specific creation: blog, Medium, LinkedIn, HackerNoon, Twitter, Reddit, Substack[^2] |
 
 **Total**: ~91 playbooks across 5 categories.
@@ -179,18 +179,18 @@ The hub maintains:[^2]
 
 ### Structural Comparison
 
-| Dimension       | SystemPrompt Playbooks                    | Our Agent Files                      | Our Behaviors            | Our Skills                 |
-| :-------------- | :---------------------------------------- | :----------------------------------- | :----------------------- | :------------------------- |
-| **Format**      | YAML frontmatter + JSON command blocks[^2] | YAML frontmatter + Markdown body    | Markdown                 | Markdown with `!`command`` |
-| **Purpose**     | Deterministic machine execution           | System prompt for LLM                | Role-agnostic procedures | Task-specific knowledge    |
-| **Audience**    | Both machines and humans                  | LLMs (via system prompt)             | LLMs (via conversation)  | LLMs (via conversation)    |
-| **Execution**   | Agents execute exact commands[^2]         | Agent follows behavioral guidance    | Agent follows procedure  | Agent follows instructions |
-| **Self-repair** | Built-in (agents fix playbooks)[^2]       | None                                 | None                     | None                       |
-| **Validation**  | CLI help verification, URL checks[^2]    | Manual review                        | Manual review            | Manual review              |
-| **Persona**     | Implicit (content playbooks define voice) | Explicit (`<system-message>` block)  | None                     | None                       |
-| **Scope**       | Single domain per playbook                | One agent per file                   | One procedure per file   | One topic per file         |
-| **Persistence** | Versioned files synced to DB[^5]          | System prompt (persistent)           | Conversation context     | Conversation context       |
-| **Categories**  | 5 (Guide, CLI, Build, Content, Domain)    | By role (engineer, researcher, etc.) | By procedure type        | By topic                   |
+| Dimension       | SystemPrompt Playbooks                     | Our Agent Files                      | Our Behaviors            | Our Skills                 |
+| :-------------- | :----------------------------------------- | :----------------------------------- | :----------------------- | :------------------------- |
+| **Format**      | YAML frontmatter + JSON command blocks[^2] | YAML frontmatter + Markdown body     | Markdown                 | Markdown with `!`command`` |
+| **Purpose**     | Deterministic machine execution            | System prompt for LLM                | Role-agnostic procedures | Task-specific knowledge    |
+| **Audience**    | Both machines and humans                   | LLMs (via system prompt)             | LLMs (via conversation)  | LLMs (via conversation)    |
+| **Execution**   | Agents execute exact commands[^2]          | Agent follows behavioral guidance    | Agent follows procedure  | Agent follows instructions |
+| **Self-repair** | Built-in (agents fix playbooks)[^2]        | None                                 | None                     | None                       |
+| **Validation**  | CLI help verification, URL checks[^2]      | Manual review                        | Manual review            | Manual review              |
+| **Persona**     | Implicit (content playbooks define voice)  | Explicit (`<system-message>` block)  | None                     | None                       |
+| **Scope**       | Single domain per playbook                 | One agent per file                   | One procedure per file   | One topic per file         |
+| **Persistence** | Versioned files synced to DB[^5]           | System prompt (persistent)           | Conversation context     | Conversation context       |
+| **Categories**  | 5 (Guide, CLI, Build, Content, Domain)     | By role (engineer, researcher, etc.) | By procedure type        | By topic                   |
 
 ### Key Differences
 
@@ -250,12 +250,12 @@ The hub maintains:[^2]
 
 ### Patterns to NOT Adopt
 
-| Pattern                                | Why Not                                                                                                      |
-| :------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
-| **JSON command blocks**                | Our agents interpret Markdown, not execute JSON. Different execution model.                                  |
+| Pattern                                | Why Not                                                                                                          |
+| :------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
+| **JSON command blocks**                | Our agents interpret Markdown, not execute JSON. Different execution model.                                      |
 | **Hub-and-spoke with port allocation** | Relevant for process-based agents, not Claude Code's in-process/tmux model. Consider for agent-team project.[^9] |
-| **Database-backed playbook sync**      | Over-engineered for our file-based approach. Git versioning is sufficient.                                   |
-| **BSL licensing**                      | Our project is MIT/open.                                                                                     |
+| **Database-backed playbook sync**      | Over-engineered for our file-based approach. Git versioning is sufficient.                                       |
+| **BSL licensing**                      | Our project is MIT/open.                                                                                         |
 
 ## 7. Agent/Behavior/Skill Distinction Comparison
 
@@ -273,10 +273,10 @@ Agents load skills at startup, then follow playbooks to execute tasks. The A2A p
 
 ### Our Model
 
-| Concept      | Our System                  | Description                                                 |
-| :----------- | :-------------------------- | :---------------------------------------------------------- |
-| **Agent**    | `.claude/agents/*.md`       | Autonomous role with persona, own session, responsibilities |
-| **Behavior** | `.claude/behaviors/*.md`    | Role-agnostic procedure any agent can execute               |
+| Concept      | Our System                    | Description                                                 |
+| :----------- | :---------------------------- | :---------------------------------------------------------- |
+| **Agent**    | `.claude/agents/*.md`         | Autonomous role with persona, own session, responsibilities |
+| **Behavior** | `.claude/behaviors/*.md`      | Role-agnostic procedure any agent can execute               |
 | **Skill**    | `plugins/*/skills/*/SKILL.md` | Task-specific knowledge recalled on demand                  |
 
 ### Key Distinctions
@@ -338,13 +338,23 @@ The `systemprompt-code-orchestrator` repository[^7] (MCP server for coordinating
 ## References
 
 [^1]: https://systemprompt.io
+
 [^2]: https://systemprompt.io/playbooks
+
 [^3]: https://systemprompt.io/documentation
+
 [^4]: https://github.com/systempromptio
+
 [^5]: https://github.com/systempromptio/systemprompt-core
+
 [^6]: https://github.com/systempromptio/systemprompt-template
+
 [^7]: https://github.com/systempromptio/systemprompt-code-orchestrator
+
 [^8]: https://github.com/systempromptio/systemprompt-mcp-server
+
 [^9]: https://blog.n8n.io/ai-agent-orchestration-frameworks/
+
 [^10]: https://akka.io/blog/ai-orchestration-tools
+
 [^11]: https://medium.com/@kzamania/a-comparative-study-of-ai-agent-orchestration-frameworks-f61cd49b687e

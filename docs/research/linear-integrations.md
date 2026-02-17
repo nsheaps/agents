@@ -115,9 +115,9 @@ This solves "context fragmentation" — teams no longer context-switch between p
 
 ## 4. Community MCP Implementations
 
-| Project                           | Repo                                                                                  | Focus                              |
-| :-------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------- |
-| mcp-linear (TacticLaunch)         | [tacticlaunch/mcp-linear](https://github.com/tacticlaunch/mcp-linear)[^6]             | Natural language issue interaction |
+| Project                           | Repo                                                                                      | Focus                              |
+| :-------------------------------- | :---------------------------------------------------------------------------------------- | :--------------------------------- |
+| mcp-linear (TacticLaunch)         | [tacticlaunch/mcp-linear](https://github.com/tacticlaunch/mcp-linear)[^6]                 | Natural language issue interaction |
 | linear-mcp-integration (Touchlab) | [touchlab/linear-mcp-integration](https://github.com/touchlab/linear-mcp-integration)[^7] | Alternative integration layer      |
 
 ## 5. Why Linear Built for Agents
@@ -194,12 +194,21 @@ The most valuable pattern: agents read context from Linear, execute work, update
 ## References
 
 [^1]: https://linear.app/docs/agents-in-linear
+
 [^2]: https://linear.app/docs/mcp
+
 [^3]: https://linear.app/developers/webhooks
+
 [^4]: https://linear.app/integrations/cursor
+
 [^5]: https://linear.app/now/how-cursor-integrated-with-linear-for-agents
+
 [^6]: https://github.com/tacticlaunch/mcp-linear
+
 [^7]: https://github.com/touchlab/linear-mcp-integration
+
 [^8]: https://mcp.composio.dev/linear
+
 [^9]: https://thenewstack.io/why-linear-built-an-api-for-agents/
+
 [^10]: https://www.builder.io/blog/linear-mcp-server

@@ -194,19 +194,35 @@ Git worktrees for agent isolation. Automatic conflict detection before merge.[^9
 ## References
 
 [^1]: https://openai.com/codex/
+
 [^2]: https://openai.com/index/introducing-gpt-5-3-codex/
+
 [^3]: https://developers.openai.com/codex/cli/reference/
+
 [^4]: https://openai.com/index/introducing-the-codex-app/
+
 [^5]: https://developers.openai.com/codex/mcp
+
 [^6]: https://developers.openai.com/codex/guides/agents-sdk/
+
 [^7]: https://openai.com/index/unrolling-the-codex-agent-loop/
+
 [^8]: https://developers.openai.com/codex/security/
+
 [^9]: https://developers.openai.com/codex/app/
+
 [^10]: https://developers.openai.com/codex/github-action/
+
 [^11]: https://developers.openai.com/cookbook/examples/codex/codex_mcp_agents_sdk/building_consistent_workflows_codex_cli_agents_sdk
+
 [^12]: https://developers.openai.com/cookbook/examples/codex/build_code_review_with_codex_sdk
+
 [^13]: https://thoughts.jock.pl/p/claude-code-vs-codex-real-comparison-2026
+
 [^14]: https://almcorp.com/blog/openai-codex-app-macos-guide-features-pricing-security/
+
 [^15]: https://github.com/nyldn/claude-octopus
+
 [^16]: https://github.com/bfly123/claude_code_bridge
+
 [^17]: https://github.com/Dinesh7N/multi-agent-orchestration

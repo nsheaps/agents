@@ -79,14 +79,14 @@ A "flavor" is a named configuration that produces a distinct system prompt from 
 
 ### 3.2 Proposed Flavor Dimensions
 
-| Dimension | Values | Prompt Impact |
-|:----------|:-------|:--------------|
-| **Permission mode** | `default`, `delegate`, `plan`, `bypassPermissions` | Changes tool restrictions and behavioral instructions |
-| **Agent teams** | Off, Lead session, Teammate session | Adds team primitives (7 tools), teammate communication rules |
-| **Teammate mode** | N/A, `in-process`, `tmux` | Minor differences in spawn backend instructions |
-| **Plan mode** | Off, Active | Restricts to read-only tools, adds planning instructions |
-| **MCP servers** | None, Specific server configs | Injects server tools and instructions |
-| **Plugins** | None, Specific plugin set | Injects skills, agents, hooks, commands |
+| Dimension           | Values                                             | Prompt Impact                                                |
+| :------------------ | :------------------------------------------------- | :----------------------------------------------------------- |
+| **Permission mode** | `default`, `delegate`, `plan`, `bypassPermissions` | Changes tool restrictions and behavioral instructions        |
+| **Agent teams**     | Off, Lead session, Teammate session                | Adds team primitives (7 tools), teammate communication rules |
+| **Teammate mode**   | N/A, `in-process`, `tmux`                          | Minor differences in spawn backend instructions              |
+| **Plan mode**       | Off, Active                                        | Restricts to read-only tools, adds planning instructions     |
+| **MCP servers**     | None, Specific server configs                      | Injects server tools and instructions                        |
+| **Plugins**         | None, Specific plugin set                          | Injects skills, agents, hooks, commands                      |
 
 ### 3.3 Flavor Extraction
 
@@ -155,13 +155,13 @@ The existing web interface has a **version dropdown** for selecting two versions
 
 Current cchistory output is a single markdown file with the full prompt. Add selectable views:
 
-| Style | Description |
-|:------|:------------|
-| **Full prompt** | Existing behavior — complete system prompt markdown |
-| **Sections only** | Parsed sections (system instructions, tool descriptions, user rules) as collapsible blocks |
-| **Tools only** | Just tool definitions and their schemas |
-| **Diff from default** | Show only what changed from the "default" flavor |
-| **Delta between flavors** | Side-by-side showing additions/removals between two flavors |
+| Style                     | Description                                                                                |
+| :------------------------ | :----------------------------------------------------------------------------------------- |
+| **Full prompt**           | Existing behavior — complete system prompt markdown                                        |
+| **Sections only**         | Parsed sections (system instructions, tool descriptions, user rules) as collapsible blocks |
+| **Tools only**            | Just tool definitions and their schemas                                                    |
+| **Diff from default**     | Show only what changed from the "default" flavor                                           |
+| **Delta between flavors** | Side-by-side showing additions/removals between two flavors                                |
 
 ---
 
@@ -191,21 +191,21 @@ Add a **conversation visualization** view to the cchistory web interface (or as 
 
 ### 4.3 Visualization Modes
 
-| Mode | Description |
-|:-----|:------------|
-| **Timeline** | Chronological sequence of all inter-agent messages, color-coded by sender |
-| **Agent focus** | Filter to show messages to/from a specific agent |
-| **Task flow** | Show task lifecycle (create → claim → progress → complete) with associated messages |
-| **Transcript replay** | Step through the conversation turn-by-turn, showing each agent's context |
+| Mode                  | Description                                                                         |
+| :-------------------- | :---------------------------------------------------------------------------------- |
+| **Timeline**          | Chronological sequence of all inter-agent messages, color-coded by sender           |
+| **Agent focus**       | Filter to show messages to/from a specific agent                                    |
+| **Task flow**         | Show task lifecycle (create → claim → progress → complete) with associated messages |
+| **Transcript replay** | Step through the conversation turn-by-turn, showing each agent's context            |
 
 ### 4.4 Data Sources
 
-| Source | Location | Contains |
-|:-------|:---------|:---------|
-| Team config | `~/.claude/teams/{team}/config.json` | Team members, agent names, types |
-| Inboxes | `~/.claude/teams/{team}/inboxes/{agent}.json` | Message history per agent |
-| Tasks | `~/.claude/tasks/{team}/*.json` | Task definitions, ownership, status |
-| JSONL transcripts | `~/.claude/projects/**/*.jsonl` | Full session transcripts including SendMessage tool uses |
+| Source            | Location                                      | Contains                                                 |
+| :---------------- | :-------------------------------------------- | :------------------------------------------------------- |
+| Team config       | `~/.claude/teams/{team}/config.json`          | Team members, agent names, types                         |
+| Inboxes           | `~/.claude/teams/{team}/inboxes/{agent}.json` | Message history per agent                                |
+| Tasks             | `~/.claude/tasks/{team}/*.json`               | Task definitions, ownership, status                      |
+| JSONL transcripts | `~/.claude/projects/**/*.jsonl`               | Full session transcripts including SendMessage tool uses |
 
 The JSONL transcript schema (documented in our [JSONL parsing tools research](../research/jsonl-parsing-tools.md)) provides the richest data source. Key fields for team visualization:
 
@@ -228,13 +228,13 @@ The JSONL transcript schema (documented in our [JSONL parsing tools research](..
 
 ### 5.2 Upstream PR Candidates
 
-| Change | PR-back Likelihood | Rationale |
-|:-------|:-------------------|:----------|
-| `--flavor` config file support | High | General-purpose, benefits all users |
-| Flavor dropdown in web UI | High | Natural extension of existing version dropdown |
-| Output style toggle | High | Useful for all researchers |
-| Inter-agent visualization | Medium | Depends on whether upstream wants agent-team features |
-| JSONL transcript parsing | Low | May be too specific to our use case |
+| Change                         | PR-back Likelihood | Rationale                                             |
+| :----------------------------- | :----------------- | :---------------------------------------------------- |
+| `--flavor` config file support | High               | General-purpose, benefits all users                   |
+| Flavor dropdown in web UI      | High               | Natural extension of existing version dropdown        |
+| Output style toggle            | High               | Useful for all researchers                            |
+| Inter-agent visualization      | Medium             | Depends on whether upstream wants agent-team features |
+| JSONL transcript parsing       | Low                | May be too specific to our use case                   |
 
 ### 5.3 Technology
 
@@ -271,7 +271,11 @@ The JSONL transcript schema (documented in our [JSONL parsing tools research](..
 ## References
 
 [^1]: [badlogic/cchistory — GitHub](https://github.com/badlogic/cchistory)
+
 [^2]: [cchistory: Tracking Claude Code System Prompt and Tool Changes — Mario Zechner's blog](https://mariozechner.at/posts/2025-08-03-cchistory/)
+
 [^3]: [cchistory web interface](https://cchistory.mariozechner.at/)
+
 [^4]: User's Obsidian vault: `~/src/nsheaps/obsidian-vaults/ideas.md` and `~/src/nsheaps/obsidian-vaults/ai ramblings.md`
+
 [^5]: [Claude Code Agent Teams documentation](https://code.claude.com/docs/en/agent-teams)

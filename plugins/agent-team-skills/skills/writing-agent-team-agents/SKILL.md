@@ -172,9 +172,9 @@ All agents inherit the project's CLAUDE.md content (including its `@references`)
 
 Agent files and persona files serve fundamentally different purposes:
 
-| Concept | Location | What It Is |
-|:--------|:---------|:-----------|
-| **Agent** (`.claude/agents/<name>.md`) | System prompt | The **job** — role, responsibilities, behaviors, process, quality standards |
+| Concept                                    | Location      | What It Is                                                                   |
+| :----------------------------------------- | :------------ | :--------------------------------------------------------------------------- |
+| **Agent** (`.claude/agents/<name>.md`)     | System prompt | The **job** — role, responsibilities, behaviors, process, quality standards  |
 | **Persona** (`.claude/personas/<name>.md`) | Reference doc | The **person** — identity, communication style, public voice, avatar concept |
 
 **Why they're separate**: Agents will act autonomously in public-facing contexts — Slack messages, GitHub issues, blog articles, Reddit posts. The persona defines HOW the agent presents itself externally. The agent file defines WHAT the agent does professionally.

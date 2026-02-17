@@ -51,14 +51,14 @@ Find specific information from past conversations — user requests, decisions, 
 
 Transcripts live at `~/.claude/projects/{project-path-hash}/{session-id}.jsonl`. Each line is a JSON object with a `type` field:
 
-| Type | What It Contains |
-|:-----|:-----------------|
-| `user` | User messages and tool results |
-| `assistant` | LLM responses (text, tool_use, thinking) |
-| `system` | System events (hooks, compaction boundaries) |
-| `summary` | Compaction summaries |
+| Type              | What It Contains                                         |
+| :---------------- | :------------------------------------------------------- |
+| `user`            | User messages and tool results                           |
+| `assistant`       | LLM responses (text, tool_use, thinking)                 |
+| `system`          | System events (hooks, compaction boundaries)             |
+| `summary`         | Compaction summaries                                     |
 | `queue-operation` | Internal queue management (~86% of entries — skip these) |
-| `progress` | Hook progress and waiting states |
+| `progress`        | Hook progress and waiting states                         |
 
 ## Practical CLI Recipes
 

@@ -7,16 +7,17 @@ Discovered during looney-tunes team session. These tools are needed but don't ex
 
 ### Missing Tools
 
-| Tool | Purpose | Current Workaround |
-|:---|:---|:---|
-| `TeamRemoveMember` | Remove a specific member from team config by name | Manual `jq` edit of `~/.claude/teams/{team}/config.json` |
-| `TeamListMembers` | List members with live/dead status (cross-reference tmux panes) | `jq` on config + `tmux list-panes` manually |
-| `TeamCleanup` | Auto-remove all stale members whose backends are gone | Manual detection and jq cleanup |
-| `TeamRespawn` | Kill and respawn a teammate cleanly (same name, fresh session) | shutdown_request → wait → manual cleanup if needed → Task spawn |
+| Tool               | Purpose                                                         | Current Workaround                                              |
+| :----------------- | :-------------------------------------------------------------- | :-------------------------------------------------------------- |
+| `TeamRemoveMember` | Remove a specific member from team config by name               | Manual `jq` edit of `~/.claude/teams/{team}/config.json`        |
+| `TeamListMembers`  | List members with live/dead status (cross-reference tmux panes) | `jq` on config + `tmux list-panes` manually                     |
+| `TeamCleanup`      | Auto-remove all stale members whose backends are gone           | Manual detection and jq cleanup                                 |
+| `TeamRespawn`      | Kill and respawn a teammate cleanly (same name, fresh session)  | shutdown_request → wait → manual cleanup if needed → Task spawn |
 
 ### Root Cause
 
 When a teammate's tmux pane is killed externally (user kills it, crash, etc.), the team config retains the member entry with `isActive: true`. The system has no mechanism to detect that the backend process is gone. This causes:
+
 - Name collisions when respawning (system appends `-2`, `-3` suffixes)
 - Stale entries accumulating in config over long sessions
 - No way to cleanly replace a teammate without manual config surgery
@@ -24,6 +25,7 @@ When a teammate's tmux pane is killed externally (user kills it, crash, etc.), t
 ### Graceful Crash Handling (Feature Request)
 
 The system should detect when a tmux pane exits (via `tmux wait-for` or pane monitoring) and automatically:
+
 1. Mark the member as `isActive: false`
 2. Remove the member entry from config
 3. Notify the team lead that a teammate terminated unexpectedly
@@ -32,15 +34,16 @@ The system should detect when a tmux pane exits (via `tmux wait-for` or pane mon
 
 **Design requirement**: Agent management tool sets should be optionally turned on and off per agent. Not every agent needs team management capabilities.
 
-| Tool Category | Examples | Who Needs It |
-|:---|:---|:---|
-| Team management | TeamCreate, TeamRemoveMember, TeamCleanup | Orchestrators, team leads |
-| Task management | TaskCreate, TaskUpdate, TaskList | PMs, team leads, any coordinator |
-| Messaging | SendMessage (all types) | All agents |
-| Agent spawning | Task (with team_name) | Orchestrators, agents that spawn sub-processes |
-| Shutdown control | SendMessage (shutdown_request) | Team leads only |
+| Tool Category    | Examples                                  | Who Needs It                                   |
+| :--------------- | :---------------------------------------- | :--------------------------------------------- |
+| Team management  | TeamCreate, TeamRemoveMember, TeamCleanup | Orchestrators, team leads                      |
+| Task management  | TaskCreate, TaskUpdate, TaskList          | PMs, team leads, any coordinator               |
+| Messaging        | SendMessage (all types)                   | All agents                                     |
+| Agent spawning   | Task (with team_name)                     | Orchestrators, agents that spawn sub-processes |
+| Shutdown control | SendMessage (shutdown_request)            | Team leads only                                |
 
 **Why**: Some agents can launch their own separate agent processes (nested orchestrators, sub-team leads). These need team/task/spawn tools. Leaf agents that only execute work (engineers, researchers) may not need team management tools at all. Giving every agent the full tool set creates:
+
 - Unnecessary complexity in agent prompts
 - Risk of agents accidentally creating teams or spawning teammates
 - Larger context from tool descriptions that aren't relevant

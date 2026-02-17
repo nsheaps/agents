@@ -38,6 +38,7 @@ Prevent over-engineering in design artifacts. Claude's default behavior is to pr
 If your first draft is longer than 15 lines, you over-engineered it. Delete and start over.
 
 Ask yourself:
+
 - Can I say this in fewer words? (Yes. Always yes.)
 - Am I solving a problem that exists right now? (If not, cut it.)
 - Would I need this if we were building it tomorrow? (If not, cut it.)

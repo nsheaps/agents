@@ -79,17 +79,17 @@ Ruby framework using single-process orchestration with direct method calls. Deco
 
 ## 4. Tier 2-3 Tools: Notable Implementations
 
-| Tool                             | Stars  | Key Feature                                                             | Language    |
-| -------------------------------- | ------ | ----------------------------------------------------------------------- | ----------- |
-| **reshashi claude-orchestrator** | 65     | Git worktree isolation, delivery pipeline state machine[^4]             | TypeScript  |
+| Tool                             | Stars  | Key Feature                                                                 | Language    |
+| -------------------------------- | ------ | --------------------------------------------------------------------------- | ----------- |
+| **reshashi claude-orchestrator** | 65     | Git worktree isolation, delivery pipeline state machine[^4]                 | TypeScript  |
 | **ccswarm (nwiizo)**             | Medium | 93% token reduction via session persistence, autonomous task generation[^5] | Rust        |
-| **claude-code-orchestrator-kit** | 73     | 33+ agents, 38 skills, quality gates, health monitoring[^6]            | Mixed       |
-| **claude-code-agents-orchestra** | —      | Organizational hierarchy, model-aware assignment (Opus/Sonnet)[^7]     | YAML/Config |
-| **claude-007-agents**            | 237    | 14 agent categories, resilience patterns, exponential planner[^8]      | Multi       |
-| **myclaude**                     | 2.1k   | Multi-provider (Claude, Codex, Gemini), 5-phase workflows[^9]          | Node.js     |
-| **systemprompt-orchestrator**    | 139    | MCP server, remote access, Firebase notifications                       | TypeScript  |
-| **claude-code-by-agents**        | 710    | Desktop UI, @mention orchestration, remote API[^10]                    | —           |
-| **disler observability**         | —      | 12+ hook points for lifecycle monitoring                                | Python      |
+| **claude-code-orchestrator-kit** | 73     | 33+ agents, 38 skills, quality gates, health monitoring[^6]                 | Mixed       |
+| **claude-code-agents-orchestra** | —      | Organizational hierarchy, model-aware assignment (Opus/Sonnet)[^7]          | YAML/Config |
+| **claude-007-agents**            | 237    | 14 agent categories, resilience patterns, exponential planner[^8]           | Multi       |
+| **myclaude**                     | 2.1k   | Multi-provider (Claude, Codex, Gemini), 5-phase workflows[^9]               | Node.js     |
+| **systemprompt-orchestrator**    | 139    | MCP server, remote access, Firebase notifications                           | TypeScript  |
+| **claude-code-by-agents**        | 710    | Desktop UI, @mention orchestration, remote API[^10]                         | —           |
+| **disler observability**         | —      | 12+ hook points for lifecycle monitoring                                    | Python      |
 
 ---
 
@@ -175,16 +175,27 @@ Ruby framework using single-process orchestration with direct method calls. Deco
 ## References
 
 [^1]: https://github.com/ruvnet/claude-flow
+
 [^2]: https://github.com/Yeachan-Heo/oh-my-claudecode
+
 [^3]: https://github.com/parruda/swarm
+
 [^4]: https://github.com/reshashi/claude-orchestrator
+
 [^5]: https://github.com/nwiizo/ccswarm
+
 [^6]: https://github.com/maslennikov-ig/claude-code-orchestrator-kit
+
 [^7]: https://github.com/0ldh/claude-code-agents-orchestra
+
 [^8]: https://github.com/avivl/claude-007-agents
+
 [^9]: https://github.com/cexll/myclaude
+
 [^10]: https://github.com/baryhuang/claude-code-by-agents
+
 [^11]: https://github.com/hesreallyhim/awesome-claude-code
+
 [^12]: https://github.com/hesreallyhim/a-list-of-claude-code-agents
 
 ---

@@ -116,16 +116,27 @@ All support multi-agent coordination, state management, and integration with Mod
 ## References
 
 [^1]: https://langchain-ai.github.io/langgraph/
+
 [^2]: https://docs.crewai.com/
+
 [^3]: https://microsoft.github.io/autogen/
+
 [^4]: https://learn.microsoft.com/en-us/semantic-kernel/frameworks/agent/
+
 [^5]: https://www.datacamp.com/tutorial/crewai-vs-langgraph-vs-autogen
+
 [^6]: https://iterathon.tech/blog/ai-agent-orchestration-frameworks-2026
+
 [^7]: https://itnext.io/mcp-vs-agent-orchestration-frameworks-langgraph-crewai-etc-ec6bd611aa4d
+
 [^8]: https://github.com/langchain-ai/langgraph
+
 [^9]: https://github.com/crewAIInc/crewAI
+
 [^10]: https://github.com/microsoft/autogen
+
 [^11]: https://www.langchain.com/langgraph
+
 [^12]: https://www.businesswire.com/news/home/20260211693427/en/Agentic-AI-Reaches-Tipping-Point-100-of-Enterprises-Plan-to-Expand-Adoption-in-2026-New-CrewAI-Survey-Finds
 
 ---
