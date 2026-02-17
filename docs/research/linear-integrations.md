@@ -9,17 +9,17 @@
 
 ## 1. What It Is
 
-Linear has explicitly built for AI agents in 2026, providing a complete stack for agent-driven project management. The ecosystem includes three official integration layers and multiple community implementations.
+Linear has explicitly built for AI agents in 2026, providing a complete stack for agent-driven project management.[^9] The ecosystem includes three official integration layers and multiple community implementations.
 
 - **Maker**: Linear (linear.app)
-- **Maturity**: Production — official Agent API, MCP Server, and Webhooks all GA
-- **Key change in 2026**: Linear moved from "project management tool" to "agent coordination platform"
+- **Maturity**: Production — official Agent API, MCP Server, and Webhooks all GA[^1][^2][^3]
+- **Key change in 2026**: Linear moved from "project management tool" to "agent coordination platform"[^9]
 
 ## 2. Architecture: Three Integration Layers
 
 ### 2.1 Official Agent API
 
-**Documentation**: [linear.app/docs/agents-in-linear](https://linear.app/docs/agents-in-linear)
+**Documentation**: [linear.app/docs/agents-in-linear](https://linear.app/docs/agents-in-linear)[^1]
 
 Agents operate as "app users" in the workspace:
 
@@ -39,7 +39,7 @@ Agent management:
 
 ### 2.2 Official MCP Server
 
-**Documentation**: [linear.app/docs/mcp](https://linear.app/docs/mcp)
+**Documentation**: [linear.app/docs/mcp](https://linear.app/docs/mcp)[^2]
 
 32+ tools covering the full Linear API:
 
@@ -54,15 +54,15 @@ Agent management:
 
 **Authentication**:
 
-- OAuth 2.1 with dynamic client registration
+- OAuth 2.1 with dynamic client registration[^2]
 - Direct API key via Authorization headers
 - Hosted at `https://mcp.linear.app/mcp` (HTTP) and `https://mcp.linear.app/sse` (SSE)
 
-**Supported clients**: Claude, Cursor, Codex, Jules, VS Code, v0, Windsurf, Zed, and 100+ MCP-compatible clients.
+**Supported clients**: Claude, Cursor, Codex, Jules, VS Code, v0, Windsurf, Zed, and 100+ MCP-compatible clients.[^2]
 
 ### 2.3 Webhooks
 
-**Documentation**: [linear.app/developers/webhooks](https://linear.app/developers/webhooks)
+**Documentation**: [linear.app/developers/webhooks](https://linear.app/developers/webhooks)[^3]
 
 Event-driven automation supporting:
 
@@ -71,7 +71,7 @@ Event-driven automation supporting:
 - Attachments, Documents, Projects, Cycles, Labels, Users
 - Emoji reactions, Issue SLAs
 
-Delivery: HTTP POST with automatic retry (1 min, 1 hour, 6 hours), signature verification.
+Delivery: HTTP POST with automatic retry (1 min, 1 hour, 6 hours), signature verification.[^3]
 
 ## 3. Integration Patterns
 
@@ -103,26 +103,26 @@ Lead Agent (in tmux pane)
 
 ### Pattern C: Cursor + Linear (Reference Implementation)
 
-**Documentation**: [linear.app/integrations/cursor](https://linear.app/integrations/cursor)
+**Documentation**: [linear.app/integrations/cursor](https://linear.app/integrations/cursor)[^4]
 
 1. Assign Linear issue to Cursor
-2. Cursor cloud agent executes the task
+2. Cursor cloud agent executes the task[^5]
 3. Agent creates PR automatically
 4. Linear issue updated with status and PR link
 5. Progress trackable in: Linear UI, Cursor web app, IDE
 
-This solves "context fragmentation" — teams no longer context-switch between project management and code execution.
+This solves "context fragmentation" — teams no longer context-switch between project management and code execution.[^9]
 
 ## 4. Community MCP Implementations
 
 | Project                           | Repo                                                                                  | Focus                              |
 | :-------------------------------- | :------------------------------------------------------------------------------------ | :--------------------------------- |
-| mcp-linear (TacticLaunch)         | [tacticlaunch/mcp-linear](https://github.com/tacticlaunch/mcp-linear)                 | Natural language issue interaction |
-| linear-mcp-integration (Touchlab) | [touchlab/linear-mcp-integration](https://github.com/touchlab/linear-mcp-integration) | Alternative integration layer      |
+| mcp-linear (TacticLaunch)         | [tacticlaunch/mcp-linear](https://github.com/tacticlaunch/mcp-linear)[^6]             | Natural language issue interaction |
+| linear-mcp-integration (Touchlab) | [touchlab/linear-mcp-integration](https://github.com/touchlab/linear-mcp-integration)[^7] | Alternative integration layer      |
 
 ## 5. Why Linear Built for Agents
 
-**Source**: [The New Stack](https://thenewstack.io/why-linear-built-an-api-for-agents/)
+**Source**: [The New Stack](https://thenewstack.io/why-linear-built-an-api-for-agents/)[^9]
 
 Linear's rationale:
 
@@ -171,19 +171,19 @@ Linear (updated with results)
 
 ### MCP Server is the Standard Integration Point
 
-Linear's official MCP server validates MCP as the agent integration standard. Any tool that wants agent integration is building an MCP server. Our architecture should prioritize MCP compatibility.
+Linear's official MCP server validates MCP as the agent integration standard.[^2] Any tool that wants agent integration is building an MCP server. Our architecture should prioritize MCP compatibility.
 
 ### Webhooks Enable Event-Driven Agent Spawning
 
-Linear webhooks + automation platforms (n8n, Zapier) = trigger agent teams from external events. Our `claude-team` script could accept webhook payloads as input.
+Linear webhooks + automation platforms (n8n, Zapier) = trigger agent teams from external events.[^3] Our `claude-team` script could accept webhook payloads as input.
 
 ### Agent API Pattern for Workspace Presence
 
-Linear's "agent as app user" pattern gives agents identity in the workspace. Worth considering for our agent-team project — agents should have visible presence in external systems.
+Linear's "agent as app user" pattern gives agents identity in the workspace.[^1] Worth considering for our agent-team project — agents should have visible presence in external systems.
 
 ### Feedback Loop Closure is Critical
 
-The most valuable pattern: agents read context from Linear, execute work, update Linear with results. This closes the loop between task management and execution. Our architecture should formalize this pattern.
+The most valuable pattern: agents read context from Linear, execute work, update Linear with results.[^9] This closes the loop between task management and execution. Our architecture should formalize this pattern.
 
 ### What NOT to Copy
 
@@ -191,23 +191,15 @@ The most valuable pattern: agents read context from Linear, execute work, update
 - Tight coupling to Linear's data model
 - Cursor-specific integration patterns (we're CLI-focused)
 
-## 8. Links and Sources
+## References
 
-### Official Documentation
-
-- [Linear Agent API](https://linear.app/docs/agents-in-linear)
-- [Linear MCP Server](https://linear.app/docs/mcp)
-- [Linear Webhooks](https://linear.app/developers/webhooks)
-- [Linear + Cursor Integration](https://linear.app/integrations/cursor)
-- [How Cursor Integrated with Linear for Agents](https://linear.app/now/how-cursor-integrated-with-linear-for-agents)
-
-### Community
-
-- [mcp-linear (TacticLaunch)](https://github.com/tacticlaunch/mcp-linear)
-- [linear-mcp-integration (Touchlab)](https://github.com/touchlab/linear-mcp-integration)
-- [Composio Linear MCP](https://mcp.composio.dev/linear)
-
-### Articles
-
-- [Why Linear Built an API For Agents](https://thenewstack.io/why-linear-built-an-api-for-agents/)
-- [How to set up the Linear MCP server](https://www.builder.io/blog/linear-mcp-server)
+[^1]: https://linear.app/docs/agents-in-linear
+[^2]: https://linear.app/docs/mcp
+[^3]: https://linear.app/developers/webhooks
+[^4]: https://linear.app/integrations/cursor
+[^5]: https://linear.app/now/how-cursor-integrated-with-linear-for-agents
+[^6]: https://github.com/tacticlaunch/mcp-linear
+[^7]: https://github.com/touchlab/linear-mcp-integration
+[^8]: https://mcp.composio.dev/linear
+[^9]: https://thenewstack.io/why-linear-built-an-api-for-agents/
+[^10]: https://www.builder.io/blog/linear-mcp-server

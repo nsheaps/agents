@@ -9,7 +9,7 @@
 
 ## 1. What It Is: Ecosystem Overview
 
-The Claude Code orchestration ecosystem comprises **18+ significant projects** ranging from lightweight plugins (6.4k stars) to enterprise frameworks (14.1k stars). These tools enable multi-agent coordination through diverse execution models—tmux-based parallelism, single-process Ruby SDKs, Docker containerization, and Git worktree isolation.
+The Claude Code orchestration ecosystem comprises **18+ significant projects** ranging from lightweight plugins (6.4k stars) to enterprise frameworks (14.1k stars).[^11][^12] These tools enable multi-agent coordination through diverse execution models—tmux-based parallelism, single-process Ruby SDKs, Docker containerization, and Git worktree isolation.
 
 **Key Observation**: The ecosystem has matured rapidly with validated patterns for stage-based pipelines, token optimization, and specialized agent design. Community adoption strongly correlates with ease-of-use over technical sophistication.
 
@@ -20,10 +20,10 @@ The Claude Code orchestration ecosystem comprises **18+ significant projects** r
 ### Execution Models
 
 - **Tmux Panes**: Simple, visual, most common (all major projects)
-- **Single Process**: Direct method calls, language-specific (Swarm)
-- **Git Worktrees**: Robust isolation, prevents file conflicts (reshashi, ccswarm)
+- **Single Process**: Direct method calls, language-specific (Swarm)[^3]
+- **Git Worktrees**: Robust isolation, prevents file conflicts (reshashi, ccswarm)[^4][^5]
 - **Docker Containers**: Maximum isolation, high overhead (emerging)
-- **Background Processes**: Decoupled from user session (reshashi)
+- **Background Processes**: Decoupled from user session (reshashi)[^4]
 
 ### Communication Patterns
 
@@ -37,9 +37,9 @@ The Claude Code orchestration ecosystem comprises **18+ significant projects** r
 
 ### Agent Organization
 
-- **Flat Teams**: Simplicity (Oh My Claude Code)
-- **Hierarchical**: Enterprise structure (claude-code-agents-orchestra)
-- **Domain Specialization**: 60+ agents per domain (Claude Flow)
+- **Flat Teams**: Simplicity (Oh My Claude Code)[^2]
+- **Hierarchical**: Enterprise structure (claude-code-agents-orchestra)[^7]
+- **Domain Specialization**: 60+ agents per domain (Claude Flow)[^1]
 - **Model-Aware Routing**: Right model for cognitive load
 
 ---
@@ -48,9 +48,9 @@ The Claude Code orchestration ecosystem comprises **18+ significant projects** r
 
 ### Claude Flow (ruvnet) — 14.1k Stars
 
-**GitHub**: [ruvnet/claude-flow](https://github.com/ruvnet/claude-flow)
+**GitHub**: [ruvnet/claude-flow](https://github.com/ruvnet/claude-flow)[^1]
 
-Enterprise-grade orchestration with 60+ specialized agents, MCP server integration, and self-optimizing vector search (RuVector). Features 8-expert routing, 42+ skills, knowledge graphs, and elastic weight consolidation. Represents the most sophisticated approach to multi-agent coordination.
+Enterprise-grade orchestration with 60+ specialized agents, MCP server integration, and self-optimizing vector search (RuVector). Features 8-expert routing, 42+ skills, knowledge graphs, and elastic weight consolidation. Represents the most sophisticated approach to multi-agent coordination.[^1]
 
 **Key Innovation**: Self-optimization loop with semantic knowledge graphs reduces token waste through intelligent context reuse.
 
@@ -58,10 +58,10 @@ Enterprise-grade orchestration with 60+ specialized agents, MCP server integrati
 
 ### Oh My Claude Code (Yeachan-Heo) — 6.4k Stars
 
-**GitHub**: [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)
+**GitHub**: [Yeachan-Heo/oh-my-claudecode](https://github.com/Yeachan-Heo/oh-my-claudecode)[^2]
 **npm**: `oh-my-claude-sisyphus`
 
-Zero-configuration plugin with staged pipeline: `team-plan` → `team-prd` → `team-exec` → `team-verify` → `team-fix`. 32 specialized agents, 40+ skills with model-specific routing. Achieves 30-50% token savings through intelligent Opus/Sonnet allocation.
+Zero-configuration plugin with staged pipeline: `team-plan` → `team-prd` → `team-exec` → `team-verify` → `team-fix`. 32 specialized agents, 40+ skills with model-specific routing. Achieves 30-50% token savings through intelligent Opus/Sonnet allocation.[^2]
 
 **Key Insight**: "Zero learning curve" philosophy drives highest fork ratio (461 forks) in ecosystem. Success tied to ease-of-use, not feature count.
 
@@ -69,9 +69,9 @@ Zero-configuration plugin with staged pipeline: `team-plan` → `team-prd` → `
 
 ### Swarm (parruda) — 1.6k Stars
 
-**GitHub**: [parruda/swarm](https://github.com/parruda/swarm)
+**GitHub**: [parruda/swarm](https://github.com/parruda/swarm)[^3]
 
-Ruby framework using single-process orchestration with direct method calls. Decoupled from Claude Code; supports multiple LLM providers via RubyLLM. Includes persistent memory with semantic search and node-based workflows.
+Ruby framework using single-process orchestration with direct method calls. Decoupled from Claude Code; supports multiple LLM providers via RubyLLM. Includes persistent memory with semantic search and node-based workflows.[^3]
 
 **Key Advantage**: Multi-provider support eliminates vendor lock-in; single process simplifies state management.
 
@@ -81,14 +81,14 @@ Ruby framework using single-process orchestration with direct method calls. Deco
 
 | Tool                             | Stars  | Key Feature                                                             | Language    |
 | -------------------------------- | ------ | ----------------------------------------------------------------------- | ----------- |
-| **reshashi claude-orchestrator** | 65     | Git worktree isolation, delivery pipeline state machine                 | TypeScript  |
-| **ccswarm (nwiizo)**             | Medium | 93% token reduction via session persistence, autonomous task generation | Rust        |
-| **claude-code-orchestrator-kit** | 73     | 33+ agents, 38 skills, quality gates, health monitoring                 | Mixed       |
-| **claude-code-agents-orchestra** | —      | Organizational hierarchy, model-aware assignment (Opus/Sonnet)          | YAML/Config |
-| **claude-007-agents**            | 237    | 14 agent categories, resilience patterns, exponential planner           | Multi       |
-| **myclaude**                     | 2.1k   | Multi-provider (Claude, Codex, Gemini), 5-phase workflows               | Node.js     |
+| **reshashi claude-orchestrator** | 65     | Git worktree isolation, delivery pipeline state machine[^4]             | TypeScript  |
+| **ccswarm (nwiizo)**             | Medium | 93% token reduction via session persistence, autonomous task generation[^5] | Rust        |
+| **claude-code-orchestrator-kit** | 73     | 33+ agents, 38 skills, quality gates, health monitoring[^6]            | Mixed       |
+| **claude-code-agents-orchestra** | —      | Organizational hierarchy, model-aware assignment (Opus/Sonnet)[^7]     | YAML/Config |
+| **claude-007-agents**            | 237    | 14 agent categories, resilience patterns, exponential planner[^8]      | Multi       |
+| **myclaude**                     | 2.1k   | Multi-provider (Claude, Codex, Gemini), 5-phase workflows[^9]          | Node.js     |
 | **systemprompt-orchestrator**    | 139    | MCP server, remote access, Firebase notifications                       | TypeScript  |
-| **claude-code-by-agents**        | 710    | Desktop UI, @mention orchestration, remote API                          | —           |
+| **claude-code-by-agents**        | 710    | Desktop UI, @mention orchestration, remote API[^10]                    | —           |
 | **disler observability**         | —      | 12+ hook points for lifecycle monitoring                                | Python      |
 
 ---
@@ -97,31 +97,31 @@ Ruby framework using single-process orchestration with direct method calls. Deco
 
 ### Self-Optimizing Systems (Claude Flow)
 
-- Vector embeddings track agent performance
+- Vector embeddings track agent performance[^1]
 - Dynamic capability adjustment based on outcomes
 - Knowledge graphs capture long-term learnings
 
 ### Token-Efficient Routing (Multiple)
 
-- Model selection by cognitive load
-- Session caching: ccswarm achieves 93% reduction
-- Ecomode in Oh My Claude Code
+- Model selection by cognitive load[^2][^7]
+- Session caching: ccswarm achieves 93% reduction[^5]
+- Ecomode in Oh My Claude Code[^2]
 
 ### Delivery Pipeline Automation (reshashi)
 
-- State machine: `WORKING` → `PR_CREATING` → `CI_RUNNING` → `REVIEWING` → `APPROVED` → `MERGING`
+- State machine: `WORKING` → `PR_CREATING` → `CI_RUNNING` → `REVIEWING` → `APPROVED` → `MERGING`[^4]
 - Automated quality gates
 - Merge queue with auto-rebase
 
 ### Git Worktree Isolation (reshashi, ccswarm)
 
-- More robust than tmux panes for parallel work
+- More robust than tmux panes for parallel work[^4][^5]
 - Prevents file conflicts at version control level
 - Natural feature branch support
 
 ### Multi-Provider Support (Swarm, myclaude, claude-octopus)
 
-- No lock-in to Anthropic Claude
+- No lock-in to Anthropic Claude[^3][^9]
 - Supports simultaneous different models
 - Language/framework agnostic implementations
 
@@ -148,17 +148,17 @@ Ruby framework using single-process orchestration with direct method calls. Deco
 
 ### Validated Patterns
 
-1. **Stage-Based Pipelines**: Five-stage flow (plan → spec → exec → verify → fix) proven across multiple projects
-2. **Git Worktree Isolation**: More robust than tmux for large teams; prevents file conflicts
-3. **Model-Aware Routing**: Assigning Opus to complex tasks, Sonnet to routine work reduces costs
-4. **Self-Optimization**: Long-running projects benefit from semantic memory and performance tracking
+1. **Stage-Based Pipelines**: Five-stage flow (plan → spec → exec → verify → fix) proven across multiple projects[^2][^4]
+2. **Git Worktree Isolation**: More robust than tmux for large teams; prevents file conflicts[^4][^5]
+3. **Model-Aware Routing**: Assigning Opus to complex tasks, Sonnet to routine work reduces costs[^2][^7]
+4. **Self-Optimization**: Long-running projects benefit from semantic memory and performance tracking[^1]
 5. **Multi-Topology Support**: Flat, hierarchical, and domain-specialized topologies all have use cases
 
 ### Anti-Patterns to Avoid
 
-1. **Over-Specialization**: 60+ agents (Claude Flow) hard to manage; 32-40 proven practical
+1. **Over-Specialization**: 60+ agents (Claude Flow) hard to manage; 32-40 proven practical[^1][^2]
 2. **Complexity Without Payoff**: Success driven by simplicity, not feature count
-3. **Provider Lock-in**: Multi-provider support (Swarm, myclaude) gaining adoption
+3. **Provider Lock-in**: Multi-provider support (Swarm, myclaude) gaining adoption[^3][^9]
 4. **Single Execution Model**: Hybrid approaches (pick orchestration per task) more flexible
 
 ### Architectural Recommendations
@@ -172,28 +172,20 @@ Ruby framework using single-process orchestration with direct method calls. Deco
 
 ---
 
-## 8. Links and Sources
+## References
 
-### Tier 1 Projects
-
-- [Claude Flow](https://github.com/ruvnet/claude-flow) (14.1k★)
-- [Oh My Claude Code](https://github.com/Yeachan-Heo/oh-my-claudecode) (6.4k★)
-- [Swarm](https://github.com/parruda/swarm) (1.6k★)
-
-### Tier 2-3 Projects
-
-- [reshashi/claude-orchestrator](https://github.com/reshashi/claude-orchestrator) (65★)
-- [nwiizo/ccswarm](https://github.com/nwiizo/ccswarm)
-- [maslennikov-ig/claude-code-orchestrator-kit](https://github.com/maslennikov-ig/claude-code-orchestrator-kit) (73★)
-- [0ldh/claude-code-agents-orchestra](https://github.com/0ldh/claude-code-agents-orchestra)
-- [avivl/claude-007-agents](https://github.com/avivl/claude-007-agents) (237★)
-- [cexll/myclaude](https://github.com/cexll/myclaude) (2.1k★)
-- [baryhuang/claude-code-by-agents](https://github.com/baryhuang/claude-code-by-agents) (710★)
-
-### Community Indexes
-
-- [awesome-claude-code](https://github.com/hesreallyhim/awesome-claude-code)
-- [a-list-of-claude-code-agents](https://github.com/hesreallyhim/a-list-of-claude-code-agents)
+[^1]: https://github.com/ruvnet/claude-flow
+[^2]: https://github.com/Yeachan-Heo/oh-my-claudecode
+[^3]: https://github.com/parruda/swarm
+[^4]: https://github.com/reshashi/claude-orchestrator
+[^5]: https://github.com/nwiizo/ccswarm
+[^6]: https://github.com/maslennikov-ig/claude-code-orchestrator-kit
+[^7]: https://github.com/0ldh/claude-code-agents-orchestra
+[^8]: https://github.com/avivl/claude-007-agents
+[^9]: https://github.com/cexll/myclaude
+[^10]: https://github.com/baryhuang/claude-code-by-agents
+[^11]: https://github.com/hesreallyhim/awesome-claude-code
+[^12]: https://github.com/hesreallyhim/a-list-of-claude-code-agents
 
 ---
 
