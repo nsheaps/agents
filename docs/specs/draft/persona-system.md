@@ -287,9 +287,9 @@ Before posting to any public channel:
 6. Post
 ```
 
-#### 3. Coach Review (Reactive)
+#### 3. AI Agent Engineer Review (Reactive)
 
-The Team Coach can periodically review public-facing outputs for persona drift:
+The AI Agent Engineer can periodically review public-facing outputs for persona drift:
 
 - Compare posted content against persona guidelines
 - Flag inconsistencies in the failure log
@@ -300,7 +300,7 @@ The Team Coach can periodically review public-facing outputs for persona drift:
 External feedback (user reactions, reviewer comments) can inform persona refinements:
 
 ```
-Post → Feedback → Coach Review → Persona Update → Better Post
+Post → Feedback → AI Agent Engineer Review → Persona Update → Better Post
 ```
 
 ---
@@ -322,7 +322,7 @@ Yes, but with guardrails. Personas should evolve based on evidence, not drift ba
                      │
               ┌──────┴───────┐
               │   Analysis    │
-              │  (Coach or    │
+              │  (AI Agent    │
               │   team lead)  │
               └──────┬───────┘
                      │
@@ -428,7 +428,7 @@ If implemented, multi-persona would work as:
 | **Phase 2** | Channel-aware persona format (v2) | Updated persona files with Channel Voices sections |
 | **Phase 3** | Public-facing action behavior | `.claude/behaviors/public-action.md` |
 | **Phase 4** | MCP persona tool | MCP server returning persona data per channel |
-| **Phase 5** | Evolution framework | Coach review process, feedback loop, Evolution Log |
+| **Phase 5** | Evolution framework | AI Agent Engineer review process, feedback loop, Evolution Log |
 | **Phase 6** | Multi-persona support (v2) | Context persona selection, per-channel persona mapping |
 
 ---

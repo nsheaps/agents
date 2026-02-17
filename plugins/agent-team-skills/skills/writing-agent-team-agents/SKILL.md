@@ -289,18 +289,18 @@ The `SendMessage` tool returns `{"success": true}` even when the recipient doesn
 
 Source: Observed during looney-tunes session — researcher sent findings to "Bugs Bunny (Team Lead)" (non-existent) instead of "team-lead" (actual recipient). Multiple messages were lost.
 
-### Failure Reporting to Coach
+### Failure Reporting to AI Agent Engineer
 
-When something goes wrong, message both the Coach AND the team lead:
+When something goes wrong, message both the AI Agent Engineer AND the team lead:
 
-- **Coach**: Records the failure for pattern analysis
+- **AI Agent Engineer**: Records the failure for pattern analysis
 - **Team lead**: Coordinates the fix
 
 Include: what happened, what you expected, what you tried, and what's blocked.
 
 ### Lateral Collaboration
 
-Teammates can and should message each other directly for coordination. Don't bottleneck on the orchestrator for every interaction. But always inform the Coach and orchestrator afterward.
+Teammates can and should message each other directly for coordination. Don't bottleneck on the orchestrator for every interaction. But always inform the AI Agent Engineer and orchestrator afterward.
 
 ### Chain of Authority
 

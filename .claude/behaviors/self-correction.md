@@ -37,7 +37,7 @@ Turn failures into improvements. Don't just fix the immediate problem — fix th
    - Missing information? → Where should it have been documented?
    - Incorrect procedure? → Which step was wrong or missing?
 
-4. **Report the failure** — Message Coach (and team-lead if Coach isn't available) with:
+4. **Report the failure** — Message the AI Agent Engineer (and team-lead if the AI Agent Engineer isn't available) with:
    - What happened
    - What you expected
    - Your root cause analysis
@@ -58,4 +58,4 @@ Turn failures into improvements. Don't just fix the immediate problem — fix th
 - Fixing the symptom without addressing the root cause
 - Continuing work after a failure without stopping to reflect
 - Blaming external tools before verifying your own actions
-- Skipping the report to Coach — all failures must be logged
+- Skipping the report to the AI Agent Engineer — all failures must be logged

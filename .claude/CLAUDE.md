@@ -13,5 +13,5 @@ Provider-agnostic multi-agent orchestration framework. Currently uses Claude Cod
 - Use `.claude/tmp/` for working files shared between teammates (NOT `/tmp/`)
 - Save reports and deliverables to files — never return large outputs only in messages
 - All teammates share a task list — use `TaskCreate`, `TaskUpdate`, `TaskList` to coordinate
-- Message the Coach when something goes wrong
+- Message the AI Agent Engineer when something goes wrong
 - Verify message recipients exist before sending (SendMessage silently succeeds for missing recipients)

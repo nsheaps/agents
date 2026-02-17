@@ -24,9 +24,9 @@ Think of the team as remote employees communicating asynchronously:
 | Situation                                   | Send To                                          | Tool                                           |
 | :------------------------------------------ | :----------------------------------------------- | :--------------------------------------------- |
 | Task complete                               | Team lead or PM                                  | `SendMessage` type `message`                   |
-| Something went wrong                        | Coach (Wile E. Coyote) AND team lead             | `SendMessage` type `message`                   |
+| Something went wrong                        | AI Agent Engineer (Wile E. Coyote) AND team lead | `SendMessage` type `message`                   |
 | Status update                               | PM (Elmer Fudd) if launched, otherwise team lead | `SendMessage` type `message`                   |
-| Spec contradiction or undocumented behavior | Coach AND Docs Writer                            | `SendMessage` type `message`                   |
+| Spec contradiction or undocumented behavior | AI Agent Engineer AND Docs Writer                            | `SendMessage` type `message`                   |
 | Defect found                                | PM or team lead                                  | `SendMessage` type `message`                   |
 | Research findings                           | Team lead (summary), save full report to file    | `SendMessage` type `message`                   |
 | Peer coordination                           | The teammate directly                            | `SendMessage` type `message`                   |
@@ -35,7 +35,7 @@ Think of the team as remote employees communicating asynchronously:
 ## Rules
 
 1. **Always verify recipients exist before sending.** The `SendMessage` tool returns success even if the recipient doesn't exist. Check the team config or ask the lead who is available.
-2. **Collaborate directly with peers.** If you need something from another teammate, message them — don't wait for the orchestrator to relay. Keep the Coach and orchestrator informed afterward.
+2. **Collaborate directly with peers.** If you need something from another teammate, message them — don't wait for the orchestrator to relay. Keep the AI Agent Engineer and orchestrator informed afterward.
 3. **Default to messaging the team lead** if you're unsure who should receive a message.
 4. **Use `broadcast` sparingly** — it sends one message per teammate and is expensive.
 5. **Never send large reports in messages.** Save reports to files (in `.claude/tmp/`) and send a summary with the file path.
@@ -44,14 +44,14 @@ Think of the team as remote employees communicating asynchronously:
 
 ## Failure Reporting
 
-When something goes wrong, message the Coach with:
+When something goes wrong, message the AI Agent Engineer with:
 
 - **What happened** — specific description
 - **What you expected** — what should have happened
 - **What you tried** — any recovery attempts
 - **Impact** — what's blocked or broken
 
-The Coach records failures but does NOT fix them. Fixes are coordinated by the team lead or PM.
+The AI Agent Engineer records failures but does NOT fix them. Fixes are coordinated by the team lead or PM.
 
 ## Shared State
 

@@ -114,7 +114,7 @@ In **in-process mode**, teammates run as hidden sessions within the same process
 | :------------------ | :-------------- | :---------------- | :------------------------------------------- |
 | `orchestrator`      | —               | Team Lead         | Spawns teammates, assigns tasks, coordinates |
 | `project-manager`   | Elmer Fudd      | Project Manager   | Owns task list, manages priorities           |
-| `coach`             | Wile E. Coyote  | Team Coach        | Observes failures, records patterns          |
+| `ai-agent-engineer` | Wile E. Coyote  | AI Agent Engineer | Observes failures, records patterns          |
 | `docs-writer`       | Tweety Bird     | Docs Writer       | Maintains docs, audits specs                 |
 | `deep-researcher`   | Road Runner     | Deep Researcher   | Complex multi-source investigations          |
 | `ops-engineer`      | Foghorn Leghorn | Ops Engineer      | CI/CD, repos, Homebrew, distribution         |
@@ -128,7 +128,7 @@ See `.claude/docs/team-structure.md` for the full hierarchy and communication fl
 Once the orchestrator is running:
 
 1. **Verify teammates spawned** — check that each teammate responds to a health-check message
-2. **Coach review** — the Coach (Wile E. Coyote) should review any prior session notes in `.claude/tmp/`
+2. **AI Agent Engineer review** — the AI Agent Engineer (Wile E. Coyote) should review any prior session notes in `.claude/tmp/`
 3. **Create tasks** — use `TaskCreate` to define the work, then assign with `TaskUpdate`
 4. **Set dependencies** — use `addBlocks` / `addBlockedBy` on tasks that depend on each other
 5. **Monitor progress** — the orchestrator checks `TaskList` periodically and coordinates handoffs

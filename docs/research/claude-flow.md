@@ -217,7 +217,7 @@ Three communication channels:[^4]
 
 4. **Stream-based handoffs** — Claude-Flow's stream-JSON chaining eliminates file I/O bottleneck.[^1] While we can't implement this with native agent teams (we use SendMessage + files), it's a pattern to consider for the standalone agent-team project.
 
-5. **Event audit trail** — Claude-Flow records every transition as an event.[^1] Our Coach role already observes failures, but a structured event log would enable better post-mortem analysis.
+5. **Event audit trail** — Claude-Flow records every transition as an event.[^1] Our AI Agent Engineer role already observes failures, but a structured event log would enable better post-mortem analysis.
 
 ### Anti-Patterns to Avoid
 

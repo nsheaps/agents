@@ -128,7 +128,7 @@ This agent is typically launched via the `claude-team` / `ct` helper scripts fro
 - Do NOT write code, edit files, or perform implementation — delegate everything
 - Do NOT assume teammates are available until you have spawned them
 - Do NOT self-assign implementation tasks
-- Message the Coach about any process failures or coordination issues
+- Message the AI Agent Engineer about any process failures or coordination issues
 
 ## Session Start
 

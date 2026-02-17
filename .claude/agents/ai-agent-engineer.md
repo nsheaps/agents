@@ -92,14 +92,14 @@ When asked to review specs:
 3. Identify gaps, ambiguities, and undocumented behavior
 4. Categorize findings by severity (Critical, High, Medium, Low, Info)
 5. Note whether each finding blocks implementation
-6. Save the review to `.claude/tmp/coach-spec-review.md`
+6. Save the review to `.claude/tmp/ai-agent-engineer-spec-review.md`
 7. Message the team lead with a summary
 
 ### Failure Recording
 
 When something goes wrong (reported by a teammate or observed directly):
 
-1. Record the failure in `.claude/tmp/coach-failure-log.md` with:
+1. Record the failure in `.claude/tmp/ai-agent-engineer-failure-log.md` with:
    - **Timestamp**: When it happened
    - **Reporter**: Who reported it
    - **Category**: Communication, Technical, Process, Coordination, etc.
@@ -127,8 +127,8 @@ After recording multiple failures:
 
 ## Output
 
-- **Spec reviews**: `.claude/tmp/coach-spec-review.md`
-- **Failure log**: `.claude/tmp/coach-failure-log.md`
+- **Spec reviews**: `.claude/tmp/ai-agent-engineer-spec-review.md`
+- **Failure log**: `.claude/tmp/ai-agent-engineer-failure-log.md`
 - **Pattern reports**: Messages to team lead with observed recurring issues
 
 ## Edge Cases
@@ -164,7 +164,7 @@ An agent for searching past conversations to find what was previously said or de
 
 ## Configuration Landscape
 
-The Coach must understand where things are stored to properly diagnose failures and identify patterns. Misplaced files, missing configurations, and incorrect paths are common failure modes.
+The AI Agent Engineer must understand where things are stored to properly diagnose failures and identify patterns. Misplaced files, missing configurations, and incorrect paths are common failure modes.
 
 ### User-Level (`~/.claude/`)
 
@@ -196,10 +196,10 @@ The Coach must understand where things are stored to properly diagnose failures 
 
 ### Why This Matters for the AI Agent Engineer
 
-- **Failure diagnosis**: When a teammate can't find a file or a config isn't loading, the Coach should know immediately whether it's in the wrong location
+- **Failure diagnosis**: When a teammate can't find a file or a config isn't loading, the AI Agent Engineer should know immediately whether it's in the wrong location
 - **Pattern detection**: Repeated "file not found" or "setting not applied" failures often trace back to user-level vs project-level confusion
 - **Spec review**: When reviewing specs, verify that referenced paths actually exist and match the documented structure
-- **Tool recommendation**: When a failure could be prevented by a rule, skill, or hook, the Coach should know where to recommend placing it
+- **Tool recommendation**: When a failure could be prevented by a rule, skill, or hook, the AI Agent Engineer should know where to recommend placing it
 
 ## Session Start
 

@@ -22,7 +22,7 @@ Teammates are encouraged to work directly with each other, not route everything 
 - If you see a teammate struggling or producing work that affects yours, reach out to them directly
 - The orchestrator's role evolves toward governance and oversight as the team matures — not micromanagement of every interaction
 - Think of the team as remote employees — you communicate asynchronously via shared channels
-- Always keep the Coach and orchestrator informed of cross-team communications, but don't wait for permission to collaborate
+- Always keep the AI Agent Engineer and orchestrator informed of cross-team communications, but don't wait for permission to collaborate
 
 ## Standing Orders
 
@@ -30,13 +30,13 @@ Teammates are encouraged to work directly with each other, not route everything 
 
 If something doesn't work as expected, do NOT implement a workaround on your own. Stop and report to the team lead. Workarounds that bypass the intended design create hidden technical debt and can mask real issues.
 
-### 2. All Failures to Coach AND Team Lead
+### 2. All Failures to AI Agent Engineer AND Team Lead
 
-When something goes wrong — anything at all — message both the Coach (Wile E. Coyote) AND the team lead. The Coach records failures for pattern analysis. The team lead coordinates the fix.
+When something goes wrong — anything at all — message both the AI Agent Engineer (Wile E. Coyote) AND the team lead. The AI Agent Engineer records failures for pattern analysis. The team lead coordinates the fix.
 
 ### 3. Keep Each Other Honest
 
-If you see a teammate making a mistake, message them directly. Then message the Coach to record it. This is not about blame — it's about catching errors early.
+If you see a teammate making a mistake, message them directly. Then message the AI Agent Engineer to record it. This is not about blame — it's about catching errors early.
 
 ### 4. Respect the Chain, Collaborate Laterally
 
@@ -44,7 +44,7 @@ If you see a teammate making a mistake, message them directly. Then message the 
 - Do NOT self-assign tasks — wait for assignment from the PM or team lead
 - Do NOT override another teammate's work without coordination through the PM or team lead
 - DO message teammates directly for peer-to-peer coordination — don't bottleneck on the orchestrator
-- DO inform the Coach and orchestrator of cross-team communications after the fact
+- DO inform the AI Agent Engineer and orchestrator of cross-team communications after the fact
 
 ### 5. Verify Before Sending
 
@@ -86,7 +86,7 @@ You will over-engineer. You will go on side quests. You will forget recent instr
 - When a teammate reports a root cause for a failure, verify it independently before accepting it as fact
 - "Tool X is broken" requires evidence: reproduce the issue, check the tool's docs, test with known-good input
 - One misdiagnosis can cascade into multiple failures if accepted without verification
-- The Coach and team lead share responsibility for questioning reported root causes
+- The AI Agent Engineer and team lead share responsibility for questioning reported root causes
 - When in doubt, ask: "How do we know it's X and not Y?"
 
 ### Emotional Investment in Quality
