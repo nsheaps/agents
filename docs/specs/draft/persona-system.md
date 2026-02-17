@@ -456,12 +456,12 @@ If implemented, multi-persona would work as:
 - Persona files: `.claude/personas/*.md` (8 files, created commit `ae83a35`)
 - Agent file references: `**Persona**: .claude/personas/<name>.md` in all 8 agent files
 - Team structure docs: `.claude/docs/team-structure.md` ("Agent vs Persona" section)
-- Writing skill: `.claude/skills/writing-agent-team-agents/SKILL.md` ("Agent vs Persona: The Core Distinction")
+- Writing skill: `plugins/agent-team-skills/skills/writing-agent-team-agents/SKILL.md` ("Agent vs Persona: The Core Distinction")
 
 ### Related Research
 
-- [Persona loading research](../../.claude/tmp/persona-loading-research.md) — how system prompts, SessionStart hooks, and skills interact
-- [Agent prompt best practices](../../.claude/tmp/agent-prompt-research.md) — research on effective agent prompting
+- Persona loading research — how system prompts, SessionStart hooks, and skills interact (conducted during looney-tunes session, Feb 2026; original report in claude-utils `.claude/tmp/`)
+- Agent prompt best practices — research on effective agent prompting (conducted during looney-tunes session, Feb 2026; original report in claude-utils `.claude/tmp/`)
 - [Claude-Flow research](../research/claude-flow.md) — multi-agent orchestration patterns, artifact-centric communication
 
 ### External References

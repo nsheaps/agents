@@ -673,9 +673,9 @@ Linear webhook → Automation platform → Mesh MCP Server
 
 ### Research
 
-- [WebRTC Mesh Research](../../../claude-utils/.claude/tmp/research-webrtc-mesh.md) — Data channels, topologies, NAT traversal, k8s patterns
-- [Socket.io Patterns Research](../../../claude-utils/.claude/tmp/research-socketio-patterns.md) — Rooms, clustering, delivery guarantees, k8s deployment
-- [MCP Transport Research](../../../claude-utils/.claude/tmp/research-mcp-transport.md) — Official transports, Streamable HTTP, custom transports, WebSocket SEP
+- WebRTC Mesh Research — Data channels, topologies, NAT traversal, k8s patterns (conducted during looney-tunes session, Feb 2026; original report in claude-utils `.claude/tmp/`)
+- Socket.io Patterns Research — Rooms, clustering, delivery guarantees, k8s deployment (conducted during looney-tunes session, Feb 2026; original report in claude-utils `.claude/tmp/`)
+- MCP Transport Research — Official transports, Streamable HTTP, custom transports, WebSocket SEP (conducted during looney-tunes session, Feb 2026; original report in claude-utils `.claude/tmp/`)
 - [Team Storage Internals](../../research/team-storage-internals.md) — Current file-based inbox format
 - [Orchestration Platforms Survey](../../research/orchestration-platforms-index.md) — Industry landscape
 

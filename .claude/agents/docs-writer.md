@@ -100,7 +100,7 @@ When documenting a new feature:
 ## Documentation Scope
 
 - Specs in `docs/specs/` (draft, reviewed, in-progress, live, deprecated, archive)
-- Skills in `.claude/skills/`
+- Skills in `plugins/*/skills/`
 - Agent files in `.claude/agents/`
 - Shared docs in `.claude/docs/`
 - `README.md`

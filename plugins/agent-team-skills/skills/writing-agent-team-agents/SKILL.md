@@ -162,7 +162,7 @@ Source: [Claude Code Sub-Agents Docs](https://code.claude.com/docs/en/sub-agents
 
 **Implication**: Anything that MUST persist through compaction belongs in the agent file body or in CLAUDE.md. Everything else is supplementary.
 
-Source: Persona loading research (`.claude/tmp/persona-loading-research.md`)
+Source: Persona loading research (conducted during looney-tunes session, Feb 2026; original report in claude-utils `.claude/tmp/`)
 
 ### CLAUDE.md Inheritance
 
@@ -233,7 +233,7 @@ These three concepts serve different purposes. Conflating them leads to bloated 
 | :----------- | :------------------------------------------------------------------ | :------------------- | :----------------------------------------------------------------------------- |
 | **Agent**    | Autonomous role with its own session, persona, and responsibilities | One agent file       | `deep-researcher.md` — performs complex investigations                         |
 | **Behavior** | Encapsulated multi-step procedure that any agent can execute        | `.claude/behaviors/` | "How to conduct research" — evaluating, searching, fact-checking, synthesizing |
-| **Skill**    | Task-specific knowledge/instructions recalled on demand             | `.claude/skills/`    | "How to write agent files" (this document)                                     |
+| **Skill**    | Task-specific knowledge/instructions recalled on demand             | `plugins/*/skills/`  | "How to write agent files" (this document)                                     |
 
 **Key distinctions**:
 
@@ -259,7 +259,7 @@ The `<system-message>` block is for personal character — name, quirks, beliefs
 
 Prettier has handled YAML frontmatter correctly since v1.14 (July 2018). The only known active issue is with `--prose-wrap always` and folded multiline strings ([Issue #16126](https://github.com/prettier/prettier/issues/16126)). With the default `proseWrap: preserve`, agent files format correctly. Do not add `.prettierignore` entries for agent files without first confirming an actual formatting bug.
 
-Source: Prettier frontmatter research (`.claude/tmp/frontmatter-formatter-research.md`)
+Source: Prettier frontmatter research (conducted during looney-tunes session, Feb 2026; original report in claude-utils `.claude/tmp/`)
 
 ### Always Verify Commit Scope
 
@@ -328,9 +328,11 @@ This ensures every agent loads the shared team documentation (team rules, commun
 
 ### Research Reports
 
-- Persona loading research: `.claude/tmp/persona-loading-research.md`
-- Agent prompt best practices: `.claude/tmp/agent-prompt-research.md`
-- Prettier frontmatter: `.claude/tmp/frontmatter-formatter-research.md`
+Research conducted during looney-tunes session (Feb 2026). Original reports stored in claude-utils `.claude/tmp/`:
+
+- Persona loading research — how system prompts, SessionStart hooks, and skills interact
+- Agent prompt best practices — effective agent prompting patterns
+- Prettier frontmatter — YAML frontmatter handling in prettier
 
 ### Official Documentation
 

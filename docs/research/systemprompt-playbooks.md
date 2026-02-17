@@ -277,7 +277,7 @@ Agents load skills at startup, then follow playbooks to execute tasks. The A2A p
 | :----------- | :-------------------------- | :---------------------------------------------------------- |
 | **Agent**    | `.claude/agents/*.md`       | Autonomous role with persona, own session, responsibilities |
 | **Behavior** | `.claude/behaviors/*.md`    | Role-agnostic procedure any agent can execute               |
-| **Skill**    | `.claude/skills/*/SKILL.md` | Task-specific knowledge recalled on demand                  |
+| **Skill**    | `plugins/*/skills/*/SKILL.md` | Task-specific knowledge recalled on demand                  |
 
 ### Key Distinctions
 
@@ -295,7 +295,7 @@ Agents load skills at startup, then follow playbooks to execute tasks. The A2A p
 SystemPrompt          →  Our System
 ─────────────────────────────────────────
 Agent (A2A)           →  Agent (.claude/agents/*.md)
-Skill (startup)       →  Skill (.claude/skills/) + Behavior (.claude/behaviors/)
+Skill (startup)       →  Skill (plugins/*/skills/) + Behavior (.claude/behaviors/)
 Playbook (guide)      →  Behavior (procedure) + Skill (knowledge)
 Hub (coordinator)     →  Orchestrator agent (team-lead)
 A2A protocol          →  SendMessage tool
@@ -360,5 +360,5 @@ The `systemprompt-code-orchestrator` repository (MCP server for coordinating AI 
 ### Internal References
 
 - Agent-team PRD: `docs/specs/draft/agent-team-project.md` in nsheaps/claude-utils
-- Writing agent team agents skill: `.claude/skills/writing-agent-team-agents/SKILL.md`
+- Writing agent team agents skill: `plugins/agent-team-skills/skills/writing-agent-team-agents/SKILL.md`
 - OpenCode porting research: `docs/research/opencode-agent-teams-porting.md`

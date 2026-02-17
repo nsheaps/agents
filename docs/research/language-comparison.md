@@ -239,9 +239,11 @@ The recommended approach for the agent-team project:
 
 ### Individual Research Reports
 
-- [Bun/TypeScript Research](../../.claude/tmp/lang-research-bun.md) — 526 lines, Feb 2026
-- [Rust Research](../../.claude/tmp/lang-research-rust.md) — 649 lines, Feb 2026
-- [Go Research](../../.claude/tmp/lang-research-go.md) — 644 lines, Feb 2026
+Sub-agent research reports conducted during looney-tunes session (Feb 2026). Original reports stored in claude-utils `.claude/tmp/`:
+
+- Bun/TypeScript Research — 526 lines, covering binary distribution, Pepr K8s framework, MCP SDK v1.27.0
+- Rust Research — 649 lines, covering kube-rs, MCP SDK v0.15.0, memory efficiency, compile times
+- Go Research — 644 lines, covering controller-runtime, MCP SDK v1.3.0 (Google co-maintained), goroutines
 
 ### Key References by Dimension
 

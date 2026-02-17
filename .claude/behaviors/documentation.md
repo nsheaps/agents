@@ -24,7 +24,7 @@ Keep all documentation accurate and current as implementation changes. Every cod
 1. **Identify affected docs** — For every change you make, ask: "What documentation describes this behavior?" Check:
    - README.md
    - Specs in `docs/specs/`
-   - Skills in `.claude/skills/`
+   - Skills in `plugins/*/skills/`
    - Agent files in `.claude/agents/`
    - Team docs in `.claude/docs/`
    - Inline code comments (if they describe behavior, not just syntax)
