@@ -43,6 +43,12 @@
 - **Claude Code project isolation vs agent teams**: Claude treats each folder as a separate project, including sibling worktree folders. This creates several challenges:
   - **Conversation history silos**: agents running in different folders have separate conversation histories, even if they're the same git repo (worktrees). Searching history across projects requires awareness of this.
   - **`--additionalDirectories`**: the launcher must manage this flag so agents can access files across repos/worktrees without being siloed to one folder
+  - **Directory access security concern**: agents with `additionalDirectories` can `cd` into that dir and stay there, but if they can't (non-bypass mode), they'd need `cd /path && command` which chains commands and bypasses granular permission approval. This is a security hole.
+    - In non-bypassPermissions mode, agents should NOT be allowed to `cd /other/dir && do-something` — this sidesteps permission gating
+    - Instead, agents should request directory access from security-consult (when it exists), who can grant/deny per-directory access
+    - **Plugin idea**: a PreToolUse hook that denies `cd ... && ...` patterns in Bash with an error message directing the agent to request directory access properly
+    - Short term: agents should use absolute paths rather than cd-chaining
+    - Long term: security-consult manages a directory access allowlist per agent
   - **`~/.claude.json` / `githubRepoPaths`**: needs to include worktree paths so Claude recognizes them as the same repo. Currently `~/.claude.json` is symlinked from `~/.claude/home-claude.json`.
   - **Plugin opportunity for nsheaps/ai**: Turn `~/.claude.json` management into a plugin that:
     - Auto-discovers worktrees for configured repos and adds them to `githubRepoPaths`
