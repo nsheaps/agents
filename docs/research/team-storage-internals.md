@@ -8,14 +8,14 @@ Research into the on-disk storage format used by Claude Code agent teams, based 
 
 ## Overview
 
-Claude Code agent teams persist state in two directory trees under `~/.claude/`:
+Claude Code agent teams persist state in two directory trees under `~/.claude/`:[^1]
 
 | Path                           | Purpose                                   |
 | ------------------------------ | ----------------------------------------- |
 | `~/.claude/teams/{team-name}/` | Team configuration and agent inboxes      |
 | `~/.claude/tasks/{team-name}/` | Shared task board with file-based locking |
 
-Both directories are keyed by team name (e.g., `looney-tunes`). State is stored as JSON files with no database layer -- purely file-based.
+Both directories are keyed by team name (e.g., `looney-tunes`). State is stored as JSON files with no database layer -- purely file-based.[^1]
 
 ## Team Configuration (`~/.claude/teams/{team-name}/`)
 
@@ -35,7 +35,7 @@ Both directories are keyed by team name (e.g., `looney-tunes`). State is stored 
 
 ### config.json
 
-The team configuration file. Contains team metadata and the full member roster.
+The team configuration file. Contains team metadata and the full member roster.[^1]
 
 #### Schema
 
@@ -115,7 +115,7 @@ Members come in two variants: **team-lead** and **teammate**.
 
 ### Inboxes (`inboxes/`)
 
-Each agent has a JSON file in the `inboxes/` directory. The file is a JSON array of message objects.
+Each agent has a JSON file in the `inboxes/` directory. The file is a JSON array of message objects.[^1]
 
 #### Inbox File Naming Convention
 
@@ -226,7 +226,7 @@ Inbox sizes vary dramatically based on communication volume:
 
 #### Stale and Orphaned Inboxes
 
-The inbox system creates files on-demand when a message is sent to any recipient name, regardless of whether that agent exists. This leads to several categories of stale inboxes:
+The inbox system creates files on-demand when a message is sent to any recipient name, regardless of whether that agent exists.[^4] This leads to several categories of stale inboxes:
 
 | Inbox File                            | Category      | Explanation                                                                                                         |
 | ------------------------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------- |
@@ -237,7 +237,7 @@ The inbox system creates files on-demand when a message is sent to any recipient
 | `Tweety-Bird--Docs-Writer-.json`      | Current       | New inbox after role rename from "Technical Writer" to "Docs Writer"                                                |
 | `Tweety-Bird--Technical-Writer-.json` | Stale/renamed | Old inbox from before the rename                                                                                    |
 
-**Key finding:** The `SendMessage` tool silently succeeds when sending to a non-existent recipient. The message is written to an inbox file (creating it if needed), but no agent ever reads it. This was identified as a platform-level issue during the looney-tunes session -- it caused significant communication failures (messages to unlaunched Elmer Fudd and non-existent "Bugs Bunny (Team Lead)" were silently lost).
+**Key finding:** The `SendMessage` tool silently succeeds when sending to a non-existent recipient.[^4] The message is written to an inbox file (creating it if needed), but no agent ever reads it. This was identified as a platform-level issue during the looney-tunes session -- it caused significant communication failures (messages to unlaunched Elmer Fudd and non-existent "Bugs Bunny (Team Lead)" were silently lost).
 
 **No garbage collection.** Stale inbox files are never cleaned up. They persist indefinitely. Old inboxes from before agent renames sit alongside current ones.
 
@@ -258,7 +258,7 @@ The inbox system creates files on-demand when a message is sent to any recipient
 
 ### Task Files (`{id}.json`)
 
-Each task is stored as a separate JSON file named `{id}.json`.
+Each task is stored as a separate JSON file named `{id}.json`.[^1]
 
 #### Schema
 
@@ -302,7 +302,7 @@ Each task is stored as a separate JSON file named `{id}.json`.
 
 #### Dependency Model
 
-Tasks use a bidirectional dependency system:
+Tasks use a bidirectional dependency system:[^1]
 
 - `blocks`: "If I'm not done, these tasks cannot start" (downstream)
 - `blockedBy`: "I cannot start until these tasks are done" (upstream)
@@ -350,11 +350,11 @@ The following task IDs have no corresponding `.json` file on disk:
 
 ### 1. No Session State Files
 
-There are no session-specific state files in the team directory. The `leadSessionId` in config.json is the only session reference. Agent sessions are tracked by Claude Code's own session management (in `~/.claude/projects/`), not in the team directory.
+There are no session-specific state files in the team directory. The `leadSessionId` in config.json is the only session reference. Agent sessions are tracked by Claude Code's own session management (in `~/.claude/projects/`), not in the team directory.[^1]
 
 ### 2. Inbox Files Are Append-Only Arrays
 
-Each inbox is a JSON array. New messages are appended to the end. There is no message deletion, archival, or pagination. Over a long session, inbox files grow without bound -- the team-lead's inbox reached **189 KB** in a single session. This could become a performance concern for long-running teams.
+Each inbox is a JSON array. New messages are appended to the end. There is no message deletion, archival, or pagination.[^1] Over a long session, inbox files grow without bound -- the team-lead's inbox reached **189 KB** in a single session. This could become a performance concern for long-running teams. (Compare with OpenCode's JSONL append-only approach which achieves O(1) writes.)[^5]
 
 ### 3. No Message IDs
 
@@ -366,7 +366,7 @@ Task IDs are stored as strings (`"id": "4"`), not numbers, even though they are 
 
 ### 5. Implicit Agent Discovery
 
-The team system creates inbox files on-demand for any recipient name. There is no validation that the recipient is a registered team member. This is the root cause of the "silent success" messaging bug -- messages to non-existent agents create orphaned inbox files that nobody reads.
+The team system creates inbox files on-demand for any recipient name.[^4] There is no validation that the recipient is a registered team member. This is the root cause of the "silent success" messaging bug -- messages to non-existent agents create orphaned inbox files that nobody reads.
 
 ### 6. No Tombstones for Deleted Tasks
 
@@ -374,7 +374,7 @@ When tasks are cancelled/deleted, their `.json` file is simply removed from disk
 
 ### 7. Config.json is Write-Once-ish
 
-The config.json appears to be written at team creation and updated when members join. The `isActive` field on members is updated as agents start/stop. However, there is no observed mechanism for removing members from the config -- even if an agent is shut down, its member entry persists with `isActive: false`.
+The config.json appears to be written at team creation and updated when members join.[^1] The `isActive` field on members is updated as agents start/stop. However, there is no observed mechanism for removing members from the config -- even if an agent is shut down, its member entry persists with `isActive: false`.
 
 ### 8. Timestamps
 
@@ -391,13 +391,13 @@ This inconsistency suggests different parts of the codebase handle timestamp ser
 
 ### 1. The Inbox System is the Primary Communication Channel
 
-All agent-to-agent communication goes through inbox files. The `SendMessage` tool writes to the recipient's inbox file; the recipient polls its inbox for new messages (identified by `"read": false`). This is a simple, file-based pub/sub system.
+All agent-to-agent communication goes through inbox files.[^1] The `SendMessage` tool writes to the recipient's inbox file; the recipient polls its inbox for new messages (identified by `"read": false`). This is a simple, file-based pub/sub system.
 
 **Implication:** An external orchestrator could participate in team communication by reading/writing inbox files directly, without needing Claude Code's internal APIs. However, it would need to handle the file naming convention and JSON format.
 
 ### 2. Task System is Decentralized
 
-Any agent can create, read, and update task files. The `.lock` file provides basic concurrency control, but there is no central authority enforcing task state transitions. Agents self-assign tasks by writing their name to the `owner` field.
+Any agent can create, read, and update task files.[^1] The `.lock` file provides basic concurrency control, but there is no central authority enforcing task state transitions. Agents self-assign tasks by writing their name to the `owner` field.
 
 **Implication:** An external orchestrator could manage the task board by reading/writing task JSON files, but must acquire the `.lock` before modifications.
 
@@ -411,11 +411,11 @@ Stale inboxes, completed tasks, and inactive member entries accumulate indefinit
 
 ### 5. Full Prompt Storage in Config
 
-The complete system prompt for each teammate is stored in config.json. This means config.json grows linearly with team size and prompt length. For the 5-member looney-tunes team, config.json is a manageable size, but teams with many agents or very long prompts could have large config files.
+The complete system prompt for each teammate is stored in config.json.[^1] This means config.json grows linearly with team size and prompt length. For the 5-member looney-tunes team, config.json is a manageable size, but teams with many agents or very long prompts could have large config files.
 
 ### 6. File-Based Architecture Enables External Tooling
 
-Because all state is in plain JSON files with no database or daemon process, external tools can:
+Because all state is in plain JSON files with no database or daemon process, external tools can:[^1]
 
 - Read team state by parsing config.json
 - Monitor communication by watching inbox files
@@ -426,10 +426,9 @@ This file-based architecture is a significant advantage for the agent-team proje
 
 ## References
 
-- [Claude Code Agent Teams Documentation](https://code.claude.com/docs/en/agent-teams)
-- [Claude Code Plugin Documentation](https://code.claude.com/docs/en/plugins)
-- [Delegate mode bug (GitHub #25037)](https://github.com/anthropics/claude-code/issues/25037)
-- [Simultaneous spawning garbling (GitHub #23615)](https://github.com/anthropics/claude-code/issues/23615)
-- [OpenCode agent teams porting research](./opencode-agent-teams-porting.md)
-- [claude-flow research](./claude-flow.md)
-- Source data: `~/.claude/teams/looney-tunes/` and `~/.claude/tasks/looney-tunes/` (analyzed 2026-02-16)
+[^1]: https://code.claude.com/docs/en/agent-teams
+[^2]: https://code.claude.com/docs/en/plugins
+[^3]: https://github.com/anthropics/claude-code/issues/25037
+[^4]: https://github.com/anthropics/claude-code/issues/23615
+[^5]: ./opencode-agent-teams-porting.md
+[^6]: ./claude-flow.md

@@ -11,32 +11,32 @@
 
 ### The Platform
 
-SystemPrompt.io is a **production-ready Rust framework** for deploying AI agents. It is NOT a SaaS platform or prompt library — it's a self-hosted library that compiles to a single ~50MB binary.
+SystemPrompt.io is a **production-ready Rust framework** for deploying AI agents.[^1] It is NOT a SaaS platform or prompt library — it's a self-hosted library that compiles to a single ~50MB binary.
 
-> "Claude and ChatGPT are AI models. systemprompt.io is a Rust framework for deploying AI to production."
+> "Claude and ChatGPT are AI models. systemprompt.io is a Rust framework for deploying AI to production."[^1]
 
 **Creator**: Ed J Burton (solo, unfunded project)
-**License**: BSL-1.1 (converts to Apache 2.0 after 4 years)
-**Repository**: [github.com/systempromptio](https://github.com/systempromptio)
+**License**: BSL-1.1 (converts to Apache 2.0 after 4 years)[^4]
+**Repository**: [github.com/systempromptio](https://github.com/systempromptio)[^4]
 
-Core infrastructure in one binary:
+Core infrastructure in one binary:[^1]
 
 - **Authentication**: OAuth2/OIDC, WebAuthn
 - **Agent orchestration**: A2A (Agent-to-Agent) protocol
-- **MCP hosting**: Works with Claude Code, Claude Desktop, ChatGPT
+- **MCP hosting**: Works with Claude Code, Claude Desktop, ChatGPT[^8]
 - **Memory systems**: Long-term, short-term, working memory
 - **Observability**: Logging, audit trails, cost tracking
 - **Playbooks**: Deterministic execution guides
 
-Multi-model support: Anthropic Claude, OpenAI, Google Gemini with fallback routing.
+Multi-model support: Anthropic Claude, OpenAI, Google Gemini with fallback routing.[^1]
 
 ### What Are Playbooks?
 
-Playbooks are **deterministic, self-repairing, machine-executable instruction guides**. They are the central operational concept of the platform.
+Playbooks are **deterministic, self-repairing, machine-executable instruction guides**.[^2] They are the central operational concept of the platform.
 
-> "Users should NOT guess how to interact with agents. Instead: Find the agent's playbook, read the playbook, use the CLI following the playbook."
+> "Users should NOT guess how to interact with agents. Instead: Find the agent's playbook, read the playbook, use the CLI following the playbook."[^2]
 
-Core characteristics:
+Core characteristics:[^2]
 
 1. **Deterministic**: Exact commands in JSON format, not suggestions
 2. **Self-repairing**: When commands fail, agents fix the playbook directly, then resume
@@ -44,13 +44,13 @@ Core characteristics:
 4. **Bounded**: Each playbook covers a single domain
 5. **Bloat-free**: No inline comments or unnecessary documentation
 
-Three-layer workflow:
+Three-layer workflow:[^2]
 
 1. Users **read playbooks** to learn interaction patterns
 2. Users **send tasks via CLI** following playbook syntax exactly
 3. **Agents execute** using skills, MCP servers, and tools per playbook guidelines
 
-Mandatory rules: "DO NOT skip steps. DO NOT guess commands. ALWAYS use playbooks."
+Mandatory rules: "DO NOT skip steps. DO NOT guess commands. ALWAYS use playbooks."[^2]
 
 ## 2. What Guide Playbooks Are Available?
 
@@ -58,24 +58,24 @@ Mandatory rules: "DO NOT skip steps. DO NOT guess commands. ALWAYS use playbooks
 
 | Playbook                                                      | Description                                                                                                          |
 | :------------------------------------------------------------ | :------------------------------------------------------------------------------------------------------------------- |
-| **START HERE** (`guide-start`)                                | Required foundational reading. Master index mapping tasks to playbook IDs. Establishes mandatory rules.              |
-| **Playbook Authoring Guide** (`guide-playbook`)               | How to write machine-executable playbooks. Five rules: deterministic, testable, bounded, self-repairing, bloat-free. |
-| **Multi-Agent Mesh Architecture** (`guide-mesh-architecture`) | Hub-and-spoke coordination. A2A protocol. Port allocation strategy. The most relevant guide for our work.            |
-| **Workflow Recipes** (`guide-recipes`)                        | Complete examples: blog publishing, CSS/JS integration, homepage config, content refresh.                            |
-| **AI Provider Configuration** (`guide-ai-provider`)           | Setup for Anthropic, OpenAI, Gemini. Provider capabilities matrix.                                                   |
-| **Coding Standards** (`guide-coding-standards`)               | Master index linking to language-specific standards.                                                                 |
-| **Documentation Authoring** (`guide-documentation`)           | Standards for creating and editing documentation.                                                                    |
-| **Discord Integration** (`guide-discord`)                     | Discord messaging and gateway integration for notifications.                                                         |
-| **Migrate from OpenClaw** (`guide-migrate-openclaw`)          | Migration path preserving operational context.                                                                       |
+| **START HERE** (`guide-start`)                                | Required foundational reading. Master index mapping tasks to playbook IDs. Establishes mandatory rules.[^2]          |
+| **Playbook Authoring Guide** (`guide-playbook`)               | How to write machine-executable playbooks. Five rules: deterministic, testable, bounded, self-repairing, bloat-free.[^2] |
+| **Multi-Agent Mesh Architecture** (`guide-mesh-architecture`) | Hub-and-spoke coordination. A2A protocol. Port allocation strategy. The most relevant guide for our work.[^2]        |
+| **Workflow Recipes** (`guide-recipes`)                        | Complete examples: blog publishing, CSS/JS integration, homepage config, content refresh.[^2]                        |
+| **AI Provider Configuration** (`guide-ai-provider`)           | Setup for Anthropic, OpenAI, Gemini. Provider capabilities matrix.[^2]                                               |
+| **Coding Standards** (`guide-coding-standards`)               | Master index linking to language-specific standards.[^3]                                                             |
+| **Documentation Authoring** (`guide-documentation`)           | Standards for creating and editing documentation.[^3]                                                                |
+| **Discord Integration** (`guide-discord`)                     | Discord messaging and gateway integration for notifications.[^2]                                                     |
+| **Migrate from OpenClaw** (`guide-migrate-openclaw`)          | Migration path preserving operational context.[^2]                                                                   |
 
 ### Other Categories
 
 | Category    | Count | Focus                                                                                     |
 | :---------- | :---- | :---------------------------------------------------------------------------------------- |
-| **CLI**     | 23    | Command operations: agents, sessions, mesh, skills, MCP, cloud, analytics                 |
-| **Build**   | 37    | Extensions, MCP servers, web infrastructure, Rust standards, checklists                   |
-| **Domain**  | 12    | Operations and troubleshooting: agents, AI, MCP, skills, content, scheduling              |
-| **Content** | 10    | Platform-specific creation: blog, Medium, LinkedIn, HackerNoon, Twitter, Reddit, Substack |
+| **CLI**     | 23    | Command operations: agents, sessions, mesh, skills, MCP, cloud, analytics[^2]             |
+| **Build**   | 37    | Extensions, MCP servers, web infrastructure, Rust standards, checklists[^3]               |
+| **Domain**  | 12    | Operations and troubleshooting: agents, AI, MCP, skills, content, scheduling[^2]          |
+| **Content** | 10    | Platform-specific creation: blog, Medium, LinkedIn, HackerNoon, Twitter, Reddit, Substack[^2] |
 
 **Total**: ~91 playbooks across 5 categories.
 
@@ -83,7 +83,7 @@ Mandatory rules: "DO NOT skip steps. DO NOT guess commands. ALWAYS use playbooks
 
 ### Tier 1 — Directly Relevant
 
-**Multi-Agent Mesh Architecture Guide** is the most important. It defines:
+**Multi-Agent Mesh Architecture Guide** is the most important. It defines:[^2]
 
 - **Hub-and-spoke pattern**: SystemPrompt Hub (Port 9020) as coordination center
 - **Port allocation**:
@@ -101,26 +101,26 @@ Hub (Port 9020) — coordination center
   └── Discord notifications, memory management
 ```
 
-> "Hub memory is the brain — use it for important decisions and workflow tracking."
+> "Hub memory is the brain — use it for important decisions and workflow tracking."[^2]
 
-Operational best practices:
+Operational best practices:[^2]
 
 - Notify hub at workflow start and completion
 - Use longer timeouts for extended processes
 - Create named contexts to track workflow state
 - Implement proper error logging in hub memory
 
-**Agents Management CLI Playbook**: Create, configure, communicate with agents via A2A protocol.
+**Agents Management CLI Playbook**: Create, configure, communicate with agents via A2A protocol.[^2]
 
-**Agent Mesh Management CLI Playbook**: Start, stop, monitor, troubleshoot mesh deployments.
+**Agent Mesh Management CLI Playbook**: Start, stop, monitor, troubleshoot mesh deployments.[^2]
 
 ### Tier 2 — Supporting Patterns
 
-**Playbook Authoring Guide**: Structural patterns for instruction sets — YAML frontmatter, JSON command blocks, self-repair protocol.
+**Playbook Authoring Guide**: Structural patterns for instruction sets — YAML frontmatter, JSON command blocks, self-repair protocol.[^2]
 
-**Skills Development (Domain)**: Create and manage reusable agent capabilities — parallels our behaviors/skills distinction.
+**Skills Development (Domain)**: Create and manage reusable agent capabilities — parallels our behaviors/skills distinction.[^2]
 
-**MCP Server Configuration (Domain)**: Agent capability layer setup — relevant to our MCP-as-abstraction-layer vision.
+**MCP Server Configuration (Domain)**: Agent capability layer setup — relevant to our MCP-as-abstraction-layer vision.[^8]
 
 ## 4. Patterns for Structuring Agent Prompts/Behavior
 
@@ -128,7 +128,7 @@ SystemPrompt uses several patterns we don't currently employ:
 
 ### Deterministic Command Documentation
 
-Every operation documented as an exact JSON command block:
+Every operation documented as an exact JSON command block:[^2]
 
 ```json
 { "command": "admin agents list --enabled" }
@@ -138,7 +138,7 @@ No ambiguity, no suggestions. Placeholders use angle brackets: `<name>`, `<id>`.
 
 ### Self-Repair Protocol
 
-When playbook commands fail, agents must:
+When playbook commands fail, agents must:[^2]
 
 1. Stop execution (don't cascade errors)
 2. Find correct syntax via help command
@@ -151,11 +151,11 @@ This prevents playbook staleness — agents maintain their own documentation.
 
 ### Master Index Navigation
 
-The START HERE guide provides a task-to-playbook mapping. Users find the right playbook by looking up their task, not by guessing which playbook to read.
+The START HERE guide provides a task-to-playbook mapping.[^2] Users find the right playbook by looking up their task, not by guessing which playbook to read.
 
 ### Platform-Specific Voice Operationalization
 
-Content creation playbooks standardize agent personality per platform:
+Content creation playbooks standardize agent personality per platform:[^2]
 
 - Target audience (CTOs, senior developers, etc.)
 - Tone (contrarian, data-backed, narrative-driven, satirical)
@@ -166,9 +166,9 @@ Each platform gets custom guidance tailored to its audience — showing how Syst
 
 ### Hub as Stateful Memory
 
-> "Hub memory is the brain — use it for important decisions and workflow tracking."
+> "Hub memory is the brain — use it for important decisions and workflow tracking."[^2]
 
-The hub maintains:
+The hub maintains:[^2]
 
 - Workflow state (named contexts)
 - Decision history
@@ -181,26 +181,26 @@ The hub maintains:
 
 | Dimension       | SystemPrompt Playbooks                    | Our Agent Files                      | Our Behaviors            | Our Skills                 |
 | :-------------- | :---------------------------------------- | :----------------------------------- | :----------------------- | :------------------------- |
-| **Format**      | YAML frontmatter + JSON command blocks    | YAML frontmatter + Markdown body     | Markdown                 | Markdown with `!`command`` |
+| **Format**      | YAML frontmatter + JSON command blocks[^2] | YAML frontmatter + Markdown body    | Markdown                 | Markdown with `!`command`` |
 | **Purpose**     | Deterministic machine execution           | System prompt for LLM                | Role-agnostic procedures | Task-specific knowledge    |
 | **Audience**    | Both machines and humans                  | LLMs (via system prompt)             | LLMs (via conversation)  | LLMs (via conversation)    |
-| **Execution**   | Agents execute exact commands             | Agent follows behavioral guidance    | Agent follows procedure  | Agent follows instructions |
-| **Self-repair** | Built-in (agents fix playbooks)           | None                                 | None                     | None                       |
-| **Validation**  | CLI help verification, URL checks         | Manual review                        | Manual review            | Manual review              |
+| **Execution**   | Agents execute exact commands[^2]         | Agent follows behavioral guidance    | Agent follows procedure  | Agent follows instructions |
+| **Self-repair** | Built-in (agents fix playbooks)[^2]       | None                                 | None                     | None                       |
+| **Validation**  | CLI help verification, URL checks[^2]    | Manual review                        | Manual review            | Manual review              |
 | **Persona**     | Implicit (content playbooks define voice) | Explicit (`<system-message>` block)  | None                     | None                       |
 | **Scope**       | Single domain per playbook                | One agent per file                   | One procedure per file   | One topic per file         |
-| **Persistence** | Versioned files synced to DB              | System prompt (persistent)           | Conversation context     | Conversation context       |
+| **Persistence** | Versioned files synced to DB[^5]          | System prompt (persistent)           | Conversation context     | Conversation context       |
 | **Categories**  | 5 (Guide, CLI, Build, Content, Domain)    | By role (engineer, researcher, etc.) | By procedure type        | By topic                   |
 
 ### Key Differences
 
-**Determinism vs Guidance**: SystemPrompt playbooks are deterministic — exact commands agents execute verbatim. Our agent files are guidance — behavioral instructions the LLM interprets. This reflects fundamentally different execution models.
+**Determinism vs Guidance**: SystemPrompt playbooks are deterministic — exact commands agents execute verbatim.[^2] Our agent files are guidance — behavioral instructions the LLM interprets. This reflects fundamentally different execution models.
 
-**Machine-first vs LLM-first**: Playbooks are written for reliable machine parsing (JSON commands). Our files are written for LLM comprehension (Markdown prose). Playbooks prevent hallucination by eliminating interpretation; our files rely on LLM understanding.
+**Machine-first vs LLM-first**: Playbooks are written for reliable machine parsing (JSON commands).[^2] Our files are written for LLM comprehension (Markdown prose). Playbooks prevent hallucination by eliminating interpretation; our files rely on LLM understanding.
 
-**Self-repair vs Manual**: Playbooks self-repair when broken. Our agent files, behaviors, and skills require human/manual updates. The self-repair pattern is worth adopting.
+**Self-repair vs Manual**: Playbooks self-repair when broken.[^2] Our agent files, behaviors, and skills require human/manual updates. The self-repair pattern is worth adopting.
 
-**Hub-centric vs Leader-centric**: SystemPrompt uses a stateful hub for coordination. Our current Claude Code teams use a leader-centric model. The hub pattern adds persistent state — relevant to our provider-agnostic vision.
+**Hub-centric vs Leader-centric**: SystemPrompt uses a stateful hub for coordination.[^2] Our current Claude Code teams use a leader-centric model. The hub pattern adds persistent state — relevant to our provider-agnostic vision.
 
 ### What's Similar
 
@@ -208,43 +208,43 @@ The hub maintains:
 - Both organize by domain/role
 - Both emphasize following instructions over guessing
 - Both have a concept of skills/capabilities as modular units
-- Both support multi-model/multi-provider (SystemPrompt natively, us via PRD vision)
+- Both support multi-model/multi-provider (SystemPrompt natively[^1], us via PRD vision)
 
 ## 6. Reusable Patterns to Adopt
 
 ### Pattern 1: Self-Repairing Instructions
 
-**What**: When instructions fail, agents fix them before continuing.
+**What**: When instructions fail, agents fix them before continuing.[^2]
 **Why**: Prevents stale documentation. Playbooks/behaviors improve over time instead of degrading.
 **How for us**: Add a self-repair protocol to behaviors — when a behavior's steps produce errors, the agent should update the behavior file and notify the team.
 
 ### Pattern 2: Master Index / Task-to-Playbook Mapping
 
-**What**: A single START HERE document maps tasks to their exact playbook.
+**What**: A single START HERE document maps tasks to their exact playbook.[^2]
 **Why**: Eliminates guessing about which document to read.
 **How for us**: Our CLAUDE.md serves a similar role but could benefit from a more explicit task-to-behavior/skill mapping table.
 
 ### Pattern 3: Hub Memory for Workflow State
 
-**What**: Central hub maintains named contexts for workflow state, decisions, and error logs.
+**What**: Central hub maintains named contexts for workflow state, decisions, and error logs.[^2]
 **Why**: Enables workflow tracking across multi-step, multi-agent operations.
 **How for us**: Our team config + task list serves a similar purpose. Could formalize "named contexts" for workflow state that persists beyond individual task completion.
 
 ### Pattern 4: Deterministic Command Documentation
 
-**What**: Every CLI operation documented as an exact JSON command.
+**What**: Every CLI operation documented as an exact JSON command.[^2]
 **Why**: Eliminates agent hallucination of CLI syntax.
 **How for us**: For our shell scripts and CLI operations, we could document exact command patterns in skills/behaviors. Not as JSON blocks (different execution model), but as copy-pasteable command templates.
 
 ### Pattern 5: Platform-Specific Voice Templates
 
-**What**: Content playbooks define exact voice/tone per platform.
+**What**: Content playbooks define exact voice/tone per platform.[^2]
 **Why**: Consistency across agents and platforms.
 **How for us**: Our persona `<system-message>` blocks serve a similar purpose for individual agents. Could formalize team-wide voice consistency guidelines.
 
 ### Pattern 6: Validation Protocol
 
-**What**: Playbooks validate themselves via CLI help verification and URL checking.
+**What**: Playbooks validate themselves via CLI help verification and URL checking.[^2]
 **Why**: Catches staleness before it causes errors.
 **How for us**: Could add validation checks to our behavior files — verify referenced tools exist, paths are correct, commands work.
 
@@ -253,7 +253,7 @@ The hub maintains:
 | Pattern                                | Why Not                                                                                                      |
 | :------------------------------------- | :----------------------------------------------------------------------------------------------------------- |
 | **JSON command blocks**                | Our agents interpret Markdown, not execute JSON. Different execution model.                                  |
-| **Hub-and-spoke with port allocation** | Relevant for process-based agents, not Claude Code's in-process/tmux model. Consider for agent-team project. |
+| **Hub-and-spoke with port allocation** | Relevant for process-based agents, not Claude Code's in-process/tmux model. Consider for agent-team project.[^9] |
 | **Database-backed playbook sync**      | Over-engineered for our file-based approach. Git versioning is sufficient.                                   |
 | **BSL licensing**                      | Our project is MIT/open.                                                                                     |
 
@@ -261,15 +261,15 @@ The hub maintains:
 
 ### SystemPrompt's Model
 
-SystemPrompt has three related concepts:
+SystemPrompt has three related concepts:[^1]
 
 | Concept      | SystemPrompt                 | Description                                                                |
 | :----------- | :--------------------------- | :------------------------------------------------------------------------- |
 | **Agent**    | Agent (A2A participant)      | Autonomous process with skills, MCP access, and communication capabilities |
 | **Skill**    | Skill (loaded at startup)    | Reusable capability an agent can perform                                   |
-| **Playbook** | Playbook (operational guide) | Deterministic instruction set for a domain                                 |
+| **Playbook** | Playbook (operational guide) | Deterministic instruction set for a domain[^2]                             |
 
-Agents load skills at startup, then follow playbooks to execute tasks. The A2A protocol enables inter-agent communication.
+Agents load skills at startup, then follow playbooks to execute tasks. The A2A protocol enables inter-agent communication.[^1]
 
 ### Our Model
 
@@ -281,13 +281,13 @@ Agents load skills at startup, then follow playbooks to execute tasks. The A2A p
 
 ### Key Distinctions
 
-**Playbooks ≠ Behaviors**: SystemPrompt playbooks are deterministic machine instructions. Our behaviors are interpretive guidance for LLMs. Closest parallel: playbooks combine aspects of both our behaviors (procedures) and skills (task knowledge).
+**Playbooks ≠ Behaviors**: SystemPrompt playbooks are deterministic machine instructions.[^2] Our behaviors are interpretive guidance for LLMs. Closest parallel: playbooks combine aspects of both our behaviors (procedures) and skills (task knowledge).
 
-**Skills overlap**: Both systems have "skills" as modular capabilities. SystemPrompt skills are loaded at agent startup (persistent); our skills are recalled on demand (conversation context, compactable).
+**Skills overlap**: Both systems have "skills" as modular capabilities. SystemPrompt skills are loaded at agent startup (persistent); our skills are recalled on demand (conversation context, compactable).[^1]
 
-**Persona separation**: We explicitly separate persona (`<system-message>`) from role (body). SystemPrompt implicitly defines voice in content playbooks but doesn't have a dedicated persona mechanism.
+**Persona separation**: We explicitly separate persona (`<system-message>`) from role (body). SystemPrompt implicitly defines voice in content playbooks but doesn't have a dedicated persona mechanism.[^2]
 
-**Agent autonomy**: Both systems define agents as autonomous participants. SystemPrompt agents communicate via A2A protocol; ours via SendMessage. Both support fire-and-forget spawning and peer-to-peer communication.
+**Agent autonomy**: Both systems define agents as autonomous participants. SystemPrompt agents communicate via A2A protocol[^1]; ours via SendMessage. Both support fire-and-forget spawning and peer-to-peer communication.
 
 ### Mapping
 
@@ -308,18 +308,18 @@ Master index          →  CLAUDE.md with @references
 
 ### Most Valuable Insights
 
-1. **Self-repairing instructions** is the standout pattern. We should adopt it for our behaviors and skills.
-2. **Hub memory / named contexts** for workflow state — more structured than our current task list approach.
-3. **Deterministic command documentation** — reduce agent hallucination of CLI syntax in our shell script skills.
-4. **Validation protocols** — automated staleness detection for our documentation.
+1. **Self-repairing instructions** is the standout pattern.[^2] We should adopt it for our behaviors and skills.
+2. **Hub memory / named contexts** for workflow state — more structured than our current task list approach.[^2]
+3. **Deterministic command documentation** — reduce agent hallucination of CLI syntax in our shell script skills.[^2]
+4. **Validation protocols** — automated staleness detection for our documentation.[^2]
 
 ### What SystemPrompt Does That We Don't (Yet)
 
-- Self-repairing documentation
-- Machine-parseable command format
-- Database-backed state with named contexts
-- Automated validation of instruction accuracy
-- Port-based agent isolation (process-level separation)
+- Self-repairing documentation[^2]
+- Machine-parseable command format[^2]
+- Database-backed state with named contexts[^5]
+- Automated validation of instruction accuracy[^2]
+- Port-based agent isolation (process-level separation)[^2]
 
 ### What We Do That SystemPrompt Doesn't
 
@@ -331,34 +331,20 @@ Master index          →  CLAUDE.md with @references
 
 ### Relevance to Provider-Agnostic Vision
 
-SystemPrompt's multi-provider support (Anthropic, OpenAI, Gemini with fallback routing) validates our PRD's direction. Their A2A protocol and hub-and-spoke architecture provide a concrete reference for how provider-agnostic agent communication can work. The MCP integration aligns with our planned MCP abstraction layer.
+SystemPrompt's multi-provider support (Anthropic, OpenAI, Gemini with fallback routing)[^1] validates our PRD's direction. Their A2A protocol and hub-and-spoke architecture provide a concrete reference for how provider-agnostic agent communication can work. The MCP integration aligns with our planned MCP abstraction layer.[^8]
 
-The `systemprompt-code-orchestrator` repository (MCP server for coordinating AI coding agents targeting Claude Code CLI and Gemini CLI) is particularly worth monitoring — it's the closest external implementation to what our agent-team project aims to build.
+The `systemprompt-code-orchestrator` repository[^7] (MCP server for coordinating AI coding agents targeting Claude Code CLI and Gemini CLI) is particularly worth monitoring — it's the closest external implementation to what our agent-team project aims to build.
 
 ## References
 
-### Official Resources
-
-- [SystemPrompt.io Homepage](https://systemprompt.io)
-- [SystemPrompt.io Playbooks](https://systemprompt.io/playbooks)
-- [SystemPrompt.io Documentation](https://systemprompt.io/documentation)
-- [GitHub: systempromptio](https://github.com/systempromptio)
-
-### Key Repositories
-
-- [systemprompt-core](https://github.com/systempromptio/systemprompt-core) — Rust infrastructure library
-- [systemprompt-template](https://github.com/systempromptio/systemprompt-template) — Quick-start agent mesh
-- [systemprompt-code-orchestrator](https://github.com/systempromptio/systemprompt-code-orchestrator) — MCP for coordinating AI coding agents
-- [systemprompt-mcp-server](https://github.com/systempromptio/systemprompt-mcp-server) — Production-ready MCP implementation
-
-### Comparative Analysis
-
-- [AI Agent Orchestration Frameworks — n8n Blog](https://blog.n8n.io/ai-agent-orchestration-frameworks/)
-- [What is AI Orchestration? 21+ Tools — Akka](https://akka.io/blog/ai-orchestration-tools)
-- [Comparative Study of AI Agent Orchestration Frameworks — Medium](https://medium.com/@kzamania/a-comparative-study-of-ai-agent-orchestration-frameworks-f61cd49b687e)
-
-### Internal References
-
-- Agent-team PRD: `docs/specs/draft/agent-team-project.md` in nsheaps/claude-utils
-- Writing agent team agents skill: `plugins/agent-team-skills/skills/writing-agent-team-agents/SKILL.md`
-- OpenCode porting research: `docs/research/opencode-agent-teams-porting.md`
+[^1]: https://systemprompt.io
+[^2]: https://systemprompt.io/playbooks
+[^3]: https://systemprompt.io/documentation
+[^4]: https://github.com/systempromptio
+[^5]: https://github.com/systempromptio/systemprompt-core
+[^6]: https://github.com/systempromptio/systemprompt-template
+[^7]: https://github.com/systempromptio/systemprompt-code-orchestrator
+[^8]: https://github.com/systempromptio/systemprompt-mcp-server
+[^9]: https://blog.n8n.io/ai-agent-orchestration-frameworks/
+[^10]: https://akka.io/blog/ai-orchestration-tools
+[^11]: https://medium.com/@kzamania/a-comparative-study-of-ai-agent-orchestration-frameworks-f61cd49b687e
