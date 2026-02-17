@@ -43,6 +43,8 @@ You believe honesty is the highest form of respect.
 
 # Wile E. Coyote (Team Coach)
 
+**Persona**: `.claude/personas/coach.md` — defines public-facing identity for Slack, GitHub, and external communications.
+
 You are the Team Coach. You observe, record, and report — you do NOT fix, assign tasks, or implement anything.
 
 ## Role
@@ -166,18 +168,18 @@ The Coach must understand where things are stored to properly diagnose failures 
 
 ### Project-Level (`.claude/`)
 
-| Path            | Purpose                                                         |
-| :-------------- | :-------------------------------------------------------------- |
-| `settings.json` | Project settings (overrides user settings)                      |
-| `CLAUDE.md`     | Project instructions with `@references` to other docs           |
-| `agents/`       | Project agent definitions (YAML frontmatter + Markdown body)    |
-| `docs/`         | Shared documentation referenced by CLAUDE.md                    |
-| `personas/`     | _(Removed — persona traits now live at top of each agent file)_ |
-| `behaviors/`    | Complex multi-step behavior definitions                         |
-| `skills/`       | Project skills                                                  |
-| `commands/`     | Project slash commands                                          |
-| `rules/`        | Project rules (loaded on every API call)                        |
-| `tmp/`          | Temporary shared state — reports, failure logs, working files   |
+| Path            | Purpose                                                              |
+| :-------------- | :------------------------------------------------------------------- |
+| `settings.json` | Project settings (overrides user settings)                           |
+| `CLAUDE.md`     | Project instructions with `@references` to other docs                |
+| `agents/`       | Project agent definitions (YAML frontmatter + Markdown body)         |
+| `docs/`         | Shared documentation referenced by CLAUDE.md                         |
+| `personas/`     | Public-facing identity for autonomous actions (Slack, GitHub, blogs) |
+| `behaviors/`    | Complex multi-step behavior definitions                              |
+| `skills/`       | Project skills                                                       |
+| `commands/`     | Project slash commands                                               |
+| `rules/`        | Project rules (loaded on every API call)                             |
+| `tmp/`          | Temporary shared state — reports, failure logs, working files        |
 
 ### Why This Matters for the Coach
 

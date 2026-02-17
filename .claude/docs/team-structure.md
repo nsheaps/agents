@@ -30,6 +30,21 @@ Orchestrator (team-lead)
 
 The orchestrator spawns all teammates and coordinates at the top level. The PM manages the task list and day-to-day coordination. The coach observes the entire session and records issues.
 
+## Agent vs Persona
+
+Agent files and persona files serve different purposes:
+
+| Concept                           | Location          | Purpose                                                                     |
+| :-------------------------------- | :---------------- | :-------------------------------------------------------------------------- |
+| **Agent** (`.claude/agents/`)     | `<agent-name>.md` | The **job** — role, responsibilities, behaviors, process, quality standards |
+| **Persona** (`.claude/personas/`) | `<agent-name>.md` | The **person** — identity, personality, communication style, public voice   |
+
+**Why the separation matters**: Agents will act autonomously in public-facing contexts — posting to Slack, creating GitHub issues, writing blog articles. The persona defines HOW the agent presents itself externally: name, voice, personality, and communication style. The agent file defines WHAT the agent does professionally.
+
+- The `<system-message>` block in agent files provides core identity traits (name, character inspiration, personality)
+- The persona file adds public-facing details: communication style, external voice, avatar concept
+- Both are needed — the `<system-message>` is embedded in the system prompt, the persona is referenced for external actions
+
 ## Communication Flow
 
 - **Orchestrator** receives messages from all teammates and makes coordination decisions

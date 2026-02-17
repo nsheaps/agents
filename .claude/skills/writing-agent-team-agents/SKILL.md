@@ -54,6 +54,8 @@ You are named after the [franchise] character, but do not act like [Character Na
 
 # [Character Name] ([Role Title])
 
+**Persona**: `.claude/personas/<agent-name>.md` — defines public-facing identity for Slack, GitHub, and external communications.
+
 One-sentence summary of what this agent does.
 
 ## Role
@@ -113,20 +115,20 @@ Start your session by reading the files in .claude/docs/.
 
 ### Frontmatter Fields
 
-| Field | Required | Purpose |
-|:------|:---------|:--------|
-| `name` | Yes | Agent identifier. Lowercase, hyphens, 3-50 chars. |
-| `description` | Yes | When to trigger this agent. Must include 2-3 `<example>` blocks. Include one negative example showing when NOT to use the agent. |
-| `color` | Recommended | UI color: `blue`, `cyan`, `green`, `yellow`, `magenta`, `red` |
-| `model` | Optional | `inherit`, `sonnet`, `opus`, `haiku`. Omit to inherit from parent. |
-| `tools` | Optional | Allowlist of tools. Omit for all tools. |
-| `disallowedTools` | Optional | Denylist of tools. Alternative to `tools`. |
-| `permissionMode` | Optional | Permission mode for the agent session. |
-| `maxTurns` | Optional | Maximum API round-trips before stopping. |
-| `skills` | Optional | Skills to preload into conversation context (NOT system prompt). |
-| `mcpServers` | Optional | MCP servers available to the agent. |
-| `hooks` | Optional | Agent-specific hooks. |
-| `memory` | Optional | Memory configuration. |
+| Field             | Required    | Purpose                                                                                                                          |
+| :---------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| `name`            | Yes         | Agent identifier. Lowercase, hyphens, 3-50 chars.                                                                                |
+| `description`     | Yes         | When to trigger this agent. Must include 2-3 `<example>` blocks. Include one negative example showing when NOT to use the agent. |
+| `color`           | Recommended | UI color: `blue`, `cyan`, `green`, `yellow`, `magenta`, `red`                                                                    |
+| `model`           | Optional    | `inherit`, `sonnet`, `opus`, `haiku`. Omit to inherit from parent.                                                               |
+| `tools`           | Optional    | Allowlist of tools. Omit for all tools.                                                                                          |
+| `disallowedTools` | Optional    | Denylist of tools. Alternative to `tools`.                                                                                       |
+| `permissionMode`  | Optional    | Permission mode for the agent session.                                                                                           |
+| `maxTurns`        | Optional    | Maximum API round-trips before stopping.                                                                                         |
+| `skills`          | Optional    | Skills to preload into conversation context (NOT system prompt).                                                                 |
+| `mcpServers`      | Optional    | MCP servers available to the agent.                                                                                              |
+| `hooks`           | Optional    | Agent-specific hooks.                                                                                                            |
+| `memory`          | Optional    | Memory configuration.                                                                                                            |
 
 ## Key Technical Facts
 
@@ -142,21 +144,21 @@ Source: [Claude Code Sub-Agents Docs](https://code.claude.com/docs/en/sub-agents
 
 ### What Does NOT Work in Agent Files
 
-| Mechanism | Works? | Where It Works Instead |
-|:----------|:-------|:-----------------------|
-| `@references` (e.g., `@docs/file.md`) | No | CLAUDE.md only |
-| `!`command`` dynamic injection | No | Skills only ([docs](https://code.claude.com/docs/en/skills#inject-dynamic-context)) |
-| Template/variable substitution | No | Not supported anywhere |
+| Mechanism                             | Works? | Where It Works Instead                                                              |
+| :------------------------------------ | :----- | :---------------------------------------------------------------------------------- |
+| `@references` (e.g., `@docs/file.md`) | No     | CLAUDE.md only                                                                      |
+| `!`command`` dynamic injection        | No     | Skills only ([docs](https://code.claude.com/docs/en/skills#inject-dynamic-context)) |
+| Template/variable substitution        | No     | Not supported anywhere                                                              |
 
 ### What Goes Where
 
-| Content | Location | Persistence |
-|:--------|:---------|:------------|
-| Agent persona + role instructions | Agent file body | System prompt (persistent) |
-| Shared team docs | `.claude/docs/` via CLAUDE.md `@references` | System prompt (persistent, inherited by all agents) |
-| Preloaded skills (`skills:` frontmatter) | Conversation context | Compactable (may be lost) |
-| Task tool `prompt` parameter | First user message | Compactable (may be lost) |
-| SessionStart hook `additionalContext` | Context injection | Unclear persistence through compaction |
+| Content                                  | Location                                    | Persistence                                         |
+| :--------------------------------------- | :------------------------------------------ | :-------------------------------------------------- |
+| Agent persona + role instructions        | Agent file body                             | System prompt (persistent)                          |
+| Shared team docs                         | `.claude/docs/` via CLAUDE.md `@references` | System prompt (persistent, inherited by all agents) |
+| Preloaded skills (`skills:` frontmatter) | Conversation context                        | Compactable (may be lost)                           |
+| Task tool `prompt` parameter             | First user message                          | Compactable (may be lost)                           |
+| SessionStart hook `additionalContext`    | Context injection                           | Unclear persistence through compaction              |
 
 **Implication**: Anything that MUST persist through compaction belongs in the agent file body or in CLAUDE.md. Everything else is supplementary.
 
@@ -166,13 +168,20 @@ Source: Persona loading research (`.claude/tmp/persona-loading-research.md`)
 
 All agents inherit the project's CLAUDE.md content (including its `@references`). This is useful for shared documentation like team rules, communication protocols, and project structure. But it means **all agents see all CLAUDE.md content** — don't put agent-specific instructions there.
 
-## Persona vs Role Distinction
+## Agent vs Persona: The Core Distinction
 
-Agent files separate personal character traits from professional responsibilities using a `<system-message>` block.
+Agent files and persona files serve fundamentally different purposes:
 
-### `<system-message>` Block (Persona)
+| Concept | Location | What It Is |
+|:--------|:---------|:-----------|
+| **Agent** (`.claude/agents/<name>.md`) | System prompt | The **job** — role, responsibilities, behaviors, process, quality standards |
+| **Persona** (`.claude/personas/<name>.md`) | Reference doc | The **person** — identity, communication style, public voice, avatar concept |
 
-Located immediately after the frontmatter. Contains 5-7 lines of **personal character traits**:
+**Why they're separate**: Agents will act autonomously in public-facing contexts — Slack messages, GitHub issues, blog articles, Reddit posts. The persona defines HOW the agent presents itself externally. The agent file defines WHAT the agent does professionally.
+
+### `<system-message>` Block (Core Identity)
+
+Located immediately after the frontmatter in agent files. Contains 5-7 lines of **core identity traits**:
 
 - Full name
 - Namesake disclaimer (e.g., "named after X, but do not act like X")
@@ -181,9 +190,29 @@ Located immediately after the frontmatter. Contains 5-7 lines of **personal char
 
 **What does NOT go here**: Role descriptions, responsibilities, tool instructions, communication protocols, process steps.
 
+The `<system-message>` block is embedded in the system prompt and persists through compaction. It provides the character core that shapes internal team interactions.
+
+### Persona File (Public-Facing Identity)
+
+Located at `.claude/personas/<agent-name>.md`. Contains:
+
+- **Identity**: Full name, character inspiration, disclaimer
+- **Personality Traits**: Core characteristics (mirrors `<system-message>` but with more detail)
+- **Communication Style**: How the agent writes and speaks
+- **Public Voice**: Specific guidance for external communications (Slack, GitHub, blogs)
+- **Avatar Concept**: Visual identity description
+
+Agent files reference their persona with:
+
+```markdown
+**Persona**: `.claude/personas/<agent-name>.md` — defines public-facing identity for Slack, GitHub, and external communications.
+```
+
+When performing autonomous public-facing actions, agents should read their persona file to adopt the appropriate voice and style.
+
 ### Role Section (Professional)
 
-The rest of the body. Contains:
+The rest of the agent file body. Contains:
 
 - Role summary and philosophy
 - Responsibilities (numbered list)
@@ -194,17 +223,17 @@ The rest of the body. Contains:
 - Edge cases
 - Session start instruction
 
-**Why the separation matters**: The persona creates character distinctness and emotional resonance. The role section defines professional behavior. Mixing them dilutes both — role instructions buried in persona traits get lost, and persona traits scattered through role sections feel disconnected.
+**Why the three-way separation matters**: The `<system-message>` block creates character core in the system prompt. The persona file adds public-facing identity for external actions. The role section defines professional behavior. Mixing them dilutes all three — role instructions buried in persona traits get lost, public voice guidance clutters the system prompt, and persona traits scattered through role sections feel disconnected.
 
 ## Agent vs Behavior vs Skill
 
 These three concepts serve different purposes. Conflating them leads to bloated agents, underused skills, or undocumented procedures.
 
-| Concept | What It Is | Owned By | Example |
-|:--------|:-----------|:---------|:--------|
-| **Agent** | Autonomous role with its own session, persona, and responsibilities | One agent file | `deep-researcher.md` — performs complex investigations |
-| **Behavior** | Encapsulated multi-step procedure that any agent can execute | `.claude/behaviors/` | "How to conduct research" — evaluating, searching, fact-checking, synthesizing |
-| **Skill** | Task-specific knowledge/instructions recalled on demand | `.claude/skills/` | "How to write agent files" (this document) |
+| Concept      | What It Is                                                          | Owned By             | Example                                                                        |
+| :----------- | :------------------------------------------------------------------ | :------------------- | :----------------------------------------------------------------------------- |
+| **Agent**    | Autonomous role with its own session, persona, and responsibilities | One agent file       | `deep-researcher.md` — performs complex investigations                         |
+| **Behavior** | Encapsulated multi-step procedure that any agent can execute        | `.claude/behaviors/` | "How to conduct research" — evaluating, searching, fact-checking, synthesizing |
+| **Skill**    | Task-specific knowledge/instructions recalled on demand             | `.claude/skills/`    | "How to write agent files" (this document)                                     |
 
 **Key distinctions**:
 
@@ -220,7 +249,7 @@ Hard-won knowledge from the looney-tunes team session.
 
 ### Don't Put Role Descriptions in Persona Traits
 
-The `<system-message>` block is for personal character — name, quirks, beliefs. Do NOT put responsibilities, tool instructions, or workflow steps there. Those belong in the Role section.
+The `<system-message>` block is for personal character — name, quirks, beliefs. Do NOT put responsibilities, tool instructions, or workflow steps there. Those belong in the Role section. Similarly, don't put public voice or communication style guidance in the `<system-message>` — that belongs in the persona file (`.claude/personas/`).
 
 ### Don't Use `@references` in Agent Files
 
