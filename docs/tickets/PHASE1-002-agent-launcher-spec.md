@@ -1,7 +1,7 @@
 ---
 id: PHASE1-002
 title: "Write agent launcher spec"
-status: open
+status: done
 assignee: Elmer Fudd (Project Manager)
 priority: critical
 phase: 1
