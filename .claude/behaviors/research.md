@@ -43,9 +43,15 @@ Produce a written report that answers a specific question with cited evidence, c
    - **Open questions**: What remains unknown
    - **Sources**: Full list of URLs, file paths, references
 
-6. **Save to file** — Write the report to the designated location (typically `.claude/tmp/{topic}-research.md`).
+6. **Include footnote references** — All sources must use markdown footnote format:
+   - Inline: `[^1]` where the claim is made
+   - Bottom of document: `[^1]: https://source-url-here`
+   - Every factual claim, statistic, or quoted finding must have a footnote linking to its source
+   - Existing research documents should be updated to this format when next touched
 
-7. **Summarize to requester** — Send a concise summary (key findings + file path). Do NOT include the full report in the message.
+7. **Save to file** — Write the report to the designated location (typically `.claude/tmp/{topic}-research.md`).
+
+8. **Summarize to requester** — Send a concise summary (key findings + file path). Do NOT include the full report in the message.
 
 ## Anti-Patterns
 
