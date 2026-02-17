@@ -3,7 +3,7 @@
 **Author**: Elmer Fudd (Project Manager)
 **Date**: 2026-02-17
 **Task**: #94
-**Revision**: 2 — incorporates architecture design doc + MVP priority shift
+**Revision**: 3 — adds agent launcher as Phase 1 deliverable (Task #101)
 **Status**: Draft — awaiting team lead review
 
 ---
@@ -18,46 +18,100 @@ This plan synthesizes these source documents:
 4. **MCP Tooling PRD** — `mcp/docs/specs/draft/mcp-tooling.md`
 5. **Engineering Review** — `agent-team/.claude/tmp/mesh-mcp-engineering-review.md` (Bugs Bunny, Task #87)
 6. **Team Member Cleanup Behavior** — `agent-team/.claude/behaviors/team-member-cleanup.md`
+7. **Agent Launcher Design** — Task #101 (agent launcher that reads `.claude/agents/*.md`)
 
 ### Key Decisions
 
 - **Language**: TypeScript + Bun for all components. Exception: K8s controller = Go. (Task #90)
 - **Two-process architecture**: Remote mesh server + local MCP stdio client are separate components.
 - **Socket.io**: Separated as its own reusable package.
-- **MVP PRIORITY**: Agent lifecycle (launch/kill/relaunch) is the FIRST goal. Before mesh, before Docker, before cross-machine.
+- **MVP PRIORITY**: Agent launcher + lifecycle (launch/kill/relaunch) is the FIRST goal. Before mesh, before Docker, before cross-machine.
+- **Agent launcher**: Reads `.claude/agents/*.md` to auto-create agents. Replaces manual Task tool spawning.
+- **Prompt modes**: Agent prompts can REPLACE or EXTEND a selectable base system prompt.
+- **Claude Code only for now**: Provider abstraction comes later.
 
 ### Repos Involved
 
 | Repo | Purpose | Primary work |
 |:-----|:--------|:-------------|
-| `nsheaps/agent` | Agent launcher wrapper | **Phase 1 MVP**: lifecycle management, config composition, launch command |
-| `nsheaps/agent-team` | Agent team orchestration | Agent definitions, agent.yaml schema, personas, team docs, specs |
+| `nsheaps/agent-team` | Agent team orchestration | **Phase 1 MVP**: agent launcher script, agent definitions, personas, team docs, specs |
+| `nsheaps/agent` | Agent launcher CLI (future) | Phase 2+: structured agent.yaml, config composition, provider abstraction |
 | `nsheaps/mcp` | MCP tooling CLI + packages | Socket.io package, mesh server, mesh client, inspector, gateway, daemon, CLI |
 
 ---
 
-## Tier 1: Agent Lifecycle (FIRST PRIORITY)
+## Tier 1: Agent Launcher + Lifecycle (FIRST PRIORITY)
 
 > "The ability to launch an agent, kill it, and relaunch it reliably on the same system — without stale entries, name collisions, or manual config surgery."
 
-### Phase 1: Agent Lifecycle MVP
+The concrete deliverable is an **agent launcher** that reads `.claude/agents/*.md` files and automatically creates agents — replacing the current manual `Task` tool spawning workflow.
 
-**Repo**: `nsheaps/agent`
-**Goal**: Reliable agent launch, kill, relaunch, health check, and auto-cleanup. Solves the stale entry problem documented in `.claude/behaviors/team-member-cleanup.md`.
+### Phase 1: Agent Launcher MVP
+
+**Repo**: `nsheaps/agent-team` (launcher script) + `nsheaps/agent` (future home as CLI grows)
+**Goal**: Launcher that reads agent definition files and spawns agents with the right configuration. Includes lifecycle management (kill, relaunch, health check, cleanup).
 **Depends on**: Nothing — this is the foundation
+
+#### 1A: Agent File Discovery + Prompt Assembly
+
+The launcher reads `.claude/agents/*.md` files (8 exist today: ai-agent-engineer, deep-researcher, docs-writer, ops-engineer, orchestrator, project-manager, quality-assurance, software-engineer) and uses their content to configure spawned agents.
 
 | Task | Description |
 |:-----|:------------|
-| 1.1 | Initialize `nsheaps/agent` repo with Bun, tsconfig, eslint, prettier, CI |
-| 1.2 | Define `agent launch` CLI: spawn an agent by name with specified permissions and framework |
-| 1.3 | Implement backend detection: identify running backends (tmux panes, processes) |
-| 1.4 | Implement `agent kill <name>`: cleanly terminate an agent AND remove from team config |
-| 1.5 | Implement health check: detect when an agent's backend (tmux pane, process) has died |
-| 1.6 | Implement auto-cleanup: on launch, detect and remove stale entries for the same agent name |
-| 1.7 | Implement `agent list`: show agents with live/dead status (cross-reference tmux panes vs team config) |
-| 1.8 | Implement `agent relaunch <name>`: kill + launch in one command, no `-2` suffix |
-| 1.9 | Integration tests: launch → kill → relaunch cycle without stale entries |
-| 1.10 | Integration tests: agent crash (kill tmux pane externally) → health check detects → cleanup removes stale entry |
+| 1A.1 | Initialize launcher script (similar to `claude-team` from claude-utils) |
+| 1A.2 | Discover agent files: scan `.claude/agents/*.md`, parse YAML frontmatter (name, description) |
+| 1A.3 | Implement prompt mode system: agent prompts can **REPLACE** or **EXTEND** the base system prompt |
+| 1A.4 | Implement selectable base prompts: `_builtin` (default from agent CLI) or path to custom base prompt file |
+| 1A.5 | Implement orchestrator self-configuration: orchestrator uses `--append-system-prompt` to include its own agent file content |
+| 1A.6 | For non-orchestrator agents: assemble the full system prompt from base + agent file content based on mode |
+| 1A.7 | Unit tests for file discovery, frontmatter parsing, prompt assembly |
+
+**Prompt mode details:**
+
+```
+Mode: EXTEND (default)
+  Final prompt = base_prompt + "\n\n" + agent_file_content
+  Use case: Most agents — they add role-specific instructions on top of defaults
+
+Mode: REPLACE
+  Final prompt = agent_file_content
+  Use case: Highly specialized agents that need full control of their system prompt
+```
+
+**Base prompt selection:**
+
+```
+Base: _builtin (default)
+  Uses whatever the agent CLI provides as its default system prompt
+  (For Claude Code: the built-in system prompt)
+
+Base: path/to/custom-base.md
+  Uses a custom file as the base system prompt
+  Useful for organization-specific defaults
+```
+
+#### 1B: Agent Spawning (Claude Code)
+
+| Task | Description |
+|:-----|:------------|
+| 1B.1 | Implement `agent launch <name>`: spawn a Claude Code agent using the assembled prompt |
+| 1B.2 | Map agent frontmatter to Claude Code flags: `--append-system-prompt`, `--permission-mode`, `--teammate-mode` |
+| 1B.3 | Support `--team <name>` flag to join an existing team |
+| 1B.4 | Support launching all agents from a team config file (batch spawn) |
+| 1B.5 | Integration test: `agent launch software-engineer` spawns with correct prompt |
+
+#### 1C: Lifecycle Management
+
+| Task | Description |
+|:-----|:------------|
+| 1C.1 | Implement backend detection: identify running backends (tmux panes, processes) |
+| 1C.2 | Implement `agent kill <name>`: cleanly terminate agent AND remove from team config |
+| 1C.3 | Implement health check: detect when backend (tmux pane) has died |
+| 1C.4 | Implement auto-cleanup: on launch, detect and remove stale entries for same agent name |
+| 1C.5 | Implement `agent list`: show agents with live/dead status (cross-reference tmux panes vs team config) |
+| 1C.6 | Implement `agent relaunch <name>`: kill + launch in one command, no `-2` suffix |
+| 1C.7 | Integration tests: full launch → kill → relaunch cycle without stale entries |
+| 1C.8 | Integration tests: crash recovery (kill tmux pane externally → health check → cleanup) |
 
 **Missing tools this replaces** (from team-member-cleanup.md):
 
@@ -67,8 +121,9 @@ This plan synthesizes these source documents:
 | `TeamListMembers` | `agent list` with live/dead status |
 | `TeamCleanup` | Auto-cleanup on `agent launch` + `agent list --cleanup` |
 | Graceful crash handling | Health check polling + auto-cleanup |
+| Manual Task tool spawning | `agent launch <name>` reads agent files automatically |
 
-**Exit criteria**: Can reliably launch, kill, and relaunch agents by name. No stale entries. No `-2` suffixes. Crash recovery works.
+**Exit criteria**: `agent launch software-engineer` reads `.claude/agents/software-engineer.md`, assembles the correct prompt (extend/replace mode), spawns a Claude Code agent, and the agent joins the team. `agent kill`, `agent relaunch`, and `agent list` all work reliably with no stale entries.
 
 ---
 
@@ -557,7 +612,7 @@ agents/
 ## Dependency Graph
 
 ```
-Phase 1 (agent lifecycle MVP) ← FIRST PRIORITY
+Phase 1 (agent launcher MVP) ← FIRST PRIORITY
   └── Phase 2 (agent.yaml schema + tool sets)
         ├── Phase 7 (session save/restore + memory)
         │     └── Phase 15 (S3 backend, cross-machine)
@@ -582,7 +637,7 @@ Phase 3 (mcp monorepo foundation) [parallel with Phase 1]
 
 | Track | Phases | Start Condition |
 |:------|:-------|:----------------|
-| **Agent lifecycle** (primary) | 1 → 2 → 7 → 9 → 15 | Immediately |
+| **Agent launcher + lifecycle** (primary) | 1 → 2 → 7 → 9 → 15 | Immediately |
 | **Mesh communication** | 3 → 4 → 5 → 6 → 10 | Parallel with Phase 1 |
 | **MCP tooling** | 3 → 8 → 12 | After Phase 3 |
 | **Security** | 13 | After Phases 2 + 6 |
@@ -622,11 +677,13 @@ Shows where each architecture doc topic lands in the phase plan:
 
 ## Open Questions for Team Lead
 
-1. **Phase 1 scope**: Should `agent launch` support both tmux and in-process backends from day 1, or tmux-only for MVP?
-2. **Agent definition location**: Should agents live in `nsheaps/agent-team/agents/` or `nsheaps/agent/agents/`? The architecture doc implies agent-team, but the launcher is in agent.
-3. **Phase 3 timing**: Start the mcp monorepo in parallel with Phase 1, or wait until lifecycle is proven?
-4. **Phase 6C blocker**: Should Road Runner research the Claude Code hook type question now?
-5. **Helm vs Kustomize**: Preference for Phase 11 k8s manifests?
+1. **Prompt mode defaults**: Should EXTEND be the default for all agents, or should orchestrator default to REPLACE? Current assumption: EXTEND for all, REPLACE opt-in via frontmatter.
+2. **Base prompt discovery**: How does the launcher find the `_builtin` prompt? Read it from Claude Code's internals, or ship a copy?
+3. **Launcher script vs CLI**: Phase 1 starts as a script in agent-team repo. When does it graduate to the `nsheaps/agent` CLI? Phase 2?
+4. **Agent frontmatter schema**: The current `.claude/agents/*.md` files have `name` and `description` in frontmatter. Should we add `prompt_mode: extend|replace` and `base_prompt: _builtin|path` now, or use defaults and add later?
+5. **Phase 3 timing**: Start the mcp monorepo in parallel with Phase 1, or wait until launcher is proven?
+6. **Phase 6C blocker**: Should Road Runner research the Claude Code hook type question now?
+7. **Helm vs Kustomize**: Preference for Phase 11 k8s manifests?
 
 ---
 
@@ -640,3 +697,4 @@ Shows where each architecture doc topic lands in the phase plan:
 - [Team Member Cleanup Behavior](../../.claude/behaviors/team-member-cleanup.md)
 - [A2A Protocol](https://google.github.io/A2A/)
 - Language Decision — Task #90 (TypeScript/Bun for all, Go for K8s controller only)
+- Agent Launcher Design — Task #101 (reads `.claude/agents/*.md`, prompt modes, base prompt selection)
