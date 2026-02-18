@@ -16,7 +16,9 @@ import {
   listAgents,
   cleanupStaleEntries,
   readTeamConfig,
+  isTmuxPaneAlive,
 } from "../src/lifecycle";
+import type { AgentStatus } from "../src/lifecycle";
 
 // --- CLI args ---
 import { parseArgs } from "node:util";
@@ -101,19 +103,27 @@ if (subcommand === "health") {
   console.log("-".repeat(header.length));
 
   for (const member of config.members) {
-    // Without tmux pane tracking in config, status is UNKNOWN
-    // Future: cross-reference with tmux list-panes
+    let status: AgentStatus;
+    if (member.tmuxPaneId) {
+      status = isTmuxPaneAlive(member.tmuxPaneId) ? "RUNNING" : "DEAD";
+    } else {
+      status = "UNKNOWN";
+    }
+
     const row = [
       member.name.padEnd(COL1),
-      "UNKNOWN".padEnd(COL2),
+      status.padEnd(COL2),
       member.agentId.slice(0, 12) + "...",
     ].join("  ");
     console.log(row);
   }
 
-  console.log(
-    `\nNote: Health check limited — tmux pane tracking not yet in team config schema.`,
-  );
+  const untrackedCount = config.members.filter((m) => !m.tmuxPaneId).length;
+  if (untrackedCount > 0) {
+    console.log(
+      `\nNote: ${untrackedCount} member(s) without tmux pane ID show as UNKNOWN.`,
+    );
+  }
   process.exit(0);
 }
 
