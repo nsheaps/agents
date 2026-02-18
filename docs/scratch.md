@@ -24,6 +24,9 @@
     - maybe also a sub agent?
       - Or both, sub agent via claude-agent-sdk, and tool for use in other agent cli's
   - take note of braintrust.dev interface with conversation tracing, we're basically building that too. So also look at otel tracing.
+  - Should make it trivially easy for users to click files produced by agents and view them in-browser with proper formatting (markdown rendered, YAML/JSON syntax highlighted, etc.)
+    - Later: in-browser editing with notification to the document owner (the agent that produced the file), so the agent can react to manual changes
+    - Think Google Docs-style collaboration but between humans and agents
 - we also want metrics for our stuff too, both usage metrics for us of the app itself, and org metrics for our customers.
 - We need to think about monetization, maybe of this product maybe not, but need to make enough money to cover the AI costs. 
 - use tilt/ctlptl/kind for testing
