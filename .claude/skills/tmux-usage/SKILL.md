@@ -17,28 +17,28 @@ Server (one per user, runs in background)
 
 ### Essential Commands
 
-| Command | What It Does |
-|:--------|:-------------|
-| `tmux new-session -s name` | Create a named session |
-| `tmux attach -t name` | Attach to an existing session |
-| `tmux detach` (or `Ctrl+B d`) | Detach from current session |
-| `tmux list-sessions` | List all sessions |
-| `tmux list-panes -t session` | List panes in a session |
-| `tmux kill-session -t name` | Kill a session |
-| `tmux kill-server` | Kill all sessions |
+| Command                       | What It Does                  |
+| :---------------------------- | :---------------------------- |
+| `tmux new-session -s name`    | Create a named session        |
+| `tmux attach -t name`         | Attach to an existing session |
+| `tmux detach` (or `Ctrl+B d`) | Detach from current session   |
+| `tmux list-sessions`          | List all sessions             |
+| `tmux list-panes -t session`  | List panes in a session       |
+| `tmux kill-session -t name`   | Kill a session                |
+| `tmux kill-server`            | Kill all sessions             |
 
 ### Prefix Key
 
 tmux commands inside an attached session start with a **prefix key** (default: `Ctrl+B`). After pressing the prefix:
 
-| Key | Action |
-|:----|:-------|
-| `d` | Detach |
-| `%` | Split pane vertically |
-| `"` | Split pane horizontally |
-| Arrow keys | Move between panes |
-| `[` | Enter copy/scroll mode (exit with `q`) |
-| `z` | Toggle pane zoom (fullscreen) |
+| Key        | Action                                 |
+| :--------- | :------------------------------------- |
+| `d`        | Detach                                 |
+| `%`        | Split pane vertically                  |
+| `"`        | Split pane horizontally                |
+| Arrow keys | Move between panes                     |
+| `[`        | Enter copy/scroll mode (exit with `q`) |
+| `z`        | Toggle pane zoom (fullscreen)          |
 
 Source: [tmux Getting Started](https://github.com/tmux/tmux/wiki/Getting-Started)
 
@@ -57,13 +57,13 @@ When `teammateMode` is set to `tmux`, Claude Code uses tmux to create visible pa
 
 These work within the Claude Code UI, not at the tmux level:
 
-| Control | Function |
-|:--------|:---------|
-| Shift+Up/Down | Cycle through teammates (in-process mode) |
-| Ctrl+T | Toggle task list |
-| Ctrl+O | Toggle verbose transcript (shows tool usage and execution details) |
-| Shift+Tab | Toggle delegate mode (lead coordination only) |
-| Escape | Interrupt teammate's turn |
+| Control       | Function                                                           |
+| :------------ | :----------------------------------------------------------------- |
+| Shift+Up/Down | Cycle through teammates (in-process mode)                          |
+| Ctrl+T        | Toggle task list                                                   |
+| Ctrl+O        | Toggle verbose transcript (shows tool usage and execution details) |
+| Shift+Tab     | Toggle delegate mode (lead coordination only)                      |
+| Escape        | Interrupt teammate's turn                                          |
 
 ### tmux -CC Control Mode (iTerm2)
 
@@ -103,15 +103,15 @@ tmux send-keys -t <target-pane> "text to type" Enter
 
 **Key arguments (case-sensitive):**
 
-| Argument | Key Sent |
-|:---------|:---------|
-| `Enter` | Return/Enter key |
-| `C-m` | Carriage return (same as Enter) |
-| `Escape` | Escape key |
-| `C-c` | Ctrl+C (interrupt) |
-| `Tab` | Tab key |
-| `Space` | Space character |
-| `BSpace` | Backspace |
+| Argument | Key Sent                        |
+| :------- | :------------------------------ |
+| `Enter`  | Return/Enter key                |
+| `C-m`    | Carriage return (same as Enter) |
+| `Escape` | Escape key                      |
+| `C-c`    | Ctrl+C (interrupt)              |
+| `Tab`    | Tab key                         |
+| `Space`  | Space character                 |
+| `BSpace` | Backspace                       |
 
 ### GOTCHA: `Enter` Must Be a Separate Argument
 
@@ -201,14 +201,14 @@ tmux capture-pane -t %3 -p -S - > /tmp/pane-output.txt
 
 **Useful flags:**
 
-| Flag | Purpose |
-|:-----|:--------|
-| `-p` | Print to stdout (instead of paste buffer) |
-| `-t target` | Target pane |
-| `-S start` | Start line (`-` = beginning of history, `0` = first visible line) |
-| `-E end` | End line (`-` = end of visible content) |
-| `-e` | Include escape sequences (preserves colors) |
-| `-J` | Join wrapped lines (useful for parsing) |
+| Flag        | Purpose                                                           |
+| :---------- | :---------------------------------------------------------------- |
+| `-p`        | Print to stdout (instead of paste buffer)                         |
+| `-t target` | Target pane                                                       |
+| `-S start`  | Start line (`-` = beginning of history, `0` = first visible line) |
+| `-E end`    | End line (`-` = end of visible content)                           |
+| `-e`        | Include escape sequences (preserves colors)                       |
+| `-J`        | Join wrapped lines (useful for parsing)                           |
 
 **Use case for agent teams:** Check what a teammate is doing without switching focus:
 
@@ -234,12 +234,12 @@ Creates a new session without attaching to it — the session runs in the backgr
 tmux new-session -d -s <session-name> -c <working-directory> [-- command args...]
 ```
 
-| Flag | Purpose |
-|:-----|:--------|
-| `-d` | Don't attach (detached/background) |
-| `-s name` | Session name |
-| `-c path` | Working directory for the session |
-| `-- cmd` | Command to run in the session |
+| Flag      | Purpose                            |
+| :-------- | :--------------------------------- |
+| `-d`      | Don't attach (detached/background) |
+| `-s name` | Session name                       |
+| `-c path` | Working directory for the session  |
+| `-- cmd`  | Command to run in the session      |
 
 **Example — launching Claude Code in background:**
 
@@ -274,11 +274,13 @@ Some tools require a real interactive terminal with a human at the keyboard. The
 **gum (interactive TUI):**
 
 The `claude-team` helper uses `gum choose` for the mode picker. This requires:
+
 - A TTY (terminal) attached to stdin
 - A human to make a selection
 - Focus in the pane
 
 If you launch `ct` in a detached session (`tmux new-session -d`), the gum picker will fail or hang because there's no attached terminal. You must either:
+
 1. Attach to the session first (`tmux attach -t name`), then interact with gum
 2. Skip the picker with `--mode tmux` (bypasses gum entirely)
 
@@ -292,13 +294,13 @@ Claude Code uses a custom terminal input model (not simple line-based stdin). Se
 
 ### Rules of Thumb
 
-| Scenario | Works with `send-keys`? | Better Alternative |
-|:---------|:------------------------|:-------------------|
-| Simple shell commands | Yes | — |
-| Answering yes/no prompts | Usually | `echo "y" \| command` |
-| Interactive TUI (gum, fzf) | No | Skip with CLI flags |
-| Claude Code user input | Unreliable | `SendMessage` tool |
-| Starting a background process | Yes (via detached session) | — |
+| Scenario                      | Works with `send-keys`?    | Better Alternative    |
+| :---------------------------- | :------------------------- | :-------------------- |
+| Simple shell commands         | Yes                        | —                     |
+| Answering yes/no prompts      | Usually                    | `echo "y" \| command` |
+| Interactive TUI (gum, fzf)    | No                         | Skip with CLI flags   |
+| Claude Code user input        | Unreliable                 | `SendMessage` tool    |
+| Starting a background process | Yes (via detached session) | —                     |
 
 ## Troubleshooting
 
@@ -333,12 +335,12 @@ tmux kill-server
 
 Issues documented in the Claude Code GitHub repository that affect agent teams using tmux. These were discovered through research and direct experience.
 
-| Issue | Description | Impact |
-|:------|:------------|:-------|
-| [#25375](https://github.com/anthropics/claude-code/issues/25375) | Pane index mismatch — Claude Code hardcodes 0-based indexing, conflicts with user's `pane-base-index` setting | Messages target wrong teammate pane |
-| [#23415](https://github.com/anthropics/claude-code/issues/23415), [#24108](https://github.com/anthropics/claude-code/issues/24108) | Teammate inbox never polled — spawned teammates never read inbox files on macOS tmux backend | Teammates stuck idle, never receive instructions |
-| [#24771](https://github.com/anthropics/claude-code/issues/24771) | Messaging disconnection with iTerm2 -CC — lead's messaging system disconnects from teammate sessions in control mode | Teammates launch but don't communicate |
-| [#23615](https://github.com/anthropics/claude-code/issues/23615) | Send-keys corruption at scale — splitting current pane for many teammates garbles output | Garbled pane content |
+| Issue                                                                                                                              | Description                                                                                                          | Impact                                           |
+| :--------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------- | :----------------------------------------------- |
+| [#25375](https://github.com/anthropics/claude-code/issues/25375)                                                                   | Pane index mismatch — Claude Code hardcodes 0-based indexing, conflicts with user's `pane-base-index` setting        | Messages target wrong teammate pane              |
+| [#23415](https://github.com/anthropics/claude-code/issues/23415), [#24108](https://github.com/anthropics/claude-code/issues/24108) | Teammate inbox never polled — spawned teammates never read inbox files on macOS tmux backend                         | Teammates stuck idle, never receive instructions |
+| [#24771](https://github.com/anthropics/claude-code/issues/24771)                                                                   | Messaging disconnection with iTerm2 -CC — lead's messaging system disconnects from teammate sessions in control mode | Teammates launch but don't communicate           |
+| [#23615](https://github.com/anthropics/claude-code/issues/23615)                                                                   | Send-keys corruption at scale — splitting current pane for many teammates garbles output                             | Garbled pane content                             |
 
 **Workaround for pane index:** Query `pane-base-index` at runtime rather than assuming 0-based indexing. Any orchestration script should use `tmux show-options -g pane-base-index` to get the actual value.
 

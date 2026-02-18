@@ -25,6 +25,7 @@ Uses Claude Code's native agent teams feature. The orchestrator and all agents r
 ```
 
 **Characteristics:**
+
 - Single process, shared context
 - Agents are subagents within one session
 - Communication via built-in `SendMessage`
@@ -49,6 +50,7 @@ Each agent runs in its own terminal session managed by tmux. Mimics the built-in
 ```
 
 **Characteristics:**
+
 - Separate terminal sessions per agent
 - Process isolation between agents
 - Communication via the MCP/websocket protocol (see Agent Communication Protocol PRD)
@@ -76,6 +78,7 @@ A separate agent process acts as the orchestration controller. It creates, launc
 ```
 
 **Characteristics:**
+
 - Controller is its own process, separate from agents
 - Controller creates and manages agent lifecycle (launch, monitor, terminate)
 - Each agent is a single process
@@ -106,6 +109,7 @@ The controller orchestrator manages agents, and each agent itself acts as a cont
 ```
 
 **Characteristics:**
+
 - Two-tier orchestration: controller → agent-controllers → sessions
 - Each top-level agent manages multiple sessions for parallel or independent work
 - Complex or resource-heavy tasks run in isolated sessions without interrupting others
@@ -116,15 +120,15 @@ The controller orchestrator manages agents, and each agent itself acts as a cont
 
 ## Level Comparison
 
-| Aspect                  | Level 1          | Level 2         | Level 3              | Level 4                    |
-| :---------------------- | :--------------- | :-------------- | :------------------- | :------------------------- |
-| Process model           | Single process   | tmux sessions   | Separate processes   | Hierarchical processes     |
-| Agent isolation         | None             | Terminal-level   | Process-level        | Process + session-level    |
-| Orchestrator            | Built-in         | External        | Dedicated process    | Dedicated + per-agent      |
-| Parallelism             | Within session   | Across sessions | Within + across      | Multi-tier                 |
-| Independent environment | No               | Shell env only  | Full process env     | Full per-session env       |
-| Complexity              | Lowest           | Low             | Medium               | Highest                    |
-| Infrastructure          | None             | tmux            | Controller + MCP     | Controller + MCP + agents  |
+| Aspect                  | Level 1        | Level 2         | Level 3            | Level 4                   |
+| :---------------------- | :------------- | :-------------- | :----------------- | :------------------------ |
+| Process model           | Single process | tmux sessions   | Separate processes | Hierarchical processes    |
+| Agent isolation         | None           | Terminal-level  | Process-level      | Process + session-level   |
+| Orchestrator            | Built-in       | External        | Dedicated process  | Dedicated + per-agent     |
+| Parallelism             | Within session | Across sessions | Within + across    | Multi-tier                |
+| Independent environment | No             | Shell env only  | Full process env   | Full per-session env      |
+| Complexity              | Lowest         | Low             | Medium             | Highest                   |
+| Infrastructure          | None           | tmux            | Controller + MCP   | Controller + MCP + agents |
 
 ## Relationship to Communication Protocol
 

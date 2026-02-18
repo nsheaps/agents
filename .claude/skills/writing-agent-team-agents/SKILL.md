@@ -113,20 +113,20 @@ Start your session by reading the files in .claude/docs/.
 
 ### Frontmatter Fields
 
-| Field | Required | Purpose |
-|:------|:---------|:--------|
-| `name` | Yes | Agent identifier. Lowercase, hyphens, 3-50 chars. |
-| `description` | Yes | When to trigger this agent. Must include 2-3 `<example>` blocks. Include one negative example showing when NOT to use the agent. |
-| `color` | Recommended | UI color: `blue`, `cyan`, `green`, `yellow`, `magenta`, `red` |
-| `model` | Optional | `inherit`, `sonnet`, `opus`, `haiku`. Omit to inherit from parent. |
-| `tools` | Optional | Allowlist of tools. Omit for all tools. |
-| `disallowedTools` | Optional | Denylist of tools. Alternative to `tools`. |
-| `permissionMode` | Optional | Permission mode for the agent session. |
-| `maxTurns` | Optional | Maximum API round-trips before stopping. |
-| `skills` | Optional | Skills to preload into conversation context (NOT system prompt). |
-| `mcpServers` | Optional | MCP servers available to the agent. |
-| `hooks` | Optional | Agent-specific hooks. |
-| `memory` | Optional | Memory configuration. |
+| Field             | Required    | Purpose                                                                                                                          |
+| :---------------- | :---------- | :------------------------------------------------------------------------------------------------------------------------------- |
+| `name`            | Yes         | Agent identifier. Lowercase, hyphens, 3-50 chars.                                                                                |
+| `description`     | Yes         | When to trigger this agent. Must include 2-3 `<example>` blocks. Include one negative example showing when NOT to use the agent. |
+| `color`           | Recommended | UI color: `blue`, `cyan`, `green`, `yellow`, `magenta`, `red`                                                                    |
+| `model`           | Optional    | `inherit`, `sonnet`, `opus`, `haiku`. Omit to inherit from parent.                                                               |
+| `tools`           | Optional    | Allowlist of tools. Omit for all tools.                                                                                          |
+| `disallowedTools` | Optional    | Denylist of tools. Alternative to `tools`.                                                                                       |
+| `permissionMode`  | Optional    | Permission mode for the agent session.                                                                                           |
+| `maxTurns`        | Optional    | Maximum API round-trips before stopping.                                                                                         |
+| `skills`          | Optional    | Skills to preload into conversation context (NOT system prompt).                                                                 |
+| `mcpServers`      | Optional    | MCP servers available to the agent.                                                                                              |
+| `hooks`           | Optional    | Agent-specific hooks.                                                                                                            |
+| `memory`          | Optional    | Memory configuration.                                                                                                            |
 
 ## Key Technical Facts
 
@@ -142,21 +142,21 @@ Source: [Claude Code Sub-Agents Docs](https://code.claude.com/docs/en/sub-agents
 
 ### What Does NOT Work in Agent Files
 
-| Mechanism | Works? | Where It Works Instead |
-|:----------|:-------|:-----------------------|
-| `@references` (e.g., `@docs/file.md`) | No | CLAUDE.md only |
-| `!`command`` dynamic injection | No | Skills only ([docs](https://code.claude.com/docs/en/skills#inject-dynamic-context)) |
-| Template/variable substitution | No | Not supported anywhere |
+| Mechanism                             | Works? | Where It Works Instead                                                              |
+| :------------------------------------ | :----- | :---------------------------------------------------------------------------------- |
+| `@references` (e.g., `@docs/file.md`) | No     | CLAUDE.md only                                                                      |
+| `!`command`` dynamic injection        | No     | Skills only ([docs](https://code.claude.com/docs/en/skills#inject-dynamic-context)) |
+| Template/variable substitution        | No     | Not supported anywhere                                                              |
 
 ### What Goes Where
 
-| Content | Location | Persistence |
-|:--------|:---------|:------------|
-| Agent persona + role instructions | Agent file body | System prompt (persistent) |
-| Shared team docs | `.claude/docs/` via CLAUDE.md `@references` | System prompt (persistent, inherited by all agents) |
-| Preloaded skills (`skills:` frontmatter) | Conversation context | Compactable (may be lost) |
-| Task tool `prompt` parameter | First user message | Compactable (may be lost) |
-| SessionStart hook `additionalContext` | Context injection | Unclear persistence through compaction |
+| Content                                  | Location                                    | Persistence                                         |
+| :--------------------------------------- | :------------------------------------------ | :-------------------------------------------------- |
+| Agent persona + role instructions        | Agent file body                             | System prompt (persistent)                          |
+| Shared team docs                         | `.claude/docs/` via CLAUDE.md `@references` | System prompt (persistent, inherited by all agents) |
+| Preloaded skills (`skills:` frontmatter) | Conversation context                        | Compactable (may be lost)                           |
+| Task tool `prompt` parameter             | First user message                          | Compactable (may be lost)                           |
+| SessionStart hook `additionalContext`    | Context injection                           | Unclear persistence through compaction              |
 
 **Implication**: Anything that MUST persist through compaction belongs in the agent file body or in CLAUDE.md. Everything else is supplementary.
 
@@ -200,11 +200,11 @@ The rest of the body. Contains:
 
 These three concepts serve different purposes. Conflating them leads to bloated agents, underused skills, or undocumented procedures.
 
-| Concept | What It Is | Owned By | Example |
-|:--------|:-----------|:---------|:--------|
-| **Agent** | Autonomous role with its own session, persona, and responsibilities | One agent file | `deep-researcher.md` — performs complex investigations |
-| **Behavior** | Encapsulated multi-step procedure that any agent can execute | `.claude/behaviors/` | "How to conduct research" — evaluating, searching, fact-checking, synthesizing |
-| **Skill** | Task-specific knowledge/instructions recalled on demand | `.claude/skills/` | "How to write agent files" (this document) |
+| Concept      | What It Is                                                          | Owned By             | Example                                                                        |
+| :----------- | :------------------------------------------------------------------ | :------------------- | :----------------------------------------------------------------------------- |
+| **Agent**    | Autonomous role with its own session, persona, and responsibilities | One agent file       | `deep-researcher.md` — performs complex investigations                         |
+| **Behavior** | Encapsulated multi-step procedure that any agent can execute        | `.claude/behaviors/` | "How to conduct research" — evaluating, searching, fact-checking, synthesizing |
+| **Skill**    | Task-specific knowledge/instructions recalled on demand             | `.claude/skills/`    | "How to write agent files" (this document)                                     |
 
 **Key distinctions**:
 

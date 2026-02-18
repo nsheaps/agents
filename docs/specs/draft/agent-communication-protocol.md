@@ -90,9 +90,9 @@ A Claude Code hook that:
 
 ## Modes of Operation
 
-| Mode        | How It Works                                                                 |
-| :---------- | :--------------------------------------------------------------------------- |
-| Interactive | Agent runs with a terminal UI. Hook injects messages into the conversation.  |
+| Mode        | How It Works                                                                  |
+| :---------- | :---------------------------------------------------------------------------- |
+| Interactive | Agent runs with a terminal UI. Hook injects messages into the conversation.   |
 | JSON        | Agent runs headless with `--output-format json`. Same hook injection applies. |
 
 Both modes use the same MCP server, message queue, and hook mechanism. The only difference is how the agent session is started and how output is rendered.
