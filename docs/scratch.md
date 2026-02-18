@@ -30,6 +30,7 @@
 - need different runtime modes, like separate processes, docker containers orchestrated by a process, or orch by a controller in docker, docker compose, k8s, etc.
   - everything needs to support multiple agents running on the same computer, including separate secrets stores for each agent, but the suggested/happy path is an agent in a container for safety and performance reason.s
 - Agents need a way to terminate themselves, restart themselves (communicate with controller > ipc to wrapper, kill and resume session), and schedule themselves to run later, or to run on certain events (events...webhooks?)
+  - **Self-exit and relaunch with new configs**: The "agent" CLI wrapper should support an agent requesting its own restart with updated configuration. The wrapper process stays alive while the inner claude session terminates and relaunches. Enables dynamic config changes (model swap, tool changes, permission changes) without team lead intervention. Check if any PRDs already call this out — if not, add to agent-team architecture spec.
 - Probably need to think of where to actually run this... on the cloud?
 - while agents _can_ message each other through the agent-team system, the default mechanism should be the org preference for text based communication, such as slack or matrix, with preferences on rooms, threads, etc (llm evaluated). The default local setup is them messaging each other but the web UI lets you message them, and they're also actually just running in tmux so the dashboard guides you through connecting to them (or provides a web based tty interface to them, like tty-share?)
 - Prefer yaml over json. Perhaps perfer some form of yamll? for jsonl? See if toon fits in anywhere. Human readability, and comments, are key for comprehension by agents and humans alike. Don't convert, just prefer within the app (but support the basic alternatives for interoperability)
@@ -85,12 +86,10 @@
 
 ---
 
-## Pending Tasks (updated 2026-02-17, looney-tunes session 2)
+## Pending Tasks (updated 2026-02-18, looney-tunes session 3)
 
 ### In Progress
-- **#141**: Fix DEF-1 — `--dry-run` truncates CLI args at 80 chars (Bugs, in progress)
-- **#142**: Fix DEF-2 — `agentFilter` positional arg parsing is fragile (Bugs, fix committed, follow-up pending)
-- **#143**: Fix DEF-3 — ambiguous duplicate agent name error in `discover.ts:199` (Bugs, in progress)
+(none currently)
 
 ### Pending
 - **#140**: Research Braintrust + OTEL env vars for agent/task tracing differentiation
@@ -107,9 +106,12 @@
 - Add prettier pre-commit hook or CI check to agent-team repo
 - Research ticket automation (todo-sync style) for agent-team project
 
-### Completed This Session
-- **#127**: Document agent creation collaboration workflow — done (Tweety)
-- **#128**: Architecture doc structural fixes (MVP boundary, I/O proxy dedup, YAML formats table) — done (Tweety)
+### Completed (prior sessions)
 - **#116**: QA full agent lifecycle test — done (Daffy)
-- **#144**: Add standing responsibilities to ai-agent-eng agent file — done (Tweety)
+- **#127**: Document agent creation collaboration workflow — done (Tweety)
+- **#128**: Architecture doc structural fixes (MVP boundary, I/O proxy dedup, YAML formats table) — done (Tweety, `29652c6`)
+- **#141**: Fix DEF-1 — `--dry-run` truncates CLI args at 80 chars — done (Bugs, `51d0f16`)
+- **#142**: Fix DEF-2 — `agentFilter` positional arg parsing is fragile — done (Bugs, `3962e7b`)
+- **#143**: Fix DEF-3 — ambiguous duplicate agent name error — done (Bugs, `1fd5ac1`)
+- **#144**: Add standing responsibilities to ai-agent-eng agent file — done (Tweety, `407bbc7`)
 - **#145**: Update display_name format across all agent files — done (Tweety)

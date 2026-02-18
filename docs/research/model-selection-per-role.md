@@ -84,6 +84,13 @@ Track session-by-session observations about model performance here.
 - **Observation**: QA (Daffy D) caught real issues in code review — Opus-level reasoning appeared to add value here
 - **Observation**: Compaction events caused behavioral drift regardless of model — this is a prompt/convention issue, not a model issue (see Failures #9, #10)
 
+### Session: 2026-02-17 (looney-tunes team, session 2 — resumed)
+
+- **AI Agent Eng on Opus for doc review**: Reviewing Tweety's additions to the agent file required reading the agent definition, comparing against role understanding, and producing nuanced assessment with severity-rated findings. This is judgment-heavy work that benefits from Opus. A Sonnet agent could likely identify obvious misalignments but might miss subtler issues like the "daily responsibility" vs "session-start responsibility" distinction for session-based agents.
+- **Docs Writer (Tweety B) authored agent file changes**: Tweety added well-structured standing responsibilities that followed existing patterns exactly. This structured, template-following work reinforces the Phase 2 recommendation that Docs Writer is a strong Sonnet 4.5 candidate.
+- **Observation on standing responsibilities scope**: The three standing responsibilities (Model Selection, Ecosystem Tracking, .ai Repo Tracking) together form a coherent "stay current and improve" mandate. All three require judgment about what's relevant vs noise — this is an Opus-strength task. If the AI Agent Eng were downgraded to Sonnet, the risk would be in *prioritization* (what to flag vs ignore), not in *execution* (reading changelogs, checking repos).
+- **Sub-agent delegation opportunity**: Ecosystem tracking (changelog checks, blog monitoring) could be delegated to Haiku sub-agents for initial data gathering, with Opus-level analysis applied only to findings that need judgment. This is a cost optimization without model downgrade — the AI Agent Eng stays on Opus but offloads mechanical work.
+
 ## Optimization Techniques
 
 ### Sub-Agent Model Delegation
