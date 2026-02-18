@@ -26,6 +26,19 @@ If a task involves code or file changes, the completion message MUST include at 
 
 **No evidence = not done.** Do not mark the task complete. Instead, go back and verify the change landed.
 
+### PR-specific: CI status is required
+
+If the task involves a PR (creating, reviewing, or declaring "ready to merge"), the completion message MUST also include CI status:
+
+| CI State | What to report | Can you declare ready? |
+|:---------|:---------------|:----------------------|
+| All checks passing | `CI green — gh pr checks #42 all passing` | Yes |
+| Checks pending | `CI pending — waiting on [check name]` | No — wait |
+| Checks failing | `CI failing — [check name] failed` | No — fix first |
+| No checks configured | `No CI checks on this repo` | Yes (note it) |
+
+**CI green is a prerequisite for "ready to merge."** Code review approval alone is not sufficient. Run `gh pr checks <number>` and include the result. If CI is failing or pending, the PR is not ready regardless of code quality.
+
 ## Procedure
 
 ### Before marking a task complete:
@@ -61,7 +74,11 @@ If a task involves code or file changes, the completion message MUST include at 
 
 Created after Failure #14 — a task was marked complete but the fix was never committed. The file still contained the old code. This behavior prevents recurrence by requiring proof before claiming "done."
 
+Updated after Failure #16 — PR #164 was declared "ready to merge" by both reviewer and author without checking CI status. The user caught the gap. CI verification is now a required evidence type for PR-related tasks.
+
 ## References
 
 - Failure #14: `.claude/tmp/ai-agent-eng-failure-log.md`
+- Failure #16: `.claude/tmp/ai-agent-eng-failure-log.md`
 - Related rule: `never-say-done-prematurely` (ai-mktpl `.ai/rules/`)
+- Related rule: `code-quality.md` — "Validation is considered a failure if CI fails"
