@@ -510,7 +510,97 @@ Tool stripping and replacement as a proxy feature means:
 
 ---
 
-## 8. Relationship to Existing PRDs
+## 8. Agent Self-Exit and Relaunch
+
+### Concept
+
+An agent can request its own restart with updated configuration — without intervention from the team lead, PM, or user. The CLI wrapper process stays alive while the inner agent session terminates and relaunches with new settings. This enables dynamic reconfiguration (model swap, tool changes, permission adjustments) driven by the agent itself.
+
+This is distinct from the external relaunch in the agent launcher spec (§6.5), where the user or orchestrator triggers `agent relaunch <name>`. Self-exit/relaunch is **agent-initiated**.
+
+### Use Cases
+
+1. **Model swap**: An agent detects that its current task requires deeper reasoning and requests a restart on a higher-capability model (e.g., Sonnet → Opus for a complex code review)
+2. **Tool set change**: An agent needs tools it wasn't initially granted — requests a restart with an expanded tool set (subject to security consultant approval in Phase 2+)
+3. **Permission escalation**: An agent needs elevated permissions for a specific operation — restarts with higher permission mode, then reverts after
+4. **Context reset**: An agent's context is nearly full — it saves state to files, then requests a clean restart with its memory loaded fresh
+5. **Configuration drift correction**: The agent definition file was updated on disk — the agent requests a restart to pick up the new config
+
+### Architecture
+
+```
+┌─────────────────────────────────────┐
+│  agent CLI wrapper (stays alive)    │
+│                                     │
+│  1. Receives restart request (IPC)  │
+│  2. Saves exit reason + new config  │
+│  3. Terminates inner session        │
+│  4. Reads updated config            │
+│  5. Spawns new inner session        │
+│  6. Injects context from prior run  │
+└─────────────────────────────────────┘
+         ▲                  │
+         │ IPC              │ spawn
+         │ (restart req)    ▼
+┌─────────────────────────────────────┐
+│  Inner agent session (claude/codex) │
+│                                     │
+│  - Detects need for reconfiguration │
+│  - Saves state to files             │
+│  - Sends restart request to wrapper │
+│  - Session terminates               │
+└─────────────────────────────────────┘
+```
+
+### IPC Mechanism
+
+The agent needs a way to signal the wrapper. Options:
+
+| Mechanism | Pros | Cons |
+|:--|:--|:--|
+| MCP tool (`agent.restart`) | Native to the agent's toolset, structured request | Requires MCP server in the wrapper |
+| Exit code convention | Simple, no extra infrastructure | Limited payload (just a code, no config delta) |
+| File-based signal | Agent writes restart request to known path, wrapper watches | Latency, cleanup needed |
+| Named pipe / Unix socket | Low latency, bidirectional | Platform-specific, more complex |
+
+**Recommended**: MCP tool provided by the wrapper's MCP server. The agent calls `agent.restart` with the desired config changes as parameters. This is the most natural interface for LLM-based agents and integrates with the mesh MCP server design (see `docs/specs/draft/mesh-mcp-server.md`).
+
+### State Preservation Across Restart
+
+When an agent restarts, it needs continuity:
+
+1. **Pre-restart**: Agent writes current state to `.claude/tmp/{agent-name}-restart-state.md` (task progress, findings, context summary)
+2. **Post-restart**: Wrapper injects the state file into the new session's system prompt via `--append-system-prompt` or equivalent
+3. **Task list**: Operational tasks survive in the persistent task system (see scratch.md on persistent task tracking)
+
+### Guardrails
+
+Self-relaunch is powerful and needs constraints:
+
+- **Rate limiting**: Maximum N restarts per time window (prevent restart loops)
+- **Config change approval**: In Phase 2+, the security consultant must approve permission escalations — the wrapper blocks until approval is received
+- **Audit trail**: Every restart is logged with reason, old config, new config, and timestamp
+- **Rollback**: If the new config causes immediate failure, the wrapper reverts to the previous config
+- **Team notification**: The orchestrator and AI Agent Eng are notified of every self-restart
+
+### Design Questions
+
+1. Can the wrapper distinguish between a crash and an intentional self-exit? (Exit code convention vs explicit IPC)
+2. Should config changes be scoped (temporary for one task) or permanent (updates the agent file on disk)?
+3. How does self-restart interact with session save/restore (§5)? Is a self-restart a new session or a continuation?
+4. What's the maximum config delta an agent can request? Can it change its own role or just operational parameters?
+5. How does this interact with containerized agents (§3)? Container restart is heavier than process restart.
+
+### References
+
+- Agent launcher relaunch (external): `docs/specs/draft/agent-launcher.md` §6.5
+- Session save/restore: §5 of this document
+- Mesh MCP server: `docs/specs/draft/mesh-mcp-server.md`
+- Scratch note: `docs/scratch.md` line 33 — original requirement
+
+---
+
+## 9. Relationship to Existing PRDs
 
 | Architecture Section | PRD | Location | Relationship |
 |:--|:--|:--|:--|
@@ -522,11 +612,12 @@ Tool stripping and replacement as a proxy feature means:
 | §5 Session Save/Restore | Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md` | Session state may include mesh connection info |
 | §6 A2A Protocol | MCP Tooling | `~/src/nsheaps/mcp/docs/specs/draft/mcp-tooling.md` | A2A complements (does not replace) mesh MCP — see note below |
 | §7 I/O Proxy | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | **Wrapper PRD is source of truth** for proxy design; §7 summarizes |
+| §8 Self-Exit/Relaunch | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Wrapper owns the process lifecycle; §8 captures the agent-initiated restart pattern |
 | All sections | 14-Phase Plan | Elmer Fudd's plan (in team lead context) | All sections feed into phase refinement |
 
 ---
 
-## 9. Next Steps
+## 10. Next Steps
 
 1. Research A2A protocol in depth (Road Runner)
 2. Prototype agent.yaml schema as TypeScript types (Bugs Bunny)
