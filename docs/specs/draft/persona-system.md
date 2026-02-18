@@ -441,15 +441,15 @@ If implemented, multi-persona would work as:
 
 ## 9. Implementation Phases
 
-| Phase              | Scope                                | Deliverable                                                    |
-| :----------------- | :----------------------------------- | :------------------------------------------------------------- |
-| **Phase 0** (Done) | Static persona files, manual loading | `.claude/personas/` with 8 files                               |
-| **Phase 1**        | SessionStart hook for auto-loading   | Hook config in agent settings                                  |
-| **Phase 2**        | Channel-aware persona format (v2)    | Updated persona files with Channel Voices sections             |
-| **Phase 3**        | Public-facing action behavior        | `.claude/behaviors/public-action.md`                           |
-| **Phase 4**        | MCP persona tool                     | MCP server returning persona data per channel                  |
+| Phase              | Scope                                | Deliverable                                               |
+| :----------------- | :----------------------------------- | :-------------------------------------------------------- |
+| **Phase 0** (Done) | Static persona files, manual loading | `.claude/personas/` with 8 files                          |
+| **Phase 1**        | SessionStart hook for auto-loading   | Hook config in agent settings                             |
+| **Phase 2**        | Channel-aware persona format (v2)    | Updated persona files with Channel Voices sections        |
+| **Phase 3**        | Public-facing action behavior        | `.claude/behaviors/public-action.md`                      |
+| **Phase 4**        | MCP persona tool                     | MCP server returning persona data per channel             |
 | **Phase 5**        | Evolution framework                  | AI Agent Eng review process, feedback loop, Evolution Log |
-| **Phase 6**        | Multi-persona support (v2)           | Context persona selection, per-channel persona mapping         |
+| **Phase 6**        | Multi-persona support (v2)           | Context persona selection, per-channel persona mapping    |
 
 ---
 

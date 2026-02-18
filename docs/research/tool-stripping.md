@@ -11,11 +11,11 @@
 
 Claude Code provides **three distinct levels** of tool control, each with different effects on context token usage:
 
-| Level | Mechanism | Blocks Execution? | Removes from Context? | Saves Tokens? |
-| :---- | :-------- | :----------------- | :-------------------- | :------------ |
-| **Removal** | `--tools`, `--disallowedTools` CLI flags | Yes | **Yes** | **Yes** |
-| **Restriction** | Agent frontmatter `tools`/`disallowedTools` | Yes | **Yes** (for that agent) | **Yes** |
-| **Blocking** | PreToolUse hooks (exit code 2, `permissionDecision: deny`) | Yes | No | No |
+| Level           | Mechanism                                                  | Blocks Execution? | Removes from Context?    | Saves Tokens? |
+| :-------------- | :--------------------------------------------------------- | :---------------- | :----------------------- | :------------ |
+| **Removal**     | `--tools`, `--disallowedTools` CLI flags                   | Yes               | **Yes**                  | **Yes**       |
+| **Restriction** | Agent frontmatter `tools`/`disallowedTools`                | Yes               | **Yes** (for that agent) | **Yes**       |
+| **Blocking**    | PreToolUse hooks (exit code 2, `permissionDecision: deny`) | Yes               | No                       | No            |
 
 **Key finding**: The `--tools` and `--disallowedTools` CLI flags are the **only mechanisms that actually remove tool descriptions from the system prompt**, saving context tokens. Hooks can block execution but tool descriptions still consume context space.
 
@@ -41,6 +41,7 @@ claude --tools "default"
 **Supported tool names**: `Bash`, `Edit`, `Read`, `Grep`, `Glob`, `Write`, `WebFetch`, `WebSearch`, `MCP`, `AskUserQuestion`, `TaskOutput`[^1]
 
 **Behavior**:
+
 - Removes tool descriptions from the system prompt
 - Removes tool schemas from the API `tools` parameter
 - Cannot be overridden by permission rules or other mechanisms
@@ -68,6 +69,7 @@ claude --disallowedTools "WebFetch(domain:api.private.com)"
 ```
 
 **Pattern syntax** follows permission rule format:
+
 - `Bash` — all Bash commands
 - `Bash(npm run *)` — Bash commands starting with "npm run"
 - `Read(./.env)` — reading .env file
@@ -103,6 +105,7 @@ claude --agents '{
 ```
 
 **Key behaviors**:
+
 - If `tools` is omitted, the subagent inherits **all tools** from the parent
 - If `tools` is empty array `[]`, the subagent has **no tools**
 - `disallowedTools` removes specific tools from the inherited or specified list
@@ -143,6 +146,7 @@ exit 0  # Allow it
 ```
 
 **Matchers** filter which tools trigger the hook (case-sensitive regex):
+
 - `"Bash"` — matches Bash tool
 - `"Edit|Write"` — matches Edit or Write
 - `"mcp__filesystem__.*"` — matches all filesystem MCP tools
@@ -171,6 +175,7 @@ Delegate blocking decisions to a Haiku model:
 ```
 
 **Limitations**:
+
 - Slower (~500ms–1s per tool call due to LLM inference)
 - Cannot modify tool input
 - Tool descriptions still present in context
@@ -210,12 +215,12 @@ This dual-description pattern is intentional: the system prompt provides behavio
 
 Tool descriptions vary significantly in size:[^5]
 
-| Tool | Approximate Tokens |
-| :--- | :----------------- |
-| `Bash` | ~1,067 |
-| `TodoWrite` | ~2,167 |
-| `Write` | ~121 |
-| Other tools | 100–800 each |
+| Tool        | Approximate Tokens |
+| :---------- | :----------------- |
+| `Bash`      | ~1,067             |
+| `TodoWrite` | ~2,167             |
+| `Write`     | ~121               |
+| Other tools | 100–800 each       |
 
 The total context consumed by all tool descriptions is **substantial** — potentially 5,000–10,000 tokens for a full Claude Code session with all tools enabled.
 
@@ -261,6 +266,7 @@ claude -p --system-prompt "You are a Python expert" "query"
 ```
 
 **This removes ALL tool descriptions** (and all other default instructions). However:
+
 - Reported as **unreliable in interactive mode** (GitHub Issue #2692[^9])
 - Works reliably in **print mode** (`-p`)
 - The Agent SDK's `systemPrompt` parameter is more reliable for full replacement
@@ -307,17 +313,17 @@ claude \
 
 ## 7. Tool Availability Matrix
 
-| Mechanism | Scope | Removes from Context? | Blocks Execution? | Pattern Support? |
-| :-------- | :---- | :-------------------- | :----------------- | :--------------- |
-| `--tools` | Session | **Yes** | Yes | No (exact names) |
-| `--disallowedTools` | Session | **Yes** | Yes | Yes (wildcards) |
-| Agent `tools` frontmatter | Subagent | **Yes** | Yes | No (exact names) |
-| Agent `disallowedTools` | Subagent | **Yes** | Yes | Yes |
-| `permissions.deny` | Session/Project | No | Yes | Yes (wildcards) |
-| PreToolUse hooks | Session/Project | No | Yes | Yes (regex matchers) |
-| Prompt-based hooks | Session/Project | No | Yes | Yes (regex matchers) |
-| `--system-prompt` | Session | **Yes** (all removed) | Yes (all removed) | N/A |
-| Plugin disable | Session | No (bug) | No (bug) | N/A |
+| Mechanism                 | Scope           | Removes from Context? | Blocks Execution? | Pattern Support?     |
+| :------------------------ | :-------------- | :-------------------- | :---------------- | :------------------- |
+| `--tools`                 | Session         | **Yes**               | Yes               | No (exact names)     |
+| `--disallowedTools`       | Session         | **Yes**               | Yes               | Yes (wildcards)      |
+| Agent `tools` frontmatter | Subagent        | **Yes**               | Yes               | No (exact names)     |
+| Agent `disallowedTools`   | Subagent        | **Yes**               | Yes               | Yes                  |
+| `permissions.deny`        | Session/Project | No                    | Yes               | Yes (wildcards)      |
+| PreToolUse hooks          | Session/Project | No                    | Yes               | Yes (regex matchers) |
+| Prompt-based hooks        | Session/Project | No                    | Yes               | Yes (regex matchers) |
+| `--system-prompt`         | Session         | **Yes** (all removed) | Yes (all removed) | N/A                  |
+| Plugin disable            | Session         | No (bug)              | No (bug)          | N/A                  |
 
 ---
 

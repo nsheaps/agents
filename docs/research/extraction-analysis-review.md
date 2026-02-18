@@ -33,6 +33,7 @@ Recommendation: claude-team should have its own `.claude/` structure. The behavi
 **Gap 3: What about the `--continue` flag and other hardcoded behaviors?**
 
 Foghorn correctly flags this as an open question (#5), but it needs resolution before extraction, not after. The current `claude-team` script has several hardcoded choices that should be evaluated:
+
 - `--continue` (always resume last session)
 - `--dangerously-skip-permissions` (always bypass)
 - `--permission-mode delegate` (always delegate)
@@ -56,18 +57,19 @@ This is the biggest gap in the analysis. Foghorn focused (correctly) on the ops/
 
 ### Must carry forward
 
-| Learning | Source | Why it matters |
-|:---------|:-------|:---------------|
+| Learning                        | Source                                                    | Why it matters                                                                                                   |
+| :------------------------------ | :-------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------- |
 | Lifecycle management procedures | Failure #11 + `.claude/behaviors/lifecycle-management.md` | The spawn/shutdown/cleanup anti-patterns are identical regardless of whether you use shell scripts or TypeScript |
-| Task dedup pattern | Failure #12 | Applies to any team session, not specific to the launcher |
-| Compaction drift awareness | Failures #9, #10 | Agents lose behavioral conventions after compaction — this is a Claude Code issue, not a tool issue |
-| Team communication protocol | `.claude/docs/communication-protocol.md` | How teammates route messages, report failures, save to files |
-| Team rules | `.claude/docs/team-rules.md` | Standing orders, chain of authority, verification behaviors |
-| 17 behavior docs | `.claude/behaviors/*.md` | Research, commit hygiene, failure reporting, self-correction, etc. |
+| Task dedup pattern              | Failure #12                                               | Applies to any team session, not specific to the launcher                                                        |
+| Compaction drift awareness      | Failures #9, #10                                          | Agents lose behavioral conventions after compaction — this is a Claude Code issue, not a tool issue              |
+| Team communication protocol     | `.claude/docs/communication-protocol.md`                  | How teammates route messages, report failures, save to files                                                     |
+| Team rules                      | `.claude/docs/team-rules.md`                              | Standing orders, chain of authority, verification behaviors                                                      |
+| 17 behavior docs                | `.claude/behaviors/*.md`                                  | Research, commit hygiene, failure reporting, self-correction, etc.                                               |
 
 ### Recommended migration step (add to Foghorn's list)
 
 **Step 0 (before step 1):** Copy the following from agent-team to claude-team:
+
 - `.claude/docs/team-structure.md`, `team-rules.md`, `communication-protocol.md`
 - `.claude/behaviors/` (all 18 files — they're tool-agnostic)
 - `.claude/agents/` (agent definitions — role descriptions are tool-agnostic)
@@ -109,6 +111,7 @@ Foghorn correctly notes the release pipeline follows the same pattern (release-i
 The extraction should be a pure "move and slim down" operation. The risk is that during extraction, someone decides to also refactor the script, add features, fix the `--continue` hardcoding, etc. This turns a clean extraction into an unpredictable project.
 
 **Recommendation**: Phase the work:
+
 1. **Phase 1**: Pure extraction — move files, slim libs, set up Homebrew. claude-team in the new repo should work identically to claude-team in claude-utils.
 2. **Phase 2**: Improvements — configurable flags, better error handling, settings backup decision, etc.
 
@@ -122,15 +125,16 @@ Foghorn's open question #2 asks whether this function moves with claude-team. Th
 
 ## Summary
 
-| Criterion | Grade | Key Finding |
-|:----------|:------|:------------|
-| Boundary clarity | Good with gaps | Skills, behaviors, agent defs, and future agent-team relationship not addressed |
-| Behavioral learning carryover | Not addressed | 18 behavior docs, 3 team docs, failure log learnings need explicit migration step |
-| Process/coaching risks | 5 additional risks | User transition, split-brain docs, pipeline duplication, scope creep, rejected settings backup |
+| Criterion                     | Grade              | Key Finding                                                                                    |
+| :---------------------------- | :----------------- | :--------------------------------------------------------------------------------------------- |
+| Boundary clarity              | Good with gaps     | Skills, behaviors, agent defs, and future agent-team relationship not addressed                |
+| Behavioral learning carryover | Not addressed      | 18 behavior docs, 3 team docs, failure log learnings need explicit migration step              |
+| Process/coaching risks        | 5 additional risks | User transition, split-brain docs, pipeline duplication, scope creep, rejected settings backup |
 
 **Overall**: Foghorn's analysis is a solid ops/engineering assessment. The technical extraction plan (Option C) is the right call. What it's missing is the process/knowledge dimension — the team has spent three sessions building institutional knowledge that needs to travel with the tool.
 
 **Top 3 actions needed:**
+
 1. Add "Step 0: Migrate team docs and behaviors" to the migration plan
 2. Resolve the `claude_check_settings_backup` question (recommend: remove it)
 3. Phase the extraction: pure move first, improvements second

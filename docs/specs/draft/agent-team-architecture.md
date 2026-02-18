@@ -22,21 +22,21 @@ Before any of the features below, the foundational lifecycle must work:
 
 The `TeamMember` interface in `src/lifecycle.ts` extends Claude Code's base config with fields set at spawn time:
 
-| Field | Type | Purpose | Added in |
-|:--|:--|:--|:--|
-| `tmuxPaneId` | `string?` | Tmux pane ID for kill/health/cleanup operations | `f2fe867` |
-| `agentName` | `string?` | Agent file name (e.g. `"software-eng"`) for correlating config display names with discovered agent files | `9a7354b` |
+| Field        | Type      | Purpose                                                                                                  | Added in  |
+| :----------- | :-------- | :------------------------------------------------------------------------------------------------------- | :-------- |
+| `tmuxPaneId` | `string?` | Tmux pane ID for kill/health/cleanup operations                                                          | `f2fe867` |
+| `agentName`  | `string?` | Agent file name (e.g. `"software-eng"`) for correlating config display names with discovered agent files | `9a7354b` |
 
 **Why `agentName` is needed**: Claude Code stores display names in config (e.g. `"Bugs B (software-eng)"`), but agent files are named by slug (e.g. `software-eng.md`). The `agentName` field bridges this gap — `listAgents` uses it to match discovered files to config entries, falling back to direct name comparison when not set.
 
 ### Agent Health Statuses
 
-| Status | Meaning |
-|:--|:--|
-| `RUNNING` | Config entry exists, `tmuxPaneId` set, pane is alive |
-| `DEAD` | Config entry exists, `tmuxPaneId` set, pane is not alive (stale) |
-| `UNKNOWN` | Config entry exists but no `tmuxPaneId` (cannot verify) |
-| `NOT_SPAWNED` | Agent file exists but no config entry |
+| Status        | Meaning                                                          |
+| :------------ | :--------------------------------------------------------------- |
+| `RUNNING`     | Config entry exists, `tmuxPaneId` set, pane is alive             |
+| `DEAD`        | Config entry exists, `tmuxPaneId` set, pane is not alive (stale) |
+| `UNKNOWN`     | Config entry exists but no `tmuxPaneId` (cannot verify)          |
+| `NOT_SPAWNED` | Agent file exists but no config entry                            |
 
 The original stale entry problem (see `.claude/behaviors/team-member-cleanup.md`) is now addressed by `cleanupStaleEntries`, which removes DEAD entries automatically.
 
@@ -91,11 +91,11 @@ Creating a new agent is a **collaborative process** involving three specialized 
 
 ### The Three Roles
 
-| Role | Agent | Owns | Focus |
-|:--|:--|:--|:--|
-| **AI Agent Eng** | `ai-agent-eng` | Behavior, prompt, role definition | What the agent does and how it thinks |
-| **Security Consultant** | (future — see §1) | Permissions, access control, trust model | What the agent is allowed to do |
-| **Ops Eng** | `ops-eng` | Infrastructure, credentials, runtime config | How the agent runs |
+| Role                    | Agent             | Owns                                        | Focus                                 |
+| :---------------------- | :---------------- | :------------------------------------------ | :------------------------------------ |
+| **AI Agent Eng**        | `ai-agent-eng`    | Behavior, prompt, role definition           | What the agent does and how it thinks |
+| **Security Consultant** | (future — see §1) | Permissions, access control, trust model    | What the agent is allowed to do       |
+| **Ops Eng**             | `ops-eng`         | Infrastructure, credentials, runtime config | How the agent runs                    |
 
 ### Field Ownership in agent.yaml / Agent Frontmatter
 
@@ -103,40 +103,40 @@ Each role owns specific fields in the agent definition. This prevents conflicts 
 
 #### AI Agent Eng Fields
 
-| Field | Description |
-|:--|:--|
-| `name` | Agent identifier |
-| `description` | When to invoke this agent (trigger conditions) |
-| `prompt_mode` | EXTEND vs REPLACE |
-| `base_prompt` | Base prompt source |
-| `model` | Model selection for the role |
-| `display_name` | Display name format |
-| `color` | UI color |
-| Markdown body | Full system prompt (role, responsibilities, process, boundaries) |
-| `<system-message>` block | Core identity/personality traits |
+| Field                    | Description                                                      |
+| :----------------------- | :--------------------------------------------------------------- |
+| `name`                   | Agent identifier                                                 |
+| `description`            | When to invoke this agent (trigger conditions)                   |
+| `prompt_mode`            | EXTEND vs REPLACE                                                |
+| `base_prompt`            | Base prompt source                                               |
+| `model`                  | Model selection for the role                                     |
+| `display_name`           | Display name format                                              |
+| `color`                  | UI color                                                         |
+| Markdown body            | Full system prompt (role, responsibilities, process, boundaries) |
+| `<system-message>` block | Core identity/personality traits                                 |
 
 #### Security Consultant Fields
 
-| Field | Description |
-|:--|:--|
-| `permission_mode` | default / delegate / plan / bypassPermissions |
-| `dangerously_skip_permissions` | Whether to bypass all permission checks |
-| `tools` | Whitelist of available tools |
-| `disallowed_tools` | Blacklist of tools (with pattern support) |
-| `permissions.allowed` | Allowed command patterns (Phase 2 agent.yaml) |
-| `permissions.denied` | Denied command patterns (Phase 2 agent.yaml) |
+| Field                          | Description                                   |
+| :----------------------------- | :-------------------------------------------- |
+| `permission_mode`              | default / delegate / plan / bypassPermissions |
+| `dangerously_skip_permissions` | Whether to bypass all permission checks       |
+| `tools`                        | Whitelist of available tools                  |
+| `disallowed_tools`             | Blacklist of tools (with pattern support)     |
+| `permissions.allowed`          | Allowed command patterns (Phase 2 agent.yaml) |
+| `permissions.denied`           | Denied command patterns (Phase 2 agent.yaml)  |
 
 #### Ops Eng Fields
 
-| Field | Description |
-|:--|:--|
-| `framework` | Agent framework (claude-code, codex, custom) |
-| `teammate_mode` | Display mode (auto, in-process, tmux) |
-| `continue_session` | Session resumption |
-| `container` | Docker/K8s configuration (Phase 2+) |
-| `workspace` | Volume mounts, repo clones (Phase 2+) |
-| `mesh` | Mesh MCP connection groups (Phase 2+) |
-| Environment variables | Runtime env setup |
+| Field                 | Description                                  |
+| :-------------------- | :------------------------------------------- |
+| `framework`           | Agent framework (claude-code, codex, custom) |
+| `teammate_mode`       | Display mode (auto, in-process, tmux)        |
+| `continue_session`    | Session resumption                           |
+| `container`           | Docker/K8s configuration (Phase 2+)          |
+| `workspace`           | Volume mounts, repo clones (Phase 2+)        |
+| `mesh`                | Mesh MCP connection groups (Phase 2+)        |
+| Environment variables | Runtime env setup                            |
 
 ### Creation Workflow
 
@@ -179,6 +179,7 @@ The three-role workflow becomes fully operational when the security consultant a
 ### Why This Matters
 
 Without defined ownership:
+
 - Agents get created with overly broad permissions (no security review)
 - Tool sets don't match responsibilities (behavior/permissions mismatch)
 - Infrastructure assumptions are baked into prompts (coupling)
@@ -292,11 +293,11 @@ Each agent can have its own container image tailored to its framework and tools:
 
 The ecosystem has three YAML-related agent config formats. They serve different purposes and are not interchangeable:
 
-| Format | Location | Purpose | Status |
-|:--|:--|:--|:--|
-| **Claude Code agent files** | `.claude/agents/{name}.md` (YAML frontmatter + markdown body) | Agent prompts and metadata for Claude Code's built-in agent system | Current — used today |
-| **agent.yaml** (proposed) | `agents/{name}/agent.yaml` | Full agent definition (tools, container, permissions, mesh) for the agent-team framework | Future — target format |
-| **Project .agent.yaml** | `.agent.yaml` (project root) | Launch config for the `agent` CLI wrapper — profiles, MCP configs, settings overrides | Future — project-level config |
+| Format                      | Location                                                      | Purpose                                                                                  | Status                        |
+| :-------------------------- | :------------------------------------------------------------ | :--------------------------------------------------------------------------------------- | :---------------------------- |
+| **Claude Code agent files** | `.claude/agents/{name}.md` (YAML frontmatter + markdown body) | Agent prompts and metadata for Claude Code's built-in agent system                       | Current — used today          |
+| **agent.yaml** (proposed)   | `agents/{name}/agent.yaml`                                    | Full agent definition (tools, container, permissions, mesh) for the agent-team framework | Future — target format        |
+| **Project .agent.yaml**     | `.agent.yaml` (project root)                                  | Launch config for the `agent` CLI wrapper — profiles, MCP configs, settings overrides    | Future — project-level config |
 
 **Migration path**: `.claude/agents/*.md` is the starting point. The agent launcher reads these today. As the framework matures, agent definitions will migrate to `agents/{name}/agent.yaml` with richer schema. Both formats may coexist during transition — the launcher will read both and prefer `agent.yaml` when present.
 
@@ -464,12 +465,12 @@ The mesh MCP server handles real-time communication within a team. A2A could pro
 
 The mesh MCP server is the **committed direction** for intra-team real-time communication. A2A is a potential **future complement** for cross-team and cross-framework interoperability — it does not replace mesh MCP.
 
-| Concern | Mesh MCP | A2A |
-|:--|:--|:--|
-| Intra-team messaging | Primary | Not needed |
-| Cross-framework agents | Not designed for this | Natural fit |
-| Agent discovery | Within team config | Standardized protocol |
-| Maturity | In-progress, QA'd | Early-stage protocol |
+| Concern                | Mesh MCP              | A2A                   |
+| :--------------------- | :-------------------- | :-------------------- |
+| Intra-team messaging   | Primary               | Not needed            |
+| Cross-framework agents | Not designed for this | Natural fit           |
+| Agent discovery        | Within team config    | Standardized protocol |
+| Maturity               | In-progress, QA'd     | Early-stage protocol  |
 
 ### Research Needed
 
@@ -576,12 +577,12 @@ This is distinct from the external relaunch in the agent launcher spec (§6.5), 
 
 The agent needs a way to signal the wrapper. Options:
 
-| Mechanism | Pros | Cons |
-|:--|:--|:--|
-| MCP tool (`agent.restart`) | Native to the agent's toolset, structured request | Requires MCP server in the wrapper |
-| Exit code convention | Simple, no extra infrastructure | Limited payload (just a code, no config delta) |
-| File-based signal | Agent writes restart request to known path, wrapper watches | Latency, cleanup needed |
-| Named pipe / Unix socket | Low latency, bidirectional | Platform-specific, more complex |
+| Mechanism                  | Pros                                                        | Cons                                           |
+| :------------------------- | :---------------------------------------------------------- | :--------------------------------------------- |
+| MCP tool (`agent.restart`) | Native to the agent's toolset, structured request           | Requires MCP server in the wrapper             |
+| Exit code convention       | Simple, no extra infrastructure                             | Limited payload (just a code, no config delta) |
+| File-based signal          | Agent writes restart request to known path, wrapper watches | Latency, cleanup needed                        |
+| Named pipe / Unix socket   | Low latency, bidirectional                                  | Platform-specific, more complex                |
 
 **Recommended**: MCP tool provided by the wrapper's MCP server. The agent calls `agent.restart` with the desired config changes as parameters. This is the most natural interface for LLM-based agents and integrates with the mesh MCP server design (see `docs/specs/draft/mesh-mcp-server.md`).
 
@@ -656,13 +657,13 @@ OTEL_EXPORTER_OTLP_ENDPOINT="http://${collector}:4317"
 
 Align with the [GenAI Agent Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/) where they exist:
 
-| Our Attribute | OTEL Convention | Status |
-|:--|:--|:--|
-| Agent name | `gen_ai.agent.name` | Stable |
-| Agent ID | `gen_ai.agent.id` | Stable |
-| Session/conversation | `gen_ai.conversation.id` | Stable |
-| Agent role | `agent_team.role` | Custom (no standard yet) |
-| Team name | `agent_team.team_name` | Custom (proposed in [OTEL Issue #2664](https://github.com/open-telemetry/semantic-conventions/issues/2664)) |
+| Our Attribute        | OTEL Convention          | Status                                                                                                      |
+| :------------------- | :----------------------- | :---------------------------------------------------------------------------------------------------------- |
+| Agent name           | `gen_ai.agent.name`      | Stable                                                                                                      |
+| Agent ID             | `gen_ai.agent.id`        | Stable                                                                                                      |
+| Session/conversation | `gen_ai.conversation.id` | Stable                                                                                                      |
+| Agent role           | `agent_team.role`        | Custom (no standard yet)                                                                                    |
+| Team name            | `agent_team.team_name`   | Custom (proposed in [OTEL Issue #2664](https://github.com/open-telemetry/semantic-conventions/issues/2664)) |
 
 Use `gen_ai.*` where conventions exist, `agent_team.*` for custom attributes. Migrate custom attributes to standard names when the GenAI SIG finalizes team/task conventions.
 
@@ -674,11 +675,11 @@ Use `gen_ai.*` where conventions exist, `agent_team.*` for custom attributes. Mi
 
 ### Backend Options
 
-| Backend | Type | Unique Value | Cost |
-|:--|:--|:--|:--|
-| Grafana + Prometheus + Loki | Self-hosted | Full control, no data sharing | Free (infra cost) |
-| Braintrust | SaaS | Converts traces → eval datasets, prompt comparison | Paid |
-| Honeycomb / Datadog / SigNoz | Managed | Production-grade, rich querying | Paid |
+| Backend                      | Type        | Unique Value                                       | Cost              |
+| :--------------------------- | :---------- | :------------------------------------------------- | :---------------- |
+| Grafana + Prometheus + Loki  | Self-hosted | Full control, no data sharing                      | Free (infra cost) |
+| Braintrust                   | SaaS        | Converts traces → eval datasets, prompt comparison | Paid              |
+| Honeycomb / Datadog / SigNoz | Managed     | Production-grade, rich querying                    | Paid              |
 
 **Recommendation**: Stay backend-agnostic in the launcher. Let users configure their preferred backend via collector pipeline config, not launcher flags.
 
@@ -699,19 +700,19 @@ Use `gen_ai.*` where conventions exist, `agent_team.*` for custom attributes. Mi
 
 ## 10. Relationship to Existing PRDs
 
-| Architecture Section | PRD | Location | Relationship |
-|:--|:--|:--|:--|
-| §1 Security Consultant | (none yet) | — | Needs its own PRD when prioritized |
-| §1b Agent Creation | (none yet) | — | Cross-role workflow; may need its own spec for tooling support |
-| §2 Per-Agent Tool Sets | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Tool sets implemented via wrapper settings profiles |
-| §3 Docker Containers | Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md` | Containers need mesh networking |
-| §4 Agent Definition | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | agent.yaml schema extends wrapper config |
-| §5 Session Save/Restore | Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md` | Session state may include mesh connection info |
-| §6 A2A Protocol | MCP Tooling | `~/src/nsheaps/mcp/docs/specs/draft/mcp-tooling.md` | A2A complements (does not replace) mesh MCP — see note below |
-| §7 I/O Proxy | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | **Wrapper PRD is source of truth** for proxy design; §7 summarizes |
-| §8 Self-Exit/Relaunch | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Wrapper owns the process lifecycle; §8 captures the agent-initiated restart pattern |
-| §9 Observability/Tracing | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Launcher sets per-agent OTEL env vars at spawn time |
-| All sections | 14-Phase Plan | Elmer Fudd's plan (in team lead context) | All sections feed into phase refinement |
+| Architecture Section     | PRD             | Location                                                | Relationship                                                                        |
+| :----------------------- | :-------------- | :------------------------------------------------------ | :---------------------------------------------------------------------------------- |
+| §1 Security Consultant   | (none yet)      | —                                                       | Needs its own PRD when prioritized                                                  |
+| §1b Agent Creation       | (none yet)      | —                                                       | Cross-role workflow; may need its own spec for tooling support                      |
+| §2 Per-Agent Tool Sets   | Agent Wrapper   | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Tool sets implemented via wrapper settings profiles                                 |
+| §3 Docker Containers     | Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md`                   | Containers need mesh networking                                                     |
+| §4 Agent Definition      | Agent Wrapper   | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | agent.yaml schema extends wrapper config                                            |
+| §5 Session Save/Restore  | Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md`                   | Session state may include mesh connection info                                      |
+| §6 A2A Protocol          | MCP Tooling     | `~/src/nsheaps/mcp/docs/specs/draft/mcp-tooling.md`     | A2A complements (does not replace) mesh MCP — see note below                        |
+| §7 I/O Proxy             | Agent Wrapper   | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | **Wrapper PRD is source of truth** for proxy design; §7 summarizes                  |
+| §8 Self-Exit/Relaunch    | Agent Wrapper   | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Wrapper owns the process lifecycle; §8 captures the agent-initiated restart pattern |
+| §9 Observability/Tracing | Agent Wrapper   | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Launcher sets per-agent OTEL env vars at spawn time                                 |
+| All sections             | 14-Phase Plan   | Elmer Fudd's plan (in team lead context)                | All sections feed into phase refinement                                             |
 
 ---
 

@@ -28,7 +28,7 @@
     - Later: in-browser editing with notification to the document owner (the agent that produced the file), so the agent can react to manual changes
     - Think Google Docs-style collaboration but between humans and agents
 - we also want metrics for our stuff too, both usage metrics for us of the app itself, and org metrics for our customers.
-- We need to think about monetization, maybe of this product maybe not, but need to make enough money to cover the AI costs. 
+- We need to think about monetization, maybe of this product maybe not, but need to make enough money to cover the AI costs.
 - use tilt/ctlptl/kind for testing
 - need different runtime modes, like separate processes, docker containers orchestrated by a process, or orch by a controller in docker, docker compose, k8s, etc.
   - everything needs to support multiple agents running on the same computer, including separate secrets stores for each agent, but the suggested/happy path is an agent in a container for safety and performance reason.s
@@ -114,12 +114,15 @@
 ## Pending Tasks (updated 2026-02-18, looney-tunes session 3)
 
 ### In Progress
+
 (none currently)
 
 ### Pending
+
 - **#140**: Research Braintrust + OTEL env vars for agent/task tracing differentiation
 
 ### Research (unassigned)
+
 - Navigable TUI for agent pane management (tmux + AppleScript + Linux automation)
 - Web UI for agent team monitoring (happy.engineering style dashboard)
 - Optimal model selection per agent role (initial doc at `docs/research/model-selection-per-role.md`)
@@ -127,11 +130,13 @@
 - Research OmoiOS (github.com/kivo360/OmoiOS)
 
 ### Backlog
+
 - Consider splitting conversation-search behavior reference material
 - Add prettier pre-commit hook or CI check to agent-team repo
 - Research ticket automation (todo-sync style) for agent-team project
 
 ### Completed (prior sessions)
+
 - **#116**: QA full agent lifecycle test — done (Daffy)
 - **#127**: Document agent creation collaboration workflow — done (Tweety)
 - **#128**: Architecture doc structural fixes (MVP boundary, I/O proxy dedup, YAML formats table) — done (Tweety, `29652c6`)

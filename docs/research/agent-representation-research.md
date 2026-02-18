@@ -12,10 +12,12 @@
 Agent definition files are YAML-fronted Markdown files located in `.claude/agents/` directories. All agents examined follow a consistent schema with these fields:
 
 ### Required Fields
+
 - **name** (string): Unique identifier, kebab-case (e.g., `software-eng`, `orchestrator`, `deep-researcher`)
 - **description** (string, multi-line): User-facing description with examples of when to use
 
 ### Optional Fields (Common Across Agents)
+
 - **model** (string): Model override (e.g., `sonnet`, `claude-opus-4-6`); defaults to Claude Opus 4.6 if not specified
 - **color** (string): Hex or named color for UI display (e.g., `green`, `blue`, `cyan`, `yellow`, `magenta`)
 - **prompt_mode** (string): `extend` or `replace` for system prompt behavior
@@ -27,10 +29,12 @@ Agent definition files are YAML-fronted Markdown files located in `.claude/agent
 - **role** (string): Special field for team leads; orchestrator sets `role: orchestrator`
 
 ### Tool Configuration
+
 - **tools** (array): Explicit list of allowed tools (Read, Edit, Write, Bash, Grep, Glob, WebSearch, WebFetch, Task, SendMessage, TaskCreate, TaskUpdate, TaskList, TaskGet, TeamCreate, AskUserQuestion)
 - **disallowed_tools** (array): Explicit list of forbidden tools (inverse of tools list)
 
 ### System Message (Content Block)
+
 - **\<system-message\>** block: YAML-wrapped XML-style block containing identity, personality, and core behavioral traits (Name, character inspiration, personality quirks)
 
 ---
@@ -39,24 +43,24 @@ Agent definition files are YAML-fronted Markdown files located in `.claude/agent
 
 ### Found in `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/agents/`
 
-| Agent Name | Display Name | Model | Color | Role | Key Traits |
-|---|---|---|---|---|---|
-| **orchestrator** | Orchestrator | claude-opus-4-6 | blue | orchestrator (team-lead) | Calm, decisive; spawns teammates; does NOT write code |
-| **software-eng** | Bugs B | claude-opus-4-6 | green | Software Engineer | Quiet, confident; reads code before writing; prefers consistency over cleverness |
-| **deep-researcher** | Road R | claude-opus-4-6 | cyan | Deep Researcher | Patient, methodical, evidence-obsessed; complex multi-source synthesis only |
-| **quality-assurance** | Daffy D | claude-opus-4-6 | yellow | QA | Skeptical; thorough testing; sharp eye for edge cases |
-| **project-manager** | Elmer F | claude-opus-4-6 | magenta | Project Manager | Methodical, organized; owns task list; coordinates handoffs |
-| **docs-writer** | Tweety B | (inherited) | (inherited) | Documentation Writer | Maintains docs, audits specs, flags contradictions |
-| **ops-eng** | Foghorn L | (inherited) | (inherited) | Operations Engineer | CI/CD, Homebrew, distribution, tooling |
-| **ai-agent-eng** | Wile E | (inherited) | (inherited) | AI Agent Engineer | Observes failures, records patterns, reviews specs |
+| Agent Name            | Display Name | Model           | Color       | Role                     | Key Traits                                                                       |
+| --------------------- | ------------ | --------------- | ----------- | ------------------------ | -------------------------------------------------------------------------------- |
+| **orchestrator**      | Orchestrator | claude-opus-4-6 | blue        | orchestrator (team-lead) | Calm, decisive; spawns teammates; does NOT write code                            |
+| **software-eng**      | Bugs B       | claude-opus-4-6 | green       | Software Engineer        | Quiet, confident; reads code before writing; prefers consistency over cleverness |
+| **deep-researcher**   | Road R       | claude-opus-4-6 | cyan        | Deep Researcher          | Patient, methodical, evidence-obsessed; complex multi-source synthesis only      |
+| **quality-assurance** | Daffy D      | claude-opus-4-6 | yellow      | QA                       | Skeptical; thorough testing; sharp eye for edge cases                            |
+| **project-manager**   | Elmer F      | claude-opus-4-6 | magenta     | Project Manager          | Methodical, organized; owns task list; coordinates handoffs                      |
+| **docs-writer**       | Tweety B     | (inherited)     | (inherited) | Documentation Writer     | Maintains docs, audits specs, flags contradictions                               |
+| **ops-eng**           | Foghorn L    | (inherited)     | (inherited) | Operations Engineer      | CI/CD, Homebrew, distribution, tooling                                           |
+| **ai-agent-eng**      | Wile E       | (inherited)     | (inherited) | AI Agent Engineer        | Observes failures, records patterns, reviews specs                               |
 
 ### Found in `/Users/nathan.heaps/src/nsheaps/ai/.ai/agents/`
 
-| Agent Name | Model | Key Traits |
-|---|---|---|
-| **research-subagent** | sonnet | OODA loop methodology; focused deep investigation; spawned by lead researcher |
-| **internet-researcher** | haiku | Multi-source research; current information from web; API documentation lookup |
-| **conversation-history-search** | (inherited) | Searches conversation history; context preservation |
+| Agent Name                      | Model       | Key Traits                                                                    |
+| ------------------------------- | ----------- | ----------------------------------------------------------------------------- |
+| **research-subagent**           | sonnet      | OODA loop methodology; focused deep investigation; spawned by lead researcher |
+| **internet-researcher**         | haiku       | Multi-source research; current information from web; API documentation lookup |
+| **conversation-history-search** | (inherited) | Searches conversation history; context preservation                           |
 
 ### Found in `/Users/nathan.heaps/src/nsheaps/ai-old/.ai/agents/` (Legacy)
 
@@ -69,6 +73,7 @@ Multiple legacy agents existed: `ai-engineer`, `code-reviewer`, `debugger`, `dev
 Plugins use `.claude-plugin/plugin.json` manifest files with the following structure:
 
 ### Plugin.json Schema (Minimal)
+
 ```json
 {
   "name": "string (kebab-case)",
@@ -88,6 +93,7 @@ Plugins use `.claude-plugin/plugin.json` manifest files with the following struc
 ### Observed Plugin Components
 
 Plugins found contain:
+
 - **Skills** (referenced in SKILL.md or referenced in plugin docs)
 - **Commands** (slash commands, typically defined elsewhere but registered in plugin)
 - **Rules** (behavior instructions, stored in `.ai/rules/` or referenced)
@@ -97,19 +103,19 @@ Plugins found contain:
 
 ### Observed Plugins
 
-| Plugin Name | Author | Purpose | Components |
-|---|---|---|---|
-| **commit-skill** | Nathan Heaps | Git commit automation | Skill for /commit command |
-| **commit-command** | Nathan Heaps | Git commit with AI messages | Command wrapper for commit |
-| **memory-manager** | Nathan Heaps | CLAUDE.md management | Auto-detect preferences |
-| **correct-behavior** | Nathan Heaps | Behavior correction | Command for /correct-behavior |
-| **data-serialization** | Nathan Heaps | YAML/JSON/TOON conversion | Utilities for data formats |
-| **github-auth-skill** | Nathan Heaps | GitHub auth via device flow | Skill for GitHub CLI |
-| **command-help-skill** | Nathan Heaps | Help with slash commands | Discovery and help |
-| **sync-settings** | Nathan Heaps | Settings file sync | Config management |
-| **skills-maintenance** | Nathan Heaps | Skill lifecycle management | Skill updates/deprecation |
-| **feature-dev** | Anthropic | Feature development workflow | Multi-agent orchestration (from marketplace) |
-| **pr-review-toolkit** | Anthropic | PR code review | Multiple code-review agents (from marketplace) |
+| Plugin Name            | Author       | Purpose                      | Components                                     |
+| ---------------------- | ------------ | ---------------------------- | ---------------------------------------------- |
+| **commit-skill**       | Nathan Heaps | Git commit automation        | Skill for /commit command                      |
+| **commit-command**     | Nathan Heaps | Git commit with AI messages  | Command wrapper for commit                     |
+| **memory-manager**     | Nathan Heaps | CLAUDE.md management         | Auto-detect preferences                        |
+| **correct-behavior**   | Nathan Heaps | Behavior correction          | Command for /correct-behavior                  |
+| **data-serialization** | Nathan Heaps | YAML/JSON/TOON conversion    | Utilities for data formats                     |
+| **github-auth-skill**  | Nathan Heaps | GitHub auth via device flow  | Skill for GitHub CLI                           |
+| **command-help-skill** | Nathan Heaps | Help with slash commands     | Discovery and help                             |
+| **sync-settings**      | Nathan Heaps | Settings file sync           | Config management                              |
+| **skills-maintenance** | Nathan Heaps | Skill lifecycle management   | Skill updates/deprecation                      |
+| **feature-dev**        | Anthropic    | Feature development workflow | Multi-agent orchestration (from marketplace)   |
+| **pr-review-toolkit**  | Anthropic    | PR code review               | Multiple code-review agents (from marketplace) |
 
 ---
 
@@ -132,16 +138,17 @@ Orchestrator (team-lead, no cartoon namesake)
 
 ### Agent vs Persona Separation
 
-| Concept | Location | Purpose |
-|---|---|---|
-| **Agent** | `.claude/agents/<name>.md` | Role, responsibilities, behaviors, process, quality standards (WHAT) |
-| **Persona** | `.claude/personas/<name>.md` | Identity, personality, communication style, public voice (WHO) |
+| Concept     | Location                     | Purpose                                                              |
+| ----------- | ---------------------------- | -------------------------------------------------------------------- |
+| **Agent**   | `.claude/agents/<name>.md`   | Role, responsibilities, behaviors, process, quality standards (WHAT) |
+| **Persona** | `.claude/personas/<name>.md` | Identity, personality, communication style, public voice (WHO)       |
 
 ### Display Name Pattern
 
 Format: **"FirstName L (role)"** where L = last initial (or middle for "Wile E.")
 
 Examples:
+
 - Bugs B (software-eng)
 - Road R (researcher)
 - Wile E (ai-agent-eng)
@@ -155,26 +162,31 @@ Examples:
 ## 5. Agent Tool Permissions by Role
 
 ### Orchestrator
+
 - **Allowed**: Read, Grep, Glob, Task, SendMessage, TaskCreate, TaskUpdate, TaskList, TaskGet, TeamCreate, AskUserQuestion
 - **Disallowed**: Edit, Write, Bash
 - **Rationale**: Coordination only, no implementation or file modification
 
 ### Software Engineer (Bugs)
+
 - **Allowed**: Read, Edit, Write, Bash, Grep, Glob, WebSearch, WebFetch
 - **Disallowed**: None by default; Task tools implied available
 - **Rationale**: Full implementation capability
 
 ### Quality Assurance (Daffy)
+
 - **Allowed**: Read, Grep, Glob, Bash, WebFetch
 - **Disallowed**: Edit, Write
 - **Rationale**: Testing and review only, no code creation
 
 ### Deep Researcher (Road Runner)
+
 - **Allowed**: Read, Grep, Glob, WebSearch, WebFetch, Bash
 - **Disallowed**: Edit, Write
 - **Rationale**: Investigation only, no file modification
 
 ### Project Manager (Elmer)
+
 - **Allowed**: Read, Grep, Glob, Task, SendMessage, TaskCreate, TaskUpdate, TaskList, TaskGet, AskUserQuestion
 - **Disallowed**: Edit, Write, Bash
 - **Rationale**: Task management and coordination, no implementation
@@ -184,6 +196,7 @@ Examples:
 ## 6. Frontmatter Patterns Summary
 
 ### Minimal Agent Definition
+
 ```yaml
 ---
 name: agent-name
@@ -192,6 +205,7 @@ description: "Clear description with examples of when to use"
 ```
 
 ### Full Agent Definition (Team Lead)
+
 ```yaml
 ---
 name: orchestrator
@@ -284,6 +298,7 @@ The research shows:
 ## 9. Data Points for Spec Design
 
 ### Agent Field Schema (To Reference)
+
 ```
 - name (required, kebab-case)
 - description (required, multi-line)
@@ -301,6 +316,7 @@ The research shows:
 ```
 
 ### Plugin.json Schema (To Extend)
+
 ```
 - name (required, kebab-case)
 - version (required, semver)
@@ -313,6 +329,7 @@ The research shows:
 ```
 
 ### Team Role Examples
+
 - orchestrator (team-lead)
 - software-eng
 - quality-assurance

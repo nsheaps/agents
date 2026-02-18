@@ -88,13 +88,13 @@ After removing stale entries, you can spawn a fresh agent with the same name wit
 
 The following capabilities have been implemented in `src/lifecycle.ts`:
 
-| Capability | Function | Status |
-|:--|:--|:--|
-| Remove member by name | `removeMember()` / `killAgent()` | Implemented (`f2fe867`) |
-| List with live/dead status | `listAgents()` — reports RUNNING/DEAD/UNKNOWN | Implemented (`f2fe867`) |
-| Auto-cleanup stale entries | `cleanupStaleEntries()` — checks pane liveness, removes dead | Implemented (`f2fe867`) |
-| File/config name correlation | `listAgents()` via `agentName` field on `TeamMember` | Implemented (`9a7354b`) |
-| Graceful crash handling | Not yet — system does not auto-detect pane exits | Still needed |
+| Capability                   | Function                                                     | Status                  |
+| :--------------------------- | :----------------------------------------------------------- | :---------------------- |
+| Remove member by name        | `removeMember()` / `killAgent()`                             | Implemented (`f2fe867`) |
+| List with live/dead status   | `listAgents()` — reports RUNNING/DEAD/UNKNOWN                | Implemented (`f2fe867`) |
+| Auto-cleanup stale entries   | `cleanupStaleEntries()` — checks pane liveness, removes dead | Implemented (`f2fe867`) |
+| File/config name correlation | `listAgents()` via `agentName` field on `TeamMember`         | Implemented (`9a7354b`) |
+| Graceful crash handling      | Not yet — system does not auto-detect pane exits             | Still needed            |
 
 **Note**: The manual cleanup procedures above (Options A/B/C) remain valid as fallbacks when the programmatic tools are unavailable (e.g., CLI not built yet, or running outside the launcher context).
 

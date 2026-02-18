@@ -7,6 +7,7 @@ Reverse-engineer Claude Code's internals to understand its tool schemas, command
 ## Research Tracks (Parallelizable)
 
 ### Track 1: Binary Extraction & Source Recovery
+
 - Claude Code is distributed as a **Node.js SEA (Single Executable Application)** — all source is bundled/compressed into one file
 - Extract and decompress the source from the binary
 - Recover readable JavaScript/TypeScript source
@@ -14,6 +15,7 @@ Reverse-engineer Claude Code's internals to understand its tool schemas, command
 - **Key tools**: `cchistory` (for extracting specific versions), Node.js SEA extraction techniques, `node --inspect`, source map recovery
 
 ### Track 2: Tool & Command Schema Discovery
+
 - Extract all **tool definitions** (name, parameters, JSON schemas) available to Claude from both:
   - The CLI interface (user-facing commands like `/help`, `/commit`, etc.)
   - The agent interface (tools available to spawned sub-agents: Read, Write, Edit, Bash, Task, SendMessage, etc.)
@@ -22,6 +24,7 @@ Reverse-engineer Claude Code's internals to understand its tool schemas, command
 - Look for hidden/undocumented tools or capabilities
 
 ### Track 3: Agent Spawning & tmux Integration
+
 - Trace the code paths for how Claude Code spawns teammate agents
 - Document the **tmux session management** logic:
   - How sessions are created, named, and managed
@@ -31,6 +34,7 @@ Reverse-engineer Claude Code's internals to understand its tool schemas, command
 - Document the agent lifecycle: spawn → work → idle → message → shutdown
 
 ### Track 4: Team Orchestration Primitives
+
 - Map out the full **team orchestration system**:
   - `TeamCreate`, `TeamDelete`, `SendMessage`, `TaskCreate/Update/List/Get`
   - Team config files (`~/.claude/teams/`)
@@ -40,6 +44,7 @@ Reverse-engineer Claude Code's internals to understand its tool schemas, command
 - Identify the APIs/interfaces needed to replicate this externally
 
 ### Track 5: Web Research & Documentation
+
 - Research Claude Code's public documentation for agent teams
 - Search for blog posts, GitHub issues, changelogs about team features
 - Look for community findings about Claude Code internals
@@ -49,21 +54,23 @@ Reverse-engineer Claude Code's internals to understand its tool schemas, command
 ## Key Artifacts to Produce
 
 ### Research Notes (committed to repo)
-| File | Content |
-|------|---------|
-| `docs/research/claude-code-binary-structure.md` | Binary format, extraction methods, module map |
-| `docs/research/claude-code-tool-schemas.md` | Complete tool catalog with JSON schemas |
-| `docs/research/claude-code-agent-spawning.md` | Agent lifecycle, tmux integration details |
+
+| File                                              | Content                                         |
+| ------------------------------------------------- | ----------------------------------------------- |
+| `docs/research/claude-code-binary-structure.md`   | Binary format, extraction methods, module map   |
+| `docs/research/claude-code-tool-schemas.md`       | Complete tool catalog with JSON schemas         |
+| `docs/research/claude-code-agent-spawning.md`     | Agent lifecycle, tmux integration details       |
 | `docs/research/claude-code-team-orchestration.md` | Team primitives, message protocol, file formats |
-| `docs/research/claude-code-web-findings.md` | Public docs, blog posts, community findings |
+| `docs/research/claude-code-web-findings.md`       | Public docs, blog posts, community findings     |
 
 ### Skill Supplements (for agent-teams skill)
-| File | Content |
-|------|---------|
-| `.claude/skills/agent-teams/references/tool-schemas.md` | Extracted tool schemas relevant to agent teams |
-| `.claude/skills/agent-teams/references/tmux-integration.md` | Detailed tmux session management reference |
-| `.claude/skills/agent-teams/references/team-orchestration-internals.md` | Internal orchestration protocol details |
-| `.claude/skills/agent-teams/references/mcp-server-design.md` | Design notes for the target MCP server |
+
+| File                                                                    | Content                                        |
+| ----------------------------------------------------------------------- | ---------------------------------------------- |
+| `.claude/skills/agent-teams/references/tool-schemas.md`                 | Extracted tool schemas relevant to agent teams |
+| `.claude/skills/agent-teams/references/tmux-integration.md`             | Detailed tmux session management reference     |
+| `.claude/skills/agent-teams/references/team-orchestration-internals.md` | Internal orchestration protocol details        |
+| `.claude/skills/agent-teams/references/mcp-server-design.md`            | Design notes for the target MCP server         |
 
 ## Working Conventions
 
@@ -76,17 +83,18 @@ Reverse-engineer Claude Code's internals to understand its tool schemas, command
 
 ## Suggested Team Composition
 
-| Role | Agent Type | Responsibility |
-|------|-----------|---------------|
-| **binary-analyst** | general-purpose | Track 1: Binary extraction, source recovery, module mapping |
-| **tool-researcher** | general-purpose | Track 2: Tool/command schema extraction and documentation |
-| **agent-tracer** | general-purpose | Track 3 & 4: Agent spawning, tmux, team orchestration code paths |
-| **web-researcher** | research-lead | Track 5: Web research, public docs, community findings |
-| **doc-writer** | general-purpose | Synthesize raw notes into polished skill supplements |
+| Role                | Agent Type      | Responsibility                                                   |
+| ------------------- | --------------- | ---------------------------------------------------------------- |
+| **binary-analyst**  | general-purpose | Track 1: Binary extraction, source recovery, module mapping      |
+| **tool-researcher** | general-purpose | Track 2: Tool/command schema extraction and documentation        |
+| **agent-tracer**    | general-purpose | Track 3 & 4: Agent spawning, tmux, team orchestration code paths |
+| **web-researcher**  | research-lead   | Track 5: Web research, public docs, community findings           |
+| **doc-writer**      | general-purpose | Synthesize raw notes into polished skill supplements             |
 
 ## Success Criteria
 
 We're done when we have:
+
 1. A complete catalog of Claude Code's tools with schemas
 2. Deep understanding of how tmux-based agent spawning works
 3. Documented team orchestration protocol (messages, files, lifecycle)

@@ -10,6 +10,7 @@
 **Format compliance:** Follows established pattern — YAML frontmatter (name + description), Purpose, When to Use, Steps, Anti-Patterns. Matches failure-reporting.md, research.md, etc.
 
 **Quality assessment:**
+
 - Clear, opinionated, actionable — "Start embarrassingly small" sets the right tone
 - Steps are concrete: 5-15 lines max, share, wait, expand one section, repeat
 - "The First Draft Test" is a strong addition — gives a measurable threshold
@@ -25,6 +26,7 @@
 **Format compliance:** Follows established pattern — YAML frontmatter, Purpose, When to Use, Steps, Anti-Patterns, References.
 
 **Quality assessment:**
+
 - Core procedure (Steps 1-5) is clear and practical
 - Critical safety warning about context bloat is well-placed
 - Schema table (line 52-61) is useful and concise
@@ -46,13 +48,13 @@
 
 ## Consistency Check
 
-| Aspect | incremental-design | conversation-search | Existing behaviors |
-|--------|-------------------|--------------------|--------------------|
-| Frontmatter | name + description | name + description | name + description |
-| Sections | Purpose, When, Steps, Anti-Patterns | Purpose, When, Steps, Anti-Patterns, Refs | Varies (all have Purpose, When, Steps, Anti-Patterns) |
-| Length | 53 lines | 115 lines | 40-65 lines typical |
-| Tone | Directive | Practical/tutorial | Directive |
-| Cross-refs | None needed | Links to research doc | Some have them |
+| Aspect      | incremental-design                  | conversation-search                       | Existing behaviors                                    |
+| ----------- | ----------------------------------- | ----------------------------------------- | ----------------------------------------------------- |
+| Frontmatter | name + description                  | name + description                        | name + description                                    |
+| Sections    | Purpose, When, Steps, Anti-Patterns | Purpose, When, Steps, Anti-Patterns, Refs | Varies (all have Purpose, When, Steps, Anti-Patterns) |
+| Length      | 53 lines                            | 115 lines                                 | 40-65 lines typical                                   |
+| Tone        | Directive                           | Practical/tutorial                        | Directive                                             |
+| Cross-refs  | None needed                         | Links to research doc                     | Some have them                                        |
 
 Both are consistent with the established behavior format. conversation-search is on the longer end but justified by the technical nature of the topic.
 
@@ -60,7 +62,7 @@ Both are consistent with the established behavior format. conversation-search is
 
 ## Verdict
 
-| Behavior | Result | Notes |
-|----------|--------|-------|
-| incremental-design | **PASS** | High quality, follows format |
+| Behavior            | Result   | Notes                                                                  |
+| ------------------- | -------- | ---------------------------------------------------------------------- |
+| incremental-design  | **PASS** | High quality, follows format                                           |
 | conversation-search | **PASS** | Good quality, slightly long due to CLI recipes (hybrid behavior/skill) |

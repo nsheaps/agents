@@ -26,11 +26,11 @@ Source: [Claude Code Agent Teams Docs](https://code.claude.com/docs/en/agent-tea
 
 Agent teams support two display modes, configured via the `teammateMode` setting:
 
-| Mode | Description |
-|------|-------------|
-| **in-process** | All teammates run inside the main terminal. Use Shift+Up/Down to select teammates. Works in any terminal, no extra setup. |
+| Mode                   | Description                                                                                                                         |
+| ---------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| **in-process**         | All teammates run inside the main terminal. Use Shift+Up/Down to select teammates. Works in any terminal, no extra setup.           |
 | **split panes** (tmux) | Each teammate gets its own pane. See everyone's output at once and click into a pane to interact directly. Requires tmux or iTerm2. |
-| **auto** (default) | Uses split panes if already inside a tmux session; otherwise falls back to in-process. |
+| **auto** (default)     | Uses split panes if already inside a tmux session; otherwise falls back to in-process.                                              |
 
 Configuration in `settings.json`:
 
@@ -55,6 +55,7 @@ The docs state:
 > Split-pane mode requires either tmux or iTerm2 with the `it2` CLI.
 
 Installation:
+
 - **tmux**: Install through your system's package manager. See the [tmux wiki](https://github.com/tmux/tmux/wiki/Installing).
 - **iTerm2**: Install the [`it2` CLI](https://github.com/mkusaka/it2), then enable the Python API in **iTerm2 > Settings > General > Magic > Enable Python API**.
 
@@ -71,6 +72,7 @@ Source: [Claude Code Agent Teams Docs](https://code.claude.com/docs/en/agent-tea
 When the `teammateMode` is set to `"tmux"` (or `"auto"` while inside tmux), Claude Code uses tmux to create split panes where each teammate gets its own pane. The team lead's terminal lists all teammates and their current work. In split-pane mode, you can see everyone's output at once and click into a pane to interact directly.
 
 The architecture consists of:
+
 - **Team lead**: The main Claude Code session that creates the team, spawns teammates, and coordinates work
 - **Teammates**: Separate Claude Code instances in their own panes
 - **Task list**: Shared list stored at `~/.claude/tasks/{team-name}/`
@@ -98,6 +100,7 @@ Source: [Claude Code Agent Teams Docs](https://code.claude.com/docs/en/agent-tea
 tmux control mode is a special mode activated by passing the `-C` or `-CC` flags when starting tmux. It was originally designed by George Nachman (the creator of iTerm2) to allow applications to interface with tmux programmatically using a text-only protocol, rather than through the standard terminal-based UI.
 
 There are two variants:
+
 - **`-C` (single)**: Leaves the terminal in canonical mode (echo enabled), suitable for testing.
 - **`-CC` (double)**: Disables canonical mode and most terminal features. Intended for applications. Sends DSC sequences (`\033P1000p`) for terminal detection.
 
@@ -108,6 +111,7 @@ Source: [tmux Control Mode Wiki](https://github.com/tmux/tmux/wiki/Control-Mode)
 In control mode, tmux communicates via a structured text-based protocol rather than rendering a visual interface:
 
 **Command responses** are wrapped in guard lines:
+
 ```
 %begin [timestamp] [command-number] [flags]
 [command output]
@@ -115,6 +119,7 @@ In control mode, tmux communicates via a structured text-based protocol rather t
 ```
 
 **Asynchronous notifications** are prefixed with `%`:
+
 - `%output [pane-id] [data]` -- pane output
 - `%window-add` / `%window-renamed` -- window lifecycle
 - `%sessions-changed` / `%session-changed` -- session state
@@ -122,6 +127,7 @@ In control mode, tmux communicates via a structured text-based protocol rather t
 - `%subscription-changed` -- subscribed format updates
 
 **Advanced features** include:
+
 - **Flow control**: Prevents client lag via `pause-after` flags and `%extended-output` notifications with millisecond lag metrics.
 - **Format subscriptions**: Clients subscribe to expressions via `refresh-client -B`, receiving `%subscription-changed` at most once per second.
 - **Size management**: `refresh-client -C` allows control clients to influence window sizing.
@@ -140,6 +146,7 @@ When you run `tmux -CC` inside iTerm2, instead of displaying the typical tmux te
 The key insight is that **iTerm2 is acting as a GUI frontend for tmux's session management**. The tmux server still manages all the actual terminal sessions, but the user interacts with them through iTerm2's familiar interface rather than tmux's terminal-based UI.
 
 Sources:
+
 - [iTerm2 tmux Integration Documentation](https://iterm2.com/documentation-tmux-integration.html)
 - [iTerm2 + tmux -CC: The Remote Development Setup Nobody Talks About](https://evoleinik.com/posts/iterm2-tmux-control-mode/)
 
@@ -147,9 +154,9 @@ Sources:
 
 When Claude Code's agent teams docs mention iTerm2 as an alternative to tmux for split-pane mode, this is somewhat misleading -- iTerm2 integration **does** use tmux under the hood. The difference is in how it is presented:
 
-| Approach | What Happens |
-|----------|-------------|
-| **Regular tmux** | Claude Code creates a tmux session and splits panes using standard tmux commands. The user sees the raw tmux interface with its green status bar and prefix-key shortcuts. |
+| Approach                 | What Happens                                                                                                                                                                          |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Regular tmux**         | Claude Code creates a tmux session and splits panes using standard tmux commands. The user sees the raw tmux interface with its green status bar and prefix-key shortcuts.            |
 | **iTerm2 with tmux -CC** | Claude Code creates a tmux session in control mode. iTerm2 intercepts the protocol and presents each pane as a native iTerm2 tab/window. The user sees familiar macOS-native windows. |
 
 In both cases, **tmux is the backend** managing the terminal sessions. The "iTerm2 option" is really "tmux with iTerm2 as the rendering frontend via control mode."
@@ -161,24 +168,26 @@ This is why the Claude Code docs note:
 There is a single `"tmux"` setting that handles both cases -- it detects whether you are in iTerm2 and, if so, uses `-CC` control mode instead of raw tmux.
 
 Sources:
+
 - [Claude Code Agent Teams Docs](https://code.claude.com/docs/en/agent-teams)
 - [iTerm2 tmux Integration Documentation](https://iterm2.com/documentation-tmux-integration.html)
 
 ### Benefits of tmux -CC over Regular tmux
 
-| Feature | Regular tmux | tmux -CC with iTerm2 |
-|---------|-------------|---------------------|
-| **Scrollback** | Requires entering tmux copy mode (prefix + `[`) | Native trackpad scrolling |
-| **Copy/paste** | tmux copy mode or mouse mode | Native Cmd+C / Cmd+V |
-| **Search** | tmux search commands | Native Cmd+F |
-| **Window management** | prefix + c/n/p/w | Cmd+T (new tab), Cmd+W (close), Cmd+1/2/3 (switch) |
-| **Split panes** | prefix + % / " | Standard iTerm2 split pane shortcuts |
-| **Session persistence** | Yes (tmux keeps running) | Yes (same tmux backend) |
-| **Reconnection** | `tmux attach` | `tmux -CC attach` |
-| **Learning curve** | Must learn tmux keybindings | Use existing macOS/iTerm2 knowledge |
-| **Visual appearance** | Text-mode green status bar | Native macOS window chrome |
+| Feature                 | Regular tmux                                    | tmux -CC with iTerm2                               |
+| ----------------------- | ----------------------------------------------- | -------------------------------------------------- |
+| **Scrollback**          | Requires entering tmux copy mode (prefix + `[`) | Native trackpad scrolling                          |
+| **Copy/paste**          | tmux copy mode or mouse mode                    | Native Cmd+C / Cmd+V                               |
+| **Search**              | tmux search commands                            | Native Cmd+F                                       |
+| **Window management**   | prefix + c/n/p/w                                | Cmd+T (new tab), Cmd+W (close), Cmd+1/2/3 (switch) |
+| **Split panes**         | prefix + % / "                                  | Standard iTerm2 split pane shortcuts               |
+| **Session persistence** | Yes (tmux keeps running)                        | Yes (same tmux backend)                            |
+| **Reconnection**        | `tmux attach`                                   | `tmux -CC attach`                                  |
+| **Learning curve**      | Must learn tmux keybindings                     | Use existing macOS/iTerm2 knowledge                |
+| **Visual appearance**   | Text-mode green status bar                      | Native macOS window chrome                         |
 
 Sources:
+
 - [iTerm2 + tmux -CC blog post](https://evoleinik.com/posts/iterm2-tmux-control-mode/)
 - [tmux in practice: iTerm2 and tmux (freeCodeCamp)](https://medium.com/free-code-camp/tmux-in-practice-iterm2-and-tmux-integration-7fb0991c6c01)
 

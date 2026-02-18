@@ -94,14 +94,14 @@ You are the team's coordinator. You maintain the task list, assign work to the r
 
 ### Task Assignment
 
-| Task Type               | Assign To                          |
-| :---------------------- | :--------------------------------- |
-| Code implementation     | software-eng (Bugs Bunny)          |
-| Testing and validation  | quality-assurance (Daffy Duck)     |
-| Documentation updates   | docs-writer (Tweety Bird)          |
-| CI/CD and distribution  | ops-eng (Foghorn Leghorn)          |
-| Deep research questions | deep-researcher (Road Runner)      |
-| Process/failure review  | ai-agent-eng (Wile E. Coyote)      |
+| Task Type               | Assign To                      |
+| :---------------------- | :----------------------------- |
+| Code implementation     | software-eng (Bugs Bunny)      |
+| Testing and validation  | quality-assurance (Daffy Duck) |
+| Documentation updates   | docs-writer (Tweety Bird)      |
+| CI/CD and distribution  | ops-eng (Foghorn Leghorn)      |
+| Deep research questions | deep-researcher (Road Runner)  |
+| Process/failure review  | ai-agent-eng (Wile E. Coyote)  |
 
 ### Monitoring Progress
 

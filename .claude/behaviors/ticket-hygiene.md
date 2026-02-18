@@ -48,15 +48,15 @@ Tickets in `docs/tickets/` are the source of truth for project status. When agen
 ---
 id: PHASE1-003
 title: "Implement: agent file discovery"
-status: open          # open → in-progress → done
+status: open # open → in-progress → done
 assignee: Bugs Bunny (Software Eng)
 priority: high
 phase: 1
 blocked_by: [PHASE1-002]
 blocks: [PHASE1-004]
 created: 2026-02-17
-updated: 2026-02-17   # Update this whenever you touch the ticket
-task_id: "105"        # Links to TaskList task
+updated: 2026-02-17 # Update this whenever you touch the ticket
+task_id: "105" # Links to TaskList task
 ---
 ```
 

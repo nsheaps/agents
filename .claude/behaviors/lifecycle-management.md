@@ -11,6 +11,7 @@ Procedures for correctly managing agent lifecycle in team sessions. Every teamma
 ## Why This Exists
 
 Failure #11 (session 3) documented four interconnected lifecycle failures:
+
 - Manual config edits created state inconsistencies
 - Dead agents left `isActive: true`, blocking team cleanup
 - Overloaded spawn prompts mixed identity with task assignments
@@ -31,6 +32,7 @@ Daffy's Phase 1 code review (DEF-5, DEF-6, DEF-7, DEF-10) identified gaps in cle
 4. **Verify the spawn succeeded.** Check that the agent appears in team config with the expected name (no `-2` suffix).
 
 **Anti-patterns:**
+
 - Putting task details in the spawn prompt (mixes concerns, wastes context)
 - Spawning without checking for name collisions (causes `-2` suffix)
 - Spawning many agents at once (causes context bloat on the lead — limit to 3-4 concurrent)
@@ -42,6 +44,7 @@ Daffy's Phase 1 code review (DEF-5, DEF-6, DEF-7, DEF-10) identified gaps in cle
 3. **Verify removal from config.** After shutdown, confirm the agent's `isActive` is set to `false` or the member is removed from config.
 
 **Anti-patterns:**
+
 - Killing tmux panes directly without shutdown request (leaves `isActive: true` in config)
 - Assuming shutdown succeeded without verifying config state
 - Manually editing `config.json` to remove members
@@ -68,6 +71,7 @@ When an agent dies without proper shutdown (crash, disconnect, tmux pane killed 
 3. **Then call `TeamDelete`.** Only after all members are confirmed shut down.
 
 **Anti-patterns:**
+
 - Calling `TeamDelete` before shutting down agents (will fail)
 - Manually editing config to set `isActive: false` to force `TeamDelete` (hides real state)
 
@@ -90,12 +94,12 @@ If you find yourself wanting to edit config.json, something has gone wrong in th
 
 These defects were found in Daffy's Phase 1 code review and have been fixed:
 
-| Defect | Fix | Commit |
-|:-------|:----|:-------|
-| DEF-5: `cleanupStaleEntries` was a no-op | Now checks `isTmuxPaneAlive` and removes dead entries | `f2fe867` |
-| DEF-6: Health check always reported UNKNOWN | `listAgents` now reports RUNNING/DEAD based on `tmuxPaneId` liveness | `f2fe867` |
-| DEF-7: Name mismatch in `listAgents` | New `agentName` field on `TeamMember` enables file/config correlation | `9a7354b` |
-| DEF-10: `killAgent` didn't kill tmux pane | `killAgent` now calls `killTmuxPane` when pane ID is present | `f2fe867` |
+| Defect                                      | Fix                                                                   | Commit    |
+| :------------------------------------------ | :-------------------------------------------------------------------- | :-------- |
+| DEF-5: `cleanupStaleEntries` was a no-op    | Now checks `isTmuxPaneAlive` and removes dead entries                 | `f2fe867` |
+| DEF-6: Health check always reported UNKNOWN | `listAgents` now reports RUNNING/DEAD based on `tmuxPaneId` liveness  | `f2fe867` |
+| DEF-7: Name mismatch in `listAgents`        | New `agentName` field on `TeamMember` enables file/config correlation | `9a7354b` |
+| DEF-10: `killAgent` didn't kill tmux pane   | `killAgent` now calls `killTmuxPane` when pane ID is present          | `f2fe867` |
 
 ## Quality Standards
 
