@@ -1,0 +1,50 @@
+diff --git a/plugins/statusline-iterm/hooks/configure-statusline.sh b/plugins/statusline-iterm/hooks/configure-statusline.sh
+index db35c665..3f062e58 100755
+--- a/plugins/statusline-iterm/hooks/configure-statusline.sh
++++ b/plugins/statusline-iterm/hooks/configure-statusline.sh
+@@ -15,9 +15,9 @@ STATUSLINE_SCRIPT="${CLAUDE_PLUGIN_ROOT}/bin/statusline.sh"
+ # Ensure settings directory exists
+ mkdir -p "$(dirname "$SETTINGS_FILE")"
+ 
+-# Source shared atomic settings writer
+-# shellcheck source=../../shared/lib/safe-settings-write.sh
+-SHARED_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/shared/lib/safe-settings-write.sh"
++# Source shared atomic settings writer (symlinked into plugin, resolved on install)
++# shellcheck source=../lib/safe-settings-write.sh
++SHARED_LIB="${CLAUDE_PLUGIN_ROOT}/lib/safe-settings-write.sh"
+ if [ ! -f "$SHARED_LIB" ]; then
+   echo "ERROR: shared lib not found: $SHARED_LIB" >&2
+   exit 2
+diff --git a/plugins/statusline-iterm/lib/safe-settings-write.sh b/plugins/statusline-iterm/lib/safe-settings-write.sh
+new file mode 120000
+index 00000000..0307f506
+--- /dev/null
++++ b/plugins/statusline-iterm/lib/safe-settings-write.sh
+@@ -0,0 +1 @@
++../../shared/lib/safe-settings-write.sh
+\ No newline at end of file
+diff --git a/plugins/statusline/hooks/configure-statusline.sh b/plugins/statusline/hooks/configure-statusline.sh
+index 40c1c728..13e8737a 100755
+--- a/plugins/statusline/hooks/configure-statusline.sh
++++ b/plugins/statusline/hooks/configure-statusline.sh
+@@ -15,9 +15,9 @@ STATUSLINE_SCRIPT="${CLAUDE_PLUGIN_ROOT}/bin/statusline.sh"
+ # Ensure settings directory exists
+ mkdir -p "$(dirname "$SETTINGS_FILE")"
+ 
+-# Source shared atomic settings writer
+-# shellcheck source=../../shared/lib/safe-settings-write.sh
+-SHARED_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/shared/lib/safe-settings-write.sh"
++# Source shared atomic settings writer (symlinked into plugin, resolved on install)
++# shellcheck source=../lib/safe-settings-write.sh
++SHARED_LIB="${CLAUDE_PLUGIN_ROOT}/lib/safe-settings-write.sh"
+ if [ ! -f "$SHARED_LIB" ]; then
+   echo "ERROR: shared lib not found: $SHARED_LIB" >&2
+   exit 2
+diff --git a/plugins/statusline/lib/safe-settings-write.sh b/plugins/statusline/lib/safe-settings-write.sh
+new file mode 120000
+index 00000000..0307f506
+--- /dev/null
++++ b/plugins/statusline/lib/safe-settings-write.sh
+@@ -0,0 +1 @@
++../../shared/lib/safe-settings-write.sh
+\ No newline at end of file

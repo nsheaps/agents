@@ -1,0 +1,31 @@
+check-version-files	Check for manual version file changes	﻿2026-02-18T04:18:21.1388697Z ##[group]Run # Check if any plugin.json or marketplace.json files were changed
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1390050Z [36;1m# Check if any plugin.json or marketplace.json files were changed[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1391314Z [36;1mCHANGED_VERSION_FILES=$(git diff --name-only "origin/main..HEAD" -- \[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1392422Z [36;1m  'plugins/*/.claude-plugin/plugin.json' \[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1393350Z [36;1m  '.claude-plugin/marketplace.json' \[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1394190Z [36;1m)[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1394825Z [36;1m[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1395538Z [36;1mif [ -n "$CHANGED_VERSION_FILES" ]; then[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1396624Z [36;1m  echo "❌ ERROR: Version files should not be manually changed in PRs!"[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1397628Z [36;1m  echo ""[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1398634Z [36;1m  echo "The following version files were modified:"[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1399572Z [36;1m  echo "$CHANGED_VERSION_FILES"[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1400375Z [36;1m  echo ""[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1401297Z [36;1m  echo "Version bumps happen automatically when PRs are merged to main."[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1402454Z [36;1m  echo "Please revert these changes:"[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1403778Z [36;1m  echo "  git checkout origin/main -- plugins/*/.claude-plugin/plugin.json .claude-plugin/marketplace.json"[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1405021Z [36;1m  exit 1[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1405676Z [36;1mfi[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1406321Z [36;1m[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1407070Z [36;1mecho "✅ No manual version file changes detected"[0m
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1442349Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1443308Z ##[endgroup]
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1519238Z ❌ ERROR: Version files should not be manually changed in PRs!
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1520986Z 
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1522657Z The following version files were modified:
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1526063Z plugins/plugin-management/.claude-plugin/plugin.json
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1527171Z 
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1527938Z Version bumps happen automatically when PRs are merged to main.
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1529958Z Please revert these changes:
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1532007Z   git checkout origin/main -- plugins/*/.claude-plugin/plugin.json .claude-plugin/marketplace.json
+check-version-files	Check for manual version file changes	2026-02-18T04:18:21.1545519Z ##[error]Process completed with exit code 1.

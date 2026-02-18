@@ -1,0 +1,65 @@
+validate	Validate plugin structure	﻿2026-02-18T04:19:35.2216159Z Prepare all required actions
+validate	Validate plugin structure	2026-02-18T04:19:35.2247734Z ##[group]Run ./.github/actions/validate-plugins
+validate	Validate plugin structure	2026-02-18T04:19:35.2248056Z env:
+validate	Validate plugin structure	2026-02-18T04:19:35.2248238Z   MISE_LOG_LEVEL: info
+validate	Validate plugin structure	2026-02-18T04:19:35.2248685Z   MISE_GITHUB_TOKEN: ***
+validate	Validate plugin structure	2026-02-18T04:19:35.2249008Z   MISE_TRUSTED_CONFIG_PATHS: /home/runner/work/ai-mktpl/ai-mktpl
+validate	Validate plugin structure	2026-02-18T04:19:35.2249351Z   MISE_YES: 1
+validate	Validate plugin structure	2026-02-18T04:19:35.2252056Z   PATH: /home/runner/.local/share/mise/installs/gh/2.85.0/gh_2.85.0_linux_amd64/bin:/home/runner/.local/share/mise/installs/jq/1.8.1:/home/runner/.local/share/mise/installs/node/24.13.0/bin:/home/runner/.local/share/mise/installs/python/3.14.2/bin:/home/runner/.local/share/mise/installs/bun/1.3.6/bin:/home/runner/.local/share/mise/installs/just/1.46.0:/home/runner/.local/share/mise/installs/npm-prettier/3.8.0/bin:/home/runner/.local/share/mise/installs/npm-eslint/9.39.2/bin:/home/runner/.local/share/mise/installs/yarn/4.12.0/bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+validate	Validate plugin structure	2026-02-18T04:19:35.2255279Z ##[endgroup]
+validate	Validate plugin structure	2026-02-18T04:19:35.2331557Z ##[group]Run just validate
+validate	Validate plugin structure	2026-02-18T04:19:35.2331894Z [36;1mjust validate[0m
+validate	Validate plugin structure	2026-02-18T04:19:35.2390974Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+validate	Validate plugin structure	2026-02-18T04:19:35.2391326Z env:
+validate	Validate plugin structure	2026-02-18T04:19:35.2391511Z   MISE_LOG_LEVEL: info
+validate	Validate plugin structure	2026-02-18T04:19:35.2391893Z   MISE_GITHUB_TOKEN: ***
+validate	Validate plugin structure	2026-02-18T04:19:35.2392204Z   MISE_TRUSTED_CONFIG_PATHS: /home/runner/work/ai-mktpl/ai-mktpl
+validate	Validate plugin structure	2026-02-18T04:19:35.2392541Z   MISE_YES: 1
+validate	Validate plugin structure	2026-02-18T04:19:35.2395671Z   PATH: /home/runner/.local/share/mise/installs/gh/2.85.0/gh_2.85.0_linux_amd64/bin:/home/runner/.local/share/mise/installs/jq/1.8.1:/home/runner/.local/share/mise/installs/node/24.13.0/bin:/home/runner/.local/share/mise/installs/python/3.14.2/bin:/home/runner/.local/share/mise/installs/bun/1.3.6/bin:/home/runner/.local/share/mise/installs/just/1.46.0:/home/runner/.local/share/mise/installs/npm-prettier/3.8.0/bin:/home/runner/.local/share/mise/installs/npm-eslint/9.39.2/bin:/home/runner/.local/share/mise/installs/yarn/4.12.0/bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+validate	Validate plugin structure	2026-02-18T04:19:35.2398521Z ##[endgroup]
+validate	Validate plugin structure	2026-02-18T04:19:35.9276050Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45 install
+validate	Validate plugin structure	2026-02-18T04:19:38.3780251Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45 added 3 packages in 2s
+validate	Validate plugin structure	2026-02-18T04:19:38.3781617Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45 2 packages are looking for funding
+validate	Validate plugin structure	2026-02-18T04:19:38.3782901Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45   run `npm fund` for details
+validate	Validate plugin structure	2026-02-18T04:19:38.4018159Z Reshimming mise 24.13.0...
+validate	Validate plugin structure	2026-02-18T04:19:38.4244691Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45 [38;5;10m✓[0m installed
+validate	Validate plugin structure	2026-02-18T04:19:39.3241894Z ✅ .claude-plugin/marketplace.json
+validate	Validate plugin structure	2026-02-18T04:19:40.2379168Z ✅ plugins/code-simplifier/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:41.2272611Z ✅ plugins/command-help-skill/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:42.1479017Z ✅ plugins/commit-command/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:43.0476870Z ✅ plugins/commit-skill/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:43.9599367Z ✅ plugins/correct-behavior/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:44.8718340Z ✅ plugins/create-command/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:45.7784333Z ✅ plugins/data-serialization/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:46.6836173Z ✅ plugins/git-spice/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:47.5959356Z ✅ plugins/github-auth-skill/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:48.4964745Z ✅ plugins/linear-mcp-sync/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:49.3877893Z ✅ plugins/memory-manager/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:50.2977034Z ✅ plugins/og-image/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:51.2017348Z Validating plugin manifest: /home/runner/work/ai-mktpl/ai-mktpl/plugins/plugin-management/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:51.2018254Z 
+validate	Validate plugin structure	2026-02-18T04:19:51.2018632Z ✘ Found 1 error:
+validate	Validate plugin structure	2026-02-18T04:19:51.2018824Z 
+validate	Validate plugin structure	2026-02-18T04:19:51.2019173Z   ❯ author: Invalid input: expected object, received string
+validate	Validate plugin structure	2026-02-18T04:19:51.2019587Z 
+validate	Validate plugin structure	2026-02-18T04:19:51.2019779Z ✘ Validation failed
+validate	Validate plugin structure	2026-02-18T04:19:51.2027457Z error: Recipe `validate-plugin` failed with exit code 1
+validate	Validate plugin structure	2026-02-18T04:19:52.0999786Z ✅ plugins/product-development-and-sdlc/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:52.9949483Z ✅ plugins/review-changes/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:53.9081537Z ✅ plugins/safety-evaluation-prompt/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:54.8212037Z ✅ plugins/safety-evaluation-script/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:55.7396581Z ✅ plugins/scm-utils/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:56.6417470Z ✅ plugins/self-terminate/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:57.5524360Z ✅ plugins/skills-maintenance/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:58.4675199Z ✅ plugins/statusline-iterm/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:19:59.3733424Z ✅ plugins/statusline/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:20:00.2764717Z ✅ plugins/sync-settings/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:20:01.1801305Z ✅ plugins/task-parallelization/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:20:02.0863929Z ✅ plugins/tmux-subagent/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:20:03.0058359Z ✅ plugins/todo-plus-plus/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:20:03.9279493Z ✅ plugins/todo-sync/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:20:03.9296842Z Validation failed!
+validate	Validate plugin structure	2026-02-18T04:20:03.9297591Z Failed plugins:
+validate	Validate plugin structure	2026-02-18T04:20:03.9298234Z  - plugins/plugin-management/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:20:03.9308549Z error: Recipe `validate` failed with exit code 1
+validate	Validate plugin structure	2026-02-18T04:20:03.9329084Z ##[error]Process completed with exit code 1.

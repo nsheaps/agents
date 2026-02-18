@@ -1,0 +1,287 @@
+validate	Set up job	﻿2026-02-18T04:18:17.7102855Z Current runner version: '2.331.0'
+validate	Set up job	2026-02-18T04:18:17.7137561Z ##[group]Runner Image Provisioner
+validate	Set up job	2026-02-18T04:18:17.7138700Z Hosted Compute Agent
+validate	Set up job	2026-02-18T04:18:17.7139478Z Version: 20260123.484
+validate	Set up job	2026-02-18T04:18:17.7140647Z Commit: 6bd6555ca37d84114959e1c76d2c01448ff61c5d
+validate	Set up job	2026-02-18T04:18:17.7141610Z Build Date: 2026-01-23T19:41:17Z
+validate	Set up job	2026-02-18T04:18:17.7142566Z Worker ID: {921ccb2b-3ac0-45ea-9757-851a5974b708}
+validate	Set up job	2026-02-18T04:18:17.7143670Z Azure Region: westus3
+validate	Set up job	2026-02-18T04:18:17.7144441Z ##[endgroup]
+validate	Set up job	2026-02-18T04:18:17.7146431Z ##[group]Operating System
+validate	Set up job	2026-02-18T04:18:17.7147377Z Ubuntu
+validate	Set up job	2026-02-18T04:18:17.7147993Z 24.04.3
+validate	Set up job	2026-02-18T04:18:17.7148679Z LTS
+validate	Set up job	2026-02-18T04:18:17.7149375Z ##[endgroup]
+validate	Set up job	2026-02-18T04:18:17.7150258Z ##[group]Runner Image
+validate	Set up job	2026-02-18T04:18:17.7151073Z Image: ubuntu-24.04
+validate	Set up job	2026-02-18T04:18:17.7151804Z Version: 20260209.23.1
+validate	Set up job	2026-02-18T04:18:17.7153323Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260209.23/images/ubuntu/Ubuntu2404-Readme.md
+validate	Set up job	2026-02-18T04:18:17.7155821Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260209.23
+validate	Set up job	2026-02-18T04:18:17.7157143Z ##[endgroup]
+validate	Set up job	2026-02-18T04:18:17.7161532Z ##[group]GITHUB_TOKEN Permissions
+validate	Set up job	2026-02-18T04:18:17.7164400Z Actions: write
+validate	Set up job	2026-02-18T04:18:17.7165207Z ArtifactMetadata: write
+validate	Set up job	2026-02-18T04:18:17.7166066Z Attestations: write
+validate	Set up job	2026-02-18T04:18:17.7166786Z Checks: write
+validate	Set up job	2026-02-18T04:18:17.7167489Z Contents: write
+validate	Set up job	2026-02-18T04:18:17.7168155Z Deployments: write
+validate	Set up job	2026-02-18T04:18:17.7168950Z Discussions: write
+validate	Set up job	2026-02-18T04:18:17.7169631Z Issues: write
+validate	Set up job	2026-02-18T04:18:17.7170578Z Metadata: read
+validate	Set up job	2026-02-18T04:18:17.7171358Z Models: read
+validate	Set up job	2026-02-18T04:18:17.7172031Z Packages: write
+validate	Set up job	2026-02-18T04:18:17.7172739Z Pages: write
+validate	Set up job	2026-02-18T04:18:17.7173614Z PullRequests: write
+validate	Set up job	2026-02-18T04:18:17.7174421Z RepositoryProjects: write
+validate	Set up job	2026-02-18T04:18:17.7175234Z SecurityEvents: write
+validate	Set up job	2026-02-18T04:18:17.7176043Z Statuses: write
+validate	Set up job	2026-02-18T04:18:17.7176657Z ##[endgroup]
+validate	Set up job	2026-02-18T04:18:17.7179610Z Secret source: Actions
+validate	Set up job	2026-02-18T04:18:17.7180942Z Prepare workflow directory
+validate	Set up job	2026-02-18T04:18:17.7700019Z Prepare all required actions
+validate	Set up job	2026-02-18T04:18:17.7758201Z Getting action download info
+validate	Set up job	2026-02-18T04:18:18.3023834Z Download action repository 'actions/checkout@v6' (SHA:de0fac2e4500dabe0009e67214ff5f5447ce83dd)
+validate	Set up job	2026-02-18T04:18:18.4501803Z Download action repository 'jdx/mise-action@v3' (SHA:6d1e696aa24c1aa1bcc1adea0212707c71ab78a8)
+validate	Set up job	2026-02-18T04:18:19.4187723Z Complete job name: validate
+validate	Checkout code	﻿2026-02-18T04:18:19.4825204Z ##[group]Run actions/checkout@v6
+validate	Checkout code	2026-02-18T04:18:19.4826196Z with:
+validate	Checkout code	2026-02-18T04:18:19.4826799Z   repository: nsheaps/ai-mktpl
+validate	Checkout code	2026-02-18T04:18:19.4827594Z   token: ***
+validate	Checkout code	2026-02-18T04:18:19.4828094Z   ssh-strict: true
+validate	Checkout code	2026-02-18T04:18:19.4828663Z   ssh-user: git
+validate	Checkout code	2026-02-18T04:18:19.4829162Z   persist-credentials: true
+validate	Checkout code	2026-02-18T04:18:19.4829724Z   clean: true
+validate	Checkout code	2026-02-18T04:18:19.4830376Z   sparse-checkout-cone-mode: true
+validate	Checkout code	2026-02-18T04:18:19.4831006Z   fetch-depth: 1
+validate	Checkout code	2026-02-18T04:18:19.4831513Z   fetch-tags: false
+validate	Checkout code	2026-02-18T04:18:19.4832097Z   show-progress: true
+validate	Checkout code	2026-02-18T04:18:19.4832598Z   lfs: false
+validate	Checkout code	2026-02-18T04:18:19.4833075Z   submodules: false
+validate	Checkout code	2026-02-18T04:18:19.4833634Z   set-safe-directory: true
+validate	Checkout code	2026-02-18T04:18:19.4834476Z ##[endgroup]
+validate	Checkout code	2026-02-18T04:18:19.6014922Z Syncing repository: nsheaps/ai-mktpl
+validate	Checkout code	2026-02-18T04:18:19.6017323Z ##[group]Getting Git version info
+validate	Checkout code	2026-02-18T04:18:19.6018378Z Working directory is '/home/runner/work/ai-mktpl/ai-mktpl'
+validate	Checkout code	2026-02-18T04:18:19.6019566Z [command]/usr/bin/git version
+validate	Checkout code	2026-02-18T04:18:19.6020591Z git version 2.52.0
+validate	Checkout code	2026-02-18T04:18:19.6023585Z ##[endgroup]
+validate	Checkout code	2026-02-18T04:18:19.6031455Z Temporarily overriding HOME='/home/runner/work/_temp/221d832d-94e9-4dd2-889e-66c396393547' before making global git config changes
+validate	Checkout code	2026-02-18T04:18:19.6033925Z Adding repository directory to the temporary git global config as a safe directory
+validate	Checkout code	2026-02-18T04:18:19.6035749Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ai-mktpl/ai-mktpl
+validate	Checkout code	2026-02-18T04:18:19.6039071Z Deleting the contents of '/home/runner/work/ai-mktpl/ai-mktpl'
+validate	Checkout code	2026-02-18T04:18:19.6041228Z ##[group]Initializing the repository
+validate	Checkout code	2026-02-18T04:18:19.6042452Z [command]/usr/bin/git init /home/runner/work/ai-mktpl/ai-mktpl
+validate	Checkout code	2026-02-18T04:18:19.6044201Z hint: Using 'master' as the name for the initial branch. This default branch name
+validate	Checkout code	2026-02-18T04:18:19.6045872Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+validate	Checkout code	2026-02-18T04:18:19.6047517Z hint: to use in all of your new repositories, which will suppress this warning,
+validate	Checkout code	2026-02-18T04:18:19.6048945Z hint: call:
+validate	Checkout code	2026-02-18T04:18:19.6049576Z hint:
+validate	Checkout code	2026-02-18T04:18:19.6053194Z hint: 	git config --global init.defaultBranch <name>
+validate	Checkout code	2026-02-18T04:18:19.6054384Z hint:
+validate	Checkout code	2026-02-18T04:18:19.6055343Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+validate	Checkout code	2026-02-18T04:18:19.6056969Z hint: 'development'. The just-created branch can be renamed via this command:
+validate	Checkout code	2026-02-18T04:18:19.6058398Z hint:
+validate	Checkout code	2026-02-18T04:18:19.6059161Z hint: 	git branch -m <name>
+validate	Checkout code	2026-02-18T04:18:19.6060128Z hint:
+validate	Checkout code	2026-02-18T04:18:19.6061172Z hint: Disable this message with "git config set advice.defaultBranchName false"
+validate	Checkout code	2026-02-18T04:18:19.6063171Z Initialized empty Git repository in /home/runner/work/ai-mktpl/ai-mktpl/.git/
+validate	Checkout code	2026-02-18T04:18:19.6065834Z [command]/usr/bin/git remote add origin https://github.com/nsheaps/ai-mktpl
+validate	Checkout code	2026-02-18T04:18:19.6093759Z ##[endgroup]
+validate	Checkout code	2026-02-18T04:18:19.6095172Z ##[group]Disabling automatic garbage collection
+validate	Checkout code	2026-02-18T04:18:19.6100160Z [command]/usr/bin/git config --local gc.auto 0
+validate	Checkout code	2026-02-18T04:18:19.6126880Z ##[endgroup]
+validate	Checkout code	2026-02-18T04:18:19.6128344Z ##[group]Setting up auth
+validate	Checkout code	2026-02-18T04:18:19.6132272Z Removing SSH command configuration
+validate	Checkout code	2026-02-18T04:18:19.6137922Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+validate	Checkout code	2026-02-18T04:18:19.6165982Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+validate	Checkout code	2026-02-18T04:18:19.6434262Z Removing HTTP extra header
+validate	Checkout code	2026-02-18T04:18:19.6442049Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+validate	Checkout code	2026-02-18T04:18:19.6469228Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+validate	Checkout code	2026-02-18T04:18:19.6653413Z Removing includeIf entries pointing to credentials config files
+validate	Checkout code	2026-02-18T04:18:19.6658927Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+validate	Checkout code	2026-02-18T04:18:19.6711811Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+validate	Checkout code	2026-02-18T04:18:19.6930127Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+validate	Checkout code	2026-02-18T04:18:19.6964315Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ai-mktpl/ai-mktpl/.git.path /home/runner/work/_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Checkout code	2026-02-18T04:18:19.6992644Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/ai-mktpl/ai-mktpl/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Checkout code	2026-02-18T04:18:19.7020220Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Checkout code	2026-02-18T04:18:19.7052833Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Checkout code	2026-02-18T04:18:19.7084239Z ##[endgroup]
+validate	Checkout code	2026-02-18T04:18:19.7086028Z ##[group]Fetching the repository
+validate	Checkout code	2026-02-18T04:18:19.7092063Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +081731d62f701995972d5a8613df5acc06e01bde:refs/remotes/pull/164/merge
+validate	Checkout code	2026-02-18T04:18:20.3582523Z From https://github.com/nsheaps/ai-mktpl
+validate	Checkout code	2026-02-18T04:18:20.3587917Z  * [new ref]         081731d62f701995972d5a8613df5acc06e01bde -> pull/164/merge
+validate	Checkout code	2026-02-18T04:18:20.3614039Z ##[endgroup]
+validate	Checkout code	2026-02-18T04:18:20.3616426Z ##[group]Determining the checkout info
+validate	Checkout code	2026-02-18T04:18:20.3618986Z ##[endgroup]
+validate	Checkout code	2026-02-18T04:18:20.3620865Z [command]/usr/bin/git sparse-checkout disable
+validate	Checkout code	2026-02-18T04:18:20.3662367Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+validate	Checkout code	2026-02-18T04:18:20.3689669Z ##[group]Checking out the ref
+validate	Checkout code	2026-02-18T04:18:20.3692756Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/164/merge
+validate	Checkout code	2026-02-18T04:18:20.3897714Z Note: switching to 'refs/remotes/pull/164/merge'.
+validate	Checkout code	2026-02-18T04:18:20.3899193Z 
+validate	Checkout code	2026-02-18T04:18:20.3900836Z You are in 'detached HEAD' state. You can look around, make experimental
+validate	Checkout code	2026-02-18T04:18:20.3905905Z changes and commit them, and you can discard any commits you make in this
+validate	Checkout code	2026-02-18T04:18:20.3908780Z state without impacting any branches by switching back to a branch.
+validate	Checkout code	2026-02-18T04:18:20.3910538Z 
+validate	Checkout code	2026-02-18T04:18:20.3911556Z If you want to create a new branch to retain commits you create, you may
+validate	Checkout code	2026-02-18T04:18:20.3914194Z do so (now or later) by using -c with the switch command. Example:
+validate	Checkout code	2026-02-18T04:18:20.3915571Z 
+validate	Checkout code	2026-02-18T04:18:20.3916116Z   git switch -c <new-branch-name>
+validate	Checkout code	2026-02-18T04:18:20.3917145Z 
+validate	Checkout code	2026-02-18T04:18:20.3917652Z Or undo this operation with:
+validate	Checkout code	2026-02-18T04:18:20.3918501Z 
+validate	Checkout code	2026-02-18T04:18:20.3918935Z   git switch -
+validate	Checkout code	2026-02-18T04:18:20.3919682Z 
+validate	Checkout code	2026-02-18T04:18:20.3921050Z Turn off this advice by setting config variable advice.detachedHead to false
+validate	Checkout code	2026-02-18T04:18:20.3922676Z 
+validate	Checkout code	2026-02-18T04:18:20.3924717Z HEAD is now at 081731d Merge 3d90fdd620efc23c09ea4e4aa0d9e975b27be256 into 84be48f7235d68be498918b8657c58487195c89d
+validate	Checkout code	2026-02-18T04:18:20.3930722Z ##[endgroup]
+validate	Checkout code	2026-02-18T04:18:20.3953412Z [command]/usr/bin/git log -1 --format=%H
+validate	Checkout code	2026-02-18T04:18:20.3976024Z 081731d62f701995972d5a8613df5acc06e01bde
+validate	mise install -y	﻿2026-02-18T04:18:20.4285539Z ##[group]Run jdx/mise-action@v3
+validate	mise install -y	2026-02-18T04:18:20.4286544Z with:
+validate	mise install -y	2026-02-18T04:18:20.4287205Z   install: true
+validate	mise install -y	2026-02-18T04:18:20.4287921Z   cache: true
+validate	mise install -y	2026-02-18T04:18:20.4288627Z   cache_save: true
+validate	mise install -y	2026-02-18T04:18:20.4289386Z   cache_key_prefix: mise-v0
+validate	mise install -y	2026-02-18T04:18:20.4290384Z   experimental: false
+validate	mise install -y	2026-02-18T04:18:20.4291124Z   log_level: info
+validate	mise install -y	2026-02-18T04:18:20.4291834Z   reshim: false
+validate	mise install -y	2026-02-18T04:18:20.4292539Z   add_shims_to_path: true
+validate	mise install -y	2026-02-18T04:18:20.4293724Z   github_token: ***
+validate	mise install -y	2026-02-18T04:18:20.4294478Z   fetch_from_github: true
+validate	mise install -y	2026-02-18T04:18:20.4295265Z   env: true
+validate	mise install -y	2026-02-18T04:18:20.4295914Z ##[endgroup]
+validate	mise install -y	2026-02-18T04:18:20.5863381Z ##[group]Restoring mise cache
+validate	mise install -y	2026-02-18T04:18:20.5893629Z [command]/usr/bin/ldd --version
+validate	mise install -y	2026-02-18T04:18:20.5940558Z ldd (Ubuntu GLIBC 2.39-0ubuntu8.7) 2.39
+validate	mise install -y	2026-02-18T04:18:20.5943982Z Copyright (C) 2024 Free Software Foundation, Inc.
+validate	mise install -y	2026-02-18T04:18:20.5946466Z This is free software; see the source for copying conditions.  There is NO
+validate	mise install -y	2026-02-18T04:18:20.5949533Z warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+validate	mise install -y	2026-02-18T04:18:20.5952242Z Written by Roland McGrath and Ulrich Drepper.
+validate	mise install -y	2026-02-18T04:18:21.0203903Z Cache hit for: mise-v0-linux-x64-ed07254ccc000e17e9dba4a5750901c046cd5aebfee7e0c16273c5772373bed1
+validate	mise install -y	2026-02-18T04:18:22.3025400Z Received 20971520 of 163055316 (12.9%), 20.0 MBs/sec
+validate	mise install -y	2026-02-18T04:18:23.2726181Z Received 163055316 of 163055316 (100.0%), 78.9 MBs/sec
+validate	mise install -y	2026-02-18T04:18:23.2727319Z Cache Size: ~156 MB (163055316 B)
+validate	mise install -y	2026-02-18T04:18:23.2888196Z [command]/usr/bin/tar -xf /home/runner/work/_temp/90983a0f-b796-4bad-bdc6-dcd027a46040/cache.tzst -P -C /home/runner/work/ai-mktpl/ai-mktpl --use-compress-program unzstd
+validate	mise install -y	2026-02-18T04:18:24.3272013Z Cache restored successfully
+validate	mise install -y	2026-02-18T04:18:24.3493865Z mise cache restored from key: mise-v0-linux-x64-ed07254ccc000e17e9dba4a5750901c046cd5aebfee7e0c16273c5772373bed1
+validate	mise install -y	2026-02-18T04:18:24.3505183Z ##[group]Setting env vars
+validate	mise install -y	2026-02-18T04:18:24.3507366Z Setting MISE_LOG_LEVEL=info
+validate	mise install -y	2026-02-18T04:18:24.3508556Z Setting MISE_GITHUB_TOKEN=***
+validate	mise install -y	2026-02-18T04:18:24.3509175Z Setting MISE_TRUSTED_CONFIG_PATHS=/home/runner/work/ai-mktpl/ai-mktpl
+validate	mise install -y	2026-02-18T04:18:24.3509949Z Setting MISE_YES=1
+validate	mise install -y	2026-02-18T04:18:24.3510357Z Adding /home/runner/.local/share/mise/shims to PATH
+validate	mise install -y	2026-02-18T04:18:24.3511186Z ##[group]Running mise --version
+validate	mise install -y	2026-02-18T04:18:24.3528366Z [command]/home/runner/.local/share/mise/bin/mise --version
+validate	mise install -y	2026-02-18T04:18:24.3600135Z 2026.1.5 linux-x64 (2026-01-19)
+validate	mise install -y	2026-02-18T04:18:24.3648113Z ##[endgroup]
+validate	mise install -y	2026-02-18T04:18:24.3649657Z ##[group]Running mise install 
+validate	mise install -y	2026-02-18T04:18:24.3663747Z [command]/home/runner/.local/share/mise/bin/mise install
+validate	mise install -y	2026-02-18T04:18:24.3805305Z [2mmise[0m all tools are installed
+validate	mise install -y	2026-02-18T04:18:24.3875236Z ##[endgroup]
+validate	mise install -y	2026-02-18T04:18:24.3876879Z ##[group]Running mise ls
+validate	mise install -y	2026-02-18T04:18:24.3890911Z [command]/home/runner/.local/share/mise/bin/mise ls
+validate	mise install -y	2026-02-18T04:18:24.4037565Z bun           1.3.6    ~/work/ai-mktpl/ai-mktpl/.mise.toml  latest
+validate	mise install -y	2026-02-18T04:18:24.4038472Z gh            2.85.0   ~/work/ai-mktpl/ai-mktpl/.mise.toml  latest
+validate	mise install -y	2026-02-18T04:18:24.4039134Z jq            1.8.1    ~/work/ai-mktpl/ai-mktpl/.mise.toml  latest
+validate	mise install -y	2026-02-18T04:18:24.4039745Z just          1.46.0   ~/work/ai-mktpl/ai-mktpl/.mise.toml  latest
+validate	mise install -y	2026-02-18T04:18:24.4040497Z node          24.13.0  ~/work/ai-mktpl/ai-mktpl/.mise.toml  lts
+validate	mise install -y	2026-02-18T04:18:24.4041409Z npm:eslint    9.39.2   ~/work/ai-mktpl/ai-mktpl/.mise.toml  latest
+validate	mise install -y	2026-02-18T04:18:24.4042147Z npm:prettier  3.8.0    ~/work/ai-mktpl/ai-mktpl/.mise.toml  latest
+validate	mise install -y	2026-02-18T04:18:24.4044977Z python        3.14.2   ~/work/ai-mktpl/ai-mktpl/.mise.toml  3.14.2
+validate	mise install -y	2026-02-18T04:18:24.4046976Z yarn          4.12.0   ~/work/ai-mktpl/ai-mktpl/.mise.toml  latest
+validate	mise install -y	2026-02-18T04:18:24.4055232Z ##[endgroup]
+validate	mise install -y	2026-02-18T04:18:24.4057596Z ##[group]Exporting mise environment variables
+validate	mise install -y	2026-02-18T04:18:24.4265873Z [command]/home/runner/.local/share/mise/bin/mise env --json
+validate	mise install -y	2026-02-18T04:18:24.4429470Z {
+validate	mise install -y	2026-02-18T04:18:24.4438896Z   "PATH": "/home/runner/.local/share/mise/installs/gh/2.85.0/gh_2.85.0_linux_amd64/bin:/home/runner/.local/share/mise/installs/jq/1.8.1:/home/runner/.local/share/mise/installs/node/24.13.0/bin:/home/runner/.local/share/mise/installs/python/3.14.2/bin:/home/runner/.local/share/mise/installs/bun/1.3.6/bin:/home/runner/.local/share/mise/installs/just/1.46.0:/home/runner/.local/share/mise/installs/npm-prettier/3.8.0/bin:/home/runner/.local/share/mise/installs/npm-eslint/9.39.2/bin:/home/runner/.local/share/mise/installs/yarn/4.12.0/bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin"
+validate	mise install -y	2026-02-18T04:18:24.4444335Z }
+validate	mise install -y	2026-02-18T04:18:24.4453577Z ##[endgroup]
+validate	Validate plugin structure	﻿2026-02-18T04:18:24.4639717Z Prepare all required actions
+validate	Validate plugin structure	2026-02-18T04:18:24.4679448Z ##[group]Run ./.github/actions/validate-plugins
+validate	Validate plugin structure	2026-02-18T04:18:24.4679926Z env:
+validate	Validate plugin structure	2026-02-18T04:18:24.4680109Z   MISE_LOG_LEVEL: info
+validate	Validate plugin structure	2026-02-18T04:18:24.4680600Z   MISE_GITHUB_TOKEN: ***
+validate	Validate plugin structure	2026-02-18T04:18:24.4680904Z   MISE_TRUSTED_CONFIG_PATHS: /home/runner/work/ai-mktpl/ai-mktpl
+validate	Validate plugin structure	2026-02-18T04:18:24.4681234Z   MISE_YES: 1
+validate	Validate plugin structure	2026-02-18T04:18:24.4683725Z   PATH: /home/runner/.local/share/mise/installs/gh/2.85.0/gh_2.85.0_linux_amd64/bin:/home/runner/.local/share/mise/installs/jq/1.8.1:/home/runner/.local/share/mise/installs/node/24.13.0/bin:/home/runner/.local/share/mise/installs/python/3.14.2/bin:/home/runner/.local/share/mise/installs/bun/1.3.6/bin:/home/runner/.local/share/mise/installs/just/1.46.0:/home/runner/.local/share/mise/installs/npm-prettier/3.8.0/bin:/home/runner/.local/share/mise/installs/npm-eslint/9.39.2/bin:/home/runner/.local/share/mise/installs/yarn/4.12.0/bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+validate	Validate plugin structure	2026-02-18T04:18:24.4686510Z ##[endgroup]
+validate	Validate plugin structure	2026-02-18T04:18:24.4773569Z ##[group]Run just validate
+validate	Validate plugin structure	2026-02-18T04:18:24.4773973Z [36;1mjust validate[0m
+validate	Validate plugin structure	2026-02-18T04:18:24.4811410Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+validate	Validate plugin structure	2026-02-18T04:18:24.4811793Z env:
+validate	Validate plugin structure	2026-02-18T04:18:24.4811976Z   MISE_LOG_LEVEL: info
+validate	Validate plugin structure	2026-02-18T04:18:24.4812441Z   MISE_GITHUB_TOKEN: ***
+validate	Validate plugin structure	2026-02-18T04:18:24.4812753Z   MISE_TRUSTED_CONFIG_PATHS: /home/runner/work/ai-mktpl/ai-mktpl
+validate	Validate plugin structure	2026-02-18T04:18:24.4813067Z   MISE_YES: 1
+validate	Validate plugin structure	2026-02-18T04:18:24.4815614Z   PATH: /home/runner/.local/share/mise/installs/gh/2.85.0/gh_2.85.0_linux_amd64/bin:/home/runner/.local/share/mise/installs/jq/1.8.1:/home/runner/.local/share/mise/installs/node/24.13.0/bin:/home/runner/.local/share/mise/installs/python/3.14.2/bin:/home/runner/.local/share/mise/installs/bun/1.3.6/bin:/home/runner/.local/share/mise/installs/just/1.46.0:/home/runner/.local/share/mise/installs/npm-prettier/3.8.0/bin:/home/runner/.local/share/mise/installs/npm-eslint/9.39.2/bin:/home/runner/.local/share/mise/installs/yarn/4.12.0/bin:/home/runner/.local/share/mise/bin:/snap/bin:/home/runner/.local/bin:/opt/pipx_bin:/home/runner/.cargo/bin:/home/runner/.config/composer/vendor/bin:/usr/local/.ghcup/bin:/home/runner/.dotnet/tools:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/snap/bin
+validate	Validate plugin structure	2026-02-18T04:18:24.4818255Z ##[endgroup]
+validate	Validate plugin structure	2026-02-18T04:18:25.0167316Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45 install
+validate	Validate plugin structure	2026-02-18T04:18:27.3442928Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45 added 3 packages in 2s
+validate	Validate plugin structure	2026-02-18T04:18:27.3447324Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45 2 packages are looking for funding
+validate	Validate plugin structure	2026-02-18T04:18:27.3451312Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45   run `npm fund` for details
+validate	Validate plugin structure	2026-02-18T04:18:27.3576084Z Reshimming mise 24.13.0...
+validate	Validate plugin structure	2026-02-18T04:18:27.3759440Z [2mmise[0m [34mnpm:@anthropic-ai/claude-code[0m@2.1.45 [38;5;10m✓[0m installed
+validate	Validate plugin structure	2026-02-18T04:18:28.2177858Z ✅ .claude-plugin/marketplace.json
+validate	Validate plugin structure	2026-02-18T04:18:29.0649135Z ✅ plugins/code-simplifier/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:29.9373302Z ✅ plugins/command-help-skill/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:30.8263868Z ✅ plugins/commit-command/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:31.6760543Z ✅ plugins/commit-skill/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:32.5279161Z ✅ plugins/correct-behavior/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:33.3815861Z ✅ plugins/create-command/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:34.2192010Z ✅ plugins/data-serialization/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:35.0616114Z ✅ plugins/git-spice/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:35.9111872Z ✅ plugins/github-auth-skill/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:36.7623080Z ✅ plugins/linear-mcp-sync/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:37.6023754Z ✅ plugins/memory-manager/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:38.4545193Z ✅ plugins/og-image/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:39.3094154Z ✅ plugins/plugin-management/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:40.1598877Z ✅ plugins/product-development-and-sdlc/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:40.9979190Z ✅ plugins/review-changes/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:41.8312934Z ✅ plugins/safety-evaluation-prompt/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:42.6765535Z ✅ plugins/safety-evaluation-script/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:43.5367830Z ✅ plugins/scm-utils/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:44.3811095Z ✅ plugins/self-terminate/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:45.2180878Z ✅ plugins/skills-maintenance/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:46.0712895Z ✅ plugins/statusline-iterm/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:46.9297874Z ✅ plugins/statusline/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:47.7648593Z ✅ plugins/sync-settings/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:48.6244175Z ✅ plugins/task-parallelization/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:49.4825848Z ✅ plugins/tmux-subagent/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:50.3354970Z ✅ plugins/todo-plus-plus/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:51.2039532Z ✅ plugins/todo-sync/.claude-plugin/plugin.json
+validate	Validate plugin structure	2026-02-18T04:18:51.2053363Z All plugins validated successfully!
+validate	Post Checkout code	﻿2026-02-18T04:18:51.2153217Z Post job cleanup.
+validate	Post Checkout code	2026-02-18T04:18:51.2948441Z [command]/usr/bin/git version
+validate	Post Checkout code	2026-02-18T04:18:51.2987356Z git version 2.52.0
+validate	Post Checkout code	2026-02-18T04:18:51.3026856Z Temporarily overriding HOME='/home/runner/work/_temp/365d4897-6c48-4242-80ea-838030a2eab8' before making global git config changes
+validate	Post Checkout code	2026-02-18T04:18:51.3030666Z Adding repository directory to the temporary git global config as a safe directory
+validate	Post Checkout code	2026-02-18T04:18:51.3034330Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/ai-mktpl/ai-mktpl
+validate	Post Checkout code	2026-02-18T04:18:51.3067553Z Removing SSH command configuration
+validate	Post Checkout code	2026-02-18T04:18:51.3074262Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+validate	Post Checkout code	2026-02-18T04:18:51.3109596Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+validate	Post Checkout code	2026-02-18T04:18:51.3305656Z Removing HTTP extra header
+validate	Post Checkout code	2026-02-18T04:18:51.3311476Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+validate	Post Checkout code	2026-02-18T04:18:51.3345085Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+validate	Post Checkout code	2026-02-18T04:18:51.3534265Z Removing includeIf entries pointing to credentials config files
+validate	Post Checkout code	2026-02-18T04:18:51.3543074Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+validate	Post Checkout code	2026-02-18T04:18:51.3567243Z includeif.gitdir:/home/runner/work/ai-mktpl/ai-mktpl/.git.path
+validate	Post Checkout code	2026-02-18T04:18:51.3568016Z includeif.gitdir:/home/runner/work/ai-mktpl/ai-mktpl/.git/worktrees/*.path
+validate	Post Checkout code	2026-02-18T04:18:51.3568625Z includeif.gitdir:/github/workspace/.git.path
+validate	Post Checkout code	2026-02-18T04:18:51.3569113Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+validate	Post Checkout code	2026-02-18T04:18:51.3580531Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/ai-mktpl/ai-mktpl/.git.path
+validate	Post Checkout code	2026-02-18T04:18:51.3600805Z /home/runner/work/_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Post Checkout code	2026-02-18T04:18:51.3612759Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/ai-mktpl/ai-mktpl/.git.path /home/runner/work/_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Post Checkout code	2026-02-18T04:18:51.3646047Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/ai-mktpl/ai-mktpl/.git/worktrees/*.path
+validate	Post Checkout code	2026-02-18T04:18:51.3665368Z /home/runner/work/_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Post Checkout code	2026-02-18T04:18:51.3675753Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/ai-mktpl/ai-mktpl/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Post Checkout code	2026-02-18T04:18:51.3706227Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+validate	Post Checkout code	2026-02-18T04:18:51.3726762Z /github/runner_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Post Checkout code	2026-02-18T04:18:51.3734921Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Post Checkout code	2026-02-18T04:18:51.3763385Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+validate	Post Checkout code	2026-02-18T04:18:51.3782690Z /github/runner_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Post Checkout code	2026-02-18T04:18:51.3794306Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config
+validate	Post Checkout code	2026-02-18T04:18:51.3824320Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+validate	Post Checkout code	2026-02-18T04:18:51.4015510Z Removing credentials config '/home/runner/work/_temp/git-credentials-9f940caf-9ad0-49dc-9135-dfe070ec4813.config'
+validate	Complete job	﻿2026-02-18T04:18:51.4124444Z Cleaning up orphan processes

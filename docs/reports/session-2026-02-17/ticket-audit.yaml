@@ -1,0 +1,239 @@
+# Ticket audit: docs/tickets/ vs GitHub Issues
+# Generated: 2026-02-17
+# Methodology: Each file-based ticket was matched against GitHub Issues by
+# comparing title, scope, and acceptance criteria. Matches do not need to be
+# exact -- overlapping scope or "tracked by" relationships count.
+audit:
+  # === Phase 1 Feature Tickets ===
+
+  - file: "PHASE1-001-system-prompt-research.md"
+    ticket_id: "PHASE1-001"
+    ticket_title: "Research: does Claude Code support --system-prompt (replace) flag?"
+    ticket_status: "open"
+    matching_issue: null
+    matching_issue_title: null
+    recommendation: "keep"
+    reason: "No GitHub Issue tracks this specific research question. Consider creating one or closing as stale (the research output exists at .claude/tmp/system-prompt-flags-research.md but the ticket is still marked open)."
+
+  - file: "PHASE1-002-agent-launcher-spec.md"
+    ticket_id: "PHASE1-002"
+    ticket_title: "Write agent launcher spec"
+    ticket_status: "done"
+    matching_issue: null
+    matching_issue_title: null
+    recommendation: "delete"
+    reason: "Status is done. The spec was written at docs/specs/draft/agent-launcher.md. No ongoing tracking value."
+
+  - file: "PHASE1-003-agent-file-discovery.md"
+    ticket_id: "PHASE1-003"
+    ticket_title: "Implement: agent file discovery + YAML frontmatter parsing"
+    ticket_status: "open"
+    matching_issue: null
+    matching_issue_title: null
+    recommendation: "keep"
+    reason: "No GitHub Issue tracks the discovery module implementation as a standalone work item. Related issues (#11 input validation, #43 QA review) exist but none track this implementation task."
+
+  - file: "PHASE1-004-prompt-assembly.md"
+    ticket_id: "PHASE1-004"
+    ticket_title: "Implement: prompt assembly (extend/replace modes + base prompt selection)"
+    ticket_status: "open"
+    matching_issue: null
+    matching_issue_title: null
+    recommendation: "keep"
+    reason: "No GitHub Issue tracks prompt assembly implementation. The code exists in src/prompt.ts but the ticket tracks remaining work (REPLACE mode fallback, etc.)."
+
+  - file: "PHASE1-005-agent-spawning.md"
+    ticket_id: "PHASE1-005"
+    ticket_title: "Implement: agent spawning via Claude CLI (Claude Code backend)"
+    ticket_status: "open"
+    matching_issue: null
+    matching_issue_title: null
+    recommendation: "keep"
+    reason: "No GitHub Issue tracks agent spawning implementation directly. Code exists in src/spawn.ts. Related issues (#59 shell sanitization, #16 unused teamName param) exist but none cover the spawning feature itself."
+
+  - file: "PHASE1-006-agent-kill-cleanup.md"
+    ticket_id: "PHASE1-006"
+    ticket_title: "Implement: agent kill + team config cleanup"
+    ticket_status: "open"
+    matching_issue: 55
+    matching_issue_title: "killAgent tmux pane fix + cleanup/health check"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #55 (CLOSED), which covers killAgent tmux pane fix and cleanup. The core work described in this ticket was completed via that issue."
+
+  - file: "PHASE1-007-health-check-auto-cleanup.md"
+    ticket_id: "PHASE1-007"
+    ticket_title: "Implement: health check + auto-cleanup of stale agents"
+    ticket_status: "open"
+    matching_issue: 53
+    matching_issue_title: "Fix health subcommand + relaunch stale discovery (QA-4/7/9)"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #53 (CLOSED) and #55 (CLOSED). Health check fix and cleanup were addressed across both issues."
+
+  - file: "PHASE1-008-agent-list-relaunch.md"
+    ticket_id: "PHASE1-008"
+    ticket_title: "Implement: agent list + agent relaunch commands"
+    ticket_status: "open"
+    matching_issue: 18
+    matching_issue_title: "Implement launch and relaunch subcommands (currently no-ops)"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #18 (OPEN). The relaunch portion is directly covered. List command may need separate tracking but the overlap is sufficient to consolidate."
+
+  - file: "PHASE1-009-update-agent-frontmatter.md"
+    ticket_id: "PHASE1-009"
+    ticket_title: "Update agent file frontmatter with launcher fields"
+    ticket_status: "open"
+    matching_issue: null
+    matching_issue_title: null
+    recommendation: "keep"
+    reason: "No GitHub Issue tracks updating agent frontmatter fields. This is a docs/config task that hasn't been migrated."
+
+  - file: "PHASE1-010-qa-full-lifecycle.md"
+    ticket_id: "PHASE1-010"
+    ticket_title: "QA: test full agent lifecycle (launch, kill, relaunch)"
+    ticket_status: "open"
+    matching_issue: 43
+    matching_issue_title: "QA review of Phase 1 source code (discover, prompt, spawn, lifecycle)"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #43 (CLOSED) for the QA review, and #56 (CLOSED) for unit tests. The full lifecycle QA scope is covered across these issues."
+
+  - file: "PHASE1-011-review-launcher-vs-claude-team.md"
+    ticket_id: "PHASE1-011"
+    ticket_title: "Review: compare agent launcher against claude-team for gaps"
+    ticket_status: "open"
+    matching_issue: 29
+    matching_issue_title: "Research: Architecture review of agent-team main branch"
+    recommendation: "delete"
+    reason: "Partially tracked as GitHub Issue #29 (CLOSED), which is a broader architecture review that would subsume this comparison. The specific claude-team gap analysis may not have been done, but the architectural review context covers the intent."
+
+  - file: "PHASE1-012-customizable-team-name.md"
+    ticket_id: "PHASE1-012"
+    ticket_title: "Make team name customizable (not hardcoded)"
+    ticket_status: "open"
+    matching_issue: null
+    matching_issue_title: null
+    recommendation: "keep"
+    reason: "No GitHub Issue tracks customizable team name. This is an open feature request with no corresponding issue."
+
+  # === Defect Tickets ===
+
+  - file: "PHASE1-DEF-04-no-test-suite.md"
+    ticket_id: "DEF-4"
+    ticket_title: "Defect: No test suite exists for Phase 1 modules"
+    ticket_status: "done"
+    matching_issue: 56
+    matching_issue_title: "Unit tests for Phase 1 modules (50 tests)"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #56 (CLOSED). Tests were written and merged. Also related to #14 (OPEN) for expanded test coverage."
+
+  - file: "PHASE1-DEF-05-cleanup-stale-entries-noop.md"
+    ticket_id: "DEF-5"
+    ticket_title: "Defect: cleanupStaleEntries is a no-op"
+    ticket_status: "done"
+    matching_issue: 55
+    matching_issue_title: "killAgent tmux pane fix + cleanup/health check"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #55 (CLOSED). The cleanup functionality was fixed as part of that issue. Also related to #36 (OPEN) for the counter bug specifically."
+
+  - file: "PHASE1-DEF-06-health-always-unknown.md"
+    ticket_id: "DEF-6"
+    ticket_title: "Defect: health subcommand always reports UNKNOWN"
+    ticket_status: "done"
+    matching_issue: 53
+    matching_issue_title: "Fix health subcommand + relaunch stale discovery (QA-4/7/9)"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #53 (CLOSED). Health subcommand fix was the primary scope of that issue."
+
+  - file: "PHASE1-DEF-07-list-agents-name-mismatch.md"
+    ticket_id: "DEF-7"
+    ticket_title: "Defect: listAgents uses agent name but config uses display name"
+    ticket_status: "done"
+    matching_issue: 53
+    matching_issue_title: "Fix health subcommand + relaunch stale discovery (QA-4/7/9)"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #53 (CLOSED), which includes QA-7 (name mismatch) in its scope."
+
+  - file: "PHASE1-DEF-08-launch-doesnt-spawn.md"
+    ticket_id: "DEF-8"
+    ticket_title: "Defect: launch subcommand doesn't actually spawn agents"
+    ticket_status: "open"
+    matching_issue: 18
+    matching_issue_title: "Implement launch and relaunch subcommands (currently no-ops)"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #18 (OPEN). The issue title explicitly calls out that launch/relaunch are currently no-ops, which is the same defect."
+
+  - file: "PHASE1-DEF-09-relaunch-stale-discovery.md"
+    ticket_id: "DEF-9"
+    ticket_title: "Defect: relaunch uses stale discovery results"
+    ticket_status: "open"
+    matching_issue: 53
+    matching_issue_title: "Fix health subcommand + relaunch stale discovery (QA-4/7/9)"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #53 (CLOSED). The issue title explicitly includes 'relaunch stale discovery' and QA-9."
+
+  - file: "PHASE1-DEF-10-kill-doesnt-kill-pane.md"
+    ticket_id: "DEF-10"
+    ticket_title: "Defect: killAgent doesn't kill the tmux pane"
+    ticket_status: "done"
+    matching_issue: 55
+    matching_issue_title: "killAgent tmux pane fix + cleanup/health check"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #55 (CLOSED). The issue title is a direct match for this defect."
+
+  - file: "PHASE1-DEF-11-path-traversal.md"
+    ticket_id: "DEF-11"
+    ticket_title: "Defect: readBasePrompt doesn't guard against path traversal"
+    ticket_status: "open"
+    matching_issue: null
+    matching_issue_title: null
+    recommendation: "keep"
+    reason: "No GitHub Issue tracks this specific path traversal concern. Issue #59 (shell argument sanitization in spawn.ts) is a related security item but covers a different location and attack vector."
+
+  - file: "PHASE1-DEF-12-silent-validation-failures.md"
+    ticket_id: "DEF-12"
+    ticket_title: "Defect: discoverAgents treats validation failures as warnings"
+    ticket_status: "open"
+    matching_issue: 11
+    matching_issue_title: "Add input validation for tool names in agent frontmatter"
+    recommendation: "delete"
+    reason: "Partially tracked as GitHub Issue #11 (OPEN), which covers input validation for agent frontmatter. The scope overlaps significantly -- both address validation strictness in discovery/parsing."
+
+  - file: "PHASE1-DEF-13-shell-escaping.md"
+    ticket_id: "DEF-13"
+    ticket_title: "Defect: Incomplete shell escaping in dry-run output"
+    ticket_status: "open"
+    matching_issue: 59
+    matching_issue_title: "Critical: Add shell argument sanitization in spawn.ts"
+    recommendation: "delete"
+    reason: "Tracked as GitHub Issue #59 (OPEN). Both address shell escaping/sanitization concerns in the spawn/launch code paths."
+
+# Summary
+# -------
+# Total tickets audited: 22
+# Recommendation: delete (has matching GitHub Issue): 15
+# Recommendation: keep (no matching GitHub Issue):     7
+#
+# Tickets to KEEP (need GitHub Issues created or manual decision):
+#   - PHASE1-001: system prompt research (open, no issue)
+#   - PHASE1-003: agent file discovery implementation (open, no issue)
+#   - PHASE1-004: prompt assembly implementation (open, no issue)
+#   - PHASE1-005: agent spawning implementation (open, no issue)
+#   - PHASE1-009: update agent frontmatter (open, no issue)
+#   - PHASE1-012: customizable team name (open, no issue)
+#   - DEF-11: path traversal guard (open, no issue)
+#
+# Tickets to DELETE (tracked in GitHub Issues):
+#   - PHASE1-002: done, spec written (no issue but done)
+#   - PHASE1-006: -> #55 (closed)
+#   - PHASE1-007: -> #53 (closed)
+#   - PHASE1-008: -> #18 (open)
+#   - PHASE1-010: -> #43 (closed)
+#   - PHASE1-011: -> #29 (closed)
+#   - DEF-4:  -> #56 (closed)
+#   - DEF-5:  -> #55 (closed)
+#   - DEF-6:  -> #53 (closed)
+#   - DEF-7:  -> #53 (closed)
+#   - DEF-8:  -> #18 (open)
+#   - DEF-9:  -> #53 (closed)
+#   - DEF-10: -> #55 (closed)
+#   - DEF-12: -> #11 (open)
+#   - DEF-13: -> #59 (open)
