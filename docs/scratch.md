@@ -86,6 +86,13 @@
   - See also scratch.md line 24 re: braintrust.dev interface with conversation tracing
 - Research https://ccs.kaitran.ca/ — potential Claude Code related tooling
 - Research https://github.com/kivo360/OmoiOS — potential relevant patterns
+- **Event source polling plugin (PRD needed)**: A Claude Code plugin that uses async background hooks to poll external event sources (GitHub notifications, Slack mentions, CI status changes, Linear updates, etc.) and write updates to disk. Then SessionStart/PostToolUse/Stop hooks inject accumulated events into the conversation.
+  - Similar to the agent-team I/O proxy concept for injecting user messages, but for polled events rather than pushed (webhooks)
+  - Webhook-pushed events would go through the controller and get similarly propagated to disk → hooks → conversation
+  - Think of it as an agent "inbox" that accumulates between tool calls and gets flushed into context on each hook trigger
+  - Polling frequency, event sources, and filtering rules should be configurable per-agent or per-team
+  - Could also serve as the mechanism for inter-agent event notification (agent A completes task → event written to disk → agent B picks it up on next hook)
+  - PRD should live at `docs/specs/draft/event-source-plugin.md` when written
 
 ---
 
