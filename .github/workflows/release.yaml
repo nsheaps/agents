@@ -34,4 +34,7 @@ jobs:
         run: bun install
 
       - name: Run release-it
+        id: release
         run: bun run release-it --ci
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
