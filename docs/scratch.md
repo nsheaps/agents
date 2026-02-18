@@ -93,6 +93,15 @@
   - Polling frequency, event sources, and filtering rules should be configurable per-agent or per-team
   - Could also serve as the mechanism for inter-agent event notification (agent A completes task → event written to disk → agent B picks it up on next hook)
   - PRD should live at `docs/specs/draft/event-source-plugin.md` when written
+- **MCP server: shell-scripts-as-tools**: An MCP server (stdio) that exposes shell scripts from a directory as MCP tools. Each script becomes a callable tool with proper input schemas derived from the script's arguments/flags. This could replace Claude's built-in delegate mode spawn mechanism with custom launch logic (e.g., custom agent spawning that goes through our wrapper instead of bare `claude` binary). Should be a plugin in nsheaps/.ai.
+  - Scripts define their tool schema via a companion YAML/JSON file or inline comments
+  - Supports both stdio and HTTP transport
+  - Could also expose non-Claude shell tooling (docker, kubectl, etc.) as MCP tools
+- **MCP server: structured-docs-as-tools**: An MCP server that exposes org-wide rules and documentation as MCP tools with important content in the description field (surviving Claude's deferred tool loading/search), plus MCP resource URIs for fetching full document content on demand. Filesystem location doesn't matter — docs are served via MCP.
+  - Tool descriptions contain the critical rules that must always be visible
+  - Resource URIs let Claude fetch full docs when needed
+  - Decouples documentation from filesystem layout
+  - Could serve as the canonical source for org-wide rules that currently live in .claude/rules/
 
 ---
 
