@@ -46,7 +46,7 @@ The original stale entry problem (see `.claude/behaviors/team-member-cleanup.md`
 
 ## Post-MVP Discussion Topics
 
-> The following sections are design discussions for future phases. **None are in scope for the MVP.** Sections §1–§7 capture ideas raised during team sessions that will be prioritized, refined, and scheduled after the MVP lifecycle is reliable.
+> The following sections are design discussions for future phases. **None are in scope for the MVP.** Sections §1–§9 capture ideas raised during team sessions that will be prioritized, refined, and scheduled after the MVP lifecycle is reliable.
 
 ---
 
@@ -620,7 +620,84 @@ Self-relaunch is powerful and needs constraints:
 
 ---
 
-## 9. Relationship to Existing PRDs
+## 9. Observability and Tracing
+
+### Concept
+
+Each agent process should emit telemetry that identifies it by name, role, and team — enabling per-agent cost tracking, performance monitoring, and failure diagnosis across the entire team. Claude Code already supports OTEL natively; the launcher just needs to set the right resource attributes per agent.
+
+### What Claude Code Already Emits
+
+With `CLAUDE_CODE_ENABLE_TELEMETRY=1`, Claude Code natively exports:
+
+- **Metrics**: `claude_code.token.usage` (by model), `claude_code.cost.usage` (USD per request), `claude_code.active_time.total`, `claude_code.lines_of_code.count`, `claude_code.commit.count`
+- **Events**: `claude_code.user_prompt`, `claude_code.tool_result` (tool_name, success, duration_ms), `claude_code.api_request` (model, cost, tokens), `claude_code.api_error`
+- **Standard attributes on all telemetry**: `session.id`, `service.name` (defaults to `claude-code`, overridable), `terminal.type`, `service.version`
+
+No extra code is needed — the launcher only needs to set env vars before spawning each agent.
+
+### Per-Agent Resource Attributes
+
+The launcher should set these env vars per agent process at spawn time:
+
+```bash
+# Per-agent (varies per spawn)
+OTEL_SERVICE_NAME="agent-team.${agent_role}"
+OTEL_RESOURCE_ATTRIBUTES="gen_ai.agent.name=${display_name},gen_ai.agent.id=${agent_id},agent_team.role=${role},agent_team.team_name=${team_name},gen_ai.conversation.id=${session_id}"
+
+# Global (same for all agents)
+CLAUDE_CODE_ENABLE_TELEMETRY=1
+OTEL_METRICS_EXPORTER=otlp
+OTEL_LOGS_EXPORTER=otlp
+OTEL_EXPORTER_OTLP_ENDPOINT="http://${collector}:4317"
+```
+
+### Attribute Naming: OTEL GenAI Conventions
+
+Align with the [GenAI Agent Semantic Conventions](https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/) where they exist:
+
+| Our Attribute | OTEL Convention | Status |
+|:--|:--|:--|
+| Agent name | `gen_ai.agent.name` | Stable |
+| Agent ID | `gen_ai.agent.id` | Stable |
+| Session/conversation | `gen_ai.conversation.id` | Stable |
+| Agent role | `agent_team.role` | Custom (no standard yet) |
+| Team name | `agent_team.team_name` | Custom (proposed in [OTEL Issue #2664](https://github.com/open-telemetry/semantic-conventions/issues/2664)) |
+
+Use `gen_ai.*` where conventions exist, `agent_team.*` for custom attributes. Migrate custom attributes to standard names when the GenAI SIG finalizes team/task conventions.
+
+### Phased Implementation
+
+1. **Phase 1 — Resource attributes** (minimal effort, high value): Launcher sets `OTEL_SERVICE_NAME` and `OTEL_RESOURCE_ATTRIBUTES` per agent. Immediate per-agent filtering in any OTEL backend.
+2. **Phase 2 — Observability backend**: Choose Grafana + Prometheus + Loki (self-hosted, free) or Braintrust/Honeycomb/SigNoz (managed). Same OTEL attributes work with any backend.
+3. **Phase 3 — Hook-based tracing** (richer data): Custom hooks (`PreToolUse`, `PostToolUse`) emit distributed trace spans per tool call, enabling parent-child span relationships across tools.
+
+### Backend Options
+
+| Backend | Type | Unique Value | Cost |
+|:--|:--|:--|:--|
+| Grafana + Prometheus + Loki | Self-hosted | Full control, no data sharing | Free (infra cost) |
+| Braintrust | SaaS | Converts traces → eval datasets, prompt comparison | Paid |
+| Honeycomb / Datadog / SigNoz | Managed | Production-grade, rich querying | Paid |
+
+**Recommendation**: Stay backend-agnostic in the launcher. Let users configure their preferred backend via collector pipeline config, not launcher flags.
+
+### Design Questions
+
+1. Should `OTEL_SERVICE_NAME` be per-role (`agent-team.software-eng`) or per-instance (`agent-team.bugs-bunny-01`)? Recommendation: per-role in service name, per-instance in `gen_ai.agent.id`.
+2. Should the launcher define `agent_team.task.id` and `agent_team.task.subject` as custom attributes now, or wait for the GenAI SIG to standardize task conventions?
+3. Hook-based tracing (Phase 3) captures more granular data than native telemetry. Is the added complexity worth it for the agent-team use case?
+
+### References
+
+- Claude Code monitoring docs: https://code.claude.com/docs/en/monitoring-usage
+- OTEL GenAI agent conventions: https://opentelemetry.io/docs/specs/semconv/gen-ai/gen-ai-agent-spans/
+- OTEL agentic systems proposal: https://github.com/open-telemetry/semantic-conventions/issues/2664
+- Full research report: `.claude/tmp/braintrust-otel-research.md` (Road Runner, #140)
+
+---
+
+## 10. Relationship to Existing PRDs
 
 | Architecture Section | PRD | Location | Relationship |
 |:--|:--|:--|:--|
@@ -633,11 +710,12 @@ Self-relaunch is powerful and needs constraints:
 | §6 A2A Protocol | MCP Tooling | `~/src/nsheaps/mcp/docs/specs/draft/mcp-tooling.md` | A2A complements (does not replace) mesh MCP — see note below |
 | §7 I/O Proxy | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | **Wrapper PRD is source of truth** for proxy design; §7 summarizes |
 | §8 Self-Exit/Relaunch | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Wrapper owns the process lifecycle; §8 captures the agent-initiated restart pattern |
+| §9 Observability/Tracing | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Launcher sets per-agent OTEL env vars at spawn time |
 | All sections | 14-Phase Plan | Elmer Fudd's plan (in team lead context) | All sections feed into phase refinement |
 
 ---
 
-## 10. Next Steps
+## 11. Next Steps
 
 1. Research A2A protocol in depth (Road Runner)
 2. Prototype agent.yaml schema as TypeScript types (Bugs Bunny)
