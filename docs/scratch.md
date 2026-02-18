@@ -103,6 +103,12 @@
   - Decouples documentation from filesystem layout
   - Could serve as the canonical source for org-wide rules that currently live in .claude/rules/
 
+- **Orchestrator permissions leak**: Teammates need bypass permissions to work autonomously, but the orchestrator must also be in bypass mode, which lets it do things it shouldn't (launch sub-agents, run bash, edit files). The orchestrator should be restricted to coordination tools only (SendMessage, TaskCreate/Update/List, TeamCreate/Delete). Potential fix: PreToolUse hooks that block non-coordination tools on the lead session.
+  - This is a security/isolation concern — the lead can currently modify files, run commands, and take actions outside its coordination role
+  - Hook-based approach: a PreToolUse hook on the lead session that returns exit code 2 (block + feedback) for tools like Bash, Edit, Write, etc.
+  - Alternative: a dedicated `orchestrator` permission mode that only exposes team coordination primitives
+  - Related to delegate mode bug [#25037](https://github.com/anthropics/claude-code/issues/25037) — both are about permission boundaries in multi-agent setups
+
 ---
 
 ## Pending Tasks (updated 2026-02-18, looney-tunes session 3)
