@@ -13,6 +13,8 @@ export interface TeamMember {
   agentType: string;
   /** Tmux pane ID, set at spawn time. Used for kill/health/cleanup. */
   tmuxPaneId?: string;
+  /** Agent file name (e.g. "software-eng"), set at spawn time. Used for file/config correlation. */
+  agentName?: string;
 }
 
 /** Team config structure as managed by Claude Code. */
@@ -223,34 +225,83 @@ export function cleanupStaleEntries(
 
 /**
  * List all agents with their config and file status (spec §6.4).
+ *
+ * Correlates discovered agent file names with config entries using:
+ * 1. The `agentName` field on the config member (set at spawn time)
+ * 2. Falls back to direct name comparison if agentName is not set
+ *
+ * Returns one entry per unique agent, merging file and config info.
  */
 export function listAgents(
   teamName: string,
   discoveredNames: string[],
-): Array<{ name: string; inFile: boolean; inConfig: boolean; status: AgentStatus }> {
+): Array<{ name: string; inFile: boolean; inConfig: boolean; status: AgentStatus; configName?: string }> {
   const config = readTeamConfig(teamName);
-  const memberMap = new Map(
-    config?.members.map((m) => [m.name, m]) ?? [],
-  );
-  const configNames = new Set(memberMap.keys());
-  const allNames = new Set([...discoveredNames, ...configNames]);
+  const members = config?.members ?? [];
 
-  return Array.from(allNames)
-    .sort()
-    .map((name) => {
-      const inFile = discoveredNames.includes(name);
-      const inConfig = configNames.has(name);
-      let status: AgentStatus;
-      if (!inConfig) {
-        status = "NOT_SPAWNED";
-      } else {
-        const member = memberMap.get(name)!;
-        if (member.tmuxPaneId) {
-          status = isTmuxPaneAlive(member.tmuxPaneId) ? "RUNNING" : "DEAD";
-        } else {
-          status = "UNKNOWN";
-        }
-      }
-      return { name, inFile, inConfig, status };
+  // Build a map from agent file name → config member (using agentName field)
+  const agentNameToMember = new Map<string, TeamMember>();
+  // Also track config members by their display name for fallback
+  const displayNameToMember = new Map<string, TeamMember>();
+  for (const member of members) {
+    if (member.agentName) {
+      agentNameToMember.set(member.agentName, member);
+    }
+    displayNameToMember.set(member.name, member);
+  }
+
+  // Track which config members have been matched to file-discovered agents
+  const matchedConfigNames = new Set<string>();
+
+  type AgentListEntry = { name: string; inFile: boolean; inConfig: boolean; status: AgentStatus; configName?: string };
+  const results: AgentListEntry[] = [];
+
+  // Process discovered agents first
+  for (const agentName of discoveredNames) {
+    // Try to find matching config member via agentName field, then direct name match
+    const member = agentNameToMember.get(agentName) ?? displayNameToMember.get(agentName);
+    const inConfig = !!member;
+
+    let status: AgentStatus;
+    if (!member) {
+      status = "NOT_SPAWNED";
+    } else if (member.tmuxPaneId) {
+      status = isTmuxPaneAlive(member.tmuxPaneId) ? "RUNNING" : "DEAD";
+    } else {
+      status = "UNKNOWN";
+    }
+
+    if (member) {
+      matchedConfigNames.add(member.name);
+    }
+
+    results.push({
+      name: agentName,
+      inFile: true,
+      inConfig,
+      status,
+      configName: member?.name !== agentName ? member?.name : undefined,
     });
+  }
+
+  // Add unmatched config members (not correlated to any discovered agent)
+  for (const member of members) {
+    if (!matchedConfigNames.has(member.name)) {
+      let status: AgentStatus;
+      if (member.tmuxPaneId) {
+        status = isTmuxPaneAlive(member.tmuxPaneId) ? "RUNNING" : "DEAD";
+      } else {
+        status = "UNKNOWN";
+      }
+
+      results.push({
+        name: member.name,
+        inFile: false,
+        inConfig: true,
+        status,
+      });
+    }
+  }
+
+  return results.sort((a, b) => a.name.localeCompare(b.name));
 }

@@ -203,23 +203,46 @@ describe("killAgent", () => {
 describe("listAgents", () => {
   afterEach(teardownTmpHome);
 
-  test("lists agents from both files and config", () => {
-    setupTmpHome(TEAM_NAME, SAMPLE_CONFIG);
+  test("correlates file agents with config via agentName field", () => {
+    const configWithAgentNames: TeamConfig = {
+      members: [
+        { name: "Bugs B (software-eng)", agentId: "a-1", agentType: "test", agentName: "software-eng" },
+        { name: "Daffy D (qa)", agentId: "a-2", agentType: "test", agentName: "quality-assurance" },
+      ],
+    };
+    setupTmpHome(TEAM_NAME, configWithAgentNames);
 
     const discoveredNames = ["software-eng", "quality-assurance", "ops-eng"];
     const result = listAgents(TEAM_NAME, discoveredNames);
 
-    // Should include all unique names from both sources
-    expect(result.length).toBeGreaterThanOrEqual(3);
+    // software-eng should be correlated with its config entry
+    const seEntry = result.find((r) => r.name === "software-eng");
+    expect(seEntry).toBeDefined();
+    expect(seEntry!.inFile).toBe(true);
+    expect(seEntry!.inConfig).toBe(true);
+    expect(seEntry!.configName).toBe("Bugs B (software-eng)");
 
-    // File-only agents should be NOT_SPAWNED
+    // ops-eng has no config entry
     const opsEntry = result.find((r) => r.name === "ops-eng");
     expect(opsEntry).toBeDefined();
     expect(opsEntry!.inFile).toBe(true);
     expect(opsEntry!.inConfig).toBe(false);
     expect(opsEntry!.status).toBe("NOT_SPAWNED");
+  });
 
-    // Config-only agents should be UNKNOWN (they have display names)
+  test("falls back to direct name match when agentName not set", () => {
+    // Config without agentName field — old-style entries
+    setupTmpHome(TEAM_NAME, SAMPLE_CONFIG);
+
+    const discoveredNames = ["software-eng", "ops-eng"];
+    const result = listAgents(TEAM_NAME, discoveredNames);
+
+    // File agents can't match display names, so they appear as NOT_SPAWNED
+    const seEntry = result.find((r) => r.name === "software-eng");
+    expect(seEntry!.inConfig).toBe(false);
+    expect(seEntry!.status).toBe("NOT_SPAWNED");
+
+    // Config-only entries appear separately
     const bugsEntry = result.find((r) => r.name === "Bugs B (software-eng)");
     expect(bugsEntry).toBeDefined();
     expect(bugsEntry!.inFile).toBe(false);
@@ -236,6 +259,21 @@ describe("listAgents", () => {
     expect(result).toHaveLength(1);
     expect(result[0].name).toBe("software-eng");
     expect(result[0].status).toBe("NOT_SPAWNED");
+  });
+
+  test("shows DEAD status for config entries with dead tmux panes", () => {
+    const configWithPanes: TeamConfig = {
+      members: [
+        { name: "Dead Agent", agentId: "a-1", agentType: "test", agentName: "dead-agent", tmuxPaneId: "%9999" },
+      ],
+    };
+    setupTmpHome(TEAM_NAME, configWithPanes);
+
+    const result = listAgents(TEAM_NAME, ["dead-agent"]);
+
+    const entry = result.find((r) => r.name === "dead-agent");
+    expect(entry!.inConfig).toBe(true);
+    expect(entry!.status).toBe("DEAD");
   });
 });
 
