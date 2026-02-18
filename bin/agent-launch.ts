@@ -184,8 +184,12 @@ if (subcommand === "relaunch") {
     console.warn(`Kill skipped: ${killResult.message}`);
   }
 
-  // Step 2: Re-discover agent (file may have changed)
-  const agent = discoverResult.agents.find((a) => a.name === agentFilter);
+  // Step 2: Re-discover agent (file may have changed since initial discovery)
+  const freshDiscover = await discoverAgents(projectRoot);
+  for (const err of freshDiscover.errors) {
+    console.error(`ERROR [${err.filename}]: ${err.message}`);
+  }
+  const agent = freshDiscover.agents.find((a) => a.name === agentFilter);
   if (!agent) {
     console.error(
       `ERROR: Agent '${agentFilter}' not found in agent files after kill.`,
