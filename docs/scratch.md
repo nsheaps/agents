@@ -73,32 +73,43 @@
     5. Lead context management — summarize teammate messages rather than accumulating raw DMs
     6. Context budget as first-class launcher concern — agents should know their budget and manage it
   - This should inform the agent lifecycle management design in the launcher
+- **Agent teams launch requirement**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` env var alone is NOT enough. You ALSO need `--permission-mode=delegate` even when using `--dangerously-skip-permissions`. Without delegate mode, the lead doesn't get the TeamCreate/SendMessage/TaskCreate primitives. Both are required together.
+- **Tracing / observability**: Each agent on the same machine inherits user-level configs (~/.claude/settings.json, env vars). This means OTEL tracing should "just work" if the right env vars are set at the user level.
+  - Research Braintrust (braintrust.dev) integration — they have conversation tracing UI we'd essentially be rebuilding
+  - Research which OTEL env vars can differentiate agents from each other and tasks from each other (e.g., OTEL_SERVICE_NAME, OTEL_RESOURCE_ATTRIBUTES)
+  - The launcher should set per-agent env vars (agent name, role, team name) as OTEL resource attributes so traces are attributable
+  - This ties into the agent-dashboard / web UI vision — traces feed the monitoring dashboard
+  - See also scratch.md line 24 re: braintrust.dev interface with conversation tracing
 - Research https://ccs.kaitran.ca/ — potential Claude Code related tooling
 - Research https://github.com/kivo360/OmoiOS — potential relevant patterns
 
 ---
 
-## Pending Tasks (preserved from looney-tunes session, 2026-02-17)
+## Pending Tasks (updated 2026-02-17, looney-tunes session 2)
 
-### Must Do (next session)
-- **#116**: QA full agent lifecycle test (launch → kill → relaunch) — Phase 1 code-complete, needs validation
-- **#127**: Document agent creation collaboration workflow (ai-agent-eng + security-consult + ops-eng)
-- orchestrator.md duplicate model key — fixed by Tweety (commit aaeb46b), verify it's clean
+### In Progress
+- **#141**: Fix DEF-1 — `--dry-run` truncates CLI args at 80 chars (Bugs, in progress)
+- **#142**: Fix DEF-2 — `agentFilter` positional arg parsing is fragile (Bugs, fix committed, follow-up pending)
+- **#143**: Fix DEF-3 — ambiguous duplicate agent name error in `discover.ts:199` (Bugs, in progress)
 
-### Research (assign to Road Runner)
-- **#133**: Navigable TUI for agent pane management (tmux + AppleScript + Linux automation)
-- **#135**: Web UI for agent team monitoring (happy.engineering style dashboard)
-- **#136**: Optimal model selection per agent role (Wile E. delivered initial doc at docs/research/model-selection-per-role.md)
-- **#138**: Research ccs.kaitran.ca
-- **#139**: Research OmoiOS (github.com/kivo360/OmoiOS)
+### Pending
+- **#140**: Research Braintrust + OTEL env vars for agent/task tracing differentiation
+
+### Research (unassigned)
+- Navigable TUI for agent pane management (tmux + AppleScript + Linux automation)
+- Web UI for agent team monitoring (happy.engineering style dashboard)
+- Optimal model selection per agent role (initial doc at `docs/research/model-selection-per-role.md`)
+- Research https://ccs.kaitran.ca/
+- Research OmoiOS (github.com/kivo360/OmoiOS)
 
 ### Backlog
-- **#122**: Consider splitting conversation-search behavior reference material
-- **#123**: Add prettier pre-commit hook or CI check to agent-team repo
-- **#131**: Research ticket automation (todo-sync style) for agent-team project
-- **#9**: Stop all teammates for user review (completed manually this session, can be closed)
+- Consider splitting conversation-search behavior reference material
+- Add prettier pre-commit hook or CI check to agent-team repo
+- Research ticket automation (todo-sync style) for agent-team project
 
-### Architecture Doc Fixes (assign to Tweety)
-- Add MVP boundary divider to agent-team-architecture.md
-- Fix I/O proxy duplication (arch doc = source of truth, remove from other locations)
-- Add three agent YAML formats disambiguation table (frontmatter vs agent.yaml vs config.json)
+### Completed This Session
+- **#127**: Document agent creation collaboration workflow — done (Tweety)
+- **#128**: Architecture doc structural fixes (MVP boundary, I/O proxy dedup, YAML formats table) — done (Tweety)
+- **#116**: QA full agent lifecycle test — done (Daffy)
+- **#144**: Add standing responsibilities to ai-agent-eng agent file — done (Tweety)
+- **#145**: Update display_name format across all agent files — done (Tweety)
