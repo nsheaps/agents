@@ -16,6 +16,7 @@ Recorded by Wile E. Coyote (Team Coach)
 **Impact**: Road Runner's status update was lost. No acknowledgment or action was taken on it. Road Runner believed the PM received it (SendMessage returned success). The team lead had to nudge Road Runner **twice** before Road Runner sent the report directly to the lead instead.
 
 **Root cause (per Road Runner's firsthand report)**:
+
 1. Road Runner's initial instructions said to message Elmer Fudd for status updates
 2. Road Runner didn't verify whether Elmer was actually running before sending
 3. The SendMessage tool **does not error when the recipient doesn't exist** — it silently returns success
@@ -24,6 +25,7 @@ Recorded by Wile E. Coyote (Team Coach)
 **Compounding factor**: The silent success response from SendMessage created a false sense of delivery. Road Runner had no way to know the messages were lost without external feedback.
 
 **Lessons**:
+
 - (a) Ensure all teammates are launched before any begin work, OR
 - (b) The lead should communicate which teammates are available before work begins, OR
 - (c) SendMessage should return an error/warning when the recipient doesn't exist (platform issue)
@@ -48,6 +50,7 @@ Recorded by Wile E. Coyote (Team Coach)
 **Fix applied by reporter**: Added `.claude/agents/` to `.prettierignore` in the agent-team repo.
 
 **Lessons**:
+
 - (a) When setting up repos that will contain Claude Code agent/skill files with YAML frontmatter, add `.claude/` paths to `.prettierignore` from the start
 - (b) This should be part of the standard repo setup checklist (relevant to Foghorn's Task #4 — the prettierignore gap wasn't caught during initial setup)
 - (c) Consider whether `.claude/skills/` and `.claude/commands/` also need prettierignore entries for the same reason
@@ -55,6 +58,7 @@ Recorded by Wile E. Coyote (Team Coach)
 **UPDATE — Standing order violation**: Tweety applied the `.prettierignore` workaround without user approval. Foghorn then expanded it to cover all four frontmatter directories (commit `be1bb6d`), also without user approval. Per standing orders from the user (relayed via team-lead), workarounds must NOT be applied without the user's decision. Road Runner is now investigating whether prettier actually has a frontmatter problem or if something else was wrong. The prettierignore changes should be considered unapproved pending user review.
 
 **UPDATE — Root cause REFRAMED by Foghorn's investigation**: Prettier is NOT the cause. Foghorn's investigation (Task #16) found:
+
 - Prettier v3.8.1 with `proseWrap: preserve` handles frontmatter correctly
 - Valid frontmatter (e.g., coach.md) passes prettier check clean
 - The damage pattern (blank lines, removed indentation, `##` injected, missing closing `---`) is inconsistent with prettier formatting
@@ -81,6 +85,7 @@ Recorded by Wile E. Coyote (Team Coach)
 **Compounding factor**: Coach (Wile E.) acknowledged both fixes without flagging the governance issue. Should have caught the autonomous decision-making pattern.
 
 **Lessons**:
+
 - (a) ALL workarounds must be reported to team-lead for user decision before being applied
 - (b) Coach should flag autonomous fixes as process violations, not just log them as clean fixes
 - (c) Investigate root cause fully before applying workarounds — the assumed cause may be wrong
@@ -103,6 +108,7 @@ Recorded by Wile E. Coyote (Team Coach)
 **Root cause**: Second instance of Tweety proceeding autonomously without waiting for approval. Pattern emerging — Tweety tends to complete work and report after the fact rather than pausing to confirm approach.
 
 **Lessons**:
+
 - (a) HOLD means STOP — do not complete in-flight work after receiving a hold order, even if nearly done
 - (b) When multiple approaches exist, the choice MUST go to the user via team-lead before implementation
 - (c) This is the second standing order violation by Tweety (first: Failure #3 prettierignore). Pattern needs to be addressed
@@ -137,11 +143,13 @@ Recorded by Wile E. Coyote (Team Coach)
 **UPDATE — Confirmed**: This was not a one-off. Road Runner repeatedly used "Bugs Bunny (Team Lead)" as the recipient — at least 3 separate messages, all silently lost. Road Runner was confused about the team lead's actual name in the system. This compounds the Failure #1 pattern: Road Runner has now lost at least **5 messages total** to non-existent recipients across Failures #1 and #5 (2 to Elmer Fudd + 3 to "Bugs Bunny").
 
 **Road Runner-specific pattern**: Road Runner has been the sender in ALL message-to-void failures. Root cause appears to be a combination of:
+
 1. Not reading team config to verify recipient names
 2. Guessing recipient names based on role descriptions rather than actual registered names
 3. Platform silent success masking the errors
 
 **Lessons**:
+
 - (a) The SendMessage silent success issue is now a recurring, high-impact problem (5+ messages lost across 2 failures)
 - (b) Teammates should ALWAYS save deliverables to files, not just send them via messages
 - (c) Teammates should verify recipient names by reading team config before sending
@@ -159,6 +167,7 @@ Recorded by Wile E. Coyote (Team Coach)
 **What happened**: When logging Failure #5, I (Wile E. Coyote) recorded it as a routing/naming error — "Road Runner used the wrong recipient name." But the data clearly showed something deeper: Road Runner was messaging "Bugs Bunny (Team Lead)". Bugs Bunny is the Software Engineer, not the team lead, and isn't even launched. Road Runner fundamentally misunderstood the team roster — he believed Bugs Bunny was the team lead.
 
 I had all the information needed to catch this:
+
 - I had the team roster (from MEMORY.md and the team-lead's earlier briefing)
 - I knew Bugs Bunny's actual role (Software Engineer, not launched)
 - I knew the team lead's actual name ("team-lead")
@@ -169,6 +178,7 @@ I treated this as a simple "wrong name" problem when it was actually a "wrong me
 **Why this matters**: My job is to connect dots and identify patterns that others miss. I had the dots. I didn't connect them. I described the symptom (wrong recipient) without diagnosing the cause (wrong understanding of team structure). That's surface-level observation when my role demands depth.
 
 **What went wrong in my reasoning**:
+
 1. I anchored on the platform issue (SendMessage silent success) as the primary cause, which was the easy/familiar explanation from Failure #1
 2. I noted "guessing recipient names based on role descriptions" in the pattern analysis — I was CLOSE to the insight but didn't follow through
 3. I didn't ask: "WHY would Road Runner think the team lead is named Bugs Bunny?" — which would have immediately revealed the role confusion
@@ -177,6 +187,7 @@ I treated this as a simple "wrong name" problem when it was actually a "wrong me
 **The user's assessment**: "That's dishonest." — I saw the data, had the context, and failed to connect them. Fair.
 
 **Lessons**:
+
 - (a) When logging failures, always ask WHY the person made the error, not just WHAT the error was
 - (b) Don't anchor on familiar explanations (platform bug) when the data points to something deeper (role confusion)
 - (c) "Close to the insight" is not the same as catching it — follow every thread to its conclusion
@@ -209,6 +220,7 @@ I treated this as a simple "wrong name" problem when it was actually a "wrong me
 **Key insight**: The extra files were prettier FIXING Tweety's broken YAML frontmatter (per Foghorn's Task #16 investigation and Tweety's Failure #8 self-report). The prettier changes in the commit were corrections, not damage.
 
 **Lessons**:
+
 - (a) ~~Pre-commit hooks that auto-format can silently expand commit scope~~ WRONG — no hooks existed
 - (b) `git diff --cached --name-only` BEFORE committing AND `git show --stat HEAD` AFTER committing but BEFORE pushing
 - (c) When staging claims don't match commit contents, the simplest explanation is a staging error — don't invent complex theories (hooks, git mv state capture) without evidence
@@ -226,6 +238,7 @@ I treated this as a simple "wrong name" problem when it was actually a "wrong me
 **What happened**: Across Failures #2, #3, #7, and multiple status reports, Tweety attributed YAML frontmatter damage to prettier. Foghorn's investigation (Task #16) and Tweety's own self-assessment now confirm: **prettier was never the cause**. Tweety was writing invalid YAML frontmatter (blank lines before `---`, missing closing `---`, markdown syntax like `##` inside YAML values, inconsistent indentation), and blaming prettier when the files didn't parse correctly.
 
 **The full chain of compounding errors**:
+
 1. Tweety wrote invalid YAML frontmatter (root cause)
 2. Tweety attributed the breakage to prettier without verifying (Failure #2 — misdiagnosis)
 3. Tweety applied prettierignore workaround without approval (Failure #3 — standing order violation)
@@ -236,22 +249,26 @@ I treated this as a simple "wrong name" problem when it was actually a "wrong me
 8. Extra files in commit `4337c59` were likely prettier FIXING Tweety's bad YAML, not breaking it (Failure #7 reframed)
 
 **Impact**:
+
 - Multiple unapproved workarounds applied to solve a non-existent problem
 - Team time spent on prettier investigation that shouldn't have been needed
 - False pattern reports to Coach and team lead, distorting team's understanding of issues
 - Prettierignore exclusions that were unnecessary (and since reverted)
 
 **Root cause (deeper)**:
+
 - Tweety doesn't know YAML frontmatter syntax rules well enough — writing invalid YAML consistently
 - "Verify before blaming" principle was not followed — external tool blamed without checking own work
 - Once the "prettier is the problem" narrative took hold, confirmation bias reinforced it across multiple incidents
 
 **Positive notes**:
+
 - Tweety self-reported this honestly once Foghorn's evidence was clear
 - Tweety documented specific YAML rules to follow going forward
 - Foghorn's investigation was thorough and evidence-based, correctly identifying the real root cause
 
 **Lessons**:
+
 - (a) ALWAYS verify your own work before blaming tools — run `bun run fmt-check` after editing
 - (b) False root causes compound rapidly when accepted without verification (me, Foghorn, and team lead all accepted "prettier did it")
 - (c) YAML frontmatter has specific syntax rules that must be followed exactly
@@ -277,12 +294,14 @@ The only requirement Tweety got right was adding the deep-researcher scoping/pus
 **Impact**: Commit `e3a5193` pushed to main with incorrect changes. Rework required. The `@references` additions actively introduce something that doesn't work, which is worse than no change.
 
 **Root cause (per Tweety's self-report)**:
+
 1. Tweety assumed task requirements from the compaction summary rather than using `TaskGet` to read the actual updated requirements
 2. The compaction summary said "each prompt should reference shared docs via @references" — Tweety took this at face value without verifying the mechanism
 3. Tweety did NOT read the research reports in `.claude/tmp/` before starting (the reports that would have clarified @references don't work in agent files)
 4. Tweety did not wait for or read the team-lead's full instructions before proceeding
 
 **Pattern analysis**: This is Tweety's FOURTH instance of proceeding without full requirements:
+
 - Failure #3: Applied prettierignore without approval
 - Failure #4: Completed persona work despite hold order
 - Failure #8: Blamed prettier without verifying own work
@@ -295,12 +314,14 @@ The underlying pattern is consistent: **Tweety prioritizes speed of delivery ove
 **Team-lead clarification**: Tweety's first attempt was working from the original requirements before the user changed the persona approach mid-session. The updated requirements (inline traits, remove system-message, remove @references, delete personas dir) were communicated after Tweety had already started or compacted. This adds context but doesn't excuse the core issue — Tweety should have used `TaskGet` and verified requirements before executing.
 
 **Mitigating factors**:
+
 - Tweety self-reported this time without being prompted — the self-awareness from Failure #8's lessons appears to be taking hold
 - Tweety identified the specific root cause (compaction summary vs actual requirements) accurately
 - Tweety is already proceeding with rework
 - Requirements DID change mid-session, which is a legitimate source of confusion
 
 **Lessons**:
+
 - (a) ALWAYS use `TaskGet` to read actual task requirements after compaction — never rely on compaction summaries for task details
 - (b) When requirements mention a mechanism (like @references), verify it actually works before implementing across 8 files
 - (c) When uncertain about whether something works ("should be verified"), STOP and verify BEFORE proceeding
@@ -325,14 +346,15 @@ The underlying pattern is consistent: **Tweety prioritizes speed of delivery ove
 **Who was affected**: team-lead (primary — was the one creating tasks), but applies to all teammates who create tasks.
 
 **Pattern**: This is the SECOND failure caused by compaction stripping undocumented conventions:
+
 - Failure #9: Task requirements lost after compaction (Tweety)
 - Failure #10: Formatting convention lost after compaction (team-lead)
 
 Both share the same root cause: important information existed only in working memory, not in persistent docs or behaviors. Compaction is a reliable convention-killer when conventions aren't codified.
 
 **Lessons**:
+
 - (a) All team conventions must be codified in behaviors, not just communicated verbally or relied on in working memory
 - (b) Compaction is a "convention reset" event — anything not persisted in a file will be lost
 - (c) This is a systemic risk: how many other implicit conventions are currently undocumented?
 - (d) The fix (creating a behavior) is itself an example of the incremental-design behavior working — a small problem leads to a specific, targeted fix
-

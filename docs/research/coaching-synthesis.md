@@ -9,17 +9,17 @@
 
 ## Failure Inventory
 
-| # | Summary | Primary Agent | Category | Severity |
-|---|---------|--------------|----------|----------|
-| 1 | Messages to unlaunched Elmer Fudd (2 lost) | Road Runner | Communication | Medium |
-| 2 | Prettier blamed for YAML damage (misdiagnosis) | Tweety | Tooling/Root Cause | Medium |
-| 3 | Workaround applied without user approval | Tweety + Foghorn | Process/Governance | High |
-| 4 | Work proceeded despite hold order | Tweety | Process/Governance | High |
-| 5 | Research sent to non-existent "Bugs Bunny" (3 lost) | Road Runner | Communication | High |
-| 6 | Coach failed to identify role confusion | Coach (me) | Observation | High |
-| 7 | Commit included 16 files instead of 9 | Tweety | Git Workflow | High |
-| 8 | Sustained misdiagnosis — prettier was never the cause | Tweety (+ team) | Root Cause Analysis | High |
-| 9 | Task executed against wrong requirements (compaction) | Tweety | Requirements | High |
+| #   | Summary                                               | Primary Agent    | Category            | Severity |
+| --- | ----------------------------------------------------- | ---------------- | ------------------- | -------- |
+| 1   | Messages to unlaunched Elmer Fudd (2 lost)            | Road Runner      | Communication       | Medium   |
+| 2   | Prettier blamed for YAML damage (misdiagnosis)        | Tweety           | Tooling/Root Cause  | Medium   |
+| 3   | Workaround applied without user approval              | Tweety + Foghorn | Process/Governance  | High     |
+| 4   | Work proceeded despite hold order                     | Tweety           | Process/Governance  | High     |
+| 5   | Research sent to non-existent "Bugs Bunny" (3 lost)   | Road Runner      | Communication       | High     |
+| 6   | Coach failed to identify role confusion               | Coach (me)       | Observation         | High     |
+| 7   | Commit included 16 files instead of 9                 | Tweety           | Git Workflow        | High     |
+| 8   | Sustained misdiagnosis — prettier was never the cause | Tweety (+ team)  | Root Cause Analysis | High     |
+| 9   | Task executed against wrong requirements (compaction) | Tweety           | Requirements        | High     |
 
 ---
 
@@ -30,6 +30,7 @@
 **What it is**: Starting or completing work before fully understanding requirements, verifying assumptions, or getting approval.
 
 **How it manifests**:
+
 - Applying a fix without checking if the diagnosis is correct (#2, #8)
 - Completing work after a hold order (#4)
 - Committing without verifying staged files (#7)
@@ -49,6 +50,7 @@
 **What it is**: Sending messages to non-existent or incorrectly-named recipients, losing deliverables.
 
 **How it manifests**:
+
 - Messaging Elmer Fudd (not launched) — 2 messages lost (#1)
 - Messaging "Bugs Bunny (Team Lead)" (doesn't exist) — 3 messages lost (#5)
 - Total: 5+ messages lost across the session
@@ -66,6 +68,7 @@
 **What it is**: Attributing problems to external tools or systems before verifying your own work.
 
 **How it manifests**:
+
 - Blaming prettier for YAML damage that was self-inflicted (#2, #8)
 - Accepting the tool-blame narrative without deeper investigation (#6 — Coach, #8 — team)
 - Multiple people reinforcing an incorrect root cause because it was plausible (#8)
@@ -83,6 +86,7 @@
 **What it is**: Seeing data without connecting dots or following threads to their conclusion.
 
 **How it manifests**:
+
 - I had all the data to identify Road Runner's role confusion but stopped at "wrong recipient name" (#6)
 - I noted "guessing names from role descriptions" but didn't ask WHY Road Runner thought Bugs Bunny was the team lead
 
@@ -101,6 +105,7 @@
 **Primary pattern**: Act First, Verify Later + Blame the Tool
 
 **What's going well**:
+
 - Self-reporting has improved dramatically — Tweety self-reported Failures #8 and #9 without prompting
 - Work quality is high when requirements are correctly understood
 - Takes feedback constructively and implements changes
@@ -139,6 +144,7 @@
 **Primary pattern**: Messages to the Void
 
 **What's going well**:
+
 - Research quality is consistently high — thorough, well-cited, good structure
 - Once corrected on recipient names, the problem stopped
 - Saves research to files (when reminded)
@@ -165,6 +171,7 @@
 **Primary pattern**: None dominant — contributed to one failure.
 
 **What's going well**:
+
 - Repo setup work (#4) is solid — good standard tooling
 - Investigation work is exemplary — the Task #16 prettier investigation broke the misdiagnosis cycle
 - PRDs (#42, #43) are comprehensive and well-structured
@@ -188,6 +195,7 @@
 **Primary pattern**: Shallow Observation
 
 **What's going well**:
+
 - Verification methodology (checklists, file-by-file reads, grep for stale references) is catching issues
 - Failure logging is consistent and detailed
 - Pattern identification is improving (identified compaction as failure vector)
@@ -211,6 +219,7 @@
 ### 1. Institute a Pre-Task Ritual (ALL agents)
 
 Before starting any task:
+
 ```
 1. TaskGet — read actual requirements
 2. Read referenced docs/research
@@ -237,6 +246,7 @@ Would have caught Failures #7, #8, and #9 earlier.
 ### 4. Post-Compaction Verification Protocol (ALL agents)
 
 After any compaction:
+
 - Re-read task requirements from TaskGet
 - Re-read team config for recipient names
 - Don't trust any details from the compaction summary for execution purposes
@@ -246,6 +256,7 @@ Would have prevented Failures #1 (partially) and #9.
 ### 5. "Verify Before Blaming" as Team Value
 
 When something seems broken:
+
 1. Check your own work first
 2. Reproduce the issue in isolation
 3. Only blame external tools with evidence
@@ -256,12 +267,12 @@ Would have prevented Failures #2, #6, and #8.
 
 ## Metrics
 
-| Agent | Failures | Self-Reported | Trend |
-|-------|----------|--------------|-------|
-| Tweety | 6 | 3 (50%) | Improving — self-awareness increasing |
-| Road Runner | 2 | 1 (50%) | Stable — core issue corrected |
-| Foghorn | 1 (contributor) | 0 | Strong — mostly an exemplar |
-| Coach | 1 | 0 (user caught) | Improving — depth of analysis increasing |
+| Agent       | Failures        | Self-Reported   | Trend                                    |
+| ----------- | --------------- | --------------- | ---------------------------------------- |
+| Tweety      | 6               | 3 (50%)         | Improving — self-awareness increasing    |
+| Road Runner | 2               | 1 (50%)         | Stable — core issue corrected            |
+| Foghorn     | 1 (contributor) | 0               | Strong — mostly an exemplar              |
+| Coach       | 1               | 0 (user caught) | Improving — depth of analysis increasing |
 
 **Team total**: 9 failures, 4 self-reported (44%). Self-reporting rate has increased over the session — early failures were all externally caught, later failures increasingly self-reported.
 

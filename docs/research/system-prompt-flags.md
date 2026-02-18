@@ -11,12 +11,12 @@
 
 **YES, Claude Code has a `--system-prompt` flag that REPLACES the built-in system prompt.** However, it has a critical reliability limitation in interactive mode.
 
-| Flag | Behavior | Print Mode | Interactive Mode |
-| :--- | :------- | :--------- | :--------------- |
-| `--system-prompt "..."` | **Replaces** entire default prompt | Works | Documented but unreliable[^2] |
-| `--system-prompt-file path` | **Replaces** from file | Works | Print mode only |
-| `--append-system-prompt "..."` | **Appends** to default prompt | Works | Works |
-| `--append-system-prompt-file path` | **Appends** from file | Works | Print mode only |
+| Flag                               | Behavior                           | Print Mode | Interactive Mode              |
+| :--------------------------------- | :--------------------------------- | :--------- | :---------------------------- |
+| `--system-prompt "..."`            | **Replaces** entire default prompt | Works      | Documented but unreliable[^2] |
+| `--system-prompt-file path`        | **Replaces** from file             | Works      | Print mode only               |
+| `--append-system-prompt "..."`     | **Appends** to default prompt      | Works      | Works                         |
+| `--append-system-prompt-file path` | **Appends** from file              | Works      | Print mode only               |
 
 ---
 
@@ -68,6 +68,7 @@ GitHub Issue #2692[^2] reports that `--system-prompt` does not reliably work in 
 - Different from Gemini CLI which supports `GEMINI_SYSTEM_MD` for this purpose
 
 **Workarounds**:
+
 1. Use `--append-system-prompt` (more reliable, but adds to rather than replaces)
 2. Use `-p` print mode (reliable but non-interactive)
 3. Use CLAUDE.md files (supplements, doesn't replace)
@@ -87,8 +88,8 @@ const customPrompt = `You are a Python coding specialist...`;
 for await (const message of query({
   prompt: "Help me write code",
   options: {
-    systemPrompt: customPrompt  // REPLACES entire prompt
-  }
+    systemPrompt: customPrompt, // REPLACES entire prompt
+  },
 })) {
   console.log(message);
 }
@@ -103,9 +104,9 @@ for await (const message of query({
     systemPrompt: {
       type: "preset",
       preset: "claude_code",
-      append: "Always use TypeScript"  // ADDS to default
-    }
-  }
+      append: "Always use TypeScript", // ADDS to default
+    },
+  },
 })) {
   console.log(message);
 }

@@ -33,11 +33,11 @@ The agent launcher is a CLI tool that reads `.claude/agents/*.md` files and auto
 
 Three agent definition formats exist across the project. This spec uses **format 1** only:
 
-| Format | Location | Used By | Phase |
-|:--|:--|:--|:--|
-| **`.claude/agents/*.md`** (this spec) | Project `.claude/agents/` | Claude Code native agent system + launcher | Phase 1 (MVP) |
-| **`agents/{name}/agent.yaml`** | Proposed directory structure | Structured agent definitions with Dockerfile, behaviors/ | Phase 2+ |
-| **`.agent.yaml`** (wrapper PRD) | Agent wrapper config | Config composition, profiles | Future (`nsheaps/agent` CLI) |
+| Format                                | Location                     | Used By                                                  | Phase                        |
+| :------------------------------------ | :--------------------------- | :------------------------------------------------------- | :--------------------------- |
+| **`.claude/agents/*.md`** (this spec) | Project `.claude/agents/`    | Claude Code native agent system + launcher               | Phase 1 (MVP)                |
+| **`agents/{name}/agent.yaml`**        | Proposed directory structure | Structured agent definitions with Dockerfile, behaviors/ | Phase 2+                     |
+| **`.agent.yaml`** (wrapper PRD)       | Agent wrapper config         | Config composition, profiles                             | Future (`nsheaps/agent` CLI) |
 
 Phase 1 reads `.claude/agents/*.md` files. Phase 2 introduces `agent.yaml` for richer definitions. The wrapper `.agent.yaml` is a separate concern in the `nsheaps/agent` repo.
 
@@ -64,13 +64,13 @@ The launcher scans `.claude/agents/*.md` in the project root. Only files with `.
 
 ### Error Handling
 
-| Condition | Behavior |
-|:--|:--|
-| No `.claude/agents/` directory | Error: "No agents directory found" |
-| Directory exists but empty | Warning: "No agent files found" |
-| File with invalid YAML | Warning: "Skipping {file}: invalid frontmatter" — continue with others |
-| File missing required fields | Warning: "Skipping {file}: missing required field '{field}'" |
-| Duplicate agent names | Error: "Duplicate agent name '{name}' in {file1} and {file2}" |
+| Condition                      | Behavior                                                               |
+| :----------------------------- | :--------------------------------------------------------------------- |
+| No `.claude/agents/` directory | Error: "No agents directory found"                                     |
+| Directory exists but empty     | Warning: "No agent files found"                                        |
+| File with invalid YAML         | Warning: "Skipping {file}: invalid frontmatter" — continue with others |
+| File missing required fields   | Warning: "Skipping {file}: missing required field '{field}'"           |
+| Duplicate agent names          | Error: "Duplicate agent name '{name}' in {file1} and {file2}"          |
 
 ---
 
@@ -82,33 +82,33 @@ The existing `.claude/agents/*.md` files have Claude Code native frontmatter fie
 
 #### Required Fields
 
-| Field | Type | Description |
-|:--|:--|:--|
-| `name` | string | Unique agent identifier (kebab-case). Used as agent name in team config. |
-| `description` | string | When to invoke this agent. Used by Claude Code for agent selection. |
+| Field         | Type   | Description                                                              |
+| :------------ | :----- | :----------------------------------------------------------------------- |
+| `name`        | string | Unique agent identifier (kebab-case). Used as agent name in team config. |
+| `description` | string | When to invoke this agent. Used by Claude Code for agent selection.      |
 
 #### Launcher Fields (optional, with defaults)
 
-| Field | Type | Default | Description |
-|:--|:--|:--|:--|
-| `prompt_mode` | `"extend"` \| `"replace"` | `"extend"` | How the agent's prompt combines with the base prompt |
-| `base_prompt` | `"_builtin"` \| string (file path) | `"_builtin"` | Base system prompt source |
-| `framework` | `"claude-code"` | `"claude-code"` | Agent framework (only `claude-code` supported in Phase 1) |
-| `model` | string | (framework default) | Model override, e.g., `"claude-opus-4-6"`, `"sonnet"` |
-| `permission_mode` | `"default"` \| `"delegate"` \| `"plan"` \| `"bypassPermissions"` | `"delegate"` | Claude Code permission mode |
-| `dangerously_skip_permissions` | boolean | `true` for orchestrator, `false` otherwise | If true, passes `--dangerously-skip-permissions`. **Migration note**: `claude-team` always passes this flag. The orchestrator defaults to `true` to match; other agents default to `false` as a deliberate security improvement. |
-| `display_name` | string | (derived from name) | Display name for team UI, format: "First L (role)" |
-| `teammate_mode` | `"auto"` \| `"in-process"` \| `"tmux"` | (inherited from lead) | Override teammate display mode |
-| `continue_session` | boolean | `false` | If true, passes `--continue` to resume most recent session |
-| `tools` | string[] | (all tools) | Whitelist of tools available to this agent. Maps to `--tools`. Removes unlisted tools from context. |
-| `disallowed_tools` | string[] | `[]` | Blacklist of tools to remove from context. Maps to `--disallowedTools`. Supports patterns. |
+| Field                          | Type                                                             | Default                                    | Description                                                                                                                                                                                                                      |
+| :----------------------------- | :--------------------------------------------------------------- | :----------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `prompt_mode`                  | `"extend"` \| `"replace"`                                        | `"extend"`                                 | How the agent's prompt combines with the base prompt                                                                                                                                                                             |
+| `base_prompt`                  | `"_builtin"` \| string (file path)                               | `"_builtin"`                               | Base system prompt source                                                                                                                                                                                                        |
+| `framework`                    | `"claude-code"`                                                  | `"claude-code"`                            | Agent framework (only `claude-code` supported in Phase 1)                                                                                                                                                                        |
+| `model`                        | string                                                           | (framework default)                        | Model override, e.g., `"claude-opus-4-6"`, `"sonnet"`                                                                                                                                                                            |
+| `permission_mode`              | `"default"` \| `"delegate"` \| `"plan"` \| `"bypassPermissions"` | `"delegate"`                               | Claude Code permission mode                                                                                                                                                                                                      |
+| `dangerously_skip_permissions` | boolean                                                          | `true` for orchestrator, `false` otherwise | If true, passes `--dangerously-skip-permissions`. **Migration note**: `claude-team` always passes this flag. The orchestrator defaults to `true` to match; other agents default to `false` as a deliberate security improvement. |
+| `display_name`                 | string                                                           | (derived from name)                        | Display name for team UI, format: "First L (role)"                                                                                                                                                                               |
+| `teammate_mode`                | `"auto"` \| `"in-process"` \| `"tmux"`                           | (inherited from lead)                      | Override teammate display mode                                                                                                                                                                                                   |
+| `continue_session`             | boolean                                                          | `false`                                    | If true, passes `--continue` to resume most recent session                                                                                                                                                                       |
+| `tools`                        | string[]                                                         | (all tools)                                | Whitelist of tools available to this agent. Maps to `--tools`. Removes unlisted tools from context.                                                                                                                              |
+| `disallowed_tools`             | string[]                                                         | `[]`                                       | Blacklist of tools to remove from context. Maps to `--disallowedTools`. Supports patterns.                                                                                                                                       |
 
 #### Preserved Claude Code Fields
 
 These fields are native to Claude Code's agent system and are preserved as-is:
 
-| Field | Type | Description |
-|:--|:--|:--|
+| Field   | Type   | Description                |
+| :------ | :----- | :------------------------- |
 | `color` | string | Agent color in terminal UI |
 
 ### Display Name Format
@@ -116,6 +116,7 @@ These fields are native to Claude Code's agent system and are preserved as-is:
 Agent display names follow the format: **"First L (role)"**
 
 Examples:
+
 - `Bugs B (software-eng)` — not "Bugs Bunny (Software Eng)"
 - `Wile E (ai-agent-eng)` — abbreviated role
 - `Tweety B (docs-writer)`
@@ -153,7 +154,6 @@ model: claude-opus-4-6
 permission_mode: delegate
 display_name: "Bugs B (software-eng)"
 ---
-
 # Bugs Bunny (Software Eng)
 
 You are a software engineer...
@@ -194,6 +194,7 @@ This preserves Claude Code's built-in tool descriptions for kept tools while rem
 > **WARNING**: `--system-prompt` (REPLACE) is **unreliable in interactive mode** per [GitHub Issue #2692](https://github.com/anthropics/claude-code/issues/2692). Users report Claude Code still uses default instructions even when `--system-prompt` is specified. It works reliably in print mode (`-p`) but not interactive.
 >
 > Since agent team teammates are **interactive sessions**, REPLACE mode is risky for Phase 1. Use EXTEND mode instead. REPLACE will be revisited when:
+>
 > 1. The GitHub issue is resolved, or
 > 2. We migrate to the Agent SDK's `systemPrompt` parameter (which is reliable for full replacement)
 
@@ -209,9 +210,9 @@ CLI mapping: `--system-prompt "<agent_markdown_body>"`
 
 ### Base Prompt Selection
 
-| Value | Behavior |
-|:--|:--|
-| `_builtin` (default) | Don't pass any base — let Claude Code use its built-in system prompt. In EXTEND mode, only `--append-system-prompt` is passed. In REPLACE mode, `--system-prompt` is passed with just the agent body. |
+| Value                                | Behavior                                                                                                                                                                                                         |
+| :----------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `_builtin` (default)                 | Don't pass any base — let Claude Code use its built-in system prompt. In EXTEND mode, only `--append-system-prompt` is passed. In REPLACE mode, `--system-prompt` is passed with just the agent body.            |
 | File path (relative to project root) | Read the file and use its contents as the base. In EXTEND mode: `--system-prompt "<file_contents>" --append-system-prompt "<agent_body>"`. In REPLACE mode: `--system-prompt "<file_contents>\n\n<agent_body>"`. |
 
 ### Prompt Assembly Algorithm
@@ -271,6 +272,7 @@ agent-launcher --team-name looney-tunes launch software-eng
 ```
 
 If not provided via flag, the launcher checks:
+
 1. `AGENT_TEAM_NAME` environment variable
 2. Error: "Team name required. Use --team-name or set AGENT_TEAM_NAME."
 
@@ -288,20 +290,21 @@ If not provided via flag, the launcher checks:
 
 ### CLI Flag Mapping
 
-| Agent Field | Claude CLI Flag |
-|:--|:--|
-| (prompt assembly) | `--append-system-prompt` (EXTEND) or `--system-prompt` (REPLACE, experimental) |
-| `model` | `--model <value>` |
-| `permission_mode` | `--permission-mode <value>` |
-| `dangerously_skip_permissions` | `--dangerously-skip-permissions` |
-| `teammate_mode` | `--teammate-mode <value>` |
-| `continue_session` | `--continue` |
-| `tools` | `--tools "<comma-separated>"` |
-| `disallowed_tools` | `--disallowedTools "<tool1>" "<tool2>" ...` |
+| Agent Field                    | Claude CLI Flag                                                                |
+| :----------------------------- | :----------------------------------------------------------------------------- |
+| (prompt assembly)              | `--append-system-prompt` (EXTEND) or `--system-prompt` (REPLACE, experimental) |
+| `model`                        | `--model <value>`                                                              |
+| `permission_mode`              | `--permission-mode <value>`                                                    |
+| `dangerously_skip_permissions` | `--dangerously-skip-permissions`                                               |
+| `teammate_mode`                | `--teammate-mode <value>`                                                      |
+| `continue_session`             | `--continue`                                                                   |
+| `tools`                        | `--tools "<comma-separated>"`                                                  |
+| `disallowed_tools`             | `--disallowedTools "<tool1>" "<tool2>" ...`                                    |
 
 ### Environment Variables
 
 The launcher always sets:
+
 ```bash
 CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 ```
@@ -340,6 +343,7 @@ agent-launcher --team-name looney-tunes kill <agent-name>
 ```
 
 **Flow:**
+
 1. Find agent in team config (`~/.claude/teams/{team-name}/config.json`)
 2. Find associated tmux pane (if tmux mode)
 3. Send shutdown request via `SendMessage` (graceful)
@@ -370,6 +374,7 @@ For each agent in config.json:
 ```
 
 **Output format:**
+
 ```
 Agent                    Status    Backend     Pane
 Bugs B (software-eng)    RUNNING   tmux        %42
@@ -389,6 +394,7 @@ Runs automatically before every `launch` command:
 ```
 
 Also available as explicit command:
+
 ```bash
 agent-launcher --team-name looney-tunes cleanup
 ```
@@ -420,6 +426,7 @@ agent-launcher --team-name looney-tunes relaunch <agent-name>
 ```
 
 **Flow:**
+
 1. Kill existing agent (§6.1) — including config cleanup
 2. Re-read agent file (picks up any changes)
 3. Launch fresh (§5)
@@ -443,13 +450,13 @@ This is different from hooks or permission rules, which only block execution but
 
 ### Tool Control Levels
 
-| Mechanism | Saves Context? | Phase |
-|:--|:--|:--|
-| `--tools` / `--disallowedTools` CLI flags | **Yes** | Phase 1 (this spec) |
-| Agent frontmatter `tools` / `disallowedTools` (subagent only) | **Yes** | Phase 1 (for subagents) |
-| PreToolUse hooks | No | N/A (blocking only) |
-| Permission deny rules | No | N/A (blocking only) |
-| Runtime I/O proxy stripping | **Yes** | Phase 2+ (architecture doc §7) |
+| Mechanism                                                     | Saves Context? | Phase                          |
+| :------------------------------------------------------------ | :------------- | :----------------------------- |
+| `--tools` / `--disallowedTools` CLI flags                     | **Yes**        | Phase 1 (this spec)            |
+| Agent frontmatter `tools` / `disallowedTools` (subagent only) | **Yes**        | Phase 1 (for subagents)        |
+| PreToolUse hooks                                              | No             | N/A (blocking only)            |
+| Permission deny rules                                         | No             | N/A (blocking only)            |
+| Runtime I/O proxy stripping                                   | **Yes**        | Phase 2+ (architecture doc §7) |
 
 ### Example Tool Sets by Role
 
@@ -473,6 +480,7 @@ disallowed_tools: [Edit, Write]
 ### Pattern Support
 
 `disallowed_tools` supports patterns per Claude Code's permission rule syntax:
+
 - `Bash(rm -rf *)` — block specific command patterns
 - `Read(./.env)` — block reading sensitive files
 - `Task(Explore)` — disable specific subagent types
@@ -508,10 +516,10 @@ The launcher does not own this file — Claude Code's `TeamCreate` tool creates 
 
 **Launcher-managed fields** (set at spawn time, not part of Claude Code's base schema):
 
-| Field | Type | Purpose |
-|:--|:--|:--|
+| Field        | Type      | Purpose                                                               |
+| :----------- | :-------- | :-------------------------------------------------------------------- |
 | `tmuxPaneId` | `string?` | Tmux pane ID — enables kill (§6.1), health (§6.2), and cleanup (§6.3) |
-| `agentName` | `string?` | Agent file name slug — enables file/config correlation in list (§6.4) |
+| `agentName`  | `string?` | Agent file name slug — enables file/config correlation in list (§6.4) |
 
 These fields are added to the config entry when the launcher spawns an agent. Claude Code's own tools ignore unknown fields, so they coexist safely.
 
@@ -579,18 +587,26 @@ The `exec` pattern is critical — it replaces the shell process so the tmux ses
 ```json
 {
   "hooks": {
-    "SessionStart": [{
-      "hooks": [{
-        "type": "command",
-        "command": "echo '[agent-teams] Session started' >&2"
-      }]
-    }],
-    "Stop": [{
-      "hooks": [{
-        "type": "command",
-        "command": "echo '[agent-teams] Session stopping' >&2"
-      }]
-    }]
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[agent-teams] Session started' >&2"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[agent-teams] Session stopping' >&2"
+          }
+        ]
+      }
+    ]
   }
 }
 ```
@@ -617,18 +633,19 @@ Commands:
 
 ### Global Flags
 
-| Flag | Env Var | Description |
-|:--|:--|:--|
-| `--team-name <name>` | `AGENT_TEAM_NAME` | Team name (required) |
-| `--teammate-mode <mode>` | `CLAUDE_TEAM_DEFAULT_MODE` | Teammate display mode: `auto`, `in-process`, `tmux` (default: `auto`) |
-| `--no-interactive` | — | Skip interactive prompts, use defaults. Without this, launcher prompts for teammate mode if not specified. |
-| `--project-root <path>` | — | Override project root (default: git root or cwd) |
-| `--verbose` | — | Verbose output |
-| `--` | — | Separator. Everything after `--` is passed through to the claude CLI as extra args. |
+| Flag                     | Env Var                    | Description                                                                                                |
+| :----------------------- | :------------------------- | :--------------------------------------------------------------------------------------------------------- |
+| `--team-name <name>`     | `AGENT_TEAM_NAME`          | Team name (required)                                                                                       |
+| `--teammate-mode <mode>` | `CLAUDE_TEAM_DEFAULT_MODE` | Teammate display mode: `auto`, `in-process`, `tmux` (default: `auto`)                                      |
+| `--no-interactive`       | —                          | Skip interactive prompts, use defaults. Without this, launcher prompts for teammate mode if not specified. |
+| `--project-root <path>`  | —                          | Override project root (default: git root or cwd)                                                           |
+| `--verbose`              | —                          | Verbose output                                                                                             |
+| `--`                     | —                          | Separator. Everything after `--` is passed through to the claude CLI as extra args.                        |
 
 ### `start` Command (Orchestrator)
 
 The `start` command is the primary entry point. It:
+
 1. Discovers agents
 2. Runs auto-cleanup
 3. Launches the orchestrator lead session with team configuration
@@ -645,22 +662,22 @@ agent-launcher --team-name looney-tunes start
 
 The launcher replaces `claude-team` from the claude-utils repo. Feature mapping:
 
-| claude-team Feature | Launcher Equivalent |
-|:--|:--|
-| Interactive mode picker (gum) | `--teammate-mode` flag on `start` command, or interactive fallback |
-| iTerm2 tmux -CC auto-launch | Preserved in `start` command |
-| Hardcoded orchestrator prompt | Read from `.claude/agents/orchestrator.md` |
-| `--permission-mode delegate` | Per-agent `permission_mode` in frontmatter |
-| `--continue` | Per-agent `continue_session` in frontmatter |
+| claude-team Feature                          | Launcher Equivalent                                                                                                                                                                                                                                         |
+| :------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Interactive mode picker (gum)                | `--teammate-mode` flag on `start` command, or interactive fallback                                                                                                                                                                                          |
+| iTerm2 tmux -CC auto-launch                  | Preserved in `start` command                                                                                                                                                                                                                                |
+| Hardcoded orchestrator prompt                | Read from `.claude/agents/orchestrator.md`                                                                                                                                                                                                                  |
+| `--permission-mode delegate`                 | Per-agent `permission_mode` in frontmatter                                                                                                                                                                                                                  |
+| `--continue`                                 | Per-agent `continue_session` in frontmatter                                                                                                                                                                                                                 |
 | `--dangerously-skip-permissions` (always on) | Per-agent `dangerously_skip_permissions` in frontmatter. **Breaking change**: orchestrator defaults `true` (matches old behavior), other agents default `false` (new security improvement — users will see permission prompts for non-orchestrator agents). |
-| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | Always set by launcher |
-| Hooks (SessionStart, Stop) | Configurable via orchestrator agent definition or `--settings` |
-| Brew update check | Retained in entry point script (not in launcher core) |
-| `gum` dependency | Optional — only for interactive mode selection |
-| `--no-interactive` flag | `--no-interactive` global flag (same semantics) |
-| `CLAUDE_TEAM_DEFAULT_MODE` env var | `CLAUDE_TEAM_DEFAULT_MODE` env var for `--teammate-mode` (same) |
-| `--` passthrough to claude | `--` separator passes remaining args to claude CLI |
-| `claude_check_settings_backup` | Not carried over (previously rejected by user) |
+| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`     | Always set by launcher                                                                                                                                                                                                                                      |
+| Hooks (SessionStart, Stop)                   | Configurable via orchestrator agent definition or `--settings`                                                                                                                                                                                              |
+| Brew update check                            | Retained in entry point script (not in launcher core)                                                                                                                                                                                                       |
+| `gum` dependency                             | Optional — only for interactive mode selection                                                                                                                                                                                                              |
+| `--no-interactive` flag                      | `--no-interactive` global flag (same semantics)                                                                                                                                                                                                             |
+| `CLAUDE_TEAM_DEFAULT_MODE` env var           | `CLAUDE_TEAM_DEFAULT_MODE` env var for `--teammate-mode` (same)                                                                                                                                                                                             |
+| `--` passthrough to claude                   | `--` separator passes remaining args to claude CLI                                                                                                                                                                                                          |
+| `claude_check_settings_backup`               | Not carried over (previously rejected by user)                                                                                                                                                                                                              |
 
 ---
 
@@ -669,12 +686,14 @@ The launcher replaces `claude-team` from the claude-utils repo. Feature mapping:
 Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 
 ### Phase 1A: Discovery + Prompt Assembly (PHASE1-003, PHASE1-004)
+
 - Agent file glob + frontmatter parsing
 - Prompt mode system (EXTEND/REPLACE)
 - Base prompt selection
 - Unit tests
 
 ### Phase 1B: Spawning (PHASE1-005, PHASE1-012)
+
 - `launch` command — spawn via Claude CLI
 - `start` command — launch orchestrator
 - Customizable team name
@@ -682,6 +701,7 @@ Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 - Integration tests
 
 ### Phase 1C: Lifecycle (PHASE1-006 through PHASE1-008)
+
 - `kill` with graceful shutdown + config cleanup
 - Health check (tmux pane alive/dead)
 - Auto-cleanup on launch
@@ -695,13 +715,13 @@ Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 
 Answers provided by team-lead. These were previously open questions.
 
-| # | Question | Decision |
-|:--|:--|:--|
-| 1 | Launcher packaging | **Bun script in agent-team repo** for MVP. Package as npm module later if it proves useful. |
-| 2 | Tmux pane ID tracking | Capture from `tmux split-window -P -F "#{pane_id}"` at spawn time. Store in agent metadata. |
-| 3 | Graceful shutdown timeout | **10 seconds** — fine for MVP. |
-| 4 | Batch launch ordering | **Sequential** for MVP. Parallel launch is a later optimization. |
-| 5 | Orchestrator agent file | **Agent file like any other** (`.claude/agents/orchestrator.md`), but with `role: orchestrator` in frontmatter. Launcher recognizes this role as special: launches first, gets team management tools. |
+| #   | Question                  | Decision                                                                                                                                                                                              |
+| :-- | :------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Launcher packaging        | **Bun script in agent-team repo** for MVP. Package as npm module later if it proves useful.                                                                                                           |
+| 2   | Tmux pane ID tracking     | Capture from `tmux split-window -P -F "#{pane_id}"` at spawn time. Store in agent metadata.                                                                                                           |
+| 3   | Graceful shutdown timeout | **10 seconds** — fine for MVP.                                                                                                                                                                        |
+| 4   | Batch launch ordering     | **Sequential** for MVP. Parallel launch is a later optimization.                                                                                                                                      |
+| 5   | Orchestrator agent file   | **Agent file like any other** (`.claude/agents/orchestrator.md`), but with `role: orchestrator` in frontmatter. Launcher recognizes this role as special: launches first, gets team management tools. |
 
 ### Remaining Open Questions
 

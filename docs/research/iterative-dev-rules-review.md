@@ -18,6 +18,7 @@
 The incremental development rule covered building features step-by-step (plan → start small → iterate → test → refactor) but had NO guidance on operational tasks like extraction, migration, or restructuring.
 
 **Fix applied**: Added "Incremental Operations: Extract, Migrate, Refactor" section to `mantras-and-incremental-development.md` in nsheaps/.ai. Covers:
+
 - Phase 1: Pure move (zero functional changes, verify identical behavior)
 - Phase 2: Improvements (only after move is verified)
 - Why this matters (separates relocation breakage from modification breakage)
@@ -27,6 +28,7 @@ The incremental development rule covered building features step-by-step (plan �
 ### Gap 2: product-development-and-sdlc plugin covers PRD but not SDLC execution (NOT FIXED — larger effort)
 
 The plugin name promises "product development AND SDLC" but only contains one skill: `prd-writing`. There is no skill for:
+
 - Implementation phasing (how to break a PRD into phased execution)
 - Extraction/migration workflows
 - Release management
@@ -43,11 +45,11 @@ The boundary between rules (general principles) and skills (specific workflows) 
 
 ## Summary
 
-| Item | Status | Action |
-|:-----|:-------|:-------|
-| Incremental operations pattern | **Fixed** | Added to `mantras-and-incremental-development.md` |
-| Plugin SDLC execution gap | **Noted** | Recommend future plugin enhancement |
-| Rule vs skill boundary | **Correct** | No action needed |
+| Item                           | Status      | Action                                            |
+| :----------------------------- | :---------- | :------------------------------------------------ |
+| Incremental operations pattern | **Fixed**   | Added to `mantras-and-incremental-development.md` |
+| Plugin SDLC execution gap      | **Noted**   | Recommend future plugin enhancement               |
+| Rule vs skill boundary         | **Correct** | No action needed                                  |
 
 ## References
 

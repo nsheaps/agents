@@ -20,6 +20,7 @@ Task subjects follow this format:
 ```
 
 Examples:
+
 - `#108: Create incremental design behavior`
 - `#117: Review agent launcher against claude-team for gaps`
 - `#49: Verify Foghorn's #42 and #43 deliverables`
@@ -29,6 +30,7 @@ Examples:
 `TaskCreate` does not accept an ID — it assigns one on creation. So the convention requires a two-step process:
 
 1. **Create the task** with a descriptive subject (no ID yet):
+
    ```
    TaskCreate(subject: "Create incremental design behavior", ...)
    → Returns: "Task #108 created successfully"

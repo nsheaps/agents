@@ -9,12 +9,12 @@
 
 ## Files Reviewed
 
-| File | Lines | Purpose |
-|------|-------|---------|
-| `bin/claude-team` | 197 | Main script — mode picker, tmux detection, launches claude |
-| `bin/ct` | 34 | Shorthand alias, delegates to claude-team |
-| `bin/lib/claude.lib.sh` | 200 | Shared library — happy/claude routing, settings backup |
-| `bin/lib/stdlib.sh` | 490 | General utility library — colors, check_and_install, etc. |
+| File                    | Lines | Purpose                                                    |
+| ----------------------- | ----- | ---------------------------------------------------------- |
+| `bin/claude-team`       | 197   | Main script — mode picker, tmux detection, launches claude |
+| `bin/ct`                | 34    | Shorthand alias, delegates to claude-team                  |
+| `bin/lib/claude.lib.sh` | 200   | Shared library — happy/claude routing, settings backup     |
+| `bin/lib/stdlib.sh`     | 490   | General utility library — colors, check_and_install, etc.  |
 
 ---
 
@@ -24,10 +24,12 @@
 
 **File**: `bin/claude-team:193-195`
 **Description**: Both the tmux and non-tmux launch paths pass `--dangerously-skip-permissions` directly to claude:
+
 ```bash
 exec tmux -CC new-session -- claude --dangerously-skip-permissions "${TEAM_FLAGS[@]}" ...
 command claude --dangerously-skip-permissions "${TEAM_FLAGS[@]}" ...
 ```
+
 But `TEAM_FLAGS` already includes `--permission-mode delegate`. Per the team's earlier finding (from claude-utils MEMORY.md), there's a semantic difference between `--dangerously-skip-permissions` and `--allow-dangerously-skip-permissions`. The `simple_claudeish` function in `claude.lib.sh:98-106` uses `--allow-dangerously-skip-permissions`, and the code standard says to use `simple_claudeish` instead of passing the flag directly.
 **Impact**: Security/permission model inconsistency. May bypass intended permission gates.
 **Recommendation**: Use `--allow-dangerously-skip-permissions` instead, or make this configurable.
@@ -36,12 +38,14 @@ But `TEAM_FLAGS` already includes `--permission-mode delegate`. Per the team's e
 
 **File**: `bin/claude-team:23` → `bin/lib/claude.lib.sh` → `bin/lib/stdlib.sh`
 **Description**: `claude-team` sources `claude.lib.sh`, which sources `stdlib.sh`. Together these are ~690 lines of library code. The extraction must either:
+
 1. Copy the needed functions into claude-team's own lib
 2. Or keep a dependency on claude-utils
 
 The decision says "claude-team does NOT depend on run-claude", but it still depends on `claude.lib.sh` and `stdlib.sh`.
 **Impact**: Without resolving this, the extracted script won't work standalone.
 **Recommendation**: Extract only the functions actually used by claude-team into a minimal lib. Used functions:
+
 - From `stdlib.sh`: `info`, `warn`, `error`, `fatal`, `hint`, `success`, `check_and_install`
 - From `claude.lib.sh`: `claude_check_settings_backup` (but user REJECTED settings backup migration — see EXT-5)
 
@@ -98,9 +102,11 @@ Wait — actually re-reading: `check_and_install gum` at line 105 would first tr
 
 **File**: `bin/claude-team:141`
 **Description**: The orchestrator system prompt is a single sentence:
+
 ```
 "You are an orchestrator of an agent team using claude code. You do not perform any tasks, only create/launch teammates and coordinate between them."
 ```
+
 This is hardcoded in the script. The agent-team TypeScript launcher has a configurable prompt system with extend/replace modes. The extracted version should at minimum allow overriding via env var or file.
 **Impact**: Users can't customize orchestrator behavior without editing the script.
 **Recommendation**: Support `CLAUDE_TEAM_ORCHESTRATOR_PROMPT` env var and/or a prompt file path (e.g., `--orchestrator-prompt-file`).
@@ -146,14 +152,16 @@ This is hardcoded in the script. The agent-team TypeScript launcher has a config
 ### EXT-14 [LOW]: No test suite for shell scripts
 
 **Description**: No tests exist for `claude-team` or `ct`. Given these are the primary user-facing tools for agent teams, they should have at minimum:
+
 - Arg parsing tests (--mode values, --no-interactive, --)
 - Help output tests
 - Exit code tests for invalid inputs
-**Recommendation**: Add bats or shunit2 tests in the extracted repo.
+  **Recommendation**: Add bats or shunit2 tests in the extracted repo.
 
 ### EXT-15 [LOW]: `stdlib.sh` is ~490 lines but claude-team uses ~7 functions
 
 **Description**: The full stdlib is massive for what claude-team needs. Functions actually used:
+
 - `info`, `warn`, `error`, `fatal`, `hint`, `success` (output formatting)
 - `check_and_install` (dependency management)
 

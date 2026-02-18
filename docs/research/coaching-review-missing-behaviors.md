@@ -25,6 +25,7 @@ The pre-task-checklist is the standout — it's comprehensive, prescriptive, and
 
 **Does it encode the actual lessons?**
 YES. Every major lesson from the coaching synthesis is present:
+
 - Step 1: "Run TaskGet... do not rely on message summary, memory, or compaction summary" — directly addresses Failure #9 root cause
 - Step 3: "Verify mechanisms before implementing... with a minimal test case" — directly addresses Failure #9's @references mistake (implemented without verifying it works)
 - Step 4: "If multiple approaches... STOP. Do not pick one autonomously" — directly addresses Failures #3 and #4 (Tweety picking approaches without approval)
@@ -38,10 +39,12 @@ YES. Step 1 alone would have prevented Failure #9. Step 4 alone would have preve
 YES. "Trusting the compaction summary as a source of requirements" — that's exactly what happened. "Implementing around an unverified mechanism, then discovering it doesn't work" — that's the @references pattern.
 
 **What's excellent:**
+
 - Step 6 ("State your understanding") creates a visible checkpoint — this is a coaching innovation not in my synthesis. It creates a moment where misunderstandings can be caught BEFORE work starts.
 - The description calls it "highest-priority behavior" and cites "4 of 9 failures" — sets the urgency correctly.
 
 **Minor suggestion:**
+
 - Could add: "If you receive updated requirements mid-task, restart this checklist from step 1." This would address the mid-session requirement changes that complicated Failure #9.
 
 ---
@@ -52,6 +55,7 @@ YES. "Trusting the compaction summary as a source of requirements" — that's ex
 
 **Does it encode the actual lessons?**
 YES. All key lessons present:
+
 - Step 1: "Save deliverables to files first" with explicit pattern — directly addresses the data loss from Failures #1 and #5 (5+ messages lost because content was only in messages)
 - Step 2: "Read team config... use exact name field" — directly addresses Road Runner's recipient guessing
 - Step 3: "Use team-lead as fallback" — practical safety net that would have saved all 5 lost messages
@@ -65,10 +69,12 @@ YES. The file-first pattern (step 1) makes messages optional for delivery — ev
 YES. "Guessing recipient names from role descriptions instead of reading team config" — exactly what Road Runner did. "Sending to multiple guessed variations of a name hoping one works" — prevents the escalation pattern. "Trusting your post-compaction memory of teammate names" — direct lesson from our experience.
 
 **What's excellent:**
+
 - The "save to file first, message contains summary + path" pattern is clean and actionable. An agent can follow this without ambiguity.
 - Step 5's escalation protocol fills a gap — we had no procedure for "what if my message was lost?"
 
 **Minor suggestion:**
+
 - Could add: "SendMessage returns success even for non-existent recipients (known platform behavior). Do NOT treat a successful send as confirmation of delivery." Making the platform bug explicit would help agents understand WHY verification matters.
 
 ---
@@ -79,6 +85,7 @@ YES. "Guessing recipient names from role descriptions instead of reading team co
 
 **Does it encode the actual lessons?**
 YES. This is the "highest-leverage team change" I identified in the coaching synthesis, and Foghorn implemented it comprehensively:
+
 - Step 1: TaskGet requirement — addresses Failure #9
 - Step 2: Read referenced materials — addresses Failure #9 (didn't read research)
 - Step 3: Verify approach, stop if multiple — addresses Failures #3, #4
@@ -92,6 +99,7 @@ YES — this is the strongest "would have prevented" behavior. Running through t
 
 **Anti-patterns concrete enough?**
 YES. Every anti-pattern maps to something that actually happened:
+
 - "Skipping because the task seems simple" — Failure #3 (prettierignore "quick fix")
 - "Reading assignment message instead of TaskGet" — Failure #9
 - "Starting while planning to verify later" — Failures #3, #4, #8
@@ -100,13 +108,16 @@ YES. Every anti-pattern maps to something that actually happened:
 - "Beginning before testing mechanism works" — Failure #9
 
 **What's excellent:**
+
 - Step 7's plan statement template is practical and specific:
+
   ```
   Starting [task #X]. My understanding:
   - Goal: [one sentence]
   - Approach: [one sentence]
   - Output: [what I'll deliver and where]
   ```
+
   This is actionable, low-overhead, and creates an audit trail.
 
 - The description positions this as "proactive counterpart to self-correction" — good conceptual framing that shows where it fits in the behavior ecosystem.
@@ -123,6 +134,7 @@ YES. Every anti-pattern maps to something that actually happened:
 
 **Does it encode the actual lessons?**
 YES. The core lesson — "check your own work before blaming external tools" — is clear and well-structured:
+
 - Step 1: "Check your own work first" with specific checklist — addresses Failures #2 and #8 (Tweety's YAML was invalid, not prettier)
 - Step 2: "Reproduce in isolation" — the test that Foghorn did for Task #16 that broke the misdiagnosis cycle
 - Step 3: "Verify each theory before accepting it" with explicit falsification approach — addresses the root cause analysis failures
@@ -135,40 +147,43 @@ However, step 4 ("be skeptical of the first explanation") is LESS concrete than 
 
 **Anti-patterns concrete enough?**
 MOSTLY. The standout anti-patterns are:
+
 - "Scaling up a workaround without verifying the root cause" — exactly Foghorn expanding prettierignore (Failure #3)
 - "Letting confirmation bias drive diagnosis" — exactly what happened across Failures #2 → #8
 - "Multiple agents reinforcing an unverified diagnosis" — the team pattern from Failure #8
 
 **What could be stronger:**
+
 - Step 4's thinking prompts could be more prescriptive. Instead of "Is this the simplest explanation?", consider: "Write down TWO alternative explanations. If you can't think of two, you haven't investigated enough." Forcing alternative hypotheses is more effective than asking if the current one is simple.
 - Missing: "When the 'broken tool' is one you've successfully used before (like prettier), the probability that it suddenly broke is lower than the probability that your input changed. Weight your prior." This directly addresses the prettier narrative.
 
 **Minor suggestion:**
+
 - Could add a specific callout: "YAML frontmatter is a common source of 'tool blame' — when a markdown tool seems to mangle your frontmatter, check your YAML syntax first (valid delimiters, no blank lines before opening ---, no markdown inside YAML values)." This is team-specific but highly relevant given Failures #2 and #8.
 
 ---
 
 ## Cross-Behavior Consistency Check
 
-| Aspect | Consistent? | Notes |
-|--------|------------|-------|
-| Format (frontmatter + Purpose/When/Steps/Anti-Patterns) | YES | All 4 follow the same structure as the original 7 |
-| Failure citations | YES | All 4 reference specific failure counts from the log |
-| Tone | YES | Prescriptive, direct, matches existing behaviors |
-| Overlap handling | GOOD | pre-task-checklist incorporates elements from requirements-verification and communication-verification without redundancy — it's a meta-checklist that points to the detailed procedures |
-| Anti-pattern specificity | STRONG | Much more concrete than the original 7 behaviors — these name the actual mistakes |
+| Aspect                                                  | Consistent? | Notes                                                                                                                                                                                    |
+| ------------------------------------------------------- | ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Format (frontmatter + Purpose/When/Steps/Anti-Patterns) | YES         | All 4 follow the same structure as the original 7                                                                                                                                        |
+| Failure citations                                       | YES         | All 4 reference specific failure counts from the log                                                                                                                                     |
+| Tone                                                    | YES         | Prescriptive, direct, matches existing behaviors                                                                                                                                         |
+| Overlap handling                                        | GOOD        | pre-task-checklist incorporates elements from requirements-verification and communication-verification without redundancy — it's a meta-checklist that points to the detailed procedures |
+| Anti-pattern specificity                                | STRONG      | Much more concrete than the original 7 behaviors — these name the actual mistakes                                                                                                        |
 
 ---
 
 ## Comparison: Original 7 vs New 4
 
-| Metric | Original 7 | New 4 |
-|--------|-----------|-------|
-| Average rating | 6.4/10 | 9.0/10 |
-| Failures directly addressed | ~3 of 9 | 9 of 9 |
-| Team-specific content | Low (generic best practices) | High (cites failure patterns, names actual mistakes) |
-| Actionability | Good | Excellent (especially pre-task-checklist template) |
-| Anti-pattern specificity | Moderate | Strong (maps to actual team failures) |
+| Metric                      | Original 7                   | New 4                                                |
+| --------------------------- | ---------------------------- | ---------------------------------------------------- |
+| Average rating              | 6.4/10                       | 9.0/10                                               |
+| Failures directly addressed | ~3 of 9                      | 9 of 9                                               |
+| Team-specific content       | Low (generic best practices) | High (cites failure patterns, names actual mistakes) |
+| Actionability               | Good                         | Excellent (especially pre-task-checklist template)   |
+| Anti-pattern specificity    | Moderate                     | Strong (maps to actual team failures)                |
 
 The new 4 behaviors are meaningfully better than the original 7 at encoding team-specific lessons. This is the difference between "behaviors Foghorn thought agents should have" and "behaviors built from evidence of what actually went wrong."
 
@@ -176,12 +191,12 @@ The new 4 behaviors are meaningfully better than the original 7 at encoding team
 
 ## Verdict
 
-| Behavior | Rating | Pass/Fail |
-|----------|--------|-----------|
-| requirements-verification.md | 9/10 | PASS |
-| communication-verification.md | 9/10 | PASS |
-| pre-task-checklist.md | 10/10 | PASS |
-| verify-before-blaming.md | 8/10 | PASS |
+| Behavior                      | Rating | Pass/Fail |
+| ----------------------------- | ------ | --------- |
+| requirements-verification.md  | 9/10   | PASS      |
+| communication-verification.md | 9/10   | PASS      |
+| pre-task-checklist.md         | 10/10  | PASS      |
+| verify-before-blaming.md      | 8/10   | PASS      |
 
 **Overall: PASS (4/4)**
 

@@ -18,6 +18,7 @@ Section 4, Approach B correctly notes that `--settings` only works for the lead 
 ### 2. RISK: Convention-based enforcement is fragile (Approach A)
 
 The "Available/Unavailable Skills" instructions in agent body text are soft enforcement. From our failure log:
+
 - **Failure #4**: Tweety proceeded with persona file work despite a HOLD order — demonstrating that agents don't reliably follow behavioral instructions under pressure
 - **Failure #9**: Tweety relied on compaction summary instead of reading actual requirements — conventions in agent body text may be lost on compaction
 
@@ -25,7 +26,7 @@ The "Available/Unavailable Skills" instructions in agent body text are soft enfo
 
 ### 3. GAP: No mention of context-bloat implications per role
 
-Different roles generate different amounts of context. A researcher using WebFetch/WebSearch generates much more context than a PM doing task coordination. The plugin profiles should consider which roles get `context-bloat-prevention` (currently "All Agents" in the table, which is correct) but also whether roles with high context generation should get *stricter* thresholds.
+Different roles generate different amounts of context. A researcher using WebFetch/WebSearch generates much more context than a PM doing task coordination. The plugin profiles should consider which roles get `context-bloat-prevention` (currently "All Agents" in the table, which is correct) but also whether roles with high context generation should get _stricter_ thresholds.
 
 **Recommendation**: Add a note that `CONTEXT_BLOAT_THRESHOLD` could be role-specific (lower for researchers, higher for PMs).
 
@@ -59,11 +60,11 @@ The spec doesn't mention the delegate mode bug ([#25037](https://github.com/anth
 
 ## Summary
 
-| Finding | Severity | Action |
-|---------|----------|--------|
-| Convention enforcement fragility | Medium | Make refusal instructions explicit, protect from compaction |
-| ai-agent-eng commit access | Medium | Fix the role-to-plugin table |
-| Context-bloat per-role thresholds | Low | Add note |
-| Profile location ambiguity | Low | Clarify |
-| Delegate mode bug interaction | Low | Add reference |
-| Inheritance is premature | Low | Answer "No, not yet" |
+| Finding                           | Severity | Action                                                      |
+| --------------------------------- | -------- | ----------------------------------------------------------- |
+| Convention enforcement fragility  | Medium   | Make refusal instructions explicit, protect from compaction |
+| ai-agent-eng commit access        | Medium   | Fix the role-to-plugin table                                |
+| Context-bloat per-role thresholds | Low      | Add note                                                    |
+| Profile location ambiguity        | Low      | Clarify                                                     |
+| Delegate mode bug interaction     | Low      | Add reference                                               |
+| Inheritance is premature          | Low      | Answer "No, not yet"                                        |

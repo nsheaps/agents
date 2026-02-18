@@ -14,6 +14,7 @@ Reviewing for contradictions and gaps before incoming additions (#118 I/O proxy,
 ### 1. Tool Configuration: Config-Time vs Runtime (§2 vs §7)
 
 **§2 (Per-Agent Tool Sets)** defines tool sets as static YAML config:
+
 ```yaml
 tools:
   - messaging
@@ -36,11 +37,11 @@ Architecture §7 and agent-wrapper PRD (lines 143-174) both describe the I/O pro
 
 The ecosystem now has three YAML-related agent configs that could confuse implementers:
 
-| Concept | Location | Purpose |
-|---------|----------|---------|
-| Claude Code agent files | `.claude/agents/{name}.md` (YAML frontmatter + markdown body) | Current agent prompts in agent-team repo |
-| Architecture §4 agent.yaml | `agents/{name}/agent.yaml` (proposed) | Full agent definition (tools, container, permissions, mesh) |
-| Agent wrapper .agent.yaml | `.agent.yaml` (project root) | Launch config for the agent CLI |
+| Concept                    | Location                                                      | Purpose                                                     |
+| -------------------------- | ------------------------------------------------------------- | ----------------------------------------------------------- |
+| Claude Code agent files    | `.claude/agents/{name}.md` (YAML frontmatter + markdown body) | Current agent prompts in agent-team repo                    |
+| Architecture §4 agent.yaml | `agents/{name}/agent.yaml` (proposed)                         | Full agent definition (tools, container, permissions, mesh) |
+| Agent wrapper .agent.yaml  | `.agent.yaml` (project root)                                  | Launch config for the agent CLI                             |
 
 No document acknowledges all three or explains the relationship/migration path between them.
 
@@ -49,6 +50,7 @@ No document acknowledges all three or explains the relationship/migration path b
 ### 4. Relationship Table Incomplete (§8)
 
 The table maps 4 PRDs to architecture sections. But:
+
 - §7 (I/O Proxy) is missing — it directly relates to the Agent Wrapper PRD
 - §1 (Security Consultant) has no PRD relationship listed
 - §2 (Per-Agent Tool Sets) has no PRD relationship listed
@@ -68,6 +70,7 @@ The MVP section (lines 9-21) clearly states the first 5 priorities (launch, kill
 ### 6. No Migration Path from Current Structure
 
 No discussion of how the current `.claude/agents/*.md` format evolves into the proposed `agents/{name}/` directory structure (§4). Questions unanswered:
+
 - Do both formats coexist during transition?
 - Does the agent CLI read both?
 - Is there a migration tool?
@@ -104,28 +107,28 @@ Architecture §7 (I/O Proxy) now answers this — the agent CLI wraps the framew
 
 ## Pre-Assessment for Incoming Additions
 
-| Incoming | Task | Current State in Doc | Risk |
-|----------|------|---------------------|------|
-| I/O Proxy | #118 | Already present as §7 | Duplication with agent-wrapper PRD (contradiction #2) |
-| Customizable team names | #125 | Implicit in session paths only | No discussion of naming, uniqueness, or conventions |
-| Display name format | #126 | §4 has `name` + `character` fields | No format spec, no display rules |
-| Agent creation workflow | #127 | §4 has structure but no workflow | No "how to create a new agent" procedure |
+| Incoming                | Task | Current State in Doc               | Risk                                                  |
+| ----------------------- | ---- | ---------------------------------- | ----------------------------------------------------- |
+| I/O Proxy               | #118 | Already present as §7              | Duplication with agent-wrapper PRD (contradiction #2) |
+| Customizable team names | #125 | Implicit in session paths only     | No discussion of naming, uniqueness, or conventions   |
+| Display name format     | #126 | §4 has `name` + `character` fields | No format spec, no display rules                      |
+| Agent creation workflow | #127 | §4 has structure but no workflow   | No "how to create a new agent" procedure              |
 
 ---
 
 ## Summary
 
-| # | Finding | Severity | Type |
-|---|---------|----------|------|
-| 1 | Static vs runtime tool config ambiguity | Medium | Contradiction |
-| 2 | I/O Proxy duplicated in two docs | Medium | Contradiction |
-| 3 | Three "agent YAML" concepts unnamed | High | Gap |
-| 4 | Relationship table incomplete | Low | Gap |
-| 5 | MVP boundary unclear in body | High | Gap |
-| 6 | No migration path for agent file format | Medium | Gap |
-| 7 | claude-team script not acknowledged | Medium | Gap |
-| 8 | A2A vs mesh MCP ambiguity | Medium | Contradiction |
-| 9 | Language decision stale in wrapper PRD | Low | Cross-spec |
-| 10 | Wrapper PRD open question now answerable | Low | Cross-spec |
+| #   | Finding                                  | Severity | Type          |
+| --- | ---------------------------------------- | -------- | ------------- |
+| 1   | Static vs runtime tool config ambiguity  | Medium   | Contradiction |
+| 2   | I/O Proxy duplicated in two docs         | Medium   | Contradiction |
+| 3   | Three "agent YAML" concepts unnamed      | High     | Gap           |
+| 4   | Relationship table incomplete            | Low      | Gap           |
+| 5   | MVP boundary unclear in body             | High     | Gap           |
+| 6   | No migration path for agent file format  | Medium   | Gap           |
+| 7   | claude-team script not acknowledged      | Medium   | Gap           |
+| 8   | A2A vs mesh MCP ambiguity                | Medium   | Contradiction |
+| 9   | Language decision stale in wrapper PRD   | Low      | Cross-spec    |
+| 10  | Wrapper PRD open question now answerable | Low      | Cross-spec    |
 
 No findings warrant failure log entries — these are spec quality issues, not process failures. The doc is well-structured for a brainstorming/requirements-gathering document. The main risk is that incoming additions (#118, #125-#127) will compound the existing gaps if they aren't addressed first.

@@ -19,11 +19,11 @@ Happy (happy.engineering) is a **free, open-source mobile client for Claude Code
 
 ### Core Components
 
-| Component | Purpose | Repository |
-| :-------- | :------ | :--------- |
-| `happy` CLI | Wrapper that replaces `claude` on desktop | [slopus/happy-cli](https://github.com/slopus/happy-cli) |
-| Happy App | Native iOS/Android/Web mobile client | [slopus/happy](https://github.com/slopus/happy) |
-| Relay Server | E2E encrypted message relay | [slopus/happy-server](https://github.com/slopus/happy-server) |
+| Component    | Purpose                                   | Repository                                                    |
+| :----------- | :---------------------------------------- | :------------------------------------------------------------ |
+| `happy` CLI  | Wrapper that replaces `claude` on desktop | [slopus/happy-cli](https://github.com/slopus/happy-cli)       |
+| Happy App    | Native iOS/Android/Web mobile client      | [slopus/happy](https://github.com/slopus/happy)               |
+| Relay Server | E2E encrypted message relay               | [slopus/happy-server](https://github.com/slopus/happy-server) |
 
 ### Key Features
 
@@ -73,6 +73,7 @@ Setup: Run `happy` instead of `claude`, pair mobile via QR code.[^1]
 ### What Happy Is NOT
 
 Happy is specifically **not designed for**:
+
 - Coordinating multiple independent AI agents
 - Agent team workflows (like Claude Code Agent Teams)
 - Multi-agent task distribution or orchestration
@@ -80,17 +81,18 @@ Happy is specifically **not designed for**:
 
 ### Comparison
 
-| Aspect | Happy | Claude Code Agent Teams |
-| :----- | :---- | :---------------------- |
-| **Purpose** | Device sync for single Claude instance | Multiple coordinated AI agents |
-| **Use Case** | Work from phone/tablet | Parallelize complex tasks |
-| **Agents** | None (wraps single Claude Code) | Multiple specialized agents |
-| **Orchestration** | N/A | Central orchestrator + teammates |
-| **Team Support** | Single user, multiple devices | Multiple AI agents working together |
+| Aspect            | Happy                                  | Claude Code Agent Teams             |
+| :---------------- | :------------------------------------- | :---------------------------------- |
+| **Purpose**       | Device sync for single Claude instance | Multiple coordinated AI agents      |
+| **Use Case**      | Work from phone/tablet                 | Parallelize complex tasks           |
+| **Agents**        | None (wraps single Claude Code)        | Multiple specialized agents         |
+| **Orchestration** | N/A                                    | Central orchestrator + teammates    |
+| **Team Support**  | Single user, multiple devices          | Multiple AI agents working together |
 
 ### Potential Interaction Points
 
 If agent-team orchestration is running on desktop, Happy could theoretically:
+
 - Monitor orchestrator output from mobile
 - Approve permission prompts for the lead session remotely
 - Send messages to the lead agent from mobile

@@ -98,7 +98,7 @@ Base: path/to/custom-base.md
 | 1B.2 | Map agent frontmatter to Claude Code flags: `--append-system-prompt`, `--permission-mode`, `--teammate-mode` |
 | 1B.3 | Support `--team <name>` flag to join an existing team                                                        |
 | 1B.4 | Support launching all agents from a team config file (batch spawn)                                           |
-| 1B.5 | Integration test: `agent launch software-eng` spawns with correct prompt                                |
+| 1B.5 | Integration test: `agent launch software-eng` spawns with correct prompt                                     |
 
 #### 1C: Lifecycle Management
 

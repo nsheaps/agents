@@ -5,7 +5,7 @@
 
 ## Executive Summary
 
-**Does prettier actually mangle YAML frontmatter?** 
+**Does prettier actually mangle YAML frontmatter?**
 
 **Answer: Mostly NO, with specific edge cases.**
 
@@ -39,6 +39,7 @@ For typical Claude Code agent files with straightforward YAML frontmatter, prett
 - **Real-world impact:** Shell scripts stored in YAML can break
 
 **Example of the problem:**
+
 ```yaml
 ---
 script: >
@@ -58,24 +59,22 @@ Prettier may incorrectly wrap the indented line, changing its meaning.
 - **Rationale:** Maintainers consider both formats valid YAML with different AST representations
 
 **Example:**
+
 ```yaml
 # Input
 ---
 tags: ["aaaa", "bbbb", "cccc", "dddd", "eeee"]
 ---
-
 # Prettier output (wraps but doesn't convert to block style)
 ---
-tags:
- ["aaaa", "bbbb", "cccc", "dddd", "eeee"]
+tags: ["aaaa", "bbbb", "cccc", "dddd", "eeee"]
 ---
-
 # What users expected (block style)
 ---
 tags:
- - "aaaa"
- - "bbbb"
- - "cccc"
+  - "aaaa"
+  - "bbbb"
+  - "cccc"
 ---
 ```
 
@@ -90,6 +89,7 @@ tags:
 - **Fixed in:** 3.3.1+ (estimated)
 
 **Example of the bug:**
+
 ```yaml
 ---
 items:
@@ -111,12 +111,12 @@ Prettier 3.3.0 would remove the blank lines, but this was fixed in later release
 
 ### Edge Cases Summary
 
-| Issue | Status | Versions Affected | Workaround |
-|-------|--------|-------------------|------------|
-| Multiline strings + prose-wrap | Open | All with `--prose-wrap always` | Don't use `--prose-wrap always` for YAML |
-| Flow vs block sequences | Won't fix | 3.0.0+ | Write in desired format initially |
-| Empty lines removed | Fixed | 3.3.0 only | Upgrade to 3.3.1+ |
-| Empty frontmatter + HR | Edge case | Various | Set `embeddedLanguageFormatting: off` |
+| Issue                          | Status    | Versions Affected              | Workaround                               |
+| ------------------------------ | --------- | ------------------------------ | ---------------------------------------- |
+| Multiline strings + prose-wrap | Open      | All with `--prose-wrap always` | Don't use `--prose-wrap always` for YAML |
+| Flow vs block sequences        | Won't fix | 3.0.0+                         | Write in desired format initially        |
+| Empty lines removed            | Fixed     | 3.3.0 only                     | Upgrade to 3.3.1+                        |
+| Empty frontmatter + HR         | Edge case | Various                        | Set `embeddedLanguageFormatting: off`    |
 
 ### Verdict
 
@@ -135,6 +135,7 @@ Prettier 3.3.0 would remove the blank lines, but this was fixed in later release
 #### 1. `proseWrap` (Default: `"preserve"`)
 
 Controls line wrapping in markdown text:
+
 - `"always"` - Wraps prose exceeding print width (can cause YAML multiline issues)
 - `"never"` - No wrapping
 - `"preserve"` - Leaves formatting unchanged (RECOMMENDED for frontmatter)
@@ -144,6 +145,7 @@ Controls line wrapping in markdown text:
 #### 2. `embeddedLanguageFormatting` (Default: `"auto"`)
 
 Controls formatting of embedded code (like YAML in markdown):
+
 - `"auto"` - Format embedded code automatically
 - `"off"` - Don't format embedded code
 
@@ -159,8 +161,8 @@ Sets line length threshold. Affects YAML flow sequences if they exceed the limit
 
 ```yaml
 # Recommended configuration
-proseWrap: preserve  # Don't wrap YAML frontmatter
-embeddedLanguageFormatting: auto  # Format YAML (or "off" if issues)
+proseWrap: preserve # Don't wrap YAML frontmatter
+embeddedLanguageFormatting: auto # Format YAML (or "off" if issues)
 printWidth: 80
 
 # File-specific overrides
@@ -173,10 +175,12 @@ overrides:
 ### Parser Selection
 
 Prettier automatically selects the correct parser based on file extension:
+
 - `.md` files use the markdown parser
 - Markdown parser includes YAML frontmatter support via `remark`
 
 **Misconfiguration risks:**
+
 - Using `--prose-wrap always` with complex YAML
 - Manually selecting wrong parser
 - Not upgrading from buggy versions (3.3.0)
@@ -191,12 +195,14 @@ Prettier automatically selects the correct parser based on file extension:
 **Frontmatter plugin:** [mdformat-frontmatter](https://github.com/butler54/mdformat-frontmatter)
 
 **Pros:**
+
 - CommonMark compliant
 - Designed to fix prettier's markdown bugs
 - Plugin architecture for frontmatter, GFM, footnotes
 - Author claims: "Prettier suffers from numerous bugs, many of which cause changes in Markdown AST and rendered HTML"
 
 **Cons:**
+
 - Python dependency (though pre-installed on macOS/Linux)
 - Frontmatter plugin is inactive and not sophisticated
 - Only supports YAML frontmatter (no TOML/JSON)
@@ -210,10 +216,12 @@ Prettier automatically selects the correct parser based on file extension:
 **Purpose:** **Linter, not formatter**
 
 **Frontmatter handling:**
+
 - Ignores YAML, TOML, and JSON frontmatter by default
 - Can customize via `frontMatter` regex config
 
 **Integration:**
+
 - Works alongside prettier (doesn't conflict)
 - Focuses on style rules, not formatting
 
@@ -229,11 +237,13 @@ Prettier automatically selects the correct parser based on file extension:
 **Purpose:** Markdown processing pipeline (parsing, transforming, formatting)
 
 **Frontmatter support:**
+
 - Supports YAML, TOML, and custom frontmatter formats
 - Does NOT parse frontmatter content (just preserves the syntax)
 - Can be combined with remark-yaml-config to configure formatting from frontmatter
 
 **How it works:**
+
 ```bash
 npm install remark-cli remark-frontmatter
 ```
@@ -241,8 +251,8 @@ npm install remark-cli remark-frontmatter
 ```javascript
 // .remarkrc.js
 export default {
-  plugins: ['remark-frontmatter']
-}
+  plugins: ["remark-frontmatter"],
+};
 ```
 
 **Verdict:** More flexible than prettier for markdown pipelines, but requires setup. Frontmatter is preserved but not formatted.
@@ -257,12 +267,12 @@ Prettier's built-in frontmatter support is sufficient for most use cases, so a s
 
 ### Comparison Table
 
-| Tool | Type | Frontmatter Support | Best For |
-|------|------|---------------------|----------|
-| prettier | Formatter | Built-in YAML (with edge cases) | General markdown formatting |
-| mdformat | Formatter | Plugin (basic YAML only) | CommonMark compliance, fixing prettier bugs |
-| markdownlint | Linter | Ignores by default | Style checking, not formatting |
-| remark-frontmatter | Parser plugin | YAML/TOML/JSON preservation | Custom markdown pipelines |
+| Tool               | Type          | Frontmatter Support             | Best For                                    |
+| ------------------ | ------------- | ------------------------------- | ------------------------------------------- |
+| prettier           | Formatter     | Built-in YAML (with edge cases) | General markdown formatting                 |
+| mdformat           | Formatter     | Plugin (basic YAML only)        | CommonMark compliance, fixing prettier bugs |
+| markdownlint       | Linter        | Ignores by default              | Style checking, not formatting              |
+| remark-frontmatter | Parser plugin | YAML/TOML/JSON preservation     | Custom markdown pipelines                   |
 
 ### Recommendation
 
@@ -279,18 +289,19 @@ Prettier's built-in frontmatter support is sufficient for most use cases, so a s
 ### Claude Code Agent YAML Frontmatter Structure
 
 **Example agent file:**
+
 ```yaml
 ---
 name: code-reviewer
 description: |
   Reviews code for quality and best practices.
-  
+
   <example>
   Use this agent when you need to:
   - Check code style
   - Identify bugs
   </example>
-tools: 
+tools:
   - Read
   - Glob
   - Grep
@@ -301,19 +312,18 @@ hooks:
   Stop:
     - echo "Review complete"
 ---
-
 You are a code reviewer. Your job is to...
 ```
 
 ### Potential Prettier Issues with Agent Files
 
-| Feature | Risk Level | Explanation |
-|---------|------------|-------------|
-| Multi-line `description` with pipe (`\|`) | Low | Prettier handles literal block scalars well |
+| Feature                                   | Risk Level | Explanation                                         |
+| ----------------------------------------- | ---------- | --------------------------------------------------- |
+| Multi-line `description` with pipe (`\|`) | Low        | Prettier handles literal block scalars well         |
 | `<example>` XML-like tags in YAML strings | **Medium** | Could trigger HTML formatting if parsed incorrectly |
-| `hooks` nested objects | Low | Standard YAML structure |
-| Array values (flow vs block) | Low | Aesthetic only (see Issue #15187) |
-| Pipe/block scalar syntax | **Medium** | If `--prose-wrap always` is used, see Issue #16126 |
+| `hooks` nested objects                    | Low        | Standard YAML structure                             |
+| Array values (flow vs block)              | Low        | Aesthetic only (see Issue #15187)                   |
+| Pipe/block scalar syntax                  | **Medium** | If `--prose-wrap always` is used, see Issue #16126  |
 
 ### Testing with Actual Agent Files
 
@@ -336,6 +346,7 @@ cat .prettierrc.yaml
 **Question:** Could prettier's HTML formatting interfere with `<example>` tags inside YAML string values?
 
 **Answer:** Unlikely, because:
+
 1. YAML frontmatter is parsed separately from markdown content
 2. Inside a YAML string (especially with `|` literal block scalar), content is treated as plain text
 3. HTML formatting only applies to markdown body, not frontmatter
@@ -347,11 +358,13 @@ cat .prettierrc.yaml
 ### Verdict for Agent Files
 
 **Agent files should work fine with prettier IF:**
+
 1. Using `proseWrap: preserve` (default)
 2. Not using `--prose-wrap always` flag
 3. Running prettier 3.3.1+ (to avoid empty line bug)
 
 **The `.prettierignore` workaround was likely unnecessary** unless:
+
 - Agent files use complex YAML features (folded block scalars with long text)
 - There was a specific formatting bug observed in practice
 - The project is using an older prettier version with known bugs
@@ -461,6 +474,7 @@ Simply exclude all agent files from formatting:
 **If the `.prettierignore` workaround was added without observing actual formatting bugs, it can likely be removed.** Test on a few agent files first to confirm.
 
 **If formatting issues were observed:** They were likely due to:
+
 1. Using `--prose-wrap always` (don't do this)
 2. Running prettier 3.3.0 (upgrade to 3.3.1+)
 3. Complex YAML features that hit edge cases

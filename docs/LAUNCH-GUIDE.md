@@ -114,11 +114,11 @@ In **in-process mode**, teammates run as hidden sessions within the same process
 | :------------------ | :-------------- | :---------------- | :------------------------------------------- |
 | `orchestrator`      | —               | Team Lead         | Spawns teammates, assigns tasks, coordinates |
 | `project-manager`   | Elmer Fudd      | Project Manager   | Owns task list, manages priorities           |
-| `ai-agent-eng` | Wile E. Coyote  | AI Agent Eng | Observes failures, records patterns          |
+| `ai-agent-eng`      | Wile E. Coyote  | AI Agent Eng      | Observes failures, records patterns          |
 | `docs-writer`       | Tweety Bird     | Docs Writer       | Maintains docs, audits specs                 |
 | `deep-researcher`   | Road Runner     | Deep Researcher   | Complex multi-source investigations          |
-| `ops-eng`      | Foghorn Leghorn | Ops Eng      | CI/CD, repos, Homebrew, distribution         |
-| `software-eng` | Bugs Bunny      | Software Eng | Implements features, writes code             |
+| `ops-eng`           | Foghorn Leghorn | Ops Eng           | CI/CD, repos, Homebrew, distribution         |
+| `software-eng`      | Bugs Bunny      | Software Eng      | Implements features, writes code             |
 | `quality-assurance` | Daffy Duck      | Quality Assurance | Tests, validates, catches regressions        |
 
 See `.claude/docs/team-structure.md` for the full hierarchy and communication flow.

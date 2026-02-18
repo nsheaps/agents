@@ -7,11 +7,11 @@ Overview of agent team roles and responsibilities.
 | Agent             | Character       | Role              | Does                                               | Does NOT                                 |
 | :---------------- | :-------------- | :---------------- | :------------------------------------------------- | :--------------------------------------- |
 | orchestrator      | —               | Team Lead         | Spawns teammates, assigns tasks, coordinates       | Write code, implement features           |
-| ai-agent-eng | Wile E. Coyote  | AI Agent Eng | Observes failures, records patterns, reviews specs | Fix bugs, assign tasks, implement        |
+| ai-agent-eng      | Wile E. Coyote  | AI Agent Eng      | Observes failures, records patterns, reviews specs | Fix bugs, assign tasks, implement        |
 | docs-writer       | Tweety Bird     | Docs Writer       | Maintains docs, audits specs, flags contradictions | Write code, make architectural decisions |
 | deep-researcher   | Road Runner     | Deep Researcher   | Complex multi-source research, synthesis, analysis | Simple lookups, basic troubleshooting    |
-| ops-eng      | Foghorn Leghorn | Ops Eng      | CI/CD, repos, Homebrew, distribution, tooling      | Feature implementation, PM duties        |
-| software-eng | Bugs Bunny      | Software Eng | Implements features, writes code, commits          | Self-assign tasks, PM duties             |
+| ops-eng           | Foghorn Leghorn | Ops Eng           | CI/CD, repos, Homebrew, distribution, tooling      | Feature implementation, PM duties        |
+| software-eng      | Bugs Bunny      | Software Eng      | Implements features, writes code, commits          | Self-assign tasks, PM duties             |
 | quality-assurance | Daffy Duck      | Quality Assurance | Tests, validates, catches regressions, reviews     | Write production code, assign tasks      |
 | project-manager   | Elmer Fudd      | Project Manager   | Task list, coordination, priorities, unblocking    | Write code, make technical decisions     |
 
@@ -49,23 +49,25 @@ Agent files and persona files serve different purposes:
 
 Agent display names follow the format: **"First L (role)"**
 
-| Character       | Display Name          |
-| :-------------- | :-------------------- |
-| Bugs Bunny      | Bugs B (software-eng) |
-| Wile E. Coyote  | Wile E (ai-agent-eng) |
-| Tweety Bird     | Tweety B (docs-writer)|
-| Daffy Duck      | Daffy D (qa)          |
-| Elmer Fudd      | Elmer F (pm)          |
-| Road Runner     | Road R (researcher)   |
-| Foghorn Leghorn | Foghorn L (ops-eng)   |
+| Character       | Display Name           |
+| :-------------- | :--------------------- |
+| Bugs Bunny      | Bugs B (software-eng)  |
+| Wile E. Coyote  | Wile E (ai-agent-eng)  |
+| Tweety Bird     | Tweety B (docs-writer) |
+| Daffy Duck      | Daffy D (qa)           |
+| Elmer Fudd      | Elmer F (pm)           |
+| Road Runner     | Road R (researcher)    |
+| Foghorn Leghorn | Foghorn L (ops-eng)    |
 
 **Where display names are used:**
+
 - Team config (`~/.claude/teams/{team-name}/config.json` member names)
 - SendMessage recipient/sender
 - Task ownership
 - Commit authorship (Co-Authored-By)
 
 **Derivation rules:**
+
 1. First name + last initial (or middle initial for "Wile E.")
 2. Role slug in parentheses (kebab-case, abbreviated)
 3. The `display_name` field in agent frontmatter overrides the default
