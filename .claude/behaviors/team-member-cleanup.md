@@ -51,6 +51,8 @@ Wait 10-15 seconds. If the agent responds, the system cleans up automatically.
 
 ### Option B: Manual config edit (when pane is gone)
 
+> **Note**: The `lifecycle-management` behavior says "never manually edit config.json." This is the documented exception — when a pane is gone and `shutdown_request` cannot be processed, manual cleanup is the only option. Prefer Option A when possible, and always report the manual edit to the team lead.
+
 When the pane no longer exists and shutdown_request cannot be processed:
 
 ```bash
