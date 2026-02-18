@@ -1,6 +1,5 @@
 {
   "name": "agent-team-skills",
-  "version": "0.1.0",
   "description": "Skills for multi-agent team orchestration, tmux usage, and agent development",
   "author": {
     "name": "Nathan Heaps",
