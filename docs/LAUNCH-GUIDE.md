@@ -141,6 +141,16 @@ Once the orchestrator is running:
 | `Ctrl+C` | Interrupt / cancel current operation     |
 | `Ctrl+O` | Toggle verbose view of teammate activity |
 
+### Unsticking an Unresponsive Teammate
+
+When a teammate agent is stuck mid-turn and not processing messages, send the ESC key via tmux to interrupt its current turn and allow pending messages to propagate:
+
+```bash
+tmux send-keys -t <pane-id> Escape
+```
+
+Find the pane ID with `tmux list-panes -a -F '#{pane_id} #{pane_title}'` or from the team config's `tmuxPaneId` field.
+
 ## Shutdown
 
 To shut down the team gracefully:

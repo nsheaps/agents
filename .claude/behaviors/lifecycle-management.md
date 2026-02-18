@@ -54,8 +54,9 @@ Daffy's Phase 1 code review (DEF-5, DEF-6, DEF-7, DEF-10) identified gaps in cle
 When an agent dies without proper shutdown (crash, disconnect, tmux pane killed externally):
 
 1. **Detect the failure.** Signs include: agent stops responding to messages, tmux pane is gone, idle notification never arrives.
-2. **Report to AI Agent Eng and team lead.** This is a process failure worth recording.
-3. **Do NOT manually edit config.json.** Instead:
+2. **If the agent is stuck mid-turn (pane exists but agent is unresponsive):** Send the ESC key via tmux to interrupt its current turn and allow pending messages to propagate: `tmux send-keys -t <pane-id> Escape`
+3. **Report to AI Agent Eng and team lead.** This is a process failure worth recording.
+4. **Do NOT manually edit config.json.** Instead:
    - Try sending a `shutdown_request` — if the agent is truly dead, this will fail silently but won't corrupt config.
    - If the agent can't be reached and config shows `isActive: true`, ask the team lead to coordinate cleanup.
 4. **Team lead cleanup procedure:**

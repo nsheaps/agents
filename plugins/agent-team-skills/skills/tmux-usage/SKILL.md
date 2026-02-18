@@ -304,6 +304,22 @@ Claude Code uses a custom terminal input model (not simple line-based stdin). Se
 
 ## Troubleshooting
 
+### Unresponsive Teammate (Stuck Mid-Turn)
+
+When a teammate agent is unresponsive (stuck mid-turn and not processing messages), send the ESC key via tmux to interrupt its current turn and allow pending messages to propagate:
+
+```bash
+tmux send-keys -t <pane-id> Escape
+```
+
+The pane ID can be found in the team config's `tmuxPaneId` field, or by listing panes:
+
+```bash
+tmux list-panes -a -F '#{pane_id} #{pane_title}'
+```
+
+This sends the Escape key to the target pane, which interrupts Claude Code's current turn. After the interruption, the agent will process any queued inbox messages on its next turn.
+
 ### "sessions should be nested with care"
 
 If you try to create a tmux session while already inside one, you get this warning. Set `TMUX=''` to override, or use `tmux new-session -d` to create it detached.
