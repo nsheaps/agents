@@ -152,16 +152,33 @@ describe("removeMember", () => {
 describe("killAgent", () => {
   afterEach(teardownTmpHome);
 
-  test("removes agent from config successfully", () => {
+  test("removes agent from config successfully (no pane ID)", () => {
     setupTmpHome(TEAM_NAME, SAMPLE_CONFIG);
 
     const result = killAgent(TEAM_NAME, "Bugs B (software-eng)");
 
     expect(result.success).toBe(true);
     expect(result.message).toContain("Killed agent");
+    expect(result.message).toContain("no tmux pane ID tracked");
 
     const config = readTeamConfig(TEAM_NAME);
     expect(config!.members).toHaveLength(2);
+  });
+
+  test("attempts tmux pane kill when pane ID is present", () => {
+    const configWithPane: TeamConfig = {
+      members: [
+        { name: "Agent A", agentId: "a-1", agentType: "test", tmuxPaneId: "%999" },
+      ],
+    };
+    setupTmpHome(TEAM_NAME, configWithPane);
+
+    const result = killAgent(TEAM_NAME, "Agent A");
+
+    expect(result.success).toBe(true);
+    expect(result.message).toContain("Killed agent");
+    // Pane %999 doesn't exist, so kill will fail gracefully
+    expect(result.message).toContain("tmux pane kill failed");
   });
 
   test("fails when team config does not exist", () => {
@@ -225,13 +242,34 @@ describe("listAgents", () => {
 describe("cleanupStaleEntries", () => {
   afterEach(teardownTmpHome);
 
-  test("returns empty removed list (current stub behavior)", () => {
+  test("skips members without pane IDs", () => {
     setupTmpHome(TEAM_NAME, SAMPLE_CONFIG);
 
     const result = cleanupStaleEntries(TEAM_NAME);
 
     expect(result.removed).toHaveLength(0);
-    expect(result.message).toContain("3 member(s)");
+    expect(result.message).toContain("0 stale entry(s) removed");
+    expect(result.message).toContain("without pane tracking skipped");
+  });
+
+  test("removes members with dead pane IDs", () => {
+    const configWithPanes: TeamConfig = {
+      members: [
+        { name: "Alive", agentId: "a-1", agentType: "test" },
+        { name: "Dead", agentId: "a-2", agentType: "test", tmuxPaneId: "%9999" },
+      ],
+    };
+    setupTmpHome(TEAM_NAME, configWithPanes);
+
+    const result = cleanupStaleEntries(TEAM_NAME);
+
+    // %9999 doesn't exist, so it's "dead"
+    expect(result.removed).toContain("Dead");
+    expect(result.removed).toHaveLength(1);
+
+    const config = readTeamConfig(TEAM_NAME);
+    expect(config!.members).toHaveLength(1);
+    expect(config!.members[0].name).toBe("Alive");
   });
 
   test("handles missing config", () => {

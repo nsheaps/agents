@@ -11,6 +11,8 @@ export interface TeamMember {
   name: string;
   agentId: string;
   agentType: string;
+  /** Tmux pane ID, set at spawn time. Used for kill/health/cleanup. */
+  tmuxPaneId?: string;
 }
 
 /** Team config structure as managed by Claude Code. */
@@ -153,6 +155,12 @@ export function killAgent(
     };
   }
 
+  // Kill tmux pane if we have a pane ID (spec §6.1 step 2)
+  let paneKilled = false;
+  if (member.tmuxPaneId) {
+    paneKilled = killTmuxPane(member.tmuxPaneId);
+  }
+
   // Remove from config
   const removed = removeMember(teamName, agentName);
   if (!removed) {
@@ -162,18 +170,22 @@ export function killAgent(
     };
   }
 
+  const paneMsg = member.tmuxPaneId
+    ? paneKilled
+      ? ", tmux pane killed"
+      : ", tmux pane kill failed (may already be dead)"
+    : ", no tmux pane ID tracked";
   return {
     success: true,
-    message: `Killed agent '${agentName}' and removed from team config`,
+    message: `Killed agent '${agentName}' and removed from team config${paneMsg}`,
   };
 }
 
 /**
  * Auto-cleanup: remove stale entries from team config (spec §6.3).
  *
- * Note: Without tmux pane tracking (not yet in the config schema),
- * this currently only identifies entries that could be stale.
- * Full implementation requires tmux pane ID tracking in team config.
+ * Checks each member with a tmuxPaneId — if the pane is dead, removes
+ * the member from config. Members without a pane ID are left untouched.
  */
 export function cleanupStaleEntries(
   teamName: string,
@@ -183,12 +195,30 @@ export function cleanupStaleEntries(
     return { removed: [], message: `Team config not found for '${teamName}'` };
   }
 
-  // For now, report what's in the config
-  // Full cleanup requires tmux pane tracking (not yet in Claude Code's schema)
-  return {
-    removed: [],
-    message: `${config.members.length} member(s) in config. Auto-cleanup requires tmux pane tracking (future).`,
-  };
+  const removed: string[] = [];
+  const kept: TeamMember[] = [];
+
+  for (const member of config.members) {
+    if (member.tmuxPaneId && !isTmuxPaneAlive(member.tmuxPaneId)) {
+      removed.push(member.name);
+    } else {
+      kept.push(member);
+    }
+  }
+
+  if (removed.length > 0) {
+    config.members = kept;
+    writeTeamConfig(teamName, config);
+  }
+
+  const trackedCount = config.members.filter((m) => m.tmuxPaneId).length + removed.length;
+  const untrackedCount = config.members.filter((m) => !m.tmuxPaneId).length;
+  const parts = [`${removed.length} stale entry(s) removed`];
+  if (untrackedCount > 0) {
+    parts.push(`${untrackedCount} member(s) without pane tracking skipped`);
+  }
+
+  return { removed, message: parts.join(". ") + "." };
 }
 
 /**
@@ -199,7 +229,10 @@ export function listAgents(
   discoveredNames: string[],
 ): Array<{ name: string; inFile: boolean; inConfig: boolean; status: AgentStatus }> {
   const config = readTeamConfig(teamName);
-  const configNames = new Set(config?.members.map((m) => m.name) ?? []);
+  const memberMap = new Map(
+    config?.members.map((m) => [m.name, m]) ?? [],
+  );
+  const configNames = new Set(memberMap.keys());
   const allNames = new Set([...discoveredNames, ...configNames]);
 
   return Array.from(allNames)
@@ -211,8 +244,12 @@ export function listAgents(
       if (!inConfig) {
         status = "NOT_SPAWNED";
       } else {
-        // Without tmux tracking, assume UNKNOWN for config entries
-        status = "UNKNOWN";
+        const member = memberMap.get(name)!;
+        if (member.tmuxPaneId) {
+          status = isTmuxPaneAlive(member.tmuxPaneId) ? "RUNNING" : "DEAD";
+        } else {
+          status = "UNKNOWN";
+        }
       }
       return { name, inFile, inConfig, status };
     });
