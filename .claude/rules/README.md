@@ -4,13 +4,13 @@ Rules are **short declarative constraints** loaded on every Claude Code API call
 
 ## Rules vs Behaviors
 
-| Aspect | Rules (`.claude/rules/`) | Behaviors (`.claude/behaviors/`) |
-|--------|--------------------------|----------------------------------|
-| Format | Short declarative statements | Multi-step procedures with steps and anti-patterns |
-| Loading | Every API call (always in context) | On demand (referenced when relevant) |
-| Purpose | Constraints and principles | Repeatable work patterns |
-| Length | Keep short — every token counts | Can be detailed — loaded only when needed |
-| Example | "Never expose teammate internals" | "How to verify deliverables before marking done" |
+| Aspect  | Rules (`.claude/rules/`)           | Behaviors (`.claude/behaviors/`)                   |
+| ------- | ---------------------------------- | -------------------------------------------------- |
+| Format  | Short declarative statements       | Multi-step procedures with steps and anti-patterns |
+| Loading | Every API call (always in context) | On demand (referenced when relevant)               |
+| Purpose | Constraints and principles         | Repeatable work patterns                           |
+| Length  | Keep short — every token counts    | Can be detailed — loaded only when needed          |
+| Example | "Never expose teammate internals"  | "How to verify deliverables before marking done"   |
 
 ## Token Budget
 
