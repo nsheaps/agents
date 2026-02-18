@@ -19,32 +19,33 @@ import {
 } from "../src/lifecycle";
 
 // --- CLI args ---
-const showPrompt = process.argv.includes("--prompt");
-const dryRun = process.argv.includes("--dry-run");
+import { parseArgs } from "node:util";
 
-// Find --team-name value
-const teamNameIdx = process.argv.indexOf("--team-name");
-const teamName =
-  teamNameIdx >= 0
-    ? process.argv[teamNameIdx + 1]
-    : process.env.AGENT_TEAM_NAME;
+const SUBCOMMANDS = ["list", "kill", "cleanup", "health", "relaunch", "launch"] as const;
 
-// Subcommands
-const subcommand = process.argv.find(
-  (a) =>
-    ["list", "kill", "cleanup", "health", "relaunch", "launch"].includes(a) &&
-    process.argv.indexOf(a) > 1,
-);
+const { values: flags, positionals } = parseArgs({
+  args: process.argv.slice(2),
+  options: {
+    prompt: { type: "boolean", default: false },
+    "dry-run": { type: "boolean", default: false },
+    "team-name": { type: "string" },
+  },
+  allowPositionals: true,
+  strict: false,
+});
 
-// Agent name filter (for discover/kill)
-const agentFilter = process.argv.find(
-  (a) =>
-    !a.startsWith("-") &&
-    a !== process.argv[0] &&
-    a !== process.argv[1] &&
-    a !== teamName &&
-    a !== subcommand,
-);
+const showPrompt = flags.prompt ?? false;
+const dryRun = flags["dry-run"] ?? false;
+const teamName = flags["team-name"] ?? process.env.AGENT_TEAM_NAME;
+
+// First positional that matches a subcommand is the subcommand; the rest are agent names.
+// If the first positional is NOT a subcommand, there is no subcommand (default: discover mode).
+const subcommand = SUBCOMMANDS.includes(positionals[0] as typeof SUBCOMMANDS[number])
+  ? (positionals[0] as typeof SUBCOMMANDS[number])
+  : undefined;
+
+// Everything after the subcommand (or all positionals if no subcommand) is the agent filter.
+const agentFilter = subcommand ? positionals[1] : positionals[0];
 
 // --- Main ---
 
