@@ -11,7 +11,8 @@ run = "bun run prettier --check '**/*.md'"
 
 [tasks.lint]
 description = "Run all linting checks"
-run = "bun run prettier --check '**/*.md'"
+depends = ["fmt-check"]
+run = "echo 'All lint checks passed'"
 
 [tasks.test]
 description = "Run tests"
