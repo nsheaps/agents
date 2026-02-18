@@ -12,6 +12,9 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.release.outputs.version }}
+      tag: ${{ steps.release.outputs.tag }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,6 +38,10 @@ jobs:
 
       - name: Run release-it
         id: release
-        run: bun run release-it --ci
         env:
           GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          bun run release-it --ci
+          TAG=$(git describe --tags --abbrev=0)
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
