@@ -196,7 +196,7 @@ export async function discoverAgents(
     if (existing) {
       errors.push({
         filename: file,
-        message: `Duplicate agent name '${agent.name}' in ${existing} and ${file}`,
+        message: `Duplicate agent name '${agent.name}': '${file}' conflicts with already-loaded '${existing}' (keeping '${existing}')`,
       });
       continue;
     }
