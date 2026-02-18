@@ -20,6 +20,14 @@ Before any of the features below, the foundational lifecycle must work:
 
 This is currently broken in Claude Code's agent teams system (see `.claude/behaviors/team-member-cleanup.md` for the manual workaround). The agent wrapper and management tooling must solve this before adding session restoration, Docker containers, or cross-machine capabilities.
 
+> **Migration note**: The current entry point is `bin/claude-team` in [nsheaps/claude-utils](https://github.com/nsheaps/claude-utils). The agent CLI (`agent launch`) will eventually replace this script. The migration path is: `claude-team` → `agent launch` with compatible flags and config.
+
+---
+
+## Post-MVP Discussion Topics
+
+> The following sections are design discussions for future phases. **None are in scope for the MVP.** Sections §1–§7 capture ideas raised during team sessions that will be prioritized, refined, and scheduled after the MVP lifecycle is reliable.
+
 ---
 
 ## 1. Security Consultant Agent
@@ -260,6 +268,18 @@ Each agent can have its own container image tailored to its framework and tools:
 
 ## 4. Agent Definition Code Structure
 
+### Agent Configuration Formats — Disambiguation
+
+The ecosystem has three YAML-related agent config formats. They serve different purposes and are not interchangeable:
+
+| Format | Location | Purpose | Status |
+|:--|:--|:--|:--|
+| **Claude Code agent files** | `.claude/agents/{name}.md` (YAML frontmatter + markdown body) | Agent prompts and metadata for Claude Code's built-in agent system | Current — used today |
+| **agent.yaml** (proposed) | `agents/{name}/agent.yaml` | Full agent definition (tools, container, permissions, mesh) for the agent-team framework | Future — target format |
+| **Project .agent.yaml** | `.agent.yaml` (project root) | Launch config for the `agent` CLI wrapper — profiles, MCP configs, settings overrides | Future — project-level config |
+
+**Migration path**: `.claude/agents/*.md` is the starting point. The agent launcher reads these today. As the framework matures, agent definitions will migrate to `agents/{name}/agent.yaml` with richer schema. Both formats may coexist during transition — the launcher will read both and prefer `agent.yaml` when present.
+
 ### Concept
 
 Define agents in code — not just markdown files, but structured definitions that include settings, container configuration, workspace setup, and tool access.
@@ -287,6 +307,15 @@ agents/
     ├── behaviors/           # Shared behaviors
     └── types/               # TypeScript types for agent definitions
 ```
+
+### Migration from Current Format
+
+The current `.claude/agents/*.md` files will not be abandoned overnight. The migration path:
+
+1. **Phase 1 (now)**: Agent launcher reads `.claude/agents/*.md` with YAML frontmatter
+2. **Phase 2**: Introduce `agents/{name}/agent.yaml` alongside existing files. Launcher reads both, prefers `agent.yaml`
+3. **Phase 3**: Provide a migration tool (`agent migrate`) to convert `.claude/agents/*.md` → `agents/{name}/` structure
+4. **Phase 4**: Deprecate `.claude/agents/*.md` for team-managed agents (still valid for Claude Code's built-in agent system)
 
 ### agent.yaml Schema
 
@@ -411,11 +440,21 @@ The mesh MCP server handles real-time communication within a team. A2A could pro
 - Cross-team and cross-framework compatibility
 - Standardized agent discovery and capability advertisement
 
+### Relationship to Mesh MCP: Complementary, Not Replacement
+
+The mesh MCP server is the **committed direction** for intra-team real-time communication. A2A is a potential **future complement** for cross-team and cross-framework interoperability — it does not replace mesh MCP.
+
+| Concern | Mesh MCP | A2A |
+|:--|:--|:--|
+| Intra-team messaging | Primary | Not needed |
+| Cross-framework agents | Not designed for this | Natural fit |
+| Agent discovery | Within team config | Standardized protocol |
+| Maturity | In-progress, QA'd | Early-stage protocol |
+
 ### Research Needed
 
 - A2A protocol maturity and adoption
 - How A2A maps to the existing SendMessage/Task primitives
-- Whether A2A replaces or complements the mesh MCP server
 - Performance characteristics for real-time team communication
 
 ---
@@ -444,6 +483,10 @@ User ←→ agent CLI (proxy) ←→ claude / codex / custom framework
 4. **Runtime tool stripping**: Can remove tool definitions from the prompt before they reach the framework — this is a proxy capability, not just a config toggle
 5. **Tool replacement**: Can substitute tool definitions at runtime (e.g., replace a real GitHub tool with a dry-run mock)
 
+### Relationship to Per-Agent Tool Sets (§2)
+
+The static tool set defined in agent config (§2) establishes the agent's **baseline capabilities**. The I/O proxy can further **restrict or modify tools at runtime** — stripping tools based on context, replacing them with mocks, or adding new ones via MCP bridging. Static config = what the agent starts with. Proxy = what gets dynamically enforced.
+
 ### Why This Matters
 
 Tool stripping and replacement as a proxy feature means:
@@ -462,19 +505,24 @@ Tool stripping and replacement as a proxy feature means:
 
 ### References
 
-- Agent wrapper spec: `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md`
+- **Source of truth for I/O proxy design**: [Agent Wrapper PRD §I/O Proxy Architecture](https://github.com/nsheaps/agent/blob/main/docs/specs/draft/agent-wrapper.md#io-proxy-architecture) — the wrapper PRD owns the full proxy design. This section summarizes the team-level perspective.
 - Per-agent tool sets: Section 2 of this document
 
 ---
 
 ## 8. Relationship to Existing PRDs
 
-| PRD             | Location                                                | Relationship                                        |
-| :-------------- | :------------------------------------------------------ | :-------------------------------------------------- |
-| Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md`                   | Section 3 (containers) and 5 (sessions) extend this |
-| Agent Wrapper   | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Section 4 (agent.yaml) replaces/extends this        |
-| MCP Tooling     | `~/src/nsheaps/mcp/docs/specs/draft/mcp-tooling.md`     | Section 6 (A2A) may complement this                 |
-| 14-Phase Plan   | Elmer Fudd's plan (in team lead context)                | All sections feed into phase refinement             |
+| Architecture Section | PRD | Location | Relationship |
+|:--|:--|:--|:--|
+| §1 Security Consultant | (none yet) | — | Needs its own PRD when prioritized |
+| §1b Agent Creation | (none yet) | — | Cross-role workflow; may need its own spec for tooling support |
+| §2 Per-Agent Tool Sets | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | Tool sets implemented via wrapper settings profiles |
+| §3 Docker Containers | Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md` | Containers need mesh networking |
+| §4 Agent Definition | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | agent.yaml schema extends wrapper config |
+| §5 Session Save/Restore | Mesh MCP Server | `docs/specs/draft/mesh-mcp-server.md` | Session state may include mesh connection info |
+| §6 A2A Protocol | MCP Tooling | `~/src/nsheaps/mcp/docs/specs/draft/mcp-tooling.md` | A2A complements (does not replace) mesh MCP — see note below |
+| §7 I/O Proxy | Agent Wrapper | `~/src/nsheaps/agent/docs/specs/draft/agent-wrapper.md` | **Wrapper PRD is source of truth** for proxy design; §7 summarizes |
+| All sections | 14-Phase Plan | Elmer Fudd's plan (in team lead context) | All sections feed into phase refinement |
 
 ---
 
