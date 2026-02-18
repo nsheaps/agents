@@ -15,4 +15,4 @@ run = "bun run prettier --check '**/*.md'"
 
 [tasks.test]
 description = "Run tests"
-run = "echo 'No tests configured yet'"
+run = "bun test"
