@@ -30,5 +30,8 @@ test/tmp/
 # Claude Code personal settings
 .claude/settings.local.json
 
+# Team scratch/temp files
+.claude/tmp/
+
 # Logs
 *.log

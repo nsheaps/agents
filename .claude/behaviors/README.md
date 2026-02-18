@@ -22,7 +22,7 @@ No single skill covers all of this. The behavior file ties these sub-components 
 
 | Concept      | What It Is                                            | Example                                                                                   |
 | :----------- | :---------------------------------------------------- | :---------------------------------------------------------------------------------------- |
-| **Agent**    | A role with responsibilities and personality          | `deep-researcher.md` — the Deep Researcher role                                           |
+| **Agent**    | A role with responsibilities and process              | `deep-researcher.md` — the Deep Researcher role                                           |
 | **Skill**    | A single, focused capability                          | "How to use web search effectively"                                                       |
 | **Behavior** | A complex procedure combining multiple sub-components | "How to conduct research" — evaluating, searching, fact-checking, synthesizing, reporting |
 

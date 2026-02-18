@@ -1,0 +1,21 @@
+{
+  "name": "agent-team-skills",
+  "version": "0.1.0",
+  "description": "Skills for multi-agent team orchestration, tmux usage, and agent development",
+  "author": {
+    "name": "Nathan Heaps",
+    "email": "nsheaps@gmail.com",
+    "url": "https://github.com/nsheaps"
+  },
+  "homepage": "https://github.com/nsheaps/agent-team/tree/main/plugins/agent-team-skills",
+  "repository": "https://github.com/nsheaps/agent-team",
+  "keywords": [
+    "agent-team",
+    "orchestration",
+    "tmux",
+    "multi-agent",
+    "claude-code",
+    "skills",
+    "agent-development"
+  ]
+}

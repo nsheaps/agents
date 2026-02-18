@@ -1,5 +1,6 @@
 - launching agents in other environments, is there an option to replace which bin or add different flags?
 - how do they communicate in background
+- e2e tests
 - how to keep active without full claude ui, can you stream io in json without the ui?
 - give each their own settings > vault key > passwords
 - scheduled tasks

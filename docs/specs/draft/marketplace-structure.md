@@ -1,7 +1,7 @@
 # PRD: Marketplace Structure for agent-team
 
 **Status**: Draft
-**Author**: Tweety Bird (Technical Writer)
+**Author**: Tweety Bird (Docs Writer)
 **Date**: 2026-02-16
 
 ## Vision
@@ -17,7 +17,7 @@ The model to follow is [`nsheaps/ai`](https://github.com/nsheaps/.ai), which alr
 ```
 nsheaps/agent-team/
 ├── .claude/
-│   ├── agents/           # 8 agent definitions (orchestrator, coach, etc.)
+│   ├── agents/           # 8 agent definitions (orchestrator, ai-agent-eng, etc.)
 │   ├── docs/             # Shared team docs (team-structure, communication-protocol, team-rules)
 │   ├── skills/           # 2 standalone skills (NOT plugins)
 │   │   ├── tmux-usage/SKILL.md
