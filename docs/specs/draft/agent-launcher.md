@@ -498,11 +498,22 @@ The launcher does not own this file — Claude Code's `TeamCreate` tool creates 
     {
       "name": "Bugs B (software-eng)",
       "agentId": "abc-123-def",
-      "agentType": "general-purpose"
+      "agentType": "general-purpose",
+      "tmuxPaneId": "%42",
+      "agentName": "software-eng"
     }
   ]
 }
 ```
+
+**Launcher-managed fields** (set at spawn time, not part of Claude Code's base schema):
+
+| Field | Type | Purpose |
+|:--|:--|:--|
+| `tmuxPaneId` | `string?` | Tmux pane ID — enables kill (§6.1), health (§6.2), and cleanup (§6.3) |
+| `agentName` | `string?` | Agent file name slug — enables file/config correlation in list (§6.4) |
+
+These fields are added to the config entry when the launcher spawns an agent. Claude Code's own tools ignore unknown fields, so they coexist safely.
 
 ### Cleanup Operations
 

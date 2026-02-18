@@ -84,18 +84,19 @@ jq --arg panes "$ACTIVE_PANES" '
 
 After removing stale entries, you can spawn a fresh agent with the same name without getting numeric suffixes (`-2`, `-3`).
 
-## Tool Gaps
+## Tool Status
 
-The following agent management tools do not exist yet but would prevent the need for manual cleanup:
+The following capabilities have been implemented in `src/lifecycle.ts`:
 
-| Missing Tool            | What It Would Do                                                       |
-| :---------------------- | :--------------------------------------------------------------------- |
-| `TeamRemoveMember`      | Remove a specific member from the team config by name                  |
-| `TeamListMembers`       | List team members with live/dead status (cross-referencing tmux panes) |
-| `TeamCleanup`           | Auto-detect and remove all stale members whose backends are gone       |
-| Graceful crash handling | System detects when a tmux pane exits and auto-deactivates the member  |
+| Capability | Function | Status |
+|:--|:--|:--|
+| Remove member by name | `removeMember()` / `killAgent()` | Implemented (`f2fe867`) |
+| List with live/dead status | `listAgents()` — reports RUNNING/DEAD/UNKNOWN | Implemented (`f2fe867`) |
+| Auto-cleanup stale entries | `cleanupStaleEntries()` — checks pane liveness, removes dead | Implemented (`f2fe867`) |
+| File/config name correlation | `listAgents()` via `agentName` field on `TeamMember` | Implemented (`9a7354b`) |
+| Graceful crash handling | Not yet — system does not auto-detect pane exits | Still needed |
 
-See also: `docs/to-research.md` for broader agent management tool gaps.
+**Note**: The manual cleanup procedures above (Options A/B/C) remain valid as fallbacks when the programmatic tools are unavailable (e.g., CLI not built yet, or running outside the launcher context).
 
 ## References
 

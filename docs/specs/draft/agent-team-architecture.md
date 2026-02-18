@@ -13,12 +13,32 @@ This document captures design topics raised during the looney-tunes team session
 Before any of the features below, the foundational lifecycle must work:
 
 1. **Launch**: Spawn an agent by name with specified permissions and framework
-2. **Kill**: Cleanly terminate an agent, removing it from team config
+2. **Kill**: Cleanly terminate an agent, removing it from team config — **implemented** (`killAgent` kills tmux pane via `tmuxPaneId`, then removes config entry; `f2fe867`)
 3. **Relaunch**: Spawn the same agent name again without `-2` suffixes or stale entries
-4. **Health check**: Detect when an agent's backend (tmux pane, container, process) has died
-5. **Auto-cleanup**: Remove dead agents from config automatically
+4. **Health check**: Detect when an agent's backend (tmux pane, container, process) has died — **implemented** (`listAgents` reports RUNNING/DEAD/UNKNOWN based on `isTmuxPaneAlive`; `f2fe867`)
+5. **Auto-cleanup**: Remove dead agents from config automatically — **implemented** (`cleanupStaleEntries` checks pane liveness and removes dead entries; `f2fe867`)
 
-This is currently broken in Claude Code's agent teams system (see `.claude/behaviors/team-member-cleanup.md` for the manual workaround). The agent wrapper and management tooling must solve this before adding session restoration, Docker containers, or cross-machine capabilities.
+### TeamMember Extensions
+
+The `TeamMember` interface in `src/lifecycle.ts` extends Claude Code's base config with fields set at spawn time:
+
+| Field | Type | Purpose | Added in |
+|:--|:--|:--|:--|
+| `tmuxPaneId` | `string?` | Tmux pane ID for kill/health/cleanup operations | `f2fe867` |
+| `agentName` | `string?` | Agent file name (e.g. `"software-eng"`) for correlating config display names with discovered agent files | `9a7354b` |
+
+**Why `agentName` is needed**: Claude Code stores display names in config (e.g. `"Bugs B (software-eng)"`), but agent files are named by slug (e.g. `software-eng.md`). The `agentName` field bridges this gap — `listAgents` uses it to match discovered files to config entries, falling back to direct name comparison when not set.
+
+### Agent Health Statuses
+
+| Status | Meaning |
+|:--|:--|
+| `RUNNING` | Config entry exists, `tmuxPaneId` set, pane is alive |
+| `DEAD` | Config entry exists, `tmuxPaneId` set, pane is not alive (stale) |
+| `UNKNOWN` | Config entry exists but no `tmuxPaneId` (cannot verify) |
+| `NOT_SPAWNED` | Agent file exists but no config entry |
+
+The original stale entry problem (see `.claude/behaviors/team-member-cleanup.md`) is now addressed by `cleanupStaleEntries`, which removes DEAD entries automatically.
 
 > **Migration note**: The current entry point is `bin/claude-team` in [nsheaps/claude-utils](https://github.com/nsheaps/claude-utils). The agent CLI (`agent launch`) will eventually replace this script. The migration path is: `claude-team` → `agent launch` with compatible flags and config.
 
