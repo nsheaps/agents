@@ -149,7 +149,7 @@ if (subcommand === "launch") {
     console.warn(`WARN: ${w}`);
   }
   console.log(`Launching agent '${agent.name}'...`);
-  console.log(`  claude ${spawn.args.map((a) => (a.length > 60 ? `"${a.slice(0, 57)}..."` : a)).join(" ")}`);
+  console.log(`  claude ${spawn.args.map((a) => (a.includes(" ") || a.includes("\n") || a.includes('"') ? `'${a.replace(/'/g, "'\\''")}'` : a)).join(" \\\n    ")}`);
   // Note: Actual spawning is delegated to the orchestrator's Task tool, not this CLI.
   // This CLI builds the args; the orchestrator session uses them.
   console.log(
@@ -286,7 +286,7 @@ for (const agent of discoverResult.agents) {
       console.warn(`  WARN: ${w}`);
     }
     const cmd = ["claude", ...spawn.args]
-      .map((a) => (a.length > 80 ? `"${a.slice(0, 77)}..."` : a))
+      .map((a) => (a.includes(" ") || a.includes("\n") || a.includes('"') ? `'${a.replace(/'/g, "'\\''")}'` : a))
       .join(" \\\n    ");
     console.log(`  Command:\n    ${cmd}`);
     console.log(
