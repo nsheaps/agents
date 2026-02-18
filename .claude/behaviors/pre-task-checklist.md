@@ -52,6 +52,10 @@ Complete ALL items before writing any code, making any edits, or producing any d
 
 8. **Begin work** — Only after completing items 1-7.
 
+## Related Behaviors
+
+- **[verification.md](verification.md)** — After completing work, use the verification behavior to validate results before declaring done. Pre-task checklist prevents starting wrong; verification prevents finishing wrong.
+
 ## Anti-Patterns
 
 - Skipping the checklist because the task "seems simple"

@@ -51,6 +51,10 @@ Ensure changes are correct, complete, and match the original request before mark
 
 7. **Confirm done** — Only after all checks pass, mark the task complete.
 
+## Related Behaviors
+
+- **[commit-hygiene.md](commit-hygiene.md)** — After reviewing, use commit hygiene to ensure changes are committed correctly with proper messages and scope.
+
 ## Anti-Patterns
 
 - Declaring "done" without reading your own diff

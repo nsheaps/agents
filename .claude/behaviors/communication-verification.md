@@ -53,6 +53,10 @@ Prevent data loss from communication errors. Every message should reach its inte
    - Do NOT re-send to the same recipient
    - Escalate to team-lead: "I sent [summary] to [recipient] but got no response. Can you verify they received it?"
 
+## Related Behaviors
+
+- **[failure-reporting.md](failure-reporting.md)** — When communication fails or deliverables are lost, use the failure reporting behavior to document the incident and prevent recurrence.
+
 ## Anti-Patterns
 
 - Sending full reports in message content instead of saving to files first

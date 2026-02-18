@@ -6,7 +6,7 @@ Provider-agnostic agent team orchestration.
 
 The TypeScript/Bun launcher code in `src/` is a proof-of-concept exploring agent lifecycle management patterns. It is not actively developed — the current focus is on `claude-team` (shell-based orchestration in the [claude-utils](https://github.com/nsheaps/claude-utils) repo). This POC will inform the eventual MVP rebuild.
 
-54 passing tests. Key modules: discover, prompt, spawn, lifecycle.
+Key modules: discover, prompt, spawn, lifecycle.
 
 ## Overview
 
