@@ -13,6 +13,7 @@
     - It's time. Take on openclaw
 - team-lead is orchestrator
   - Team lead can read all agent convos, including inter agent convo
+- need to make sure mcp tools allow agents to use abstraction to manage infra AND agent (eg agent gets stuck, use mcp tool to kill tmux pane, or container if k8s mode)
 - ai-agent-eng should be checking claude code change log, anthropic blog, related claude repos every day to factor in the latest recommendations. Keep a full copy of https://claude.md to compare for changes. Use cchistory to understand differences in the claude cli
 - in this particular orgnaization, ai-agent-eng should also be tracking changes in nsheaps/.ai Many of those changes overlap with goals here and vice versa and we should be working in lock step, not duplicating effort
 - agent-controller (other tool?) is a program, not agent, that is responsible for actual launch/termination/communication between agents/task tracking/cache save and restore
