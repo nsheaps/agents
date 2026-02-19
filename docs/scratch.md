@@ -7,6 +7,12 @@
   - Should sessions for communicating with others and managing actual task execution be separate from the ones doing tasks? Should working on tasks be sub agents? Agent teams with in-process? their own remote agent teams?
 - need business-consult agent for helping create llc
 - need marketing agent for marketing strategy and execution
+- K8s mode:
+  - use config maps for files like settings per agent, let security-consult edit file from mounted config map and sync at runtime to the agent.
+    - confirm agent got updates via hash monitoring of file, report back to security-consult
+- Security
+  - Don't let agents modify their own config files, that would potentially enable them to grant permissions to tools they shouldn't have.
+  - 
 - different configs for agents
   - One for local, maybe with just swe and qa
   - One for cloud for persistent agents
