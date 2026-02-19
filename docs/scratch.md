@@ -14,7 +14,25 @@
 - team-lead is orchestrator
   - Team lead can read all agent convos, including inter agent convo
 - need to make sure mcp tools allow agents to use abstraction to manage infra AND agent (eg agent gets stuck, use mcp tool to kill tmux pane, or container if k8s mode)
+- not all agent roles are created equal. Some can run on sonnet normally, some should run on opus normally.
+  - Some should delegate to smarter "more senior" teammates
+  - Some should use structural thinking to help
+  - Some should use local background agents with a different model to help them perform complex tasks with a less intelligent model
+- Consider teammates and their ability or allow permissions for (or gate based on settings) running tasks:
+  - In a local background agent (which cannot be interacted with during implementation) aka Task
+  - To an in-process sub-agent (claude team, ephemeral vs persistent?)
+  - To a remote sub-agent (claude-team, but in tmux/k8s mode)
+  - To a separate teammate (not controlled by agent, just asking another teammate to help)
+- teammate mode needs a better abstraction than what claude provides (auto/tmux)
+  - We need things like limiting agents to only running background agents, or only in-process agents, or only tmux or remote agents.
+  - This likely starts getting towards an overarching permissions system bigger than just security-consult.
 - ai-agent-eng should be checking claude code change log, anthropic blog, related claude repos every day to factor in the latest recommendations. Keep a full copy of https://claude.md to compare for changes. Use cchistory to understand differences in the claude cli
+- Can we make a plugin that's hooks inject messages into the conversation from a file? This would be a way to have a "user message" that isn't actually typed by the user, but is instead written to a file by some other process (like an MCP server receiving messages from slack or something). The hook would read new messages from the file and inject them into the conversation as if they were user messages. This could be a way to integrate external communication channels into the agent conversation without needing the agent to poll those channels directly.
+  - The same hook could then review jsonl's to send to a remote server.
+  - And maybe a stop hook that forces idle without llm until timeout then shutdown?
+    - If shutdown like claude code web, on restart do we resume session? Maybe situation dependent.
+    - Start convo by launching agent, and using tmux to write to stdin?
+  - Allows agent cli to be in interactive mode but for us to still get json output.
 - in this particular orgnaization, ai-agent-eng should also be tracking changes in nsheaps/.ai Many of those changes overlap with goals here and vice versa and we should be working in lock step, not duplicating effort
 - agent-controller (other tool?) is a program, not agent, that is responsible for actual launch/termination/communication between agents/task tracking/cache save and restore
   - MCP cache save at end of session should be continuous throught session
