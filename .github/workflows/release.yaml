@@ -94,11 +94,12 @@ jobs:
           curl -fsSL https://github.com/hairyhenderson/gomplate/releases/latest/download/gomplate_linux-amd64 -o /usr/local/bin/gomplate
           chmod +x /usr/local/bin/gomplate
 
-      - name: Generate formula from template
+      - name: Generate formulas from templates
         env:
           Tag: ${{ steps.release.outputs.tag }}
           SHA256: ${{ steps.release.outputs.sha256 }}
         run: |
+          gomplate -f Formula/agent-team.rb.gotmpl -o homebrew-devsetup/Formula/agent-team.rb
           gomplate -f Formula/claude-team.rb.gotmpl -o homebrew-devsetup/Formula/claude-team.rb
 
       - name: Close stale formula PRs
@@ -128,7 +129,7 @@ jobs:
           git push origin --delete "$BRANCH" 2>/dev/null || true
 
           git checkout -b "$BRANCH"
-          git add Formula/claude-team.rb
+          git add Formula/agent-team.rb Formula/claude-team.rb
           git commit -m "chore: update agent-team claude-team to ${VERSION}"
           git push -u origin "$BRANCH"
 
