@@ -21,3 +21,4 @@ Rules consume context on **every API call**. Keep them concise. If a rule needs 
 - `teammate-abstraction.md` — Teammates are black boxes; never expose implementation details
 - `research-before-broadcasting.md` — Verify before broadcasting to the team; guessing wastes everyone's context
 - `no-unauthorized-shutdown.md` — Never shut down teammates without explicit user approval; idle is not a reason to terminate
+- `trust-teammate-reports.md` — Trust teammate reports by default; challenge the teammate for evidence before escalating to the user
