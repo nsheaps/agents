@@ -12,7 +12,21 @@ run = "bun run prettier --check '**/*.md'"
 [tasks.lint]
 description = "Run all linting checks"
 depends = ["format-check"]
-run = "echo 'All lint checks passed'"
+run = """
+# Shell script syntax check
+for script in bin/*; do
+  [ -d "$script" ] && continue
+  [ -f "$script" ] || continue
+  echo "Checking $script..."
+  bash -n "$script"
+done
+for lib in bin/lib/*.sh; do
+  [ -f "$lib" ] || continue
+  echo "Checking $lib..."
+  bash -n "$lib"
+done
+echo "All lint checks passed."
+"""
 
 [tasks.test]
 description = "Run tests"
