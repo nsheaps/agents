@@ -1,0 +1,24 @@
+# typed: false
+# frozen_string_literal: true
+
+class ClaudeTeam < Formula
+  desc 'Launch and manage Claude Code agent team sessions'
+  homepage 'https://github.com/nsheaps/claude-team'
+  url 'https://github.com/nsheaps/claude-team/archive/refs/tags/{{ .Env.Tag }}.tar.gz'
+  sha256 '{{ .Env.SHA256 }}'
+  license 'MIT'
+
+  head do
+    url 'https://github.com/nsheaps/claude-team.git', branch: 'main'
+  end
+
+  depends_on 'gum'
+
+  def install
+    bin.install Dir['bin/*']
+  end
+
+  test do
+    assert_match 'claude-team', shell_output("#{bin}/claude-team --help 2>&1")
+  end
+end
