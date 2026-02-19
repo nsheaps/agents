@@ -3,19 +3,21 @@
 
 class ClaudeTeam < Formula
   desc 'Launch and manage Claude Code agent team sessions'
-  homepage 'https://github.com/nsheaps/claude-team'
-  url 'https://github.com/nsheaps/claude-team/archive/refs/tags/{{ .Env.Tag }}.tar.gz'
+  homepage 'https://github.com/nsheaps/agent-team'
+  url 'https://github.com/nsheaps/agent-team/archive/refs/tags/{{ .Env.Tag }}.tar.gz'
   sha256 '{{ .Env.SHA256 }}'
   license 'MIT'
 
   head do
-    url 'https://github.com/nsheaps/claude-team.git', branch: 'main'
+    url 'https://github.com/nsheaps/agent-team.git', branch: 'main'
   end
 
   depends_on 'gum'
 
   def install
-    bin.install Dir['bin/*']
+    bin.install 'bin/claude-team'
+    bin.install 'bin/ct'
+    (bin/'lib').install 'bin/lib/stdlib.sh'
   end
 
   test do
