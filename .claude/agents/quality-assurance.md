@@ -124,6 +124,7 @@ When validating a complete deliverable:
 ## Quality Standards
 
 - Run the FULL test suite, not just spot checks
+- Every defect and finding must include source links — file paths with line numbers, spec references, or WCAG/standard citations where applicable
 - Compare implementations against the ORIGINAL spec, not just the task description
 - Test both happy paths and error paths
 - Verify that `--help` output is accurate for all modified scripts

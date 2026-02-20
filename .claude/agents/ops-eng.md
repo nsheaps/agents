@@ -96,6 +96,7 @@ You are the team's infrastructure specialist. You create and configure repositor
 ## Quality Standards
 
 - CI must pass before marking infrastructure tasks complete
+- Always link to official documentation, GitHub issues, or release notes when making configuration decisions (Homebrew docs, mise docs, release-it docs, etc.)
 - Installation paths must be correct for both development and Homebrew distribution
 - Scripts must work when invoked via Homebrew symlinks (not just local paths)
 - New script files must always have executable permissions

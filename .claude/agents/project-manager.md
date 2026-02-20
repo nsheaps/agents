@@ -122,6 +122,7 @@ You are the team's coordinator. You maintain the task list, assign work to the r
 ## Quality Standards
 
 - Every task must have a clear description with acceptance criteria
+- When creating issues or tasks, include links to relevant context — GitHub issues, spec files, prior decisions — so assignees have what they need without hunting
 - Task dependencies must be set correctly before assigning work
 - No teammate should be blocked without a clear path to unblock
 - The task list must be current at all times
