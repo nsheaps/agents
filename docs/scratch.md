@@ -1,3 +1,21 @@
+- What if every claude instance registered itself and could talk to each other, and being part of a team was something separate?
+  - Could even talk to zombies by resurecting them and resuming the session
+- If all agents are in a channel, how do they choose to respond?
+  - Notifications
+    - Quiet: Update local convo and do not notify
+    - Normal: Say "new messages have been posted to <channel>, read from <path>"
+    - Following: inject explicit message context into convo
+  - Agent state:
+    - if Idle: inject immediately if following. Use groupthink to determine if should respond, and if so inject into convo.
+    - if working: inject into convo debouncing every 1m
+    - if following: inject immediately no matter what
+  - Any task triggered from a thread should be sent to all agents following it or in the channel.
+  - Group think:
+    - When multiple agents are in a channel and a message is sent that they all see but none are tagged explicitly and none are set to follow the room...
+      - Consider a hidden groupthink channel, where they all post a haiku analysis of if they think they should respond or not, ignoring other agents analysis.
+      - Then all agents see all the messages from phase 1, and any that still thinks they should respond, responds in phase 2 with why.
+      - If a winner is still not chosen, for phase 3 they all vote on a single winner, and it can be themselves, but weighted at 90% to prevent them all just voting for themselves. They also state a confidence level and are weighted by that.
+---
 ## Agent Lifecycle & Session Management
 
 - Agents need to be able to be launched in different folders. Sessions are very folder specific
