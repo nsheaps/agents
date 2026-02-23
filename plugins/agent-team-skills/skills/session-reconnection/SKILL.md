@@ -177,8 +177,7 @@ Task files from the old session are lost if you remove the tasks directory. If y
 
 ## References
 
+- [Session Reconnection Research](../../../../docs/research/session-reconnection.md) -- full investigation with pitfall analysis and architecture notes
 - [Claude Code Agent Teams Docs](https://code.claude.com/docs/en/agent-teams)
-- [Team Launch Without TeamCreate Research](../../docs/research/claude-code-team-launch-without-teamcreate.md) -- why --resume restores lead but not teammates
-- [Team Storage Internals](../../docs/research/team-storage-internals.md) -- config.json schema, inbox file naming
 - [GitHub #23415](https://github.com/anthropics/claude-code/issues/23415) -- inbox polling failure after session resume
 - [tmux Usage Skill](../tmux-usage/SKILL.md) -- tmux session management
