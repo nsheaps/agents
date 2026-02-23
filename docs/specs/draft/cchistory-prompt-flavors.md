@@ -30,7 +30,7 @@
 
 cchistory captures **one system prompt per version**. It does not account for the fact that Claude Code's system prompt changes based on runtime context:
 
-- **Delegate mode** (`--permission-mode delegate`) adds coordination-only constraints
+- **Permission modes** (e.g., `--permission-mode bypassPermissions`) change tool restrictions and behavioral instructions
 - **Agent teams** (`CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) injects team primitives (TeamCreate, SendMessage, TaskUpdate, etc.)
 - **Teammate sessions** receive different instructions than the lead session
 - **Plan mode** restricts available tools and adds plan-specific instructions
@@ -79,14 +79,14 @@ A "flavor" is a named configuration that produces a distinct system prompt from 
 
 ### 3.2 Proposed Flavor Dimensions
 
-| Dimension           | Values                                             | Prompt Impact                                                |
-| :------------------ | :------------------------------------------------- | :----------------------------------------------------------- |
-| **Permission mode** | `default`, `delegate`, `plan`, `bypassPermissions` | Changes tool restrictions and behavioral instructions        |
-| **Agent teams**     | Off, Lead session, Teammate session                | Adds team primitives (7 tools), teammate communication rules |
-| **Teammate mode**   | N/A, `in-process`, `tmux`                          | Minor differences in spawn backend instructions              |
-| **Plan mode**       | Off, Active                                        | Restricts to read-only tools, adds planning instructions     |
-| **MCP servers**     | None, Specific server configs                      | Injects server tools and instructions                        |
-| **Plugins**         | None, Specific plugin set                          | Injects skills, agents, hooks, commands                      |
+| Dimension           | Values                                                           | Prompt Impact                                                |
+| :------------------ | :--------------------------------------------------------------- | :----------------------------------------------------------- |
+| **Permission mode** | `default`, `acceptEdits`, `plan`, `dontAsk`, `bypassPermissions` | Changes tool restrictions and behavioral instructions        |
+| **Agent teams**     | Off, Lead session, Teammate session                              | Adds team primitives (7 tools), teammate communication rules |
+| **Teammate mode**   | N/A, `in-process`, `tmux`                                        | Minor differences in spawn backend instructions              |
+| **Plan mode**       | Off, Active                                                      | Restricts to read-only tools, adds planning instructions     |
+| **MCP servers**     | None, Specific server configs                                    | Injects server tools and instructions                        |
+| **Plugins**         | None, Specific plugin set                                        | Injects skills, agents, hooks, commands                      |
 
 ### 3.3 Flavor Extraction
 
@@ -97,7 +97,7 @@ Each flavor requires running cchistory's extraction process with different argum
 cchistory extract --version 2.1.39
 
 # Delegate mode flavor
-cchistory extract --version 2.1.39 --claude-args "--permission-mode delegate"
+cchistory extract --version 2.1.39 --claude-args "--permission-mode bypassPermissions"
 
 # Agent teams lead flavor
 cchistory extract --version 2.1.39 --env "CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1"
@@ -117,14 +117,14 @@ flavors:
     args: []
     env: {}
 
-  delegate:
-    description: "Delegate mode — coordination only"
-    args: ["--permission-mode", "delegate"]
+  bypassPermissions:
+    description: "Bypass permissions mode — skip all permission prompts"
+    args: ["--permission-mode", "bypassPermissions"]
     env: {}
 
   agent-team-lead:
     description: "Agent teams — lead session"
-    args: ["--permission-mode", "delegate"]
+    args: ["--permission-mode", "bypassPermissions"]
     env:
       CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS: "1"
 
@@ -147,7 +147,7 @@ flavors:
 The existing web interface has a **version dropdown** for selecting two versions to diff. Add:
 
 1. **Flavor dropdown** next to each version selector — choose which flavor's prompt to display
-2. **Cross-flavor diff** — compare the same version under different flavors (e.g., "v2.1.39 default" vs "v2.1.39 delegate")
+2. **Cross-flavor diff** — compare the same version under different flavors (e.g., "v2.1.39 default" vs "v2.1.39 bypassPermissions")
 3. **Cross-version + cross-flavor diff** — compare different versions AND different flavors
 4. **Output style toggle** — switch between raw markdown, structured sections, or tool-schema-only views
 
@@ -246,7 +246,7 @@ The JSONL transcript schema (documented in our [JSONL parsing tools research](..
 
 ## 6. User Stories
 
-1. **As a Claude Code researcher**, I want to compare the system prompt in delegate mode vs normal mode for the same version, so I can understand what behavioral constraints delegate mode adds.
+1. **As a Claude Code researcher**, I want to compare the system prompt across different permission modes (e.g., `bypassPermissions` vs `default`) for the same version, so I can understand what behavioral constraints each mode adds.
 
 2. **As a plugin developer**, I want to see how my plugin's skills and hooks modify the system prompt, so I can verify my plugin integrates correctly.
 

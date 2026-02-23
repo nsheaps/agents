@@ -62,7 +62,7 @@ These work within the Claude Code UI, not at the tmux level:
 | Shift+Up/Down | Cycle through teammates (in-process mode)                          |
 | Ctrl+T        | Toggle task list                                                   |
 | Ctrl+O        | Toggle verbose transcript (shows tool usage and execution details) |
-| Shift+Tab     | Toggle delegate mode (lead coordination only)                      |
+| Shift+Tab     | Toggle permission mode (lead coordination only)                    |
 | Escape        | Interrupt teammate's turn                                          |
 
 ### tmux -CC Control Mode (iTerm2)

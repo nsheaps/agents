@@ -73,7 +73,7 @@ A specialized agent that acts as a runtime permission gate and agent configurati
 2. What's the approval scope? Per-action, per-session, permanent?
 3. How are one-time approvals tracked and expired?
 4. What's the trust model? Can the security consultant grant permissions the user hasn't pre-approved?
-5. How does this interact with Claude Code's existing permission modes (default, bypass, delegate)?
+5. How does this interact with Claude Code's existing permission modes (default, bypassPermissions, acceptEdits, dontAsk, plan)?
 
 ### References
 
@@ -117,14 +117,14 @@ Each role owns specific fields in the agent definition. This prevents conflicts 
 
 #### Security Consultant Fields
 
-| Field                          | Description                                   |
-| :----------------------------- | :-------------------------------------------- |
-| `permission_mode`              | default / delegate / plan / bypassPermissions |
-| `dangerously_skip_permissions` | Whether to bypass all permission checks       |
-| `tools`                        | Whitelist of available tools                  |
-| `disallowed_tools`             | Blacklist of tools (with pattern support)     |
-| `permissions.allowed`          | Allowed command patterns (Phase 2 agent.yaml) |
-| `permissions.denied`           | Denied command patterns (Phase 2 agent.yaml)  |
+| Field                          | Description                                                |
+| :----------------------------- | :--------------------------------------------------------- |
+| `permission_mode`              | default / bypassPermissions / acceptEdits / dontAsk / plan |
+| `dangerously_skip_permissions` | Whether to bypass all permission checks                    |
+| `tools`                        | Whitelist of available tools                               |
+| `disallowed_tools`             | Blacklist of tools (with pattern support)                  |
+| `permissions.allowed`          | Allowed command patterns (Phase 2 agent.yaml)              |
+| `permissions.denied`           | Denied command patterns (Phase 2 agent.yaml)               |
 
 #### Ops Eng Fields
 
@@ -354,7 +354,7 @@ tools:
   - execution
 
 permissions:
-  mode: bypassPermissions # or default, delegate
+  mode: bypassPermissions # or default, acceptEdits, dontAsk, plan
   allowed:
     - "git *"
     - "bun *"
