@@ -14,64 +14,64 @@ The Phase 1 launcher correctly discovers all 8 agent files, parses YAML frontmat
 
 ### 1. Discovery
 
-| Test | Result | Notes |
-|------|--------|-------|
-| Finds all 8 agents | PASS | ai-agent-eng, deep-researcher, docs-writer, ops-eng, orchestrator, project-manager, quality-assurance, software-eng |
-| Alphabetical sort | PASS | Output is sorted by name |
-| Agent name filter (positional arg) | PASS | `bun bin/agent-launch.ts software-eng` shows only that agent |
+| Test                               | Result | Notes                                                                                                               |
+| ---------------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------- |
+| Finds all 8 agents                 | PASS   | ai-agent-eng, deep-researcher, docs-writer, ops-eng, orchestrator, project-manager, quality-assurance, software-eng |
+| Alphabetical sort                  | PASS   | Output is sorted by name                                                                                            |
+| Agent name filter (positional arg) | PASS   | `bun bin/agent-launch.ts software-eng` shows only that agent                                                        |
 
 ### 2. Frontmatter Parsing
 
-| Test | Result | Notes |
-|------|--------|-------|
-| Required fields (name, description) | PASS | Correctly parsed for all 8 agents |
-| Optional fields (model, color, tools, etc.) | PASS | `model: claude-opus-4-6`, `tools`, `disallowed_tools` all resolved |
-| Default values applied | PASS | `promptMode: extend`, `permissionMode: delegate`, `continueSession: false` |
-| Unknown fields silently ignored | PASS | `orchestrator.md` has `role: orchestrator` (not in type) — no error |
-| display_name resolved | PASS | Falls back to `name` when not specified |
+| Test                                        | Result | Notes                                                                      |
+| ------------------------------------------- | ------ | -------------------------------------------------------------------------- |
+| Required fields (name, description)         | PASS   | Correctly parsed for all 8 agents                                          |
+| Optional fields (model, color, tools, etc.) | PASS   | `model: claude-opus-4-6`, `tools`, `disallowed_tools` all resolved         |
+| Default values applied                      | PASS   | `promptMode: extend`, `permissionMode: delegate`, `continueSession: false` |
+| Unknown fields silently ignored             | PASS   | `orchestrator.md` has `role: orchestrator` (not in type) — no error        |
+| display_name resolved                       | PASS   | Falls back to `name` when not specified                                    |
 
 ### 3. Prompt Assembly (`--prompt`)
 
-| Test | Result | Notes |
-|------|--------|-------|
-| Extend mode with _builtin base | PASS | All 8 agents use `--append-system-prompt` only |
-| Prompt char counts reported | PASS | Each agent shows correct character count |
-| No `--system-prompt` for _builtin extend | PASS | Only `--append-system-prompt` emitted |
+| Test                                      | Result | Notes                                          |
+| ----------------------------------------- | ------ | ---------------------------------------------- |
+| Extend mode with \_builtin base           | PASS   | All 8 agents use `--append-system-prompt` only |
+| Prompt char counts reported               | PASS   | Each agent shows correct character count       |
+| No `--system-prompt` for \_builtin extend | PASS   | Only `--append-system-prompt` emitted          |
 
 ### 4. Dry-Run (`--dry-run`)
 
-| Test | Result | Notes |
-|------|--------|-------|
-| Shows CLI command with flags | PASS | `claude --append-system-prompt ... --model ... --permission-mode ...` |
-| Shows env vars | PASS | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` |
-| `--dangerously-skip-permissions` for orchestrator | PASS | Present when `dangerously_skip_permissions: true` |
-| `--tools` comma-joined | PASS | e.g., `Read,Edit,Write,Bash,Grep,Glob,WebSearch,WebFetch` |
-| `--disallowedTools` repeated per tool | PASS | e.g., `--disallowedTools Edit --disallowedTools Write` |
-| Requires `--team-name` | PASS | Error with exit 1 when missing |
+| Test                                              | Result | Notes                                                                 |
+| ------------------------------------------------- | ------ | --------------------------------------------------------------------- |
+| Shows CLI command with flags                      | PASS   | `claude --append-system-prompt ... --model ... --permission-mode ...` |
+| Shows env vars                                    | PASS   | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`                              |
+| `--dangerously-skip-permissions` for orchestrator | PASS   | Present when `dangerously_skip_permissions: true`                     |
+| `--tools` comma-joined                            | PASS   | e.g., `Read,Edit,Write,Bash,Grep,Glob,WebSearch,WebFetch`             |
+| `--disallowedTools` repeated per tool             | PASS   | e.g., `--disallowedTools Edit --disallowedTools Write`                |
+| Requires `--team-name`                            | PASS   | Error with exit 1 when missing                                        |
 
 ### 5. Error Handling
 
-| Test | Result | Notes |
-|------|--------|-------|
-| Empty frontmatter | PASS | `WARN [_test-empty.md]: Missing required field 'name'` |
-| Missing description | PASS | `WARN [_test-nodescrip.md]: Missing required field 'description'` |
-| No frontmatter at all | PASS | `WARN [_test-nofm.md]: Missing required field 'name'` |
-| Invalid prompt_mode enum | PASS | `WARN [_test-badmode.md]: Invalid prompt_mode 'invalid'. Must be: extend, replace` |
-| Duplicate agent name | PASS | `ERROR` (not warn) with exit code 1 |
-| Kill without team name | PASS | `ERROR: Team name required.` exit 1 |
-| Kill without agent name | PASS | `ERROR: Agent name required for kill command.` exit 1 |
-| Launch nonexistent agent | PASS | `ERROR: Agent '...' not found in agent files.` exit 1 |
-| Health with no team config | PASS | Error message + exit 1 |
-| Cleanup with no team config | PASS | Error message + exit 0 (graceful) |
-| List with no team config | PASS | Shows all agents as NOT_SPAWNED (graceful) |
+| Test                        | Result | Notes                                                                              |
+| --------------------------- | ------ | ---------------------------------------------------------------------------------- |
+| Empty frontmatter           | PASS   | `WARN [_test-empty.md]: Missing required field 'name'`                             |
+| Missing description         | PASS   | `WARN [_test-nodescrip.md]: Missing required field 'description'`                  |
+| No frontmatter at all       | PASS   | `WARN [_test-nofm.md]: Missing required field 'name'`                              |
+| Invalid prompt_mode enum    | PASS   | `WARN [_test-badmode.md]: Invalid prompt_mode 'invalid'. Must be: extend, replace` |
+| Duplicate agent name        | PASS   | `ERROR` (not warn) with exit code 1                                                |
+| Kill without team name      | PASS   | `ERROR: Team name required.` exit 1                                                |
+| Kill without agent name     | PASS   | `ERROR: Agent name required for kill command.` exit 1                              |
+| Launch nonexistent agent    | PASS   | `ERROR: Agent '...' not found in agent files.` exit 1                              |
+| Health with no team config  | PASS   | Error message + exit 1                                                             |
+| Cleanup with no team config | PASS   | Error message + exit 0 (graceful)                                                  |
+| List with no team config    | PASS   | Shows all agents as NOT_SPAWNED (graceful)                                         |
 
 ### 6. Edge Cases
 
-| Test | Result | Notes |
-|------|--------|-------|
-| Unknown frontmatter fields | PASS | `role: orchestrator` ignored silently |
-| Agents with `tools` + `disallowed_tools` | PASS | Both arrays parsed and emitted correctly |
-| Agent with `dangerously_skip_permissions: true` | PASS | Flag added to CLI args |
+| Test                                            | Result | Notes                                    |
+| ----------------------------------------------- | ------ | ---------------------------------------- |
+| Unknown frontmatter fields                      | PASS   | `role: orchestrator` ignored silently    |
+| Agents with `tools` + `disallowed_tools`        | PASS   | Both arrays parsed and emitted correctly |
+| Agent with `dangerously_skip_permissions: true` | PASS   | Flag added to CLI args                   |
 
 ## Defects
 
@@ -83,6 +83,7 @@ The Phase 1 launcher correctly discovers all 8 agent files, parses YAML frontmat
 **Expected**: Full command that can be copy-pasted and run, or at minimum a `--raw` flag to disable truncation.
 **Actual**: Truncated args like `"<system-message>\nYour full name is Bugs Bunny.\nYou are named after the Looney..."`.
 **Steps to reproduce**:
+
 ```bash
 bun bin/agent-launch.ts --dry-run --team-name test software-eng
 ```
@@ -92,11 +93,12 @@ bun bin/agent-launch.ts --dry-run --team-name test software-eng
 **File**: `bin/agent-launch.ts:40-47`
 **Severity**: Medium
 **Description**: The `agentFilter` is found by searching `process.argv` for the first arg that isn't the binary, script, subcommand, team name, or flag-prefixed. This heuristic breaks if:
+
 - An agent is named the same as a subcommand (e.g., `list`, `kill`)
 - Future flags are added that take positional-looking values
-**Expected**: Use a proper CLI arg parser (e.g., `commander`, `yargs`, or Bun's built-in `parseArgs`).
-**Actual**: Custom heuristic that could silently misinterpret arguments.
-**Steps to reproduce**: Create an agent file with `name: list` — the filter logic would fail to distinguish it from the subcommand.
+  **Expected**: Use a proper CLI arg parser (e.g., `commander`, `yargs`, or Bun's built-in `parseArgs`).
+  **Actual**: Custom heuristic that could silently misinterpret arguments.
+  **Steps to reproduce**: Create an agent file with `name: list` — the filter logic would fail to distinguish it from the subcommand.
 
 ### DEF-3: Duplicate name error message has confusing order
 

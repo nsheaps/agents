@@ -20,8 +20,9 @@
 **Description**: Zero test files (`.test.ts` or `.spec.ts`) exist. For a tool that manages agent spawning and lifecycle, this is a significant gap. Every module has testable pure functions that should have unit tests.
 **Impact**: Regressions will go undetected. The QA ticket (PHASE1-010) acceptance criteria cannot be fully validated without automated tests.
 **Recommendation**: Add `bun:test` based unit tests for at minimum:
+
 - `discover.ts`: `parseAgentFile` (valid, invalid, missing fields, bad enums), `discoverAgents` (empty dir, no dir, duplicates)
-- `prompt.ts`: `assemblePrompt` (extend/_builtin, extend/custom, replace/_builtin, replace/custom, size warning)
+- `prompt.ts`: `assemblePrompt` (extend/\_builtin, extend/custom, replace/\_builtin, replace/custom, size warning)
 - `spawn.ts`: `buildSpawnArgs` (all flag combinations)
 - `lifecycle.ts`: `readTeamConfig`, `findMember`, `removeMember`, `killAgent`, `listAgents`
 
@@ -92,28 +93,28 @@
 
 ## Missing Test Coverage
 
-| Module | Functions | Test Priority |
-|--------|-----------|---------------|
-| `discover.ts` | `resolveProjectRoot`, `parseAgentFile` (private), `discoverAgents` | HIGH |
-| `prompt.ts` | `assemblePrompt`, `readBasePrompt` (private) | HIGH |
-| `spawn.ts` | `buildSpawnArgs`, `spawnAgent` | HIGH |
-| `lifecycle.ts` | `readTeamConfig`, `writeTeamConfig`, `findMember`, `removeMember`, `killAgent`, `cleanupStaleEntries`, `listAgents`, `isTmuxPaneAlive`, `killTmuxPane` | MEDIUM |
-| `bin/agent-launch.ts` | CLI arg parsing, subcommand routing | MEDIUM |
+| Module                | Functions                                                                                                                                              | Test Priority |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------- |
+| `discover.ts`         | `resolveProjectRoot`, `parseAgentFile` (private), `discoverAgents`                                                                                     | HIGH          |
+| `prompt.ts`           | `assemblePrompt`, `readBasePrompt` (private)                                                                                                           | HIGH          |
+| `spawn.ts`            | `buildSpawnArgs`, `spawnAgent`                                                                                                                         | HIGH          |
+| `lifecycle.ts`        | `readTeamConfig`, `writeTeamConfig`, `findMember`, `removeMember`, `killAgent`, `cleanupStaleEntries`, `listAgents`, `isTmuxPaneAlive`, `killTmuxPane` | MEDIUM        |
+| `bin/agent-launch.ts` | CLI arg parsing, subcommand routing                                                                                                                    | MEDIUM        |
 
 ---
 
 ## Spec Compliance Summary
 
-| PHASE1-010 Criterion | Status | Notes |
-|----------------------|--------|-------|
+| PHASE1-010 Criterion                                 | Status  | Notes                                                          |
+| ---------------------------------------------------- | ------- | -------------------------------------------------------------- |
 | Launch: agent spawns with correct prompt/permissions | PARTIAL | `buildSpawnArgs` works, but `spawnAgent` never called from CLI |
-| Kill: config entry removed cleanly | PARTIAL | Config removed, but tmux pane NOT killed (orphan process) |
-| Relaunch: no `-2` suffix | UNKNOWN | Can't verify without actual spawn |
-| Health check: running vs dead | FAIL | Always reports UNKNOWN |
-| Auto-cleanup: removes stale entries | FAIL | Function is a no-op |
-| List: accurate status | PARTIAL | Name mismatch between file names and config display names |
-| Edge cases: no crashes | PARTIAL | No tests to verify |
-| Test report | N/A | This is the report |
+| Kill: config entry removed cleanly                   | PARTIAL | Config removed, but tmux pane NOT killed (orphan process)      |
+| Relaunch: no `-2` suffix                             | UNKNOWN | Can't verify without actual spawn                              |
+| Health check: running vs dead                        | FAIL    | Always reports UNKNOWN                                         |
+| Auto-cleanup: removes stale entries                  | FAIL    | Function is a no-op                                            |
+| List: accurate status                                | PARTIAL | Name mismatch between file names and config display names      |
+| Edge cases: no crashes                               | PARTIAL | No tests to verify                                             |
+| Test report                                          | N/A     | This is the report                                             |
 
 ---
 

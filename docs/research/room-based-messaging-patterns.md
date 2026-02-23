@@ -37,6 +37,7 @@ These patterns can be implemented without changes to Claude Code internals by us
 LangGraph treats inter-agent communication as a graph computation problem. All agents (graph nodes) read from and write to a shared `State` object. Communication happens implicitly through state mutation rather than explicit message passing.
 
 Key concepts:
+
 - **Channels** are typed state fields that nodes subscribe to. A node reads its input channels, processes, and writes to output channels.
 - **PregelNodes** (named after Google's Pregel graph processing model) are the actors that subscribe to and publish on channels.
 - **Private channels** allow internal node-to-node communication without polluting the main state.
@@ -56,6 +57,7 @@ Key concepts:
 CrewAI uses a strict delegation model where a manager agent decomposes tasks and delegates to worker agents. Communication is structured as task assignment and result reporting -- not free-form messaging.
 
 Key concepts:
+
 - **Delegation tools**: When `allow_delegation=True`, agents can assign tasks to teammates and ask specific questions.
 - **Hub-and-spoke only**: No peer-to-peer agent traffic. All communication flows through the manager.
 - **Memory**: With memory enabled, agents learn from previous collaborations and improve delegation decisions.
@@ -76,6 +78,7 @@ Key concepts:
 AutoGen's GroupChat is the closest existing pattern to a room-based model. Multiple agents participate in a shared conversation, with a GroupChat Manager selecting who speaks next.
 
 Key concepts:
+
 - **Group topic**: All participants subscribe to a common topic. Messages published to this topic are visible to all members.
 - **RequestToSpeak**: The manager sends targeted messages to select the next speaker, rather than all agents speaking freely.
 - **Speaker transitions**: Configurable constraints on which agents can follow which, preventing uncontrolled cross-talk.
@@ -96,6 +99,7 @@ Key concepts:
 OpenHands (formerly OpenDevin) uses an event-sourcing architecture where all interactions -- agent messages, tool invocations, user inputs -- are modeled as immutable events appended to an event log.
 
 Key concepts:
+
 - **Event log**: The canonical source of truth. All state is derived by replaying the event log.
 - **Typed events**: Actions (AgentMessageAction, AgentDelegateAction, CmdRunAction) and observations (CmdOutputObservation, etc.) are distinct types.
 - **AgentDelegateAction**: Explicit delegation to specialized sub-agents (e.g., CodeActAgent delegates browsing to BrowsingAgent).
@@ -117,6 +121,7 @@ Key concepts:
 Microsoft's Semantic Kernel provides multiple orchestration patterns as first-class abstractions, recently merging with AutoGen into the Microsoft Agent Framework.
 
 Key concepts:
+
 - **Sequential**: Pipeline where each agent passes output to the next.
 - **Concurrent**: Multiple agents process the same input in parallel; results are aggregated.
 - **Handoff**: Dynamic transfer of control between agents based on capability matching.
@@ -135,6 +140,7 @@ Key concepts:
 Google's Agent2Agent (A2A) protocol, launched April 2025, provides a vendor-neutral standard for agent interoperability.
 
 Key concepts:
+
 - **Agent Card**: JSON metadata document describing identity, capabilities, skills, endpoint, and auth requirements.
 - **Task lifecycle**: Create, monitor, and collect results from delegated tasks.
 - **Three transport modes**: Synchronous request/response, streaming (SSE), and async push notifications.
@@ -154,6 +160,7 @@ Key concepts:
 **Model**: Named persistent channels with membership, history, and threading.
 
 Key properties relevant to agents:
+
 - **Named channels** with clear purpose (e.g., `#status-updates`, `#errors`, `#research-findings`)
 - **Persistent history**: All messages are stored and searchable. New members can scroll back.
 - **Threading**: Sub-conversations branch from main channel without cluttering it.
@@ -168,6 +175,7 @@ Key properties relevant to agents:
 **Model**: Lightweight named rooms with join/part, operators, and modes.
 
 Key properties:
+
 - **Minimal overhead**: No threading, no rich formatting. Just messages with timestamps and authors.
 - **Channel modes**: Moderated (only operators speak), quiet, invite-only.
 - **PRIVMSG**: Direct messages alongside channel messages.
@@ -181,6 +189,7 @@ Key properties:
 **Model**: Decentralized event-sourced rooms with state resolution.
 
 Key properties:
+
 - **Event sourcing**: Every message, membership change, and state update is an event in a DAG (directed acyclic graph).
 - **Room state**: Accumulated from all state events. Includes membership, power levels, room name, topic.
 - **Power levels**: Fine-grained permissions (who can send messages, who can kick, who can change room state).
@@ -194,6 +203,7 @@ Key properties:
 **Model**: Main channels with spawnable threads for focused sub-conversations.
 
 Key properties:
+
 - **Threads branch from messages**: Any message in a channel can spawn a thread.
 - **Auto-archive**: Threads auto-archive after inactivity, reducing noise.
 - **Thread-specific notifications**: Members can follow specific threads without watching the whole channel.
@@ -210,11 +220,13 @@ Key properties:
 Agents subscribe to topics they care about and publish events when they have something to share.
 
 **Pattern**:
+
 ```
 Agent publishes -> Topic -> Subscribed agents receive
 ```
 
 **Examples of topics in an agent team**:
+
 - `task.assigned.*` -- new task assignments
 - `task.completed.*` -- task completion notifications
 - `error.*` -- error events (high priority)
@@ -223,11 +235,13 @@ Agent publishes -> Topic -> Subscribed agents receive
 - `review.requested` -- code review requests
 
 **Advantages over direct messaging**:
+
 - Decoupled: Publisher does not need to know who is listening.
 - Scalable: Adding a new agent that cares about errors just requires subscribing to `error.*`.
 - Filterable: Agents only receive messages they subscribed to.
 
 **Disadvantages**:
+
 - No guaranteed ordering across topics.
 - Fan-out can still overwhelm if an agent subscribes to many topics.
 - Requires a broker or coordination layer.
@@ -237,6 +251,7 @@ Agent publishes -> Topic -> Subscribed agents receive
 Agents emit events as side effects of their work. Other agents react to events they care about.
 
 **Pattern**:
+
 ```
 Agent completes work -> Emits event -> Event bus -> Matching subscribers react
 ```
@@ -245,14 +260,14 @@ This is the model used by Semantic Kernel's Flows and OpenHands' event log. The 
 
 ### Comparison: Direct vs Broadcast vs Pub/Sub
 
-| Aspect | Direct Message | Broadcast | Pub/Sub |
-|--------|---------------|-----------|---------|
-| Targeting | Specific recipient | All agents | Subscribed agents |
-| Coupling | High (sender knows receiver) | Medium (sender knows group) | Low (sender knows topic) |
-| Context impact | Recipient only | All agents | Subscribed agents |
-| Filtering | None needed | None possible | By subscription |
-| Implementation | Simple | Simple | Moderate |
-| Best for | Urgent/targeted | Announcements | Selective awareness |
+| Aspect         | Direct Message               | Broadcast                   | Pub/Sub                  |
+| -------------- | ---------------------------- | --------------------------- | ------------------------ |
+| Targeting      | Specific recipient           | All agents                  | Subscribed agents        |
+| Coupling       | High (sender knows receiver) | Medium (sender knows group) | Low (sender knows topic) |
+| Context impact | Recipient only               | All agents                  | Subscribed agents        |
+| Filtering      | None needed                  | None possible               | By subscription          |
+| Implementation | Simple                       | Simple                      | Moderate                 |
+| Best for       | Urgent/targeted              | Announcements               | Selective awareness      |
 
 **Recommendation for agent-team**: A hybrid model. Direct messages for urgent items that need context injection. Pub/sub for everything else, with agents polling their subscribed topics when they have capacity.
 
@@ -263,6 +278,7 @@ This is the model used by Semantic Kernel's Flows and OpenHands' event log. The 
 ### Current Problem
 
 In Claude Code agent teams, every teammate message to the team lead gets injected as a conversation turn. This means:
+
 - Each message consumes context tokens
 - The lead cannot defer reading non-urgent messages
 - There is no "unread" concept -- everything is immediately in context
@@ -273,6 +289,7 @@ In Claude Code agent teams, every teammate message to the team lead gets injecte
 Instead of the user being a direct message target, they become a member of rooms they choose to follow.
 
 **Pattern**:
+
 ```
 User joins: #overview, #errors, #decisions
 User ignores: #status-heartbeat, #debug-logs, #research-raw
@@ -283,24 +300,26 @@ The user reads rooms at their own pace. Critical items can still trigger notific
 ### Dashboard / Log Monitoring
 
 Several frameworks support dashboard-like monitoring:
+
 - **OpenHands**: WebSocket streaming of events to a web UI
 - **AutoGen Studio**: Visual monitoring of group chat conversations
 - **CrewAI Flows**: Event-driven state visualization
 
 For agent-team, the equivalent would be:
+
 - A log file per room that can be `tail -f`'d
 - A summary dashboard (could be a tmux pane showing room activity)
 - Priority alerts that break through to the user's attention
 
 ### Asynchronous Notification Models
 
-| Model | How it works | Context impact |
-|-------|-------------|----------------|
-| **Immediate injection** (current) | Every message becomes a conversation turn | High -- all messages consume tokens |
-| **Polling** | Agent/user reads room when ready | Zero -- messages stay in files until read |
-| **Digest** | Periodic summary of room activity | Low -- one summary replaces many messages |
-| **Priority escalation** | Only critical messages get injected | Low -- most messages stay in files |
-| **Hybrid** | Priority items inject; everything else is digest/poll | Minimal -- best of both worlds |
+| Model                             | How it works                                          | Context impact                            |
+| --------------------------------- | ----------------------------------------------------- | ----------------------------------------- |
+| **Immediate injection** (current) | Every message becomes a conversation turn             | High -- all messages consume tokens       |
+| **Polling**                       | Agent/user reads room when ready                      | Zero -- messages stay in files until read |
+| **Digest**                        | Periodic summary of room activity                     | Low -- one summary replaces many messages |
+| **Priority escalation**           | Only critical messages get injected                   | Low -- most messages stay in files        |
+| **Hybrid**                        | Priority items inject; everything else is digest/poll | Minimal -- best of both worlds            |
 
 ---
 
@@ -327,6 +346,7 @@ Use a separate model to compress interaction histories. However, JetBrains found
 From Google's context engineering guide: Context processing involves Selection (filtering irrelevant events), Transformation (flattening events into content objects), and Injection (writing formatted history into the LLM request).
 
 **Applied to rooms**: A message router evaluates each room message and decides:
+
 1. **Inject immediately**: Critical errors, user mentions, blocking questions
 2. **Add to digest**: Status updates, progress reports, non-blocking findings
 3. **File only**: Debug logs, heartbeats, verbose output
@@ -338,6 +358,7 @@ From the [Agentic Patterns catalog](https://agentic-patterns.com/patterns/filesy
 Agents persist intermediate results and working state to files, creating durable checkpoints. The pattern uses a directory hierarchy: `state/` for checkpoints, `data/` for inputs/outputs, and `logs/` for execution records.
 
 **Applied to rooms**: Each room is a directory containing:
+
 - `messages.jsonl` -- append-only message log (the source of truth)
 - `summary.md` -- latest digest/summary (regenerated periodically)
 - `state.yaml` -- room metadata (members, topic, last-read pointers per agent)
@@ -400,15 +421,16 @@ Each room is a directory on the filesystem:
 
 ### Priority-Tiered Injection
 
-| Priority | Behavior |
-|----------|----------|
-| `critical` | Injected into lead's context immediately (as today) |
-| `normal` | Added to room digest; lead polls when ready |
-| `low` | File-only; never enters any agent's context unless explicitly read |
+| Priority   | Behavior                                                           |
+| ---------- | ------------------------------------------------------------------ |
+| `critical` | Injected into lead's context immediately (as today)                |
+| `normal`   | Added to room digest; lead polls when ready                        |
+| `low`      | File-only; never enters any agent's context unless explicitly read |
 
 ### Read Model
 
 Agents interact with rooms via tools:
+
 - `room.post(room, message)` -- append to room's message log
 - `room.read(room, since=cursor)` -- read new messages since last read
 - `room.digest(room)` -- get latest summary of room activity
@@ -417,6 +439,7 @@ Agents interact with rooms via tools:
 ### Digest Generation
 
 A background process (or the orchestrator on a timer) summarizes room activity:
+
 - Runs every N messages or M minutes
 - Produces a 2-5 line summary of activity since last digest
 - Stored in `summary.md` for quick consumption
@@ -424,13 +447,13 @@ A background process (or the orchestrator on a timer) summarizes room activity:
 
 ### Mapping to Current Claude Code Agent Teams
 
-| Current behavior | Room-based alternative |
-|-----------------|----------------------|
-| Teammate sends message to lead | Teammate posts to room file |
-| Message becomes conversation turn | Only critical messages become turns |
-| Lead reads all messages in sequence | Lead polls rooms or reads digests |
-| User sees agent chatter | User reads rooms they choose to follow |
-| All messages consume context | Most messages stay in files |
+| Current behavior                    | Room-based alternative                 |
+| ----------------------------------- | -------------------------------------- |
+| Teammate sends message to lead      | Teammate posts to room file            |
+| Message becomes conversation turn   | Only critical messages become turns    |
+| Lead reads all messages in sequence | Lead polls rooms or reads digests      |
+| User sees agent chatter             | User reads rooms they choose to follow |
+| All messages consume context        | Most messages stay in files            |
 
 ### Implementation Path
 
@@ -444,6 +467,7 @@ A background process (or the orchestrator on a timer) summarizes room activity:
 ## Sources
 
 ### Multi-Agent Frameworks
+
 - [LangGraph Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)
 - [LangGraph Multi-Agent Workflows](https://blog.langchain.com/langgraph-multi-agent-workflows/)
 - [LangGraph Multi-Agent Orchestration Guide 2025](https://latenode.com/blog/ai-frameworks-technical-infrastructure/langgraph-multi-agent-orchestration/langgraph-multi-agent-orchestration-complete-framework-guide-architecture-analysis-2025)
@@ -460,6 +484,7 @@ A background process (or the orchestrator on a timer) summarizes room activity:
 - [Microsoft Agent Framework (SK + AutoGen)](https://visualstudiomagazine.com/articles/2025/10/01/semantic-kernel-autogen--open-source-microsoft-agent-framework.aspx)
 
 ### Protocols
+
 - [Google A2A Protocol Specification](https://a2a-protocol.org/latest/specification/)
 - [Google A2A Announcement](https://developers.googleblog.com/en/a2a-a-new-era-of-agent-interoperability/)
 - [A2A Protocol Upgrade (v0.3)](https://cloud.google.com/blog/products/ai-machine-learning/agent2agent-protocol-is-getting-an-upgrade)
@@ -468,6 +493,7 @@ A background process (or the orchestrator on a timer) summarizes room activity:
 - [AWS: Open Protocols for Agent Interoperability on MCP](https://aws.amazon.com/blogs/opensource/open-protocols-for-agent-interoperability-part-1-inter-agent-communication-on-mcp/)
 
 ### Context Optimization
+
 - [JetBrains Research: Efficient Context Management (NeurIPS 2025)](https://blog.jetbrains.com/research/2025/12/efficient-context-management/)
 - [Google: Architecting Context-Aware Multi-Agent Framework](https://developers.googleblog.com/architecting-efficient-context-aware-multi-agent-framework-for-production/)
 - [Airbyte: 5 AI Context Window Optimization Techniques](https://airbyte.com/agentic-data/ai-context-window-optimization-techniques)
@@ -476,6 +502,7 @@ A background process (or the orchestrator on a timer) summarizes room activity:
 - [Fractal: Five-Layer Context Architecture](https://fractal.ai/blog/five-layer-architecture-llms)
 
 ### Architectural Patterns
+
 - [Filesystem-Based Agent State Pattern](https://agentic-patterns.com/patterns/filesystem-based-agent-state/)
 - [The Agentic Service Bus](https://www.arionresearch.com/blog/the-agentic-service-bus-a-new-architecture-for-inter-agent-communication)
 

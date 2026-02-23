@@ -36,6 +36,7 @@
 ### PR #164's current approach
 
 The hooks resolve the shared lib path at runtime:
+
 ```bash
 SHARED_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/shared/lib/safe-settings-write.sh"
 ```
@@ -55,17 +56,20 @@ This traverses up two directories from the hook script's location, expecting to 
 **Answer: Yes — symlinks are resolved and their target content is copied.**
 
 From the [Claude Code plugin docs](https://code.claude.com/docs/en/plugins):
+
 > If your plugin needs to access files outside its directory, you can create symbolic links to external files within your plugin directory. Symlinks are honored during the copy process: the symlinked content will be copied into the plugin cache.
 
 ### What this means in practice
 
-If you symlink the shared lib *into* each plugin:
+If you symlink the shared lib _into_ each plugin:
+
 ```
 plugins/statusline/lib/safe-settings-write.sh → ../../shared/lib/safe-settings-write.sh  (symlink)
 plugins/statusline-iterm/lib/safe-settings-write.sh → ../../shared/lib/safe-settings-write.sh  (symlink)
 ```
 
 Then when installed, each plugin's cache will contain a **real copy** of the file:
+
 ```
 ~/.claude/plugins/cache/.../statusline/0.1.10/lib/safe-settings-write.sh       (real file)
 ~/.claude/plugins/cache/.../statusline-iterm/0.1.23/lib/safe-settings-write.sh  (real file)
@@ -77,7 +81,7 @@ Then when installed, each plugin's cache will contain a **real copy** of the fil
 
 - The copy is a **snapshot at install time** — changes to the original don't propagate to installed plugins until re-install/upgrade.
 - The symlink itself is not preserved; the resolved content is copied.
-- This only works for files symlinked *into* the plugin's own directory tree.
+- This only works for files symlinked _into_ the plugin's own directory tree.
 
 ---
 
@@ -86,6 +90,7 @@ Then when installed, each plugin's cache will contain a **real copy** of the fil
 ### Recommended: Symlink into each plugin (Option A)
 
 **Source tree layout:**
+
 ```
 plugins/
 ├── shared/                              # NOT a plugin, just a shared source directory
@@ -106,6 +111,7 @@ plugins/
 ```
 
 **Hook script change:**
+
 ```bash
 # BEFORE (PR #164 — broken in cache):
 SHARED_LIB="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)/shared/lib/safe-settings-write.sh"
@@ -115,6 +121,7 @@ SHARED_LIB="${CLAUDE_PLUGIN_ROOT}/lib/safe-settings-write.sh"
 ```
 
 **Why this works:**
+
 1. During development, the symlink resolves to the shared source.
 2. During install, the symlink target is copied into the plugin's cache as a real file.
 3. `${CLAUDE_PLUGIN_ROOT}/lib/safe-settings-write.sh` resolves correctly in both contexts.
@@ -131,24 +138,24 @@ Then reference as `${CLAUDE_PLUGIN_ROOT}/shared/lib/safe-settings-write.sh`. Sam
 
 ### NOT recommended
 
-| Approach | Why not |
-|----------|---------|
-| Relative paths crossing plugin boundaries (`../../shared/...`) | Breaks in installed cache; `shared/` isn't a plugin and won't be cached |
-| Relying on predictable cache paths | Version directories change; violates plugin isolation model |
-| Making `shared/` a plugin just to get it cached | Adds unnecessary plugin overhead for a library with no hooks/commands/skills |
-| Copying files manually (no symlinks) | Violates DRY; files drift out of sync |
+| Approach                                                       | Why not                                                                      |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Relative paths crossing plugin boundaries (`../../shared/...`) | Breaks in installed cache; `shared/` isn't a plugin and won't be cached      |
+| Relying on predictable cache paths                             | Version directories change; violates plugin isolation model                  |
+| Making `shared/` a plugin just to get it cached                | Adds unnecessary plugin overhead for a library with no hooks/commands/skills |
+| Copying files manually (no symlinks)                           | Violates DRY; files drift out of sync                                        |
 
 ---
 
 ## Summary of Findings
 
-| Question | Answer |
-|----------|--------|
-| Can one plugin reference another's files? | No — each plugin is isolated with its own `CLAUDE_PLUGIN_ROOT` |
-| Does `CLAUDE_PLUGIN_ROOT` help cross-plugin? | No — it only points to the current plugin's root |
-| Do symlinks propagate on install? | Yes — resolved content is copied into the cache |
-| PR #164's relative path approach? | **Broken in installed state** — `shared/` won't exist in cache |
-| Recommended fix? | Symlink shared files *into* each plugin, reference via `CLAUDE_PLUGIN_ROOT` |
+| Question                                     | Answer                                                                      |
+| -------------------------------------------- | --------------------------------------------------------------------------- |
+| Can one plugin reference another's files?    | No — each plugin is isolated with its own `CLAUDE_PLUGIN_ROOT`              |
+| Does `CLAUDE_PLUGIN_ROOT` help cross-plugin? | No — it only points to the current plugin's root                            |
+| Do symlinks propagate on install?            | Yes — resolved content is copied into the cache                             |
+| PR #164's relative path approach?            | **Broken in installed state** — `shared/` won't exist in cache              |
+| Recommended fix?                             | Symlink shared files _into_ each plugin, reference via `CLAUDE_PLUGIN_ROOT` |
 
 ---
 

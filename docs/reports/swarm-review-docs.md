@@ -20,14 +20,14 @@ The agent-team repository contains a comprehensive multi-layered documentation s
 
 The README accurately reflects the current project status:
 
-| Claim | Accuracy | Evidence |
-|:------|:---------|:---------|
-| "Status: POC / Sandbox" | Correct | Project is actively defined as proof-of-concept in early phases |
-| "TypeScript/Bun launcher code" | Correct | `src/` contains Bun-based implementation |
-| "54 passing tests" | Must be verified | Tests exist; count needs validation |
-| "Key modules: discover, prompt, spawn, lifecycle" | Correct | These modules appear in spec and research |
-| "Not actively developed" | Correct | Focus shifted to claude-team (shell-based, claude-utils) |
-| "claude-team repo" reference | Correct | claude-team extracted to separate repo |
+| Claim                                             | Accuracy         | Evidence                                                        |
+| :------------------------------------------------ | :--------------- | :-------------------------------------------------------------- |
+| "Status: POC / Sandbox"                           | Correct          | Project is actively defined as proof-of-concept in early phases |
+| "TypeScript/Bun launcher code"                    | Correct          | `src/` contains Bun-based implementation                        |
+| "54 passing tests"                                | Must be verified | Tests exist; count needs validation                             |
+| "Key modules: discover, prompt, spawn, lifecycle" | Correct          | These modules appear in spec and research                       |
+| "Not actively developed"                          | Correct          | Focus shifted to claude-team (shell-based, claude-utils)        |
+| "claude-team repo" reference                      | Correct          | claude-team extracted to separate repo                          |
 
 ### Completeness Issues
 
@@ -49,6 +49,7 @@ The README is **severely incomplete**:
 ### Recommendation
 
 The README should be a landing page that:
+
 1. Explains what this repo is (agent team orchestration framework for Claude Code)
 2. Links to LAUNCH-GUIDE.md as the entry point for users
 3. Summarizes the 8 agent roles briefly (full details in team-structure.md)
@@ -65,6 +66,7 @@ The README should be a landing page that:
 The documentation is organized across **four main hierarchies**:
 
 #### 1. `.claude/` — Team Configuration & Behaviors
+
 ```
 .claude/
 ├── agents/              (8 agent definitions)
@@ -83,6 +85,7 @@ The documentation is organized across **four main hierarchies**:
 ```
 
 #### 2. `docs/` — Public Documentation
+
 ```
 docs/
 ├── LAUNCH-GUIDE.md                    (how to start the team)
@@ -109,6 +112,7 @@ docs/
 ```
 
 #### 3. `.claude-plugin/` — Plugin Structure
+
 ```
 plugins/
 └── agent-team-skills/
@@ -120,6 +124,7 @@ plugins/
 ```
 
 #### 4. Source Code Structure
+
 ```
 src/
 ├── __tests__/                         (54 passing tests)
@@ -146,34 +151,35 @@ src/
 
 ### 1. Broken or Stale References
 
-| Severity | File | Issue | Example |
-|:---------|:-----|:------|:--------|
-| MEDIUM | `docs/research/docs-audit.md` | References relative path that assumes different working context | References `memory/agent-teams-research.md` relative to project root, but should be `../../.claude/projects/...` |
-| MEDIUM | `docs/specs/draft/mesh-mcp-server.md` | References external repo paths that don't exist in agent-team | `../../../mcp/docs/specs/draft/mcp-tooling.md` and `../../../mcp-tooling.md` — but `/mcp/` repo doesn't exist yet |
-| MEDIUM | `docs/research/architecture-doc-review.md` | References `bin/claude-team` from claude-utils but it's now in separate repo | "never acknowledges `bin/claude-team` in claude-utils" — but claude-team is now extracted |
-| LOW | `docs/specs/draft/agent-launcher.md` line 77 | Internal cross-reference uses relative path | `./agent-launcher.md` (ok), but some paths use `.../` |
+| Severity | File                                         | Issue                                                                        | Example                                                                                                           |
+| :------- | :------------------------------------------- | :--------------------------------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------- |
+| MEDIUM   | `docs/research/docs-audit.md`                | References relative path that assumes different working context              | References `memory/agent-teams-research.md` relative to project root, but should be `../../.claude/projects/...`  |
+| MEDIUM   | `docs/specs/draft/mesh-mcp-server.md`        | References external repo paths that don't exist in agent-team                | `../../../mcp/docs/specs/draft/mcp-tooling.md` and `../../../mcp-tooling.md` — but `/mcp/` repo doesn't exist yet |
+| MEDIUM   | `docs/research/architecture-doc-review.md`   | References `bin/claude-team` from claude-utils but it's now in separate repo | "never acknowledges `bin/claude-team` in claude-utils" — but claude-team is now extracted                         |
+| LOW      | `docs/specs/draft/agent-launcher.md` line 77 | Internal cross-reference uses relative path                                  | `./agent-launcher.md` (ok), but some paths use `.../`                                                             |
 
 ### 2. Unresolved External References
 
-| File | References | Status |
-|:-----|:-----------|:-------|
-| `docs/specs/draft/mesh-mcp-server.md` | `mcp/docs/specs/draft/mcp-tooling.md` | **Unresolved** — `/mcp/` repo not yet created |
-| `docs/specs/draft/multi-repo-phase-plan.md` | `agent/docs/specs/draft/agent-wrapper.md` | **Unresolved** — `/agent/` repo not yet created |
-| Multiple research files | `claude-utils` repo structure | **Stale** — claude-team extracted; paths may be outdated |
+| File                                        | References                                | Status                                                   |
+| :------------------------------------------ | :---------------------------------------- | :------------------------------------------------------- |
+| `docs/specs/draft/mesh-mcp-server.md`       | `mcp/docs/specs/draft/mcp-tooling.md`     | **Unresolved** — `/mcp/` repo not yet created            |
+| `docs/specs/draft/multi-repo-phase-plan.md` | `agent/docs/specs/draft/agent-wrapper.md` | **Unresolved** — `/agent/` repo not yet created          |
+| Multiple research files                     | `claude-utils` repo structure             | **Stale** — claude-team extracted; paths may be outdated |
 
 ### 3. Implicit Dependencies Not Documented
 
-| Source | Depends On | How |
-|:-------|:-----------|:----|
-| LAUNCH-GUIDE.md | claude-utils (claude-team formula) | "If you have claude-utils installed via Homebrew" |
-| agent-launcher.md | nsheaps/agent repo | Phase 2+ agent CLI references but no link |
-| multi-repo-phase-plan.md | Three external repos | References 3+ repos not yet created |
+| Source                   | Depends On                         | How                                               |
+| :----------------------- | :--------------------------------- | :------------------------------------------------ |
+| LAUNCH-GUIDE.md          | claude-utils (claude-team formula) | "If you have claude-utils installed via Homebrew" |
+| agent-launcher.md        | nsheaps/agent repo                 | Phase 2+ agent CLI references but no link         |
+| multi-repo-phase-plan.md | Three external repos               | References 3+ repos not yet created               |
 
 ### 4. Reference Pattern Consistency
 
 The repo uses **two conflicting reference styles**:
 
 1. **CLAUDE.md uses @ syntax** (Claude Code native):
+
    ```markdown
    @docs/team-structure.md
    @docs/communication-protocol.md
@@ -181,6 +187,7 @@ The repo uses **two conflicting reference styles**:
    ```
 
 2. **Specs/research use markdown links**:
+
    ```markdown
    [Agent Teams Docs](https://code.claude.com/docs/en/agent-teams)
    [team-storage-internals.md](../../research/team-storage-internals.md)
@@ -199,23 +206,24 @@ The repo uses **two conflicting reference styles**:
 
 ### Specs Reviewed
 
-| Spec | Status | Quality | Completeness | Issues |
-|:-----|:-------|:--------|:-------------|:-------|
-| `agent-launcher.md` | Draft v3 | High | 85% | Open questions remain; gaps in permission model |
-| `agent-team-architecture.md` | Draft | High | 80% | Good overview; lacks observability details |
-| `communication-protocol.md` | Draft | High | 95% | Nearly complete; message routing is clear |
-| `agent-abstraction-levels.md` | Draft | Medium | 60% | Conceptual but lacks implementation guidance |
-| `marketplace-structure.md` | Draft | Medium | 70% | Structure defined; distribution model unclear |
-| `mesh-mcp-server.md` | Draft | Medium | 75% | Good but references unresolved external repos |
-| `persona-system.md` | Draft | Medium | 65% | Persona/agent separation unclear in places |
-| `e2e-testing.md` | Draft | Low | 50% | Skeletal; needs implementation details |
-| `cchistory-prompt-flavors.md` | Draft | Low | 40% | Very incomplete; research phase |
-| `multi-repo-phase-plan.md` | Draft | Medium | 85% | Good roadmap; timeline missing |
-| `web-session-orchestration.md` | Draft | Low | 35% | Very early; needs scope definition |
+| Spec                           | Status   | Quality | Completeness | Issues                                          |
+| :----------------------------- | :------- | :------ | :----------- | :---------------------------------------------- |
+| `agent-launcher.md`            | Draft v3 | High    | 85%          | Open questions remain; gaps in permission model |
+| `agent-team-architecture.md`   | Draft    | High    | 80%          | Good overview; lacks observability details      |
+| `communication-protocol.md`    | Draft    | High    | 95%          | Nearly complete; message routing is clear       |
+| `agent-abstraction-levels.md`  | Draft    | Medium  | 60%          | Conceptual but lacks implementation guidance    |
+| `marketplace-structure.md`     | Draft    | Medium  | 70%          | Structure defined; distribution model unclear   |
+| `mesh-mcp-server.md`           | Draft    | Medium  | 75%          | Good but references unresolved external repos   |
+| `persona-system.md`            | Draft    | Medium  | 65%          | Persona/agent separation unclear in places      |
+| `e2e-testing.md`               | Draft    | Low     | 50%          | Skeletal; needs implementation details          |
+| `cchistory-prompt-flavors.md`  | Draft    | Low     | 40%          | Very incomplete; research phase                 |
+| `multi-repo-phase-plan.md`     | Draft    | Medium  | 85%          | Good roadmap; timeline missing                  |
+| `web-session-orchestration.md` | Draft    | Low     | 35%          | Very early; needs scope definition              |
 
 ### Spec Format Issues
 
 1. **Inconsistent frontmatter** — Some specs have author/date/status, others don't
+
    ```yaml
    # GOOD (agent-launcher.md)
    > **Status**: Draft
@@ -233,12 +241,14 @@ The repo uses **two conflicting reference styles**:
 ### Spec Content Quality
 
 **Strengths**:
+
 - Clear problem statements
 - Well-defined success criteria
 - Phase sequencing is logical
 - Agent-launcher spec is particularly thorough (100 lines+ with concrete examples)
 
 **Weaknesses**:
+
 - Some specs conflate architecture with implementation
 - Non-goals sections are sometimes defensive rather than clarifying
 - Phase 2+ specs are too vague to guide implementation
@@ -265,14 +275,14 @@ Based on the codebase and research files, these specs are needed:
 
 ### Research Quality Issues
 
-| Document | Issue | Severity |
-|:----------|:------|:---------|
-| `jsonl-parsing-tools.md` | References claude-utils project paths that are now stale | MEDIUM |
-| `claude-team-pre-extraction-qa.md` | Covers extraction decision but references claude-utils structure | MEDIUM |
-| `extraction-analysis-review.md` | Documents claude-team extraction analysis; now outdated since extraction is complete | LOW |
-| `language-comparison.md` | Compares Bun, Go, Rust; no clear recommendation or decision | MEDIUM |
-| `orchestration-platforms-index.md` | Lists 20+ tools but no evaluation criteria or selection rationale | MEDIUM |
-| Multiple files | References to "future research goals" that are no longer open questions | LOW |
+| Document                           | Issue                                                                                | Severity |
+| :--------------------------------- | :----------------------------------------------------------------------------------- | :------- |
+| `jsonl-parsing-tools.md`           | References claude-utils project paths that are now stale                             | MEDIUM   |
+| `claude-team-pre-extraction-qa.md` | Covers extraction decision but references claude-utils structure                     | MEDIUM   |
+| `extraction-analysis-review.md`    | Documents claude-team extraction analysis; now outdated since extraction is complete | LOW      |
+| `language-comparison.md`           | Compares Bun, Go, Rust; no clear recommendation or decision                          | MEDIUM   |
+| `orchestration-platforms-index.md` | Lists 20+ tools but no evaluation criteria or selection rationale                    | MEDIUM   |
+| Multiple files                     | References to "future research goals" that are no longer open questions              | LOW      |
 
 ### Research Organization Gaps
 
@@ -284,6 +294,7 @@ Based on the codebase and research files, these specs are needed:
 ### Staleness Issues
 
 Research files in `.claude/tmp/` reference:
+
 - Closed decision points (now implemented)
 - Questions marked as research but already answered in specs
 - Sessions from prior swarm work that may not be relevant now
@@ -292,20 +303,20 @@ Research files in `.claude/tmp/` reference:
 
 ## Findings Summary
 
-| # | Severity | File | Issue | Impact |
-|---|----------|------|-------|--------|
-| 1 | HIGH | README.md | Severely incomplete; missing quick start, architecture overview, installation | Users cannot get started from README alone |
-| 2 | HIGH | docs/specs/draft/ | Multiple specs reference external repos (`mcp/`, `agent/`) that don't exist yet | Specs are not self-contained; readers need context about Phase 2+ |
-| 3 | HIGH | docs/research/ | Multiple files reference claude-utils repo structure; claude-team now extracted | Documentation describes old structure; creates confusion |
-| 4 | MEDIUM | docs/specs/ | No acceptance criteria defined for when specs are "done" | Unclear what completion looks like; risks scope creep |
-| 5 | MEDIUM | .claude/tmp/ & docs/research/ | Unclear which research findings are implemented vs. shelved | 77 tmp files + 50 research docs; no synthesis or roadmap |
-| 6 | MEDIUM | docs/specs/ | Specs use inconsistent frontmatter format and metadata | Hard to track version, author, status across specs |
-| 7 | MEDIUM | Cross-references | Mix of @ syntax, markdown links, and relative paths | Inconsistent reference style; hard to maintain |
-| 8 | MEDIUM | agent-launcher.md | References permission model gaps and open questions | Implementation would need to fill in details |
-| 9 | LOW | docs/specs/draft/e2e-testing.md | Very skeletal (50% complete); needs implementation details | Cannot guide Phase 1 testing; needs expansion |
-| 10 | LOW | docs/research/ | Multiple files document solved problems and closed decisions | Clutters research directory; should be archived or removed |
-| 11 | LOW | docs/research/docs-audit.md | References internal project paths from claude-utils | Works for audit purposes but creates maintenance burden |
-| 12 | LOW | Plugin structure | Skills in plugin work but plugin.json has no version field | Matches ai-mktpl pattern; consistency ok but needs docs |
+| #   | Severity | File                            | Issue                                                                           | Impact                                                            |
+| --- | -------- | ------------------------------- | ------------------------------------------------------------------------------- | ----------------------------------------------------------------- |
+| 1   | HIGH     | README.md                       | Severely incomplete; missing quick start, architecture overview, installation   | Users cannot get started from README alone                        |
+| 2   | HIGH     | docs/specs/draft/               | Multiple specs reference external repos (`mcp/`, `agent/`) that don't exist yet | Specs are not self-contained; readers need context about Phase 2+ |
+| 3   | HIGH     | docs/research/                  | Multiple files reference claude-utils repo structure; claude-team now extracted | Documentation describes old structure; creates confusion          |
+| 4   | MEDIUM   | docs/specs/                     | No acceptance criteria defined for when specs are "done"                        | Unclear what completion looks like; risks scope creep             |
+| 5   | MEDIUM   | .claude/tmp/ & docs/research/   | Unclear which research findings are implemented vs. shelved                     | 77 tmp files + 50 research docs; no synthesis or roadmap          |
+| 6   | MEDIUM   | docs/specs/                     | Specs use inconsistent frontmatter format and metadata                          | Hard to track version, author, status across specs                |
+| 7   | MEDIUM   | Cross-references                | Mix of @ syntax, markdown links, and relative paths                             | Inconsistent reference style; hard to maintain                    |
+| 8   | MEDIUM   | agent-launcher.md               | References permission model gaps and open questions                             | Implementation would need to fill in details                      |
+| 9   | LOW      | docs/specs/draft/e2e-testing.md | Very skeletal (50% complete); needs implementation details                      | Cannot guide Phase 1 testing; needs expansion                     |
+| 10  | LOW      | docs/research/                  | Multiple files document solved problems and closed decisions                    | Clutters research directory; should be archived or removed        |
+| 11  | LOW      | docs/research/docs-audit.md     | References internal project paths from claude-utils                             | Works for audit purposes but creates maintenance burden           |
+| 12  | LOW      | Plugin structure                | Skills in plugin work but plugin.json has no version field                      | Matches ai-mktpl pattern; consistency ok but needs docs           |
 
 ---
 
@@ -398,15 +409,17 @@ Research files in `.claude/tmp/` reference:
 **Issue**: Agent display names in frontmatter don't follow documented format.
 
 **Current Format**:
+
 ```yaml
 name: software-eng
 description: ...
 ```
 
 **Should Add**:
+
 ```yaml
 name: software-eng
-display_name: "Bugs B (software-eng)"  # Per team-structure.md rules
+display_name: "Bugs B (software-eng)" # Per team-structure.md rules
 description: ...
 ```
 
@@ -439,6 +452,7 @@ description: ...
 **Current**: Files like `qa-badmode.txt`, `qa-cleanup-noconfig.txt`, `qa-launch-badname.txt` are test output fragments (1-5 lines each).
 
 **Should**: Create `.claude/tmp/README.md` that explains:
+
 - What goes in `.claude/tmp/` (ephemeral working files only, per team rules)
 - Cleanup policy (delete after session? archive older than 30 days?)
 - Link to `docs/research/` for permanent findings
@@ -491,18 +505,18 @@ agent-team/
 
 ## Summary of Actionable Items
 
-| Task | Owner | Priority | Est. Time | Blocks |
-|:-----|:------|:---------|:----------|:-------|
-| Update README.md | Tweety (docs-writer) | P1 | 2-3h | External visibility |
-| Resolve external repo refs | Elmer (pm) | P1 | 1-2h | Phase 2+ planning |
-| Document stale claude-utils refs | Tweety | P1 | 1h | Documentation clarity |
-| Add spec acceptance criteria | Wile E. (ai-agent-eng) | P2 | 2h | Phase 1 completion |
-| Standardize spec frontmatter | Tweety | P2 | 1h | Spec consistency |
-| Create research roadmap | Road Runner (researcher) | P2 | 2-3h | Knowledge organization |
-| Standardize reference style | Tweety | P2 | 1-2h | Maintainability |
-| Create missing specs (3x) | Bugs + Wile E. | P3 | 6-8h | Implementation guidance |
-| Expand incomplete specs | Tweety | P3 | 4-6h | Phase 1 readiness |
-| Create API docs | Foghorn + Bugs | P3 | 4-6h | External usability |
+| Task                             | Owner                    | Priority | Est. Time | Blocks                  |
+| :------------------------------- | :----------------------- | :------- | :-------- | :---------------------- |
+| Update README.md                 | Tweety (docs-writer)     | P1       | 2-3h      | External visibility     |
+| Resolve external repo refs       | Elmer (pm)               | P1       | 1-2h      | Phase 2+ planning       |
+| Document stale claude-utils refs | Tweety                   | P1       | 1h        | Documentation clarity   |
+| Add spec acceptance criteria     | Wile E. (ai-agent-eng)   | P2       | 2h        | Phase 1 completion      |
+| Standardize spec frontmatter     | Tweety                   | P2       | 1h        | Spec consistency        |
+| Create research roadmap          | Road Runner (researcher) | P2       | 2-3h      | Knowledge organization  |
+| Standardize reference style      | Tweety                   | P2       | 1-2h      | Maintainability         |
+| Create missing specs (3x)        | Bugs + Wile E.           | P3       | 6-8h      | Implementation guidance |
+| Expand incomplete specs          | Tweety                   | P3       | 4-6h      | Phase 1 readiness       |
+| Create API docs                  | Foghorn + Bugs           | P3       | 4-6h      | External usability      |
 
 ---
 

@@ -6,12 +6,12 @@ Prepared by Wile E. Coyote (AI Agent Engineer) ahead of reviewing Bugs' fix for 
 
 ## Key Files That Modify settings.json
 
-| Plugin | File | Hooks | Lock Strategy |
-|--------|------|-------|---------------|
-| statusline | `plugins/statusline/hooks/configure-statusline.sh` | SessionStart, UserPromptSubmit | mkdir (POSIX) |
-| statusline-iterm | `plugins/statusline-iterm/hooks/configure-statusline.sh` | SessionStart, UserPromptSubmit | flock |
-| sync-settings | `plugins/sync-settings/hooks/sync-settings.py` | SessionStart only | Python atomic |
-| tmux-subagent | `plugins/tmux-subagent/scripts/launch-subagent.sh` | N/A | None (isolated) |
+| Plugin           | File                                                     | Hooks                          | Lock Strategy   |
+| ---------------- | -------------------------------------------------------- | ------------------------------ | --------------- |
+| statusline       | `plugins/statusline/hooks/configure-statusline.sh`       | SessionStart, UserPromptSubmit | mkdir (POSIX)   |
+| statusline-iterm | `plugins/statusline-iterm/hooks/configure-statusline.sh` | SessionStart, UserPromptSubmit | flock           |
+| sync-settings    | `plugins/sync-settings/hooks/sync-settings.py`           | SessionStart only              | Python atomic   |
+| tmux-subagent    | `plugins/tmux-subagent/scripts/launch-subagent.sh`       | N/A                            | None (isolated) |
 
 ## Known Bug History
 
@@ -22,6 +22,7 @@ Prepared by Wile E. Coyote (AI Agent Engineer) ahead of reviewing Bugs' fix for 
 ## Current Write Pattern (post-fix)
 
 Both statusline plugins now:
+
 1. Capture jq output to variable first
 2. Validate non-empty and valid JSON
 3. Write with `printf '%s\n' "$content" > "$SETTINGS_FILE"`

@@ -5,6 +5,7 @@
 **Author**: Road Runner (Researcher)
 **Task**: #188 — Research agent teams messaging (DMs, broadcasts, rooms/channels, inbox internals)
 **Sub-reports**:
+
 - [External Research](./agent-teams-messaging-external.md)
 - [Source Code Analysis](./agent-teams-messaging-source.md)
 - [Room-Based Messaging Patterns](./room-based-messaging-patterns.md)
@@ -16,6 +17,7 @@
 Claude Code's agent teams messaging system (as of v2.1.44) is a **file-based, flat-topology** communication layer built on JSON inbox files and filesystem polling. It supports exactly two addressing modes — **1:1 direct messages** and **1:all broadcasts** — with no rooms, channels, groups, or topic-based routing. Messages are injected into the recipient's conversation as XML-tagged turns, meaning every message consumes context tokens.
 
 The system works but has significant limitations for long-running, multi-agent sessions:
+
 1. **No selective delivery** — all messages enter the recipient's context window
 2. **No rooms or channels** — no way to organize communication by topic
 3. **No digest or summary mechanism** — agents receive raw messages, never summaries
@@ -32,13 +34,13 @@ These limitations motivate the room-based messaging abstraction proposed for the
 
 All inter-agent communication goes through `SendMessage`. Plain text output from an agent is **not visible** to teammates or the team lead. Five message types exist:
 
-| Type | Direction | Required Fields | Purpose |
-|------|-----------|----------------|---------|
-| `message` | Any → any | `recipient`, `content`, `summary` | 1:1 direct message |
-| `broadcast` | Any → all | `content`, `summary` | Team-wide announcement |
-| `shutdown_request` | Lead → teammate | `recipient`, `content` | Request graceful exit |
-| `shutdown_response` | Teammate → lead | `request_id`, `approve` | Accept/reject shutdown |
-| `plan_approval_response` | Lead → teammate | `request_id`, `recipient`, `approve` | Accept/reject plan |
+| Type                     | Direction       | Required Fields                      | Purpose                |
+| ------------------------ | --------------- | ------------------------------------ | ---------------------- |
+| `message`                | Any → any       | `recipient`, `content`, `summary`    | 1:1 direct message     |
+| `broadcast`              | Any → all       | `content`, `summary`                 | Team-wide announcement |
+| `shutdown_request`       | Lead → teammate | `recipient`, `content`               | Request graceful exit  |
+| `shutdown_response`      | Teammate → lead | `request_id`, `approve`              | Accept/reject shutdown |
+| `plan_approval_response` | Lead → teammate | `request_id`, `recipient`, `approve` | Accept/reject plan     |
 
 **Notably absent**: `plan_approval_request` — this is system-generated when a teammate in plan mode finishes planning. The teammate does not call SendMessage for this.
 
@@ -49,11 +51,13 @@ The `summary` field (5-10 words) was added in v2.1.30 as a required field for `m
 ### 1.2 Inbox / Mailbox System
 
 **Storage**: Each agent has a JSON inbox file at:
+
 ```
 ~/.claude/teams/{team-name}/inboxes/{agent-name}.json
 ```
 
 **Message format** (on disk):
+
 ```json
 [
   {
@@ -67,6 +71,7 @@ The `summary` field (5-10 words) was added in v2.1.30 as a required field for `m
 ```
 
 **Delivery mechanism**:
+
 1. Sender calls `SendMessage` → system appends JSON object to recipient's inbox file
 2. Recipient polls inbox between turns (~1 second interval)
 3. Unread messages are injected into conversation as `<teammate-message teammate_id="[id]">...</teammate-message>` XML turns
@@ -118,6 +123,7 @@ There are **no rooms, channels, groups, topics, threads, or subscription-based m
 ### 2.1 Key Finding: Messaging Tools Stripped
 
 In the decompiled Claude Code v2.0.74 (`claude-renamed.js`, 532k+ lines):
+
 - Feature gate `mL()` (line 145154) always returns `false`
 - Messaging tool variable `CpB` (line 371602) is hardcoded to `null`
 - Schema definitions exist but no `call()` implementations are present
@@ -129,20 +135,21 @@ This confirms messaging is behind a feature gate and was stripped from this buil
 
 The v2.0.74 source reveals an **older schema** with different field names:
 
-| Field | v2.0.74 (source) | v2.1.44 (system prompts) |
-|-------|-------------------|--------------------------|
-| Addressing | `handle` (with `@` prefix) | `recipient` (by name) |
-| Content | `message` | `content` |
-| Metadata | `fromBranch` (session ID) | `summary` (preview text) |
-| Self-messaging | `isSelf: boolean` | Not documented |
-| Time filter | `seconds` parameter | Not documented |
-| Read cursor | `hasMore`, `totalCount`, `filteredCount` | Not documented |
+| Field          | v2.0.74 (source)                         | v2.1.44 (system prompts) |
+| -------------- | ---------------------------------------- | ------------------------ |
+| Addressing     | `handle` (with `@` prefix)               | `recipient` (by name)    |
+| Content        | `message`                                | `content`                |
+| Metadata       | `fromBranch` (session ID)                | `summary` (preview text) |
+| Self-messaging | `isSelf: boolean`                        | Not documented           |
+| Time filter    | `seconds` parameter                      | Not documented           |
+| Read cursor    | `hasMore`, `totalCount`, `filteredCount` | Not documented           |
 
 The v2.1.30 restructuring significantly simplified the schema and added the flat message type system.
 
 ### 2.3 Delegate Mode Restrictions
 
 In delegate mode (line 371612), workers can ONLY use:
+
 - `TaskCreate`, `TaskGet`, `TaskList`, `TaskUpdate`
 - `CpB` (messaging tool) would be included if non-null, but it's `null`
 
@@ -151,6 +158,7 @@ Workers cannot use file tools, Bash, Read, Write, etc. This is by design but has
 ### 2.4 Task System (Fully Implemented)
 
 Unlike messaging, the task system is fully present:
+
 - Storage: `~/.claude/tasks/{teamName}/{taskId}.json`
 - CRUD: Create, Read, Update, List operations with schema validation
 - File watching: `fs.watch()` on tasks directory with 50ms debounce + 5000ms polling fallback
@@ -159,6 +167,7 @@ Unlike messaging, the task system is fully present:
 ### 2.5 Permission Broadcasts (Code Pattern)
 
 The only broadcast-like behavior in source is permission propagation (line 366993-367008):
+
 ```javascript
 for (let member of teamFile.members) {
   if (member.name === requestingWorker) continue;
@@ -170,17 +179,18 @@ for (let member of teamFile.members) {
   }, teamName);
 }
 ```
+
 However, `xJ1` is always `null` in v2.0.74.
 
 ### 2.6 Environment Variables
 
-| Variable | Purpose |
-|----------|---------|
-| `CLAUDE_CODE_TEAM_NAME` | Team identifier for task/inbox paths |
-| `CLAUDE_CODE_AGENT_NAME` | Agent display name |
-| `CLAUDE_CODE_AGENT_ID` | Unique agent identifier |
-| `CLAUDE_CODE_AGENT_TYPE` | Role (e.g., `"team-lead"`) |
-| `CLAUDE_CONFIG_DIR` | Override for `~/.claude` |
+| Variable                 | Purpose                              |
+| ------------------------ | ------------------------------------ |
+| `CLAUDE_CODE_TEAM_NAME`  | Team identifier for task/inbox paths |
+| `CLAUDE_CODE_AGENT_NAME` | Agent display name                   |
+| `CLAUDE_CODE_AGENT_ID`   | Unique agent identifier              |
+| `CLAUDE_CODE_AGENT_TYPE` | Role (e.g., `"team-lead"`)           |
+| `CLAUDE_CONFIG_DIR`      | Override for `~/.claude`             |
 
 > Source: Decompiled `claude-renamed.js` v2.0.74 — see [source analysis](./agent-teams-messaging-source.md) for line references
 
@@ -192,12 +202,12 @@ However, `xJ1` is always `null` in v2.0.74.
 
 The most commonly reported issue. Multiple GitHub issues describe the same root cause:
 
-| Issue | Description |
-|-------|-------------|
-| [#23415](https://github.com/anthropics/claude-code/issues/23415) | Teammates don't poll inbox in tmux mode on macOS |
-| [#24108](https://github.com/anthropics/claude-code/issues/24108) | Teammates stuck at idle, mailbox never polled |
+| Issue                                                            | Description                                                |
+| ---------------------------------------------------------------- | ---------------------------------------------------------- |
+| [#23415](https://github.com/anthropics/claude-code/issues/23415) | Teammates don't poll inbox in tmux mode on macOS           |
+| [#24108](https://github.com/anthropics/claude-code/issues/24108) | Teammates stuck at idle, mailbox never polled              |
 | [#24771](https://github.com/anthropics/claude-code/issues/24771) | Split panes open but teammates disconnected from messaging |
-| [#25254](https://github.com/anthropics/claude-code/issues/25254) | Messages not delivered in VS Code extension |
+| [#25254](https://github.com/anthropics/claude-code/issues/25254) | Messages not delivered in VS Code extension                |
 
 **Root cause** (from debug logs): `TeammateMailbox.readMailbox()` polling loop doesn't reinitialize when resuming a session with an existing team.
 
@@ -221,34 +231,34 @@ Teammates can persist as zombie processes (0 tokens, 0 tool uses) that never rec
 
 ### 4.1 Framework Comparison
 
-| Framework | Model | Rooms? | Key Insight |
-|-----------|-------|--------|-------------|
-| **LangGraph** | Shared state graph with typed channels | Private channels (not rooms) | Channels prevent context pollution; not all state flows everywhere |
-| **CrewAI** | Hub-and-spoke hierarchical delegation | No — strict delegation only | Structured JSON responses reduce context waste vs conversational text |
-| **AutoGen GroupChat** | Shared room with speaker governance | **Yes** — group topic + private DM channels | Closest existing room pattern; dual subscription (group + DM) |
-| **OpenHands** | Event-sourced immutable log | No rooms, but event log acts as room | Typed events enable priority filtering; replay capability |
-| **Semantic Kernel** | Pre-built orchestration patterns | Group Chat pattern available | Concurrent pattern = broadcast to room + aggregate responses |
-| **Google A2A** | JSON-RPC 2.0 with agent discovery | No rooms — task-oriented | Three transport modes (sync, stream, async) map to urgency levels |
+| Framework             | Model                                  | Rooms?                                      | Key Insight                                                           |
+| --------------------- | -------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------- |
+| **LangGraph**         | Shared state graph with typed channels | Private channels (not rooms)                | Channels prevent context pollution; not all state flows everywhere    |
+| **CrewAI**            | Hub-and-spoke hierarchical delegation  | No — strict delegation only                 | Structured JSON responses reduce context waste vs conversational text |
+| **AutoGen GroupChat** | Shared room with speaker governance    | **Yes** — group topic + private DM channels | Closest existing room pattern; dual subscription (group + DM)         |
+| **OpenHands**         | Event-sourced immutable log            | No rooms, but event log acts as room        | Typed events enable priority filtering; replay capability             |
+| **Semantic Kernel**   | Pre-built orchestration patterns       | Group Chat pattern available                | Concurrent pattern = broadcast to room + aggregate responses          |
+| **Google A2A**        | JSON-RPC 2.0 with agent discovery      | No rooms — task-oriented                    | Three transport modes (sync, stream, async) map to urgency levels     |
 
 ### 4.2 Chat Platform Patterns
 
-| Platform | Relevant Pattern | Applicability |
-|----------|-----------------|--------------|
-| **Slack channels** | Named rooms, threading, unread tracking, channel types | High — maps directly to agent team needs |
-| **IRC rooms** | Lightweight, text-based, moderated modes | Medium-high — simplicity ideal for file-based implementation |
-| **Matrix** | Event-sourced rooms, power levels, federation, sync API | Medium — event sourcing and power levels relevant |
-| **Discord threads** | Spawnable sub-conversations, auto-archive | Medium — thread-per-task pattern useful |
+| Platform            | Relevant Pattern                                        | Applicability                                                |
+| ------------------- | ------------------------------------------------------- | ------------------------------------------------------------ |
+| **Slack channels**  | Named rooms, threading, unread tracking, channel types  | High — maps directly to agent team needs                     |
+| **IRC rooms**       | Lightweight, text-based, moderated modes                | Medium-high — simplicity ideal for file-based implementation |
+| **Matrix**          | Event-sourced rooms, power levels, federation, sync API | Medium — event sourcing and power levels relevant            |
+| **Discord threads** | Spawnable sub-conversations, auto-archive               | Medium — thread-per-task pattern useful                      |
 
 ### 4.3 Context Token Optimization Research
 
 **Key finding** (JetBrains Research, NeurIPS 2025): "Agent-generated context quickly turns into noise instead of useful information." Observation masking outperforms LLM summarization in 4/5 scenarios while being cheaper.
 
-| Approach | Token Savings | Quality Impact | Cost |
-|----------|--------------|----------------|------|
-| **Observation masking** | >50% | Neutral or positive | Minimal |
-| **LLM summarization** | >50% | May obscure stopping signals (13-15% longer runs) | +7% from summarization calls |
-| **Selective injection** | Variable | Best with priority routing | Minimal |
-| **Filesystem state** | Near 100% for non-critical | Requires explicit reads | None |
+| Approach                | Token Savings              | Quality Impact                                    | Cost                         |
+| ----------------------- | -------------------------- | ------------------------------------------------- | ---------------------------- |
+| **Observation masking** | >50%                       | Neutral or positive                               | Minimal                      |
+| **LLM summarization**   | >50%                       | May obscure stopping signals (13-15% longer runs) | +7% from summarization calls |
+| **Selective injection** | Variable                   | Best with priority routing                        | Minimal                      |
+| **Filesystem state**    | Near 100% for non-critical | Requires explicit reads                           | None                         |
 
 **Core principle** (Google context engineering): "Share memory by communicating, don't communicate by sharing memory." Agents should post to rooms (sharing memory through communication) rather than all sharing one context window.
 
@@ -296,11 +306,11 @@ Teammates can persist as zombie processes (0 tokens, 0 tool uses) that never rec
 
 ### 5.3 Priority-Tiered Injection
 
-| Priority | Behavior |
-|----------|----------|
+| Priority   | Behavior                                                              |
+| ---------- | --------------------------------------------------------------------- |
 | `critical` | Injected into recipient's context immediately (like today's messages) |
-| `normal` | Added to room digest; agent polls when ready |
-| `low` | File-only; never enters context unless explicitly read |
+| `normal`   | Added to room digest; agent polls when ready                          |
+| `low`      | File-only; never enters context unless explicitly read                |
 
 ### 5.4 Room Tools (MCP Server)
 
@@ -311,23 +321,23 @@ Teammates can persist as zombie processes (0 tokens, 0 tool uses) that never rec
 
 ### 5.5 Comparison: Current vs Proposed
 
-| Aspect | Current (Claude Code native) | Proposed (room-based) |
-|--------|------------------------------|----------------------|
-| Addressing | 1:1 or 1:all | Room-based with DM fallback |
-| Context impact | Every message is a turn | Only critical messages are turns |
-| Organization | Flat inbox | Topic-specific rooms |
-| History | Inbox file (no summary) | JSONL log + auto-digest |
-| Filtering | None | Priority-tiered injection |
-| Scalability | Linear context growth | Bounded by priority filter |
+| Aspect         | Current (Claude Code native) | Proposed (room-based)            |
+| -------------- | ---------------------------- | -------------------------------- |
+| Addressing     | 1:1 or 1:all                 | Room-based with DM fallback      |
+| Context impact | Every message is a turn      | Only critical messages are turns |
+| Organization   | Flat inbox                   | Topic-specific rooms             |
+| History        | Inbox file (no summary)      | JSONL log + auto-digest          |
+| Filtering      | None                         | Priority-tiered injection        |
+| Scalability    | Linear context growth        | Bounded by priority filter       |
 
 ### 5.6 Implementation Phases
 
-| Phase | Scope |
-|-------|-------|
-| **1** | File-based rooms with manual read/write (shell scripts) |
-| **2** | MCP server providing room tools (post, read, digest, subscribe) |
+| Phase | Scope                                                                           |
+| ----- | ------------------------------------------------------------------------------- |
+| **1** | File-based rooms with manual read/write (shell scripts)                         |
+| **2** | MCP server providing room tools (post, read, digest, subscribe)                 |
 | **3** | Priority-based injection (critical → context, normal → digest, low → file-only) |
-| **4** | Auto-summarization of room activity (digest generation) |
+| **4** | Auto-summarization of room activity (digest generation)                         |
 
 ---
 
@@ -348,15 +358,18 @@ Teammates can persist as zombie processes (0 tokens, 0 tool uses) that never rec
 ## References
 
 ### Official Documentation
+
 - [Claude Code Agent Teams](https://code.claude.com/docs/en/agent-teams)
 - [Claude Code Hooks Reference](https://code.claude.com/docs/en/hooks)
 
 ### System Prompt Extractions
+
 - [Piebald-AI SendMessageTool](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/tool-description-sendmessagetool.md)
 - [Piebald-AI TeammateTool](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/system-prompts/tool-description-teammatetool.md)
 - [Piebald-AI CHANGELOG](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/CHANGELOG.md)
 
 ### GitHub Issues
+
 - [#23415 — Inbox polling failure in tmux](https://github.com/anthropics/claude-code/issues/23415)
 - [#24108 — Teammates stuck at idle](https://github.com/anthropics/claude-code/issues/24108)
 - [#24771 — Panes disconnected from messaging](https://github.com/anthropics/claude-code/issues/24771)
@@ -364,10 +377,12 @@ Teammates can persist as zombie processes (0 tokens, 0 tool uses) that never rec
 - [#25254 — Messages not delivered in VS Code](https://github.com/anthropics/claude-code/issues/25254)
 
 ### Community Implementations
+
 - [claude-code-teams-mcp](https://github.com/cs50victor/claude-code-teams-mcp)
 - [VibeCodeCamp reverse-engineering article](https://vibecodecamp.blog/blog/how-to-install-and-use-claude-code-agent-teams-reverse-engineered)
 
 ### Multi-Agent Frameworks
+
 - [LangGraph Graph API](https://docs.langchain.com/oss/python/langgraph/graph-api)
 - [CrewAI Collaboration Docs](https://docs.crewai.com/en/concepts/collaboration)
 - [AutoGen Group Chat](https://microsoft.github.io/autogen/stable//user-guide/core-user-guide/design-patterns/group-chat.html)
@@ -376,6 +391,7 @@ Teammates can persist as zombie processes (0 tokens, 0 tool uses) that never rec
 - [Google A2A Protocol](https://a2a-protocol.org/latest/specification/)
 
 ### Context Optimization
+
 - [JetBrains: Efficient Context Management (NeurIPS 2025)](https://blog.jetbrains.com/research/2025/12/efficient-context-management/)
 - [Google: Context-Aware Multi-Agent Framework](https://developers.googleblog.com/architecting-efficient-context-aware-multi-agent-framework-for-production/)
 - [Filesystem-Based Agent State Pattern](https://agentic-patterns.com/patterns/filesystem-based-agent-state/)

@@ -13,22 +13,24 @@ The most critical finding is that the inter-agent messaging tool implementation 
 ### Tool Schemas (Present but Unused)
 
 **SendMessage schema** (line 371563-371570, lazy init `HpB`):
+
 ```javascript
 // Input schema (Nk4)
 {
-  handle: string  // "The @handle of the user to send message to"
-  message: string // "The message content"
+  handle: string; // "The @handle of the user to send message to"
+  message: string; // "The message content"
 }
 
 // Output schema (Yk4)
 {
-  handle: string   // "The handle of the recipient"
-  isSelf: boolean  // "Whether this is a self-to-self message"
-  sent: boolean    // "Whether the message was sent successfully"
+  handle: string; // "The handle of the recipient"
+  isSelf: boolean; // "Whether this is a self-to-self message"
+  sent: boolean; // "Whether the message was sent successfully"
 }
 ```
 
 **ReadMessages schema** (line 371531-371547, lazy init `BpB`):
+
 ```javascript
 // Input schema (oy4)
 {
@@ -59,14 +61,36 @@ Both `BpB` and `HpB` are loaded during module init at line 371646-371647 (inside
 
 ```javascript
 // Line 371594 - tool registration
-return [Ts, MNR, y0, MP, Fc, UU, E8, CQ, Y2, Gx, DI, N3, jNR, kNR, AZR, Pt, RxT,
-  ...[], ...[],
-  ...(mL() ? [VdB, SdB, pdB, RpB] : []),  // Team tools (always disabled)
-  ...[],                                     // Empty slots where messaging tools would go
+return [
+  Ts,
+  MNR,
+  y0,
+  MP,
+  Fc,
+  UU,
+  E8,
+  CQ,
+  Y2,
+  Gx,
+  DI,
+  N3,
+  jNR,
+  kNR,
+  AZR,
+  Pt,
+  RxT,
+  ...[],
+  ...[],
+  ...(mL() ? [VdB, SdB, pdB, RpB] : []), // Team tools (always disabled)
+  ...[], // Empty slots where messaging tools would go
   ...(process.env.ENABLE_LSP_TOOL ? [dbA] : []),
-  ...[], ...[], ...[],                       // More empty slots
-  Tc, Rc,                                    // MCP Resource tools (always enabled)
-  ...(vM() ? [hdB] : [])];                   // MCPSearch (TST mode only)
+  ...[],
+  ...[],
+  ...[], // More empty slots
+  Tc,
+  Rc, // MCP Resource tools (always enabled)
+  ...(vM() ? [hdB] : []),
+]; // MCPSearch (TST mode only)
 ```
 
 The empty arrays `...[]` are likely build-time dead code elimination of the messaging tools.
@@ -76,11 +100,11 @@ The empty arrays `...[]` are likely build-time dead code elimination of the mess
 ```javascript
 // Line 371656
 RO1 = new Set([
-  ...(CpB ? [CpB] : []),  // CpB = null, so messaging tool NOT included
-  uNR,  // "TaskCreate"
-  mNR,  // "TaskGet"
-  dNR,  // "TaskList"
-  cNR   // "TaskUpdate"
+  ...(CpB ? [CpB] : []), // CpB = null, so messaging tool NOT included
+  uNR, // "TaskCreate"
+  mNR, // "TaskGet"
+  dNR, // "TaskList"
+  cNR, // "TaskUpdate"
 ]);
 ```
 
@@ -98,6 +122,7 @@ The following message type strings appear in system prompt contexts:
 ### System Reminder Types
 
 From the switch statement at line 352235-352244:
+
 - `"team_context"` - Team configuration injected as system reminder
 - `"delegate_mode"` - Delegate mode context
 - `"delegate_mode_exit"` - Exit from delegate mode
@@ -110,7 +135,7 @@ The app state includes an `inbox` field initialized as empty (line 405495-405497
 
 ```javascript
 inbox: {
-  messages: []
+  messages: [];
 }
 ```
 
@@ -121,6 +146,7 @@ This field is defined in both the default state constructor and the full app ini
 Tasks are stored at: `~/.claude/tasks/{teamName}/{taskId}.json`
 
 Key functions:
+
 - `B3T(teamName)` (line 145160-145161): Returns `path.join(M9(), "tasks", teamName)` = `~/.claude/tasks/{teamName}/`
 - `leR(teamName, taskId)` (line 145163-145164): Returns `path.join(B3T(teamName), "{taskId}.json")`
 - `D6_(teamName, task)` (line 145190-145198): Creates task, writes JSON, notifies listeners
@@ -166,18 +192,22 @@ The only broadcast-like behavior found is permission propagation (line 366993-36
 ```javascript
 // When team lead approves a permission for a worker:
 for (let member of teamFile.members) {
-  if (member.name === requestingWorker) continue;    // Skip requester
+  if (member.name === requestingWorker) continue; // Skip requester
   if (member.agentId === teamFile.leadAgentId) continue; // Skip lead
-  xJ1?.writeToMailbox(member.name, {
-    from: "team-lead",
-    text: JSON.stringify({
-      type: "team_permission_update",
-      permissionUpdate: update,
-      directoryPath: path,
-      toolName: toolName
-    }),
-    timestamp: new Date().toISOString()
-  }, teamName);
+  xJ1?.writeToMailbox(
+    member.name,
+    {
+      from: "team-lead",
+      text: JSON.stringify({
+        type: "team_permission_update",
+        permissionUpdate: update,
+        directoryPath: path,
+        toolName: toolName,
+      }),
+      timestamp: new Date().toISOString(),
+    },
+    teamName,
+  );
 }
 ```
 
@@ -186,6 +216,7 @@ This broadcasts permission updates to all team members except the requester and 
 ### Mailbox Message Format
 
 From the broadcast code, the mailbox message format is:
+
 ```javascript
 {
   from: string,           // Sender identifier (e.g., "team-lead")
@@ -197,6 +228,7 @@ From the broadcast code, the mailbox message format is:
 ## Rooms / Channels
 
 **No rooms or channels exist.** The messaging system is purely:
+
 1. Direct messages (DM) between agents via `@handle`
 2. Broadcast to all team members (for system events like permission updates)
 
@@ -216,6 +248,7 @@ if (fs.existsSync(taskDir)) {
 ```
 
 Combined with:
+
 - `_6_(callback)` (line 145146-145147): Registers change listeners in a Set
 - `B6_()` (line 145149-145152): Notifies all registered listeners synchronously
 
@@ -224,6 +257,7 @@ This creates a file-watching notification pattern: when any agent writes a task 
 ### Polling with Debounce
 
 The task watcher includes debounce logic (line 270180-270206):
+
 - Initial check runs immediately
 - Changes trigger a debounced re-check (50ms debounce via `vc7`)
 - Periodic poll every 5000ms (`gc7`) as a fallback
@@ -276,72 +310,73 @@ The `writeToMailbox` and `sendPermissionResponseViaMailbox` methods on `xJ1` and
 
 ## Environment Variables
 
-| Variable | Purpose | Line |
-|:---------|:--------|:-----|
-| `CLAUDE_CODE_TEAM_NAME` | Team identifier, used for task directory and team context | 145158 |
-| `CLAUDE_CODE_AGENT_NAME` | Agent display name | 270156 |
-| `CLAUDE_CODE_AGENT_ID` | Agent unique identifier, used in task comments and ownership | 270160 |
-| `CLAUDE_CODE_AGENT_TYPE` | Agent type (e.g., "team-lead") | 270156, 371280 |
-| `CLAUDE_CONFIG_DIR` | Override for `~/.claude` | 784 |
+| Variable                 | Purpose                                                      | Line           |
+| :----------------------- | :----------------------------------------------------------- | :------------- |
+| `CLAUDE_CODE_TEAM_NAME`  | Team identifier, used for task directory and team context    | 145158         |
+| `CLAUDE_CODE_AGENT_NAME` | Agent display name                                           | 270156         |
+| `CLAUDE_CODE_AGENT_ID`   | Agent unique identifier, used in task comments and ownership | 270160         |
+| `CLAUDE_CODE_AGENT_TYPE` | Agent type (e.g., "team-lead")                               | 270156, 371280 |
+| `CLAUDE_CONFIG_DIR`      | Override for `~/.claude`                                     | 784            |
 
 ## Permission Model in Delegate Mode
 
 When `mode === "delegate"` (line 371612):
+
 - Tool list is filtered to only `RO1` set: TaskCreate, TaskGet, TaskList, TaskUpdate
 - Team lead can update any task; workers can only update tasks they own (line 371279-371288)
 - Workers cannot update tasks owned by others unless they are the team-lead (`CLAUDE_CODE_AGENT_TYPE === "team-lead"`)
 
 ## Summary
 
-| Feature | Exists? | Evidence |
-|:--------|:--------|:---------|
-| DMs (via @handle) | Schema only | Input/output schemas defined at lines 371531-371570; no `call()` implementation |
-| Broadcasts | Code patterns only | Permission broadcast loop at line 366993-367008; `xJ1` is null |
-| Rooms/channels | No | No evidence whatsoever |
-| File-based task storage | Yes, fully implemented | `~/.claude/tasks/{teamName}/{taskId}.json` with CRUD operations |
-| File-based inbox/mailbox | Placeholder only | `writeToMailbox` called on null variable; storage location unknown |
-| In-memory inbox | State defined, never populated | `inbox: { messages: [] }` in app state |
-| fs.watch notification | Yes, for tasks | Watches tasks directory, debounced polling fallback |
-| Self-messaging | Schema supports it | `isSelf` field in both schemas |
-| Branch tracking | Schema supports it | `fromBranch` field in ReadMessages output |
-| Time-filtered reads | Schema supports it | `seconds` parameter in ReadMessages input |
-| Permission delegation | Fully implemented | Worker permission queue, leader approval flow |
-| Plan approval flow | Text references only | System prompt instructs "check your inbox" for plan approval |
+| Feature                  | Exists?                        | Evidence                                                                        |
+| :----------------------- | :----------------------------- | :------------------------------------------------------------------------------ |
+| DMs (via @handle)        | Schema only                    | Input/output schemas defined at lines 371531-371570; no `call()` implementation |
+| Broadcasts               | Code patterns only             | Permission broadcast loop at line 366993-367008; `xJ1` is null                  |
+| Rooms/channels           | No                             | No evidence whatsoever                                                          |
+| File-based task storage  | Yes, fully implemented         | `~/.claude/tasks/{teamName}/{taskId}.json` with CRUD operations                 |
+| File-based inbox/mailbox | Placeholder only               | `writeToMailbox` called on null variable; storage location unknown              |
+| In-memory inbox          | State defined, never populated | `inbox: { messages: [] }` in app state                                          |
+| fs.watch notification    | Yes, for tasks                 | Watches tasks directory, debounced polling fallback                             |
+| Self-messaging           | Schema supports it             | `isSelf` field in both schemas                                                  |
+| Branch tracking          | Schema supports it             | `fromBranch` field in ReadMessages output                                       |
+| Time-filtered reads      | Schema supports it             | `seconds` parameter in ReadMessages input                                       |
+| Permission delegation    | Fully implemented              | Worker permission queue, leader approval flow                                   |
+| Plan approval flow       | Text references only           | System prompt instructs "check your inbox" for plan approval                    |
 
 ## Confidence Levels
 
-| Finding | Confidence |
-|:--------|:-----------|
-| Messaging tool stripped from v2.0.74 | **High** - `mL()` returns false, `CpB` is null, empty array slots in tool list |
-| Task system fully implemented | **High** - Complete CRUD with file I/O, schema validation, UI rendering |
-| Messages addressed by @handle | **High** - Schema definitions are explicit |
-| Mailbox message format {from, text, timestamp} | **Medium** - Derived from broadcast code patterns, may differ for DMs |
-| fs.watch is the delivery notification mechanism | **High** - Clear implementation in task watcher code |
-| No rooms/channels concept | **High** - Zero evidence in 532k lines |
-| Inbox state is for future messaging | **Medium** - Empty state initialized, never used, but structurally ready |
-| Branch field enables multi-session routing | **Medium** - Field exists in schema but routing logic is stripped |
-| Delegate mode limits tools to Task-only | **High** - Explicit `RO1` set filtering at line 371612 |
+| Finding                                         | Confidence                                                                     |
+| :---------------------------------------------- | :----------------------------------------------------------------------------- |
+| Messaging tool stripped from v2.0.74            | **High** - `mL()` returns false, `CpB` is null, empty array slots in tool list |
+| Task system fully implemented                   | **High** - Complete CRUD with file I/O, schema validation, UI rendering        |
+| Messages addressed by @handle                   | **High** - Schema definitions are explicit                                     |
+| Mailbox message format {from, text, timestamp}  | **Medium** - Derived from broadcast code patterns, may differ for DMs          |
+| fs.watch is the delivery notification mechanism | **High** - Clear implementation in task watcher code                           |
+| No rooms/channels concept                       | **High** - Zero evidence in 532k lines                                         |
+| Inbox state is for future messaging             | **Medium** - Empty state initialized, never used, but structurally ready       |
+| Branch field enables multi-session routing      | **Medium** - Field exists in schema but routing logic is stripped              |
+| Delegate mode limits tools to Task-only         | **High** - Explicit `RO1` set filtering at line 371612                         |
 
 ## Key Line References
 
-| Component | Lines |
-|:----------|:------|
-| `mL()` feature gate (always false) | 145154-145156 |
-| `Eb()` team name resolution | 145157-145158 |
-| Task CRUD operations | 145160-145234 |
-| Change listener pub/sub | 145146-145152 |
-| Agent name/ID resolution | 270155-270164 |
-| Task file watcher with debounce | 270174-270210 |
-| Plan approval inbox reference | 315936-315948 |
-| Permission broadcast via mailbox | 366993-367008 |
+| Component                               | Lines                                  |
+| :-------------------------------------- | :------------------------------------- |
+| `mL()` feature gate (always false)      | 145154-145156                          |
+| `Eb()` team name resolution             | 145157-145158                          |
+| Task CRUD operations                    | 145160-145234                          |
+| Change listener pub/sub                 | 145146-145152                          |
+| Agent name/ID resolution                | 270155-270164                          |
+| Task file watcher with debounce         | 270174-270210                          |
+| Plan approval inbox reference           | 315936-315948                          |
+| Permission broadcast via mailbox        | 366993-367008                          |
 | Mailbox/permission response via mailbox | 367003, 366336, 366966, 367014, 367040 |
-| Null variable declarations (VgT, xJ1) | 367217-367219 |
-| TaskCreate tool | 370887-370965 |
-| TaskGet tool | 371010-371113 |
-| TaskUpdate tool | 371202-371341 |
-| TaskList tool | 371432-371516 |
-| ReadMessages schema | 371525-371547 |
-| SendMessage schema | 371556-371570 |
-| Tool registration (messaging stripped) | 371594 |
-| Delegate mode tool allowlist | 371656 |
-| App state inbox placeholder | 405495-405497 |
+| Null variable declarations (VgT, xJ1)   | 367217-367219                          |
+| TaskCreate tool                         | 370887-370965                          |
+| TaskGet tool                            | 371010-371113                          |
+| TaskUpdate tool                         | 371202-371341                          |
+| TaskList tool                           | 371432-371516                          |
+| ReadMessages schema                     | 371525-371547                          |
+| SendMessage schema                      | 371556-371570                          |
+| Tool registration (messaging stripped)  | 371594                                 |
+| Delegate mode tool allowlist            | 371656                                 |
+| App state inbox placeholder             | 405495-405497                          |

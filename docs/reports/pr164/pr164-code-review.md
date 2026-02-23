@@ -16,11 +16,11 @@ The fix is solid. It correctly addresses all three race condition vectors from t
 
 ## Vector Coverage
 
-| Vector | Description | Status | How |
-|--------|-------------|--------|-----|
-| 1 | Shared tmp filename clobbering | Fixed | `mktemp "${SETTINGS_FILE}.XXXXXX"` — unique per process |
-| 2 | Read-modify-write race | Fixed | `mkdir`-based POSIX lock serializes ALL writes |
-| 3 | Truncation before write (MAIN CULPRIT) | Fixed | Atomic `mv` from tmp to target — never truncates original |
+| Vector | Description                            | Status | How                                                       |
+| ------ | -------------------------------------- | ------ | --------------------------------------------------------- |
+| 1      | Shared tmp filename clobbering         | Fixed  | `mktemp "${SETTINGS_FILE}.XXXXXX"` — unique per process   |
+| 2      | Read-modify-write race                 | Fixed  | `mkdir`-based POSIX lock serializes ALL writes            |
+| 3      | Truncation before write (MAIN CULPRIT) | Fixed  | Atomic `mv` from tmp to target — never truncates original |
 
 ---
 
@@ -47,6 +47,7 @@ The fix is solid. It correctly addresses all three race condition vectors from t
 ### Finding 1: TOCTOU on Initial Read (P3 — Low Risk, No Action Required)
 
 **Location**: Both files, line 87
+
 ```bash
 current_command=$(jq -r '.statusLine.command // empty' "$SETTINGS_FILE" 2>/dev/null || echo "")
 ```
@@ -62,6 +63,7 @@ This read happens OUTSIDE the lock. The result determines which jq filter to app
 **Location**: Both files contain identical `safe_write_settings()` function (~60 lines).
 
 Any bug fix must be applied to both files. Consider extracting to a shared utility:
+
 - `plugins/shared/lib/safe-settings-write.sh` or similar
 - Both hooks source it
 
@@ -82,6 +84,7 @@ This means after removing one stale lock, we get only one more `mkdir` attempt b
 ### Finding 4: EXIT Trap Scope (P3 — Informational)
 
 **Location**: Both files, line 50
+
 ```bash
 trap 'rmdir "$lockdir" 2>/dev/null || true' EXIT
 ```
@@ -105,6 +108,7 @@ This sets a process-wide EXIT trap. If `safe_write_settings` is called multiple 
 **Approve.** The fix correctly eliminates all three race condition vectors. The remaining findings are minor follow-ups, not blockers. The atomic rename pattern is the correct solution for the blanking problem.
 
 **Suggested follow-ups (non-blocking):**
+
 1. Extract `safe_write_settings()` to a shared lib to reduce duplication
 2. Verify sync-settings plugin uses the same lock or fires on a non-overlapping event
 3. Consider resetting retry counter after stale lock cleanup (one-liner fix)

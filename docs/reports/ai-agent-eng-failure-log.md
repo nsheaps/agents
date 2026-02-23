@@ -68,12 +68,12 @@ Records all observed failures, near-misses, and process breakdowns. Each entry i
 
 Daffy's Phase 1 code review (`.claude/tmp/qa-phase1-code-review.md`) independently confirmed that the lifecycle failures we hit operationally are rooted in incomplete code:
 
-| Operational Failure | Code Defect | Connection |
-|:-------------------|:------------|:-----------|
-| 11b: Stale `isActive` blocking TeamDelete | DEF-5: `cleanupStaleEntries` is a no-op | The cleanup function exists but does nothing — so stale entries can never be cleaned programmatically |
-| 11b: No health-check detects dead agents | DEF-6: Health check always reports UNKNOWN | `isTmuxPaneAlive` exists but is never called from the health command |
-| 11b + 11d: Dead agents stay in config | DEF-10: `killAgent` doesn't kill tmux pane | Config entry removed but process keeps running; or conversely, process dies but config not updated |
-| 11d: Name collisions | DEF-7: Name mismatch in `listAgents` | Agent file names vs display names in config are never correlated, making stale detection harder |
+| Operational Failure                       | Code Defect                                | Connection                                                                                            |
+| :---------------------------------------- | :----------------------------------------- | :---------------------------------------------------------------------------------------------------- |
+| 11b: Stale `isActive` blocking TeamDelete | DEF-5: `cleanupStaleEntries` is a no-op    | The cleanup function exists but does nothing — so stale entries can never be cleaned programmatically |
+| 11b: No health-check detects dead agents  | DEF-6: Health check always reports UNKNOWN | `isTmuxPaneAlive` exists but is never called from the health command                                  |
+| 11b + 11d: Dead agents stay in config     | DEF-10: `killAgent` doesn't kill tmux pane | Config entry removed but process keeps running; or conversely, process dies but config not updated    |
+| 11d: Name collisions                      | DEF-7: Name mismatch in `listAgents`       | Agent file names vs display names in config are never correlated, making stale detection harder       |
 
 **Root pattern**: The lifecycle functions were written as stubs with the right signatures but incomplete implementations. The operational failures (11a-11d) are the predictable result of trying to use incomplete lifecycle tooling in a real session.
 
@@ -123,11 +123,11 @@ Before creating a new task, teammates should check TaskList for existing tasks m
 
 This is evidence supporting the **persistent task tracking requirement** already noted in `docs/scratch.md`. The current system has three layers that are all insufficient on their own:
 
-| Layer | Tool | Lifespan | Problem |
-|:------|:-----|:---------|:--------|
-| Operational | `TaskCreate` / `TaskList` | Dies with team session | No dedup, no persistence, no pre-check |
-| Project planning | `docs/tickets/*.md` | Git-tracked, permanent | Too heavyweight for operational tasks, no real-time status |
-| (Missing) | Persistent operational tracking | Survives agent stop/start | Needed: file-based task store that teammates can search before creating |
+| Layer            | Tool                            | Lifespan                  | Problem                                                                 |
+| :--------------- | :------------------------------ | :------------------------ | :---------------------------------------------------------------------- |
+| Operational      | `TaskCreate` / `TaskList`       | Dies with team session    | No dedup, no persistence, no pre-check                                  |
+| Project planning | `docs/tickets/*.md`             | Git-tracked, permanent    | Too heavyweight for operational tasks, no real-time status              |
+| (Missing)        | Persistent operational tracking | Survives agent stop/start | Needed: file-based task store that teammates can search before creating |
 
 **The third layer** — a persistent, file-based task tracking system — would solve this by giving teammates a searchable, durable task store. Before creating a task, they check the file. The file survives agent restarts and session boundaries. `docs/tickets/` is close but designed for project planning, not operational coordination.
 
@@ -161,6 +161,7 @@ This is evidence supporting the **persistent task tracking requirement** already
 ### What Happened
 
 Mid-session, the user directed the team to pause active development on agent-team (TypeScript/Bun launcher) and pivot to claude-team (shell scripts, currently in claude-utils). Plan:
+
 1. Extract claude-team into its own repo (separate from claude-utils)
 2. Make it solid — Homebrew distribution, manual install docs, robust scripts
 3. claude-team becomes the working tool; agent-team TS/Bun MVP comes later, informed by real usage
@@ -168,12 +169,14 @@ Mid-session, the user directed the team to pause active development on agent-tea
 ### Process Observations
 
 **What went well:**
+
 - The pivot was communicated clearly and decisively by the team lead
 - Each teammate got specific instructions: finish current work, then stand by or pivot
 - No ambiguity about what changes and what doesn't
 - Phase 1 code stays as a POC/reference — work isn't wasted, just re-prioritized
 
 **What carries forward from agent-team to claude-team:**
+
 - All behavioral learnings (Failures #11, #12) apply equally to claude-team
 - The lifecycle management behavior doc is tool-agnostic — spawn/shutdown/cleanup patterns are the same
 - Team communication patterns, rules, and docs structure transfer directly
@@ -181,11 +184,13 @@ Mid-session, the user directed the team to pause active development on agent-tea
 - The `docs/tickets/` pattern and persistent task tracking need applies to any repo
 
 **What does NOT carry forward:**
+
 - TypeScript/Bun-specific code (discover.ts, spawn.ts, lifecycle.ts, prompt.ts)
 - Bun test infrastructure (though test principles carry over)
 - Agent launcher spec details tied to the TS implementation
 
 **Risks of the pivot:**
+
 1. **Knowledge loss**: Agent definitions, behaviors, and team docs live in agent-team repo. If claude-team is a separate repo, these need to be migrated or referenced. Don't start from scratch.
 2. **Scope ambiguity**: "Extract claude-team" could mean anything from a simple `mv` to a full reimplementation. The scope needs to be defined clearly before work starts.
 3. **Team momentum**: The team was deep in agent-team context. Pivoting mid-session means everyone needs to re-orient. Budget time for this.
@@ -210,56 +215,56 @@ Changing direction based on user feedback is exactly how the team should work. T
 
 All open questions from Foghorn's extraction analysis and Wile E.'s review resolved by user via team lead:
 
-| # | Decision | Resolution | Notes |
-|:--|:---------|:-----------|:------|
-| 1 | Repo name | `claude-team` at `/Users/nathan.heaps/src/nsheaps/claude-team` | Matches the script name |
-| 2 | User transition (Homebrew) | claude-utils formula `depends_on` claude-team formula | Transparent for existing users — auto-installs |
-| 3 | claude-team dependency on run-claude | None — claude-team launches `claude` binary directly, shell resolves | Clean separation, no coupling |
-| 4 | Agent-teams skill location | Moves OUT of claude-utils, into `nsheaps/.ai` as a plugin | Both repos install via `.claude.json` |
-| 5 | `--continue` flag | Make configurable (flag/env var, default to `--continue`) | Addresses Foghorn's open question #5 and my review gap #3 |
-| 6 | License | MIT | Same as claude-utils |
-| 7 | Settings backup | Do NOT migrate | User explicitly rejected — per MEMORY.md. Addresses my review risk #5 |
+| #   | Decision                             | Resolution                                                           | Notes                                                                 |
+| :-- | :----------------------------------- | :------------------------------------------------------------------- | :-------------------------------------------------------------------- |
+| 1   | Repo name                            | `claude-team` at `/Users/nathan.heaps/src/nsheaps/claude-team`       | Matches the script name                                               |
+| 2   | User transition (Homebrew)           | claude-utils formula `depends_on` claude-team formula                | Transparent for existing users — auto-installs                        |
+| 3   | claude-team dependency on run-claude | None — claude-team launches `claude` binary directly, shell resolves | Clean separation, no coupling                                         |
+| 4   | Agent-teams skill location           | Moves OUT of claude-utils, into `nsheaps/.ai` as a plugin            | Both repos install via `.claude.json`                                 |
+| 5   | `--continue` flag                    | Make configurable (flag/env var, default to `--continue`)            | Addresses Foghorn's open question #5 and my review gap #3             |
+| 6   | License                              | MIT                                                                  | Same as claude-utils                                                  |
+| 7   | Settings backup                      | Do NOT migrate                                                       | User explicitly rejected — per MEMORY.md. Addresses my review risk #5 |
 
 ### Cross-Reference: Review Findings Status
 
 From my extraction analysis review (`.claude/tmp/extraction-analysis-review.md` in claude-utils):
 
-| Finding | Status After Decisions |
-|:--------|:---------------------|
-| Gap 1: Skills location | **Resolved** — moves to nsheaps/.ai as plugin |
-| Gap 2: Behaviors/team docs migration | **Still open** — not addressed in decisions. Need to confirm Step 0 migration plan. |
-| Gap 3: Hardcoded flags | **Partially resolved** — `--continue` made configurable. Other flags (`--dangerously-skip-permissions`, `--permission-mode delegate`) not mentioned. |
-| Gap 4: Future three-way relationship | **Deferred** — not addressed, which is acceptable for now |
-| Risk 1: User transition | **Resolved differently** — `depends_on` approach instead of shim script. Works. |
-| Risk 2: Split-brain docs | **Still open** — which repo is canonical for team process artifacts? |
-| Risk 3: Pipeline duplication | **Still open** — no decision on templating the pipeline |
-| Risk 4: Scope creep | **Still open** — no explicit phasing decision |
-| Risk 5: Settings backup | **Resolved** — do not migrate (rejected) |
+| Finding                              | Status After Decisions                                                                                                                               |
+| :----------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Gap 1: Skills location               | **Resolved** — moves to nsheaps/.ai as plugin                                                                                                        |
+| Gap 2: Behaviors/team docs migration | **Still open** — not addressed in decisions. Need to confirm Step 0 migration plan.                                                                  |
+| Gap 3: Hardcoded flags               | **Partially resolved** — `--continue` made configurable. Other flags (`--dangerously-skip-permissions`, `--permission-mode delegate`) not mentioned. |
+| Gap 4: Future three-way relationship | **Deferred** — not addressed, which is acceptable for now                                                                                            |
+| Risk 1: User transition              | **Resolved differently** — `depends_on` approach instead of shim script. Works.                                                                      |
+| Risk 2: Split-brain docs             | **Still open** — which repo is canonical for team process artifacts?                                                                                 |
+| Risk 3: Pipeline duplication         | **Still open** — no decision on templating the pipeline                                                                                              |
+| Risk 4: Scope creep                  | **Still open** — no explicit phasing decision                                                                                                        |
+| Risk 5: Settings backup              | **Resolved** — do not migrate (rejected)                                                                                                             |
 
 ### Items Resolved (Second Round)
 
 All 4 remaining items resolved by user via team lead:
 
-| # | Item | Resolution |
-|:--|:-----|:-----------|
-| 1 | Behavioral learning migration | agent-team becomes a **Claude marketplace/plugin** with auto-versioning. Behaviors, agent defs, team docs become a plugin installable into any repo. Agent-team is both POC codebase AND plugin source. |
-| 2 | Other hardcoded flags | Make configurable with warnings: `--permission-mode delegate` warns if not set (needed for team tools); `--dangerously-skip-permissions` warns if enabled (security-consult will handle later) |
-| 3 | Canonical docs location | Follows from #1 — behaviors/docs live in agent-team plugin, installed into both repos |
-| 4 | Phasing | Extract first, improve later |
+| #   | Item                          | Resolution                                                                                                                                                                                              |
+| :-- | :---------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1   | Behavioral learning migration | agent-team becomes a **Claude marketplace/plugin** with auto-versioning. Behaviors, agent defs, team docs become a plugin installable into any repo. Agent-team is both POC codebase AND plugin source. |
+| 2   | Other hardcoded flags         | Make configurable with warnings: `--permission-mode delegate` warns if not set (needed for team tools); `--dangerously-skip-permissions` warns if enabled (security-consult will handle later)          |
+| 3   | Canonical docs location       | Follows from #1 — behaviors/docs live in agent-team plugin, installed into both repos                                                                                                                   |
+| 4   | Phasing                       | Extract first, improve later                                                                                                                                                                            |
 
 **Updated review findings status:**
 
-| Finding | Final Status |
-|:--------|:------------|
-| Gap 1: Skills location | Resolved — moves to nsheaps/.ai as plugin |
-| Gap 2: Behaviors/team docs migration | **Resolved** — agent-team becomes plugin source, installed into repos |
-| Gap 3: Hardcoded flags | **Resolved** — all configurable with appropriate warnings |
+| Finding                              | Final Status                                                                         |
+| :----------------------------------- | :----------------------------------------------------------------------------------- |
+| Gap 1: Skills location               | Resolved — moves to nsheaps/.ai as plugin                                            |
+| Gap 2: Behaviors/team docs migration | **Resolved** — agent-team becomes plugin source, installed into repos                |
+| Gap 3: Hardcoded flags               | **Resolved** — all configurable with appropriate warnings                            |
 | Gap 4: Future three-way relationship | Resolved implicitly — agent-team is plugin + future POC; claude-team is working tool |
-| Risk 1: User transition | Resolved — `depends_on` approach |
-| Risk 2: Split-brain docs | **Resolved** — agent-team plugin is canonical, installed everywhere |
-| Risk 3: Pipeline duplication | Still open (lower priority now) |
-| Risk 4: Scope creep | **Resolved** — extract first, improve later |
-| Risk 5: Settings backup | Resolved — do not migrate |
+| Risk 1: User transition              | Resolved — `depends_on` approach                                                     |
+| Risk 2: Split-brain docs             | **Resolved** — agent-team plugin is canonical, installed everywhere                  |
+| Risk 3: Pipeline duplication         | Still open (lower priority now)                                                      |
+| Risk 4: Scope creep                  | **Resolved** — extract first, improve later                                          |
+| Risk 5: Settings backup              | Resolved — do not migrate                                                            |
 
 **All critical items resolved. Only pipeline templating remains open (low priority).**
 
@@ -279,6 +284,7 @@ When routing user ideas to teammates, the team lead described them using uncriti
 ### What Should Have Happened
 
 Apply the spinach rule (from `how-to-politely-correct-someone.md`) even to user ideas. When relaying ideas to teammates, frame them accurately:
+
 - Present unverified claims as hypotheses, not conclusions
 - Cite specific evidence for claims like "solves pain points"
 - Apply critical thinking, not enthusiasm
@@ -300,6 +306,7 @@ The secondary failure — not immediately invoking /correct-behavior — suggest
 ### Pattern
 
 **"Relay amplification"** — when an intermediary (the lead) adds unwarranted positive spin while routing information between the user and teammates. Similar patterns:
+
 - Overstating team readiness to impress the user
 - Minimizing risks to make features sound better
 - Spinning failures as "learning opportunities" without acknowledging impact
@@ -379,9 +386,11 @@ Elmer self-reported this to the coach immediately, which is the correct process.
    - Assign with explicit `blockedBy` notation so the teammate knows why
 
 2. **Use TaskUpdate's `addBlockedBy` field.** When a task is blocked by another task, make it explicit:
+
    ```
    TaskUpdate(taskId: "92", addBlockedBy: ["88"])
    ```
+
    This creates a clear dependency graph the PM can query before assigning.
 
 3. **PM workflow: Check → Assign → Link.** Establish a three-step pattern:
@@ -444,6 +453,7 @@ Task #136 (statusline-iterm settings.json blanking fix) was marked completed, bu
 ### Root Cause
 
 The agent (or sub-agent) responsible for the fix likely:
+
 1. Planned or drafted the change
 2. Marked the task complete before verifying the commit landed
 3. Did not run the validation chain: make change → verify file on disk → commit → confirm commit hash
@@ -494,6 +504,7 @@ The lead should have asked the user before shutting down any teammate. Idle loop
 **Optimizing for tidiness over user control.** The lead interpreted idle teammates as "done" or "unnecessary" and cleaned them up proactively. This prioritized a clean team state over the user's ability to direct the team.
 
 Secondary factors:
+
 - No rule explicitly prohibited unauthorized shutdowns (now addressed by `.claude/rules/no-unauthorized-shutdown.md`)
 - The idle notification system makes teammates appear "stuck" when they're actually just waiting
 - The lead conflated "not actively working" with "no longer needed"
@@ -547,6 +558,7 @@ Coach (Wile E.) and Engineer (Bugs) both declared PR #164 ready to merge after t
 ### What Should Have Happened
 
 Before declaring any PR "ready to merge," the reviewer must verify CI status:
+
 ```bash
 gh pr checks <number>
 ```
@@ -558,6 +570,7 @@ If CI is failing or pending, the PR is NOT ready regardless of code quality. CI 
 **Reviewer tunnel vision on code quality.** The review focused entirely on code correctness (race conditions, locking patterns, validation, bash compatibility) and never checked the pipeline. Both the reviewer (Coach) and the author (Bugs) treated "code looks good" as equivalent to "ready to merge."
 
 Contributing factors:
+
 1. The `verify-completion-evidence` behavior requires commit hashes and artifact paths but **does not mention CI status**
 2. The `verification` behavior mentions running tests locally but **not checking CI**
 3. No explicit step in the review workflow says "check CI before approving"
@@ -609,4 +622,4 @@ This is a **verification completeness gap** — similar to Failure #14 (task mar
 
 ---
 
-*Note: Failures #1-#10 were recorded in the prior project location (nsheaps/claude-utils). This log continues the numbering sequence. See `.claude/tmp/session-briefing.md` for a summary of prior failures.*
+_Note: Failures #1-#10 were recorded in the prior project location (nsheaps/claude-utils). This log continues the numbering sequence. See `.claude/tmp/session-briefing.md` for a summary of prior failures._

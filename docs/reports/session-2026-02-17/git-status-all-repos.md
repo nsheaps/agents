@@ -25,10 +25,10 @@ Generated: 2026-02-18 by Bugs Bunny (Software Engineer)
 
 ### Worktrees
 
-| Worktree | Branch | Status |
-|----------|--------|--------|
-| `fix-health-relaunch` | `fix/health-relaunch` | Clean except modified `bun.lock` (artifact). PR #13 merged — can delete. |
-| `fix-ops-swarm` | `fix/ops-swarm-findings` | Clean. PR #10 merged — can delete. |
+| Worktree              | Branch                   | Status                                                                   |
+| --------------------- | ------------------------ | ------------------------------------------------------------------------ |
+| `fix-health-relaunch` | `fix/health-relaunch`    | Clean except modified `bun.lock` (artifact). PR #13 merged — can delete. |
+| `fix-ops-swarm`       | `fix/ops-swarm-findings` | Clean. PR #10 merged — can delete.                                       |
 
 ---
 
@@ -86,13 +86,13 @@ Generated: 2026-02-18 by Bugs Bunny (Software Engineer)
 
 ### Worktrees
 
-| Worktree | Branch | Status |
-|----------|--------|--------|
-| `consolidate-todo` | `feat/consolidate-todo-plugins` | Clean, 1 behind origin |
-| `claude-mention-agent` | `nate/claude-mention-agent` | **BROKEN** (dangling .git ref) |
-| `fix-statusline-iterm` | `nate/fix-statusline-iterm` | Old branch, superseded by PR #164 |
-| `feat-statusline-iterm-badge` | `feat/statusline-iterm-badge` | Old branch |
-| Others | Various | Not checked in detail |
+| Worktree                      | Branch                          | Status                            |
+| ----------------------------- | ------------------------------- | --------------------------------- |
+| `consolidate-todo`            | `feat/consolidate-todo-plugins` | Clean, 1 behind origin            |
+| `claude-mention-agent`        | `nate/claude-mention-agent`     | **BROKEN** (dangling .git ref)    |
+| `fix-statusline-iterm`        | `nate/fix-statusline-iterm`     | Old branch, superseded by PR #164 |
+| `feat-statusline-iterm-badge` | `feat/statusline-iterm-badge`   | Old branch                        |
+| Others                        | Various                         | Not checked in detail             |
 
 ---
 
@@ -106,13 +106,13 @@ Generated: 2026-02-18 by Bugs Bunny (Software Engineer)
 
 ## Summary
 
-| Repo | Modified | Untracked | Clean? |
-|------|----------|-----------|--------|
-| agent-team | 0 | 14 | No |
-| agent | 1 | 2 | No |
-| claude-utils | 0 | 12 | No |
-| ai-mktpl | 1 | 5 | No |
-| gs-stack-status | 0 | 0 | **Yes** |
+| Repo            | Modified | Untracked | Clean?  |
+| --------------- | -------- | --------- | ------- |
+| agent-team      | 0        | 14        | No      |
+| agent           | 1        | 2         | No      |
+| claude-utils    | 0        | 12        | No      |
+| ai-mktpl        | 1        | 5         | No      |
+| gs-stack-status | 0        | 0         | **Yes** |
 
 **Total**: 2 modified tracked files, 33 untracked files/dirs across 4 repos.
 

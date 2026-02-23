@@ -42,11 +42,11 @@ Both responsibilities are **well-aligned** with the AI Agent Eng role. Here's wh
 
 ## Findings
 
-| # | Severity | Finding |
-|:--|:---------|:--------|
-| 1 | Low | "Daily responsibility" wording at line 88 is slightly misleading for a session-based agent. Consider "session-start responsibility" or "ongoing responsibility during active sessions." |
-| 2 | Info | Both sections are well-structured and follow the existing pattern (header → description → bullet list of specific actions). Consistency is good. |
-| 3 | Info | The three standing responsibilities together (Model Selection, Ecosystem Tracking, .ai Repo Tracking) form a coherent "stay current and improve" mandate. No overlap or contradiction between them. |
+| #   | Severity | Finding                                                                                                                                                                                             |
+| :-- | :------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Low      | "Daily responsibility" wording at line 88 is slightly misleading for a session-based agent. Consider "session-start responsibility" or "ongoing responsibility during active sessions."             |
+| 2   | Info     | Both sections are well-structured and follow the existing pattern (header → description → bullet list of specific actions). Consistency is good.                                                    |
+| 3   | Info     | The three standing responsibilities together (Model Selection, Ecosystem Tracking, .ai Repo Tracking) form a coherent "stay current and improve" mandate. No overlap or contradiction between them. |
 
 ## Conclusion
 

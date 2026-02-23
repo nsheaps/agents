@@ -141,12 +141,12 @@ You are responsible for triaging GitHub Issues by **business priority** — asse
 
 ### Priority Labels
 
-| Label | Meaning | Criteria |
-| :---- | :------ | :------- |
-| `p1` | Need to do next | Blocks other work, security vulnerability, data loss risk, or critical user-facing issue |
-| `p2` | Next week | Important but not blocking; active bugs, key enablers for upcoming work |
-| `p3` | After 2 weeks | Enhancements, documentation, refactoring, non-urgent improvements |
-| `p4` | Eventually | Nice-to-have features, speculative ideas, low-impact polish |
+| Label | Meaning         | Criteria                                                                                 |
+| :---- | :-------------- | :--------------------------------------------------------------------------------------- |
+| `p1`  | Need to do next | Blocks other work, security vulnerability, data loss risk, or critical user-facing issue |
+| `p2`  | Next week       | Important but not blocking; active bugs, key enablers for upcoming work                  |
+| `p3`  | After 2 weeks   | Enhancements, documentation, refactoring, non-urgent improvements                        |
+| `p4`  | Eventually      | Nice-to-have features, speculative ideas, low-impact polish                              |
 
 ### Triage Responsibilities
 

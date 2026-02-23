@@ -15,7 +15,9 @@
       - Consider a hidden groupthink channel, where they all post a haiku analysis of if they think they should respond or not, ignoring other agents analysis.
       - Then all agents see all the messages from phase 1, and any that still thinks they should respond, responds in phase 2 with why.
       - If a winner is still not chosen, for phase 3 they all vote on a single winner, and it can be themselves, but weighted at 90% to prevent them all just voting for themselves. They also state a confidence level and are weighted by that.
+
 ---
+
 ## Agent Lifecycle & Session Management
 
 - Agents need to be able to be launched in different folders. Sessions are very folder specific

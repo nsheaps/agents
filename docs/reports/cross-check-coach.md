@@ -21,11 +21,11 @@ Both reference session task #166 and describe the same work. #44 has commit hash
 
 Several closed issues lack commit hashes or artifact paths:
 
-| Issue | Title | Evidence? |
-|:------|:------|:----------|
-| #42 | Separate agent-team interop rules | NO — just "Resolved in session" |
-| #39 | Build tab naming plugin | NO — "Plugin implemented and working" |
-| #35 | PM session coordination | Likely NO (process work, but should cite artifact) |
+| Issue | Title                             | Evidence?                                          |
+| :---- | :-------------------------------- | :------------------------------------------------- |
+| #42   | Separate agent-team interop rules | NO — just "Resolved in session"                    |
+| #39   | Build tab naming plugin           | NO — "Plugin implemented and working"              |
+| #35   | PM session coordination           | Likely NO (process work, but should cite artifact) |
 
 **Good examples** (for comparison):
 | Issue | Title | Evidence? |
@@ -40,15 +40,15 @@ Several closed issues lack commit hashes or artifact paths:
 
 All major work streams have issues:
 
-| Role | Issues Created | Quality |
-|:-----|:--------------|:--------|
-| Coach (me) | #44, #46, #48, #49, #50, #63 + claude-utils #4 + ai-mktpl #160 | Good — all have evidence |
-| Researcher | #26-29, #31, #33 (all CLOSED) | Good — research artifacts cited |
-| Docs Writer | #30 (CLOSED) | Good |
-| QA | #32, #37, #43 (CLOSED) + #34, #36 (OPEN) | Good — defects properly tracked |
-| PM | #35, #40, #45, #51, #52 (CLOSED) | Mixed — some lack evidence |
-| Ops | #38, #41 (CLOSED) + #47 (OPEN) | Good |
-| Software Eng | #53, #55 (CLOSED) + #54, #56, #57, #59 (MIXED) | Good — code commits cited |
+| Role         | Issues Created                                                 | Quality                         |
+| :----------- | :------------------------------------------------------------- | :------------------------------ |
+| Coach (me)   | #44, #46, #48, #49, #50, #63 + claude-utils #4 + ai-mktpl #160 | Good — all have evidence        |
+| Researcher   | #26-29, #31, #33 (all CLOSED)                                  | Good — research artifacts cited |
+| Docs Writer  | #30 (CLOSED)                                                   | Good                            |
+| QA           | #32, #37, #43 (CLOSED) + #34, #36 (OPEN)                       | Good — defects properly tracked |
+| PM           | #35, #40, #45, #51, #52 (CLOSED)                               | Mixed — some lack evidence      |
+| Ops          | #38, #41 (CLOSED) + #47 (OPEN)                                 | Good                            |
+| Software Eng | #53, #55 (CLOSED) + #54, #56, #57, #59 (MIXED)                 | Good — code commits cited       |
 
 ### 4. NO WRONG-REPO PLACEMENT DETECTED
 

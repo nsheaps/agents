@@ -11,12 +11,12 @@
 
 **Result: ALL 54 TESTS PASS**
 
-| File | Tests | Status |
-|------|-------|--------|
-| `discover.test.ts` | 11 | PASS |
-| `prompt.test.ts` | 6 | PASS |
-| `spawn.test.ts` | 13 | PASS |
-| `lifecycle.test.ts` | 14 | PASS |
+| File                | Tests | Status |
+| ------------------- | ----- | ------ |
+| `discover.test.ts`  | 11    | PASS   |
+| `prompt.test.ts`    | 6     | PASS   |
+| `spawn.test.ts`     | 13    | PASS   |
+| `lifecycle.test.ts` | 14    | PASS   |
 
 ---
 
@@ -28,6 +28,7 @@
 **Verdict: PASS — properly implemented**
 
 The function now:
+
 - Iterates over members, checking `isTmuxPaneAlive(member.tmuxPaneId)` for those with pane IDs
 - Members with dead panes get removed from config
 - Members without pane IDs are skipped (left untouched)
@@ -35,6 +36,7 @@ The function now:
 - Returns descriptive message including count removed and count skipped
 
 **Test coverage**: 3 tests
+
 - Skips members without pane IDs ✓
 - Removes members with dead pane IDs and writes config ✓ (verified with `readTeamConfig` after cleanup)
 - Handles missing config gracefully ✓
@@ -51,6 +53,7 @@ The function now:
 **Verdict: PASS — health status now uses tmux pane liveness**
 
 The `listAgents` function now checks:
+
 - If member has `tmuxPaneId` → calls `isTmuxPaneAlive()` → returns `RUNNING` or `DEAD`
 - If member has no `tmuxPaneId` → returns `UNKNOWN`
 - If no config entry → returns `NOT_SPAWNED`
@@ -69,6 +72,7 @@ The `listAgents` function now checks:
 **Verdict: PASS — correlation now uses `agentName` field**
 
 The function now:
+
 1. Builds `agentNameToMember` map from config members that have `agentName` set
 2. Falls back to `displayNameToMember` for direct name match
 3. Tracks matched config members to avoid duplicates
@@ -76,6 +80,7 @@ The function now:
 5. Returns `configName` field when the display name differs from the agent name
 
 **Test coverage**: 4 tests
+
 - Correlates via `agentName` field ✓ (software-eng → Bugs B (software-eng))
 - Falls back to direct name match without `agentName` ✓
 - Handles no config gracefully ✓
@@ -93,12 +98,14 @@ The function now:
 **Verdict: PASS — tmux pane kill now wired in**
 
 The function now:
+
 1. Looks up the member in config
 2. If `member.tmuxPaneId` exists, calls `killTmuxPane(member.tmuxPaneId)`
 3. Removes member from config regardless of pane kill success
 4. Reports pane kill result in message (killed, failed, or no pane ID)
 
 **Test coverage**: 4 tests
+
 - No pane ID → removes from config, reports "no tmux pane ID tracked" ✓
 - With pane ID → attempts kill, reports result ✓ (fake pane %999 → "tmux pane kill failed")
 - Missing config → fails gracefully ✓
@@ -116,14 +123,15 @@ export interface TeamMember {
   name: string;
   agentId: string;
   agentType: string;
-  tmuxPaneId?: string;   // NEW — optional
-  agentName?: string;    // NEW — optional
+  tmuxPaneId?: string; // NEW — optional
+  agentName?: string; // NEW — optional
 }
 ```
 
 **Verdict: CORRECT**
 
 Both new fields are properly optional (`?`). They have JSDoc comments explaining purpose and when they're set. The optionality is important because:
+
 - Existing team configs won't have these fields → backward compatible
 - Claude Code manages the config schema → we extend, not replace
 
@@ -132,6 +140,7 @@ Both new fields are properly optional (`?`). They have JSDoc comments explaining
 ## 7. Test Quality Assessment
 
 ### Strengths
+
 - **Good fixture strategy**: 10 fixture files cover valid, minimal, missing fields, bad enums, no frontmatter, duplicates
 - **Proper isolation**: lifecycle tests use temp HOME directory to avoid touching real config
 - **Cleanup**: `afterEach(teardownTmpHome)` prevents test pollution
@@ -152,12 +161,12 @@ Both new fields are properly optional (`?`). They have JSDoc comments explaining
 
 ## 8. Summary
 
-| Defect | Fix Status | Test Coverage | Verdict |
-|--------|-----------|---------------|---------|
-| DEF-5 (cleanup no-op) | Fixed in f2fe867 | 3 tests | **PASS** |
-| DEF-6 (health UNKNOWN) | Fixed in f2fe867 | 1 test | **PASS** |
-| DEF-7 (name mismatch) | Fixed in 9a7354b | 4 tests | **PASS** |
-| DEF-10 (kill no pane) | Fixed in f2fe867 | 4 tests | **PASS** |
+| Defect                 | Fix Status       | Test Coverage | Verdict  |
+| ---------------------- | ---------------- | ------------- | -------- |
+| DEF-5 (cleanup no-op)  | Fixed in f2fe867 | 3 tests       | **PASS** |
+| DEF-6 (health UNKNOWN) | Fixed in f2fe867 | 1 test        | **PASS** |
+| DEF-7 (name mismatch)  | Fixed in 9a7354b | 4 tests       | **PASS** |
+| DEF-10 (kill no pane)  | Fixed in f2fe867 | 4 tests       | **PASS** |
 
 **All 4 defects verified fixed with adequate test coverage.** 54 tests passing, 0 failures. No regressions.
 

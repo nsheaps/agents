@@ -40,6 +40,7 @@ The File Dumper has a fundamental architecture gap (see section 2 below). It's b
 Section 8.3 shows the mesh server writing to the agent's local filesystem (`~/.claude/mesh/{agent}.jsonl`). But if the mesh server is a network service (in k8s or on another machine), it **cannot write to each agent's local filesystem**.
 
 The PRD is ambiguous about the deployment model:
+
 - Is the mesh MCP server a **remote network service** that agents connect to via Streamable HTTP?
 - Or is it a **local stdio MCP server** that each agent runs alongside itself, which then connects to the remote Socket.io server?
 
@@ -54,6 +55,7 @@ Agent
 ```
 
 This is a two-process architecture:
+
 1. **Mesh server** (remote) — Socket.io + Redis, handles routing/presence/auth
 2. **Mesh client** (local, MCP stdio) — bridges between MCP tools and Socket.io, writes files locally
 
@@ -61,16 +63,16 @@ The PRD conflates these two components. They need to be designed and built separ
 
 ### Other Missing Pieces
 
-| Missing | Impact | Priority |
-|:--------|:-------|:---------|
-| **Codebase structure** (directories, modules, build system) | Can't start coding | High |
-| **Error handling strategy** (reconnection behavior, message retry, partial failures) | Unreliable in practice | High |
-| **Testing strategy** (unit, integration, e2e for real-time messaging) | Can't validate | High |
-| **Configuration file format** (server config, client config) | Need before deployment | Medium |
-| **Graceful shutdown** (drain connections, flush pending messages) | Data loss risk | Medium |
-| **Logging/observability** for MVP (not just Phase 2) | Can't debug | Medium |
-| **CLI interface** (how to start the server, how to connect) | UX | Medium |
-| **MCP server registration** (how does an agent discover and connect to the mesh?) | Integration gap | Medium |
+| Missing                                                                              | Impact                 | Priority |
+| :----------------------------------------------------------------------------------- | :--------------------- | :------- |
+| **Codebase structure** (directories, modules, build system)                          | Can't start coding     | High     |
+| **Error handling strategy** (reconnection behavior, message retry, partial failures) | Unreliable in practice | High     |
+| **Testing strategy** (unit, integration, e2e for real-time messaging)                | Can't validate         | High     |
+| **Configuration file format** (server config, client config)                         | Need before deployment | Medium   |
+| **Graceful shutdown** (drain connections, flush pending messages)                    | Data loss risk         | Medium   |
+| **Logging/observability** for MVP (not just Phase 2)                                 | Can't debug            | Medium   |
+| **CLI interface** (how to start the server, how to connect)                          | UX                     | Medium   |
+| **MCP server registration** (how does an agent discover and connect to the mesh?)    | Integration gap        | Medium   |
 
 ### Open Question #1 is MVP-Critical
 
@@ -85,6 +87,7 @@ The PRD lists hook type for message injection as open question #1. This determin
 **Section 10.3 says TypeScript/Bun. The language comparison recommends Go (38/40 vs 25/40 for Bun/TS).**
 
 The rationale in 10.3 is "Socket.io is TypeScript-native" and "same stack as nsheaps/mcp." But:
+
 - The Go MCP SDK is production-ready (v1.3.0, Google co-maintained)
 - Go has excellent WebSocket libraries (gorilla/websocket, nhooyr/websocket)
 - Go is the recommended language for MCP servers per our own research
@@ -97,6 +100,7 @@ Alternatively, if the team decides TS for rapid prototyping, accept the rewrite 
 ### 3.2 Socket.io is Heavyweight
 
 Socket.io brings:
+
 - Custom protocol on top of WebSocket (Engine.IO layer)
 - HTTP long-polling fallback (unnecessary for agent-to-agent)
 - Protocol version compatibility concerns (v3 ↔ v4 breaking changes)
@@ -107,6 +111,7 @@ For agent communication, we don't need browser compatibility or HTTP fallback. R
 ### 3.3 Redis Adapter Adds Ops Complexity
 
 Even for "simple" clustering, Redis adds:
+
 - Another service to deploy, monitor, and maintain
 - Connection management (Redis connection pools, reconnection)
 - Memory management (Redis eviction policies)
@@ -117,6 +122,7 @@ Even for "simple" clustering, Redis adds:
 ### 3.4 Sticky Sessions Anti-Pattern
 
 The PRD requires sticky sessions on Ingress for Socket.io clustering. Sticky sessions:
+
 - Complicate load balancer configuration
 - Prevent even load distribution
 - Create hot spots if one server gets all the "chatty" agents
@@ -132,27 +138,27 @@ The PRD claims "message ordering guaranteed" (section 10.1). This is only true f
 
 ## 4. Complexity Estimates
 
-| Component | Complexity | Estimate | Dependencies | Notes |
-|:----------|:-----------|:---------|:-------------|:------|
-| **Socket.io server** (or raw WS) | Low | 1-2 days | None | Basic server setup, connection handling |
-| **Presence Manager** | Low-Medium | 1-2 days | Server | Socket.io events + state map |
-| **Direct Message Router** | Medium | 2-3 days | Server, Presence | Routing, ack/retry, dedup |
-| **Group Manager** | Low | 1 day | Server | Socket.io rooms handle most of it |
-| **Auth Module (JWT)** | Medium | 2 days | None | Token gen/validate, middleware |
-| **MCP tool interface** | Medium-High | 3-4 days | Router, Presence | MCP SDK integration, tool definitions |
-| **MCP stdio client** | Medium-High | 3-4 days | MCP tools | Local client bridging to remote server |
-| **File Dumper** | Medium | 2 days | Client | Write JSONL, manage trigger files |
-| **Hook Bridge** | High | 3-5 days | File Dumper | Depends on Claude Code hook research |
-| **Redis Adapter** | Low | 1 day | Server | Mostly config, Socket.io adapter |
-| **K8s manifests** | Low-Medium | 1-2 days | All | Deployment, Service, Ingress |
+| Component                        | Complexity  | Estimate | Dependencies     | Notes                                   |
+| :------------------------------- | :---------- | :------- | :--------------- | :-------------------------------------- |
+| **Socket.io server** (or raw WS) | Low         | 1-2 days | None             | Basic server setup, connection handling |
+| **Presence Manager**             | Low-Medium  | 1-2 days | Server           | Socket.io events + state map            |
+| **Direct Message Router**        | Medium      | 2-3 days | Server, Presence | Routing, ack/retry, dedup               |
+| **Group Manager**                | Low         | 1 day    | Server           | Socket.io rooms handle most of it       |
+| **Auth Module (JWT)**            | Medium      | 2 days   | None             | Token gen/validate, middleware          |
+| **MCP tool interface**           | Medium-High | 3-4 days | Router, Presence | MCP SDK integration, tool definitions   |
+| **MCP stdio client**             | Medium-High | 3-4 days | MCP tools        | Local client bridging to remote server  |
+| **File Dumper**                  | Medium      | 2 days   | Client           | Write JSONL, manage trigger files       |
+| **Hook Bridge**                  | High        | 3-5 days | File Dumper      | Depends on Claude Code hook research    |
+| **Redis Adapter**                | Low         | 1 day    | Server           | Mostly config, Socket.io adapter        |
+| **K8s manifests**                | Low-Medium  | 1-2 days | All              | Deployment, Service, Ingress            |
 
 ### Total Estimates
 
-| Scope | Estimate |
-|:------|:---------|
+| Scope                                                        | Estimate    |
+| :----------------------------------------------------------- | :---------- |
 | **Minimal MVP** (server + direct msg + presence + MCP tools) | 1.5-2 weeks |
-| **Phase 1** (MVP + groups + auth + file dumper) | 3-4 weeks |
-| **Phase 2** (Redis + k8s + history + rate limiting) | 2-3 weeks |
+| **Phase 1** (MVP + groups + auth + file dumper)              | 3-4 weeks   |
+| **Phase 2** (Redis + k8s + history + rate limiting)          | 2-3 weeks   |
 
 ---
 

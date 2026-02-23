@@ -23,6 +23,7 @@ The `--append-system-prompt` argument is fully output — all 4450 chars of the 
 
 **Fix commit**: `3962e7b` — "fix: replace fragile agentFilter heuristic with node:util parseArgs"
 **Tests**:
+
 1. `bun bin/agent-launch.ts software-eng` — filter in default discover mode
 2. `bun bin/agent-launch.ts launch software-eng --team-name test-team` — subcommand + filter + flag
 
@@ -45,11 +46,13 @@ Test 2: Correctly parsed `launch` as subcommand, `software-eng` as agent filter,
 **Result**: **PASS**
 
 Error message now reads:
+
 ```
 ERROR [software-eng.md]: Duplicate agent name 'software-eng': 'software-eng.md' conflicts with already-loaded '_test-dup.md' (keeping '_test-dup.md')
 ```
 
 This explicitly states:
+
 - Which file is being rejected (`software-eng.md`)
 - Which file was already loaded (`_test-dup.md`)
 - Which file is kept (`_test-dup.md`)
@@ -65,7 +68,7 @@ The old message was ambiguous about which file was kept. The new message is unam
 ## Summary
 
 | Defect | Severity | Fix Commit | Test Result |
-|--------|----------|------------|-------------|
+| ------ | -------- | ---------- | ----------- |
 | DEF-1  | HIGH     | `51d0f16`  | **PASS**    |
 | DEF-2  | MEDIUM   | `3962e7b`  | **PASS**    |
 | DEF-3  | MEDIUM   | `1fd5ac1`  | **PASS**    |

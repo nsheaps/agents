@@ -82,19 +82,20 @@ export GIT_AUTHOR_EMAIL="claude-engineer+looney-tunes@noreply.local"
 ```
 
 **Email convention**: `claude-{role}+{team-name}@noreply.local`
+
 - Non-routable domain (`.local`) — won't match any GitHub account
 - Includes role and team name for filtering
 - `noreply` signals this is an automated identity
 
 **What the user sees**:
 
-| Surface | Display |
-|:--------|:--------|
-| `git log` | `Author: Claude Engineer (looney-tunes) <claude-engineer+looney-tunes@noreply.local>` |
-| `git log` | `Commit: Nathan Heaps <nathan@example.com>` |
-| GitHub commit view | Author avatar: generic (no matching account). Committer overlay: user's avatar. |
-| GitHub blame | Shows author name per line |
-| `git log --author="Engineer"` | Filters to only that agent's commits |
+| Surface                       | Display                                                                               |
+| :---------------------------- | :------------------------------------------------------------------------------------ |
+| `git log`                     | `Author: Claude Engineer (looney-tunes) <claude-engineer+looney-tunes@noreply.local>` |
+| `git log`                     | `Commit: Nathan Heaps <nathan@example.com>`                                           |
+| GitHub commit view            | Author avatar: generic (no matching account). Committer overlay: user's avatar.       |
+| GitHub blame                  | Shows author name per line                                                            |
+| `git log --author="Engineer"` | Filters to only that agent's commits                                                  |
 
 **GPG signing**: The committer (user) signs. Since GPG validates the committer identity, verified badges still work. The author can be different.
 
@@ -146,20 +147,22 @@ Token refresh: Installation tokens expire after 1 hour. The orchestrator should 
 
 **What the user sees**:
 
-| Surface | Display |
-|:--------|:--------|
-| PRs/issues | Created by `claude-team[bot]` |
-| API commits | Authored by `claude-team[bot]` with **verified** badge |
-| Git CLI commits | Still use Tier 1 (author/committer split) |
+| Surface         | Display                                                |
+| :-------------- | :----------------------------------------------------- |
+| PRs/issues      | Created by `claude-team[bot]`                          |
+| API commits     | Authored by `claude-team[bot]` with **verified** badge |
+| Git CLI commits | Still use Tier 1 (author/committer split)              |
 
 **Per-agent distinction**: Even with a single app, git author/committer split (Tier 1) distinguishes agents in commits. For PRs/issues, include agent identity in the body:
 
 ```markdown
 ## Summary
+
 Implemented login flow with OAuth support.
 
 ---
-*Created by Claude Engineer (looney-tunes) via claude-team*
+
+_Created by Claude Engineer (looney-tunes) via claude-team_
 ```
 
 **Cost**: Free (private GitHub Apps have no cost). One-time setup ~15 minutes.
@@ -169,6 +172,7 @@ Implemented login flow with OAuth support.
 **Option A: Multiple GitHub Apps**
 
 Create one GitHub App per agent role:
+
 - `claude-engineer[bot]`
 - `claude-researcher[bot]`
 - `claude-qa[bot]`
@@ -181,6 +185,7 @@ Each has its own PEM key and installation token. PRs/issues/commits are fully at
 **Option B: Machine User Accounts**
 
 Create dedicated GitHub accounts per agent:
+
 - `claude-engineer-bot` (separate email, SSH key, PAT)
 - `claude-researcher-bot`
 
@@ -193,14 +198,14 @@ Create dedicated GitHub accounts per agent:
 
 ### How Existing Tools Compare
 
-| Tool | Identity Model | Why |
-|:-----|:--------------|:----|
-| **Dependabot** | GitHub App → `dependabot[bot]` | First-party app, verified API commits |
-| **Renovate** | GitHub App → `renovate[bot]` | Third-party app, `platformCommit: true` for verified commits |
-| **GitHub Actions** | System account → `github-actions[bot]` | Built-in, uses `GITHUB_TOKEN` |
-| **GitHub Copilot** | Copilot as author, human as co-author | Controversial — users dislike being demoted to co-author |
-| **Claude Code** | Human as author, Claude as co-author | Conservative — preserves human ownership |
-| **Aider** | Human name + `(aider)` suffix | Simple name modification |
+| Tool               | Identity Model                         | Why                                                          |
+| :----------------- | :------------------------------------- | :----------------------------------------------------------- |
+| **Dependabot**     | GitHub App → `dependabot[bot]`         | First-party app, verified API commits                        |
+| **Renovate**       | GitHub App → `renovate[bot]`           | Third-party app, `platformCommit: true` for verified commits |
+| **GitHub Actions** | System account → `github-actions[bot]` | Built-in, uses `GITHUB_TOKEN`                                |
+| **GitHub Copilot** | Copilot as author, human as co-author  | Controversial — users dislike being demoted to co-author     |
+| **Claude Code**    | Human as author, Claude as co-author   | Conservative — preserves human ownership                     |
+| **Aider**          | Human name + `(aider)` suffix          | Simple name modification                                     |
 
 ### User OAuth Analysis
 
@@ -208,7 +213,7 @@ The user asked specifically about user OAuth. Here's the analysis:
 
 **User OAuth tokens** (from OAuth Apps or GitHub App user access tokens) always attribute actions to the user. GitHub tracks which app generated the token internally, but this is NOT surfaced in the UI. There is no `X-Agent-Identity` header or equivalent.
 
-**What this means**: User OAuth is the *least* useful approach for agent identity. It gives you permission scoping (the token has limited scopes) but zero visual attribution. Everything looks like the user did it.
+**What this means**: User OAuth is the _least_ useful approach for agent identity. It gives you permission scoping (the token has limited scopes) but zero visual attribution. Everything looks like the user did it.
 
 **The user OAuth + git author hybrid**: You could use user OAuth for API calls (PRs appear as the user) while using git author/committer split for commits (commits show agent identity). This preserves the user's contribution graph (green squares) and works with existing branch protection rules.
 
@@ -234,6 +239,7 @@ spawn_agent() {
 ```
 
 Add to the orchestrator's `--append-system-prompt`:
+
 ```
 Each agent has a distinct git identity. Commits will show the agent's role as the author.
 Do NOT override GIT_AUTHOR_NAME or GIT_AUTHOR_EMAIL in your commits.

@@ -160,14 +160,14 @@ Errors are pushed as plain strings to arrays or thrown as generic Error objects.
 
 ## Pattern Observations
 
-| Pattern | Quality | Notes |
-|---------|---------|-------|
-| Module separation | Good | Clean split: types → discover → prompt → spawn → lifecycle → CLI |
-| Error handling | Adequate | Errors collected in arrays, returned to caller. No silent swallowing. |
-| TypeScript usage | Good | Proper interfaces, union types for enums, no `any` usage found |
-| Test organization | Good structure, incomplete coverage | Fixtures well-organized, but only 2/5 modules tested |
-| CLI arg parsing | Adequate | Uses `node:util` parseArgs — works but limited compared to yargs/commander |
-| Dependency hygiene | Excellent | 1 runtime dep (gray-matter), all devDeps are tooling |
+| Pattern            | Quality                             | Notes                                                                      |
+| ------------------ | ----------------------------------- | -------------------------------------------------------------------------- |
+| Module separation  | Good                                | Clean split: types → discover → prompt → spawn → lifecycle → CLI           |
+| Error handling     | Adequate                            | Errors collected in arrays, returned to caller. No silent swallowing.      |
+| TypeScript usage   | Good                                | Proper interfaces, union types for enums, no `any` usage found             |
+| Test organization  | Good structure, incomplete coverage | Fixtures well-organized, but only 2/5 modules tested                       |
+| CLI arg parsing    | Adequate                            | Uses `node:util` parseArgs — works but limited compared to yargs/commander |
+| Dependency hygiene | Excellent                           | 1 runtime dep (gray-matter), all devDeps are tooling                       |
 
 ---
 

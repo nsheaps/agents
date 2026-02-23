@@ -17,12 +17,12 @@ When marking a task as completed, the completion message **must** include concre
 
 If a task involves code or file changes, the completion message MUST include at least one of:
 
-| Evidence Type | Example |
-|:-------------|:--------|
-| Commit hash | `Committed as abc1234` |
+| Evidence Type | Example                                 |
+| :------------ | :-------------------------------------- |
+| Commit hash   | `Committed as abc1234`                  |
 | Artifact path | `Report saved to .claude/tmp/review.md` |
-| PR link | `PR #42 created` |
-| File + line | `Fixed in src/lifecycle.ts:47` |
+| PR link       | `PR #42 created`                        |
+| File + line   | `Fixed in src/lifecycle.ts:47`          |
 
 **No evidence = not done.** Do not mark the task complete. Instead, go back and verify the change landed.
 
@@ -30,12 +30,12 @@ If a task involves code or file changes, the completion message MUST include at 
 
 If the task involves a PR (creating, reviewing, or declaring "ready to merge"), the completion message MUST also include CI status:
 
-| CI State | What to report | Can you declare ready? |
-|:---------|:---------------|:----------------------|
-| All checks passing | `CI green — gh pr checks #42 all passing` | Yes |
-| Checks pending | `CI pending — waiting on [check name]` | No — wait |
-| Checks failing | `CI failing — [check name] failed` | No — fix first |
-| No checks configured | `No CI checks on this repo` | Yes (note it) |
+| CI State             | What to report                            | Can you declare ready? |
+| :------------------- | :---------------------------------------- | :--------------------- |
+| All checks passing   | `CI green — gh pr checks #42 all passing` | Yes                    |
+| Checks pending       | `CI pending — waiting on [check name]`    | No — wait              |
+| Checks failing       | `CI failing — [check name] failed`        | No — fix first         |
+| No checks configured | `No CI checks on this repo`               | Yes (note it)          |
 
 **CI green is a prerequisite for "ready to merge."** Code review approval alone is not sufficient. Run `gh pr checks <number>` and include the result. If CI is failing or pending, the PR is not ready regardless of code quality.
 
@@ -57,12 +57,12 @@ If the task involves a PR (creating, reviewing, or declaring "ready to merge"), 
 
 ## Anti-Patterns
 
-| Bad | Why | Good |
-|:----|:----|:-----|
-| "Done!" | No evidence | "Done — committed as `d9370f8`, pushed to main" |
-| "Fixed the bug" | No proof it's fixed | "Fixed in `src/lifecycle.ts:47`, commit `a1b2c3d`" |
-| "Created the report" | Where? | "Report saved to `.claude/tmp/swarm-review-coach.md`" |
-| "Task complete" | Assertion without proof | "Task complete. PR #42 merged, commit `e4963db`" |
+| Bad                  | Why                     | Good                                                  |
+| :------------------- | :---------------------- | :---------------------------------------------------- |
+| "Done!"              | No evidence             | "Done — committed as `d9370f8`, pushed to main"       |
+| "Fixed the bug"      | No proof it's fixed     | "Fixed in `src/lifecycle.ts:47`, commit `a1b2c3d`"    |
+| "Created the report" | Where?                  | "Report saved to `.claude/tmp/swarm-review-coach.md`" |
+| "Task complete"      | Assertion without proof | "Task complete. PR #42 merged, commit `e4963db`"      |
 
 ## Edge Cases
 

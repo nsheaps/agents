@@ -11,6 +11,7 @@ CCS is a **CLI profile manager and account switcher** for Claude Code and other 
 ## What CCS Actually Is
 
 **Architecture**: Three layers —
+
 1. **Profile management** — isolated configs per account in `~/.ccs/`, uses symlinks to swap credential directories
 2. **OAuth proxy integration** — leverages CLIProxyAPI for browser-authenticated providers (Gemini, Copilot, etc.)
 3. **CLI wrapper** — intercepts Claude CLI commands and routes through selected profiles
@@ -21,16 +22,16 @@ CCS is a **CLI profile manager and account switcher** for Claude Code and other 
 
 ## Technical Profile
 
-| Attribute | Value |
-|:----------|:------|
-| Language | TypeScript/Node.js |
-| Install | `bun add -g @kaitranntt/ccs` |
-| License | MIT |
-| GitHub stars | ~1.1k |
-| Forks | ~93 |
-| Commits | 2,039+ on main |
-| Maintenance | Active, recent updates |
-| Dashboard | localhost:3000 web UI |
+| Attribute    | Value                        |
+| :----------- | :--------------------------- |
+| Language     | TypeScript/Node.js           |
+| Install      | `bun add -g @kaitranntt/ccs` |
+| License      | MIT                          |
+| GitHub stars | ~1.1k                        |
+| Forks        | ~93                          |
+| Commits      | 2,039+ on main               |
+| Maintenance  | Active, recent updates       |
+| Dashboard    | localhost:3000 web UI        |
 
 ## Relevance to agent-team Project
 
@@ -56,12 +57,12 @@ CCS's "model delegation" (using cheaper models for routine tasks) sounds superfi
 
 ## Confidence Levels
 
-| Finding | Confidence |
-|:--------|:-----------|
-| CCS is a profile/account switcher | High |
-| Low relevance to agent-team orchestration | High |
-| Per-agent identity overlap is tangential | Medium |
-| Model routing is not applicable | High |
+| Finding                                   | Confidence |
+| :---------------------------------------- | :--------- |
+| CCS is a profile/account switcher         | High       |
+| Low relevance to agent-team orchestration | High       |
+| Per-agent identity overlap is tangential  | Medium     |
+| Model routing is not applicable           | High       |
 
 ## Sources
 

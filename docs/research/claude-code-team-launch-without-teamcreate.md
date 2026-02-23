@@ -18,19 +18,19 @@
 
 The full `claude --help` output was examined. The following flags are relevant to teams, sessions, and agent configuration:
 
-| Flag | Relevant? | Can Join a Team? | Notes |
-|------|-----------|------------------|-------|
-| `--resume <session-id>` / `-r` | Partially | No | Resumes a session by ID, but does NOT restore team membership for teammates [^1] |
-| `--continue` / `-c` | Partially | No | Continues most recent conversation; same limitation as `--resume` |
-| `--session-id <uuid>` | No | No | Sets a specific session UUID, not team membership |
-| `--agent <agent>` | No | No | Selects a pre-defined agent definition, not team membership |
-| `--agents <json>` | No | No | Defines custom subagents (NOT teammates) via inline JSON |
-| `--teammate-mode <mode>` | No | No | Controls display mode (`in-process`, `tmux`, `auto`), not team membership |
-| `--system-prompt <text>` | No | No | Replaces system prompt; cannot inject team context |
-| `--append-system-prompt <text>` | No | No | Appends to system prompt; cannot inject team context |
-| `--fork-session` | No | No | Creates new session ID when resuming; no team awareness |
-| `--from-pr [value]` | No | No | Resumes session linked to a PR |
-| `--settings <file-or-json>` | No | No | Loads additional settings; no team-related settings exist |
+| Flag                            | Relevant? | Can Join a Team? | Notes                                                                            |
+| ------------------------------- | --------- | ---------------- | -------------------------------------------------------------------------------- |
+| `--resume <session-id>` / `-r`  | Partially | No               | Resumes a session by ID, but does NOT restore team membership for teammates [^1] |
+| `--continue` / `-c`             | Partially | No               | Continues most recent conversation; same limitation as `--resume`                |
+| `--session-id <uuid>`           | No        | No               | Sets a specific session UUID, not team membership                                |
+| `--agent <agent>`               | No        | No               | Selects a pre-defined agent definition, not team membership                      |
+| `--agents <json>`               | No        | No               | Defines custom subagents (NOT teammates) via inline JSON                         |
+| `--teammate-mode <mode>`        | No        | No               | Controls display mode (`in-process`, `tmux`, `auto`), not team membership        |
+| `--system-prompt <text>`        | No        | No               | Replaces system prompt; cannot inject team context                               |
+| `--append-system-prompt <text>` | No        | No               | Appends to system prompt; cannot inject team context                             |
+| `--fork-session`                | No        | No               | Creates new session ID when resuming; no team awareness                          |
+| `--from-pr [value]`             | No        | No               | Resumes session linked to a PR                                                   |
+| `--settings <file-or-json>`     | No        | No               | Loads additional settings; no team-related settings exist                        |
 
 **No `--team`, `--join-team`, or `--team-name` flag exists.** [^2]
 
@@ -38,12 +38,12 @@ The full `claude --help` output was examined. The following flags are relevant t
 
 Currently set Claude-related environment variables:
 
-| Variable | Value | Team-Related? |
-|----------|-------|---------------|
-| `CLAUDECODE` | `1` | No (indicates running inside Claude Code) |
-| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `1` | Enables team feature, but does not set team context |
-| `CLAUDE_CODE_ENTRYPOINT` | `cli` | No |
-| `CLAUDE_CODE_ENABLE_TELEMETRY` | `1` | No |
+| Variable                               | Value | Team-Related?                                       |
+| -------------------------------------- | ----- | --------------------------------------------------- |
+| `CLAUDECODE`                           | `1`   | No (indicates running inside Claude Code)           |
+| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | `1`   | Enables team feature, but does not set team context |
+| `CLAUDE_CODE_ENTRYPOINT`               | `cli` | No                                                  |
+| `CLAUDE_CODE_ENABLE_TELEMETRY`         | `1`   | No                                                  |
 
 No `CLAUDE_TEAM`, `CLAUDE_TEAM_NAME`, or similar environment variable exists to pre-set team membership.
 
@@ -64,11 +64,11 @@ No `CLAUDE_TEAM`, `CLAUDE_TEAM_NAME`, or similar environment variable exists to 
 
 ```jsonc
 {
-  "name": "string",              // Team name (directory key)
-  "description": "string",      // Human-readable description
-  "createdAt": 1771220251471,   // Epoch milliseconds
-  "leadAgentId": "string",      // Format: "{name}@{team-name}"
-  "leadSessionId": "string",    // UUID of the lead's Claude Code session
+  "name": "string", // Team name (directory key)
+  "description": "string", // Human-readable description
+  "createdAt": 1771220251471, // Epoch milliseconds
+  "leadAgentId": "string", // Format: "{name}@{team-name}"
+  "leadSessionId": "string", // UUID of the lead's Claude Code session
   "members": [
     // Lead member (minimal):
     {
@@ -79,25 +79,25 @@ No `CLAUDE_TEAM`, `CLAUDE_TEAM_NAME`, or similar environment variable exists to 
       "joinedAt": 1771220251471,
       "tmuxPaneId": "",
       "cwd": "/path/to/working/dir",
-      "subscriptions": []
+      "subscriptions": [],
     },
     // Teammate member (full):
     {
       "agentId": "{display-name}@{team-name}",
       "name": "{display-name}",
-      "agentType": "general-purpose",  // or agent definition name
+      "agentType": "general-purpose", // or agent definition name
       "model": "claude-opus-4-6",
       "prompt": "Full system prompt...",
       "color": "blue",
       "planModeRequired": false,
       "joinedAt": 1771220256244,
-      "tmuxPaneId": "%6",             // tmux pane ID
+      "tmuxPaneId": "%6", // tmux pane ID
       "cwd": "/path/to/working/dir",
       "subscriptions": [],
-      "backendType": "tmux",          // "tmux" or "in-process"
-      "isActive": false               // Whether currently running
-    }
-  ]
+      "backendType": "tmux", // "tmux" or "in-process"
+      "isActive": false, // Whether currently running
+    },
+  ],
 }
 ```
 
@@ -154,11 +154,13 @@ The official docs explicitly state [^1]:
 > `/resume` and `/rewind` do not restore in-process teammates. After resuming a session, the lead may attempt to message teammates that no longer exist. If this happens, tell the lead to spawn new teammates.
 
 **What `--resume` DOES restore:**
+
 - The lead's conversation history
 - The `teamName` in session state (the lead "remembers" it was in a team)
 - The lead's awareness of team config at `~/.claude/teams/{team-name}/config.json`
 
 **What `--resume` does NOT restore:**
+
 - Teammate processes (they are gone)
 - Inbox polling for teammates
 - Active tmux panes for teammates
@@ -175,6 +177,7 @@ The Claude Agent SDK (Python/TypeScript) provides programmatic access to Claude 
 ### No Team API in the Agent SDK
 
 The Agent SDK `ClaudeAgentOptions` class supports [^3]:
+
 - `allowed_tools`, `permission_mode`, `model`
 - `agents` (for subagents, NOT teammates)
 - `resume` (session ID for resumption)
@@ -187,6 +190,7 @@ There is **no `team` or `team_name` option** in `ClaudeAgentOptions`. The Agent 
 ### Potential Workaround via Agent SDK
 
 The Agent SDK supports `resume` with a session ID. If you:
+
 1. Create a team using Claude Code CLI (or via Agent SDK `query()` with a prompt that says "create a team")
 2. Capture the lead's session ID
 3. Later use `query(options=ClaudeAgentOptions(resume=session_id))` to resume
@@ -202,6 +206,7 @@ The Agent SDK supports `resume` with a session ID. If you:
 **Feasibility: Low**
 
 You could write `~/.claude/teams/{team-name}/config.json` before launching Claude Code, but:
+
 - The session won't detect it (no startup scan for team files)
 - `leadSessionId` can't be set correctly (unknown until session starts)
 - Even if you somehow set it, the internal session state won't have `teamName` set
@@ -212,12 +217,14 @@ You could write `~/.claude/teams/{team-name}/config.json` before launching Claud
 **Feasibility: Medium (with caveats)**
 
 This is the closest thing to "launching into a team context":
+
 1. In a prior session, create a team via `TeamCreate`
 2. Record the lead's session ID
 3. Later: `claude --resume <session-id>`
 4. The lead resumes with team context and can spawn new teammates
 
 **Limitations:**
+
 - Previous teammates are NOT restored
 - The lead must re-spawn any needed teammates
 - If the team was cleaned up (`TeamCleanup`), the config.json is gone and team context is lost
@@ -239,11 +246,13 @@ This works but still requires `TeamCreate` to run -- it just automates the instr
 **Feasibility: High (for read/write), Low (for full team participation)**
 
 Per the team-storage-internals research [^5], the file-based architecture allows external processes to:
+
 - Read team state from config.json
 - Write messages to agent inbox files
 - Manage task files (with `.lock` acquisition)
 
 However, an external process CANNOT:
+
 - Register itself as a team member that Claude Code recognizes
 - Receive messages via the inbox polling mechanism (that's internal to Claude Code)
 - Use team tools like SendMessage

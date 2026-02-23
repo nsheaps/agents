@@ -59,7 +59,7 @@ When an agent dies without proper shutdown (crash, disconnect, tmux pane killed 
 4. **Do NOT manually edit config.json.** Instead:
    - Try sending a `shutdown_request` — if the agent is truly dead, this will fail silently but won't corrupt config.
    - If the agent can't be reached and config shows `isActive: true`, ask the team lead to coordinate cleanup.
-4. **Team lead cleanup procedure:**
+5. **Team lead cleanup procedure:**
    - Verify the agent is actually dead (check tmux panes, check for recent messages)
    - Use the launcher's cleanup command (`cleanupStaleEntries`) — it checks tmux pane liveness and removes dead entries automatically
 

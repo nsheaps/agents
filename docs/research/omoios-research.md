@@ -11,6 +11,7 @@ OmoiOS is a **spec-driven multi-agent orchestration platform** for autonomous so
 ## What OmoiOS Is
 
 A full-stack platform (FastAPI backend + Next.js frontend) that automates software development by:
+
 1. Reading your codebase and generating specifications
 2. Breaking specs into tasks with dependency graphs (DAGs)
 3. Spawning isolated agent workspaces (via Daytona containers)
@@ -24,11 +25,11 @@ A full-stack platform (FastAPI backend + Next.js frontend) that automates softwa
 
 ### Three-Layer Stack
 
-| Layer | Technology | Scale |
-|:------|:-----------|:------|
-| Frontend | Next.js 15, React Flow, WebSocket | ~94 pages, 140+ components |
-| Backend | FastAPI, SQLAlchemy 2.0, Taskiq | ~100 service modules, 61 models, 39 routes |
-| Infrastructure | PostgreSQL 16 + pgvector, Redis 7, Daytona | Containerized sandboxes per agent |
+| Layer          | Technology                                 | Scale                                      |
+| :------------- | :----------------------------------------- | :----------------------------------------- |
+| Frontend       | Next.js 15, React Flow, WebSocket          | ~94 pages, 140+ components                 |
+| Backend        | FastAPI, SQLAlchemy 2.0, Taskiq            | ~100 service modules, 61 models, 39 routes |
+| Infrastructure | PostgreSQL 16 + pgvector, Redis 7, Daytona | Containerized sandboxes per agent          |
 
 ### Core Patterns
 
@@ -67,30 +68,33 @@ A dedicated service handles merging work from multiple agents back into the main
 
 ## Key Differences: OmoiOS vs. agent-team
 
-| Dimension | OmoiOS | agent-team |
-|:----------|:-------|:-----------|
-| Scope | Full dev platform (frontend + backend + infra) | CLI orchestration tooling |
-| Scale | 100+ service modules, 61 DB models | Single launcher script + agent configs |
-| Isolation | Container-per-agent (Daytona) | tmux pane-per-agent (shared FS) |
-| Scheduling | Automated DAG with critical path | Manual task assignment with blockedBy |
-| Supervision | Real-time Guardian (60s interval) | Reactive AI Agent Eng (message-based) |
-| LLM | Claude Agent SDK | Claude Code CLI |
-| State | PostgreSQL + Redis | Team config JSON + task files |
-| Status | 16 stars, 695 commits, Apache 2.0 | In development |
+| Dimension   | OmoiOS                                         | agent-team                             |
+| :---------- | :--------------------------------------------- | :------------------------------------- |
+| Scope       | Full dev platform (frontend + backend + infra) | CLI orchestration tooling              |
+| Scale       | 100+ service modules, 61 DB models             | Single launcher script + agent configs |
+| Isolation   | Container-per-agent (Daytona)                  | tmux pane-per-agent (shared FS)        |
+| Scheduling  | Automated DAG with critical path               | Manual task assignment with blockedBy  |
+| Supervision | Real-time Guardian (60s interval)              | Reactive AI Agent Eng (message-based)  |
+| LLM         | Claude Agent SDK                               | Claude Code CLI                        |
+| State       | PostgreSQL + Redis                             | Team config JSON + task files          |
+| Status      | 16 stars, 695 commits, Apache 2.0              | In development                         |
 
 ## What agent-team Should Learn From OmoiOS
 
 ### Adopt (adapt to agent-team's scale)
+
 1. **Quality gates between phases** — even informal "human approves before agents execute" checkpoints
 2. **Formalized merge strategy** — as the team grows, ad-hoc branch sharing won't scale
 3. **Task dependency visualization** — even a simple DAG printout would help
 
 ### Study Further
+
 1. **IntelligentGuardian pattern** — proactive drift detection is powerful but complex
 2. **Spec state machine** — could improve task quality if adapted as a lightweight skill
 3. **Daytona integration** — container isolation may be worth exploring for the agent-team project's longer-term vision (see `docs/research-topics.md` re: separate environments)
 
 ### Skip
+
 1. **Full-stack platform** — agent-team is CLI tooling, not a web app
 2. **PostgreSQL/Redis persistence** — agent-team's file-based approach is appropriate for its scale
 3. **61 SQLAlchemy models** — way too much infrastructure for orchestration tooling
@@ -103,14 +107,14 @@ A dedicated service handles merging work from multiple agents back into the main
 
 ## Confidence Levels
 
-| Finding | Confidence |
-|:--------|:-----------|
-| OmoiOS is a full-stack agent orchestration platform | High |
-| DAG-based scheduling validates agent-team's blockedBy approach | High |
-| Container isolation is a meaningful gap in agent-team | Medium-High |
-| Guardian pattern is worth studying for proactive supervision | Medium |
-| Agent-team should NOT adopt OmoiOS's full-stack approach | High |
-| Convergence merge is an underinvested area for agent-team | Medium-High |
+| Finding                                                        | Confidence  |
+| :------------------------------------------------------------- | :---------- |
+| OmoiOS is a full-stack agent orchestration platform            | High        |
+| DAG-based scheduling validates agent-team's blockedBy approach | High        |
+| Container isolation is a meaningful gap in agent-team          | Medium-High |
+| Guardian pattern is worth studying for proactive supervision   | Medium      |
+| Agent-team should NOT adopt OmoiOS's full-stack approach       | High        |
+| Convergence merge is an underinvested area for agent-team      | Medium-High |
 
 ## Sources
 

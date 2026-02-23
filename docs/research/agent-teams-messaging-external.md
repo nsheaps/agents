@@ -64,6 +64,7 @@ Source: [Piebald-AI system prompt extraction -- SendMessageTool](https://github.
 ### 1.4 type: "shutdown_response"
 
 **Approve:**
+
 ```json
 {
   "type": "shutdown_response",
@@ -73,6 +74,7 @@ Source: [Piebald-AI system prompt extraction -- SendMessageTool](https://github.
 ```
 
 **Reject:**
+
 ```json
 {
   "type": "shutdown_response",
@@ -88,6 +90,7 @@ Source: [Piebald-AI system prompt extraction -- SendMessageTool](https://github.
 ### 1.5 type: "plan_approval_response"
 
 **Approve:**
+
 ```json
 {
   "type": "plan_approval_response",
@@ -98,6 +101,7 @@ Source: [Piebald-AI system prompt extraction -- SendMessageTool](https://github.
 ```
 
 **Reject:**
+
 ```json
 {
   "type": "plan_approval_response",
@@ -118,13 +122,13 @@ There is NO explicit `plan_approval_request` type in the SendMessage tool schema
 
 ### 1.7 Complete List of Message Types
 
-| Type | Direction | Purpose |
-|------|-----------|---------|
-| `message` | Any agent to any agent | Direct 1:1 communication |
-| `broadcast` | Any agent to all teammates | Team-wide announcement |
-| `shutdown_request` | Lead to teammate | Request graceful exit |
-| `shutdown_response` | Teammate to lead | Accept/reject shutdown |
-| `plan_approval_response` | Lead to teammate | Accept/reject plan |
+| Type                     | Direction                  | Purpose                  |
+| ------------------------ | -------------------------- | ------------------------ |
+| `message`                | Any agent to any agent     | Direct 1:1 communication |
+| `broadcast`              | Any agent to all teammates | Team-wide announcement   |
+| `shutdown_request`       | Lead to teammate           | Request graceful exit    |
+| `shutdown_response`      | Teammate to lead           | Accept/reject shutdown   |
+| `plan_approval_response` | Lead to teammate           | Accept/reject plan       |
 
 These are the ONLY five types in the SendMessage tool schema as of v2.1.44.
 
@@ -141,6 +145,7 @@ Messages are stored as JSON files in the filesystem:
 ```
 
 Each agent has their own inbox file. For example:
+
 - `~/.claude/teams/my-project/inboxes/team-lead.json`
 - `~/.claude/teams/my-project/inboxes/researcher.json`
 
@@ -163,6 +168,7 @@ Each inbox file is a JSON array of message objects:
 ```
 
 **Fields**:
+
 - `from`: sender name
 - `text`: message content
 - `summary`: brief preview
@@ -206,6 +212,7 @@ Source: [Piebald-AI TeammateTool description](https://github.com/Piebald-AI/clau
 - **1:all broadcasts** (`type: "broadcast"`)
 
 There are no:
+
 - Named rooms or channels
 - Group conversations with subset membership
 - Topic-based routing
@@ -215,6 +222,7 @@ There are no:
 The only way to communicate with a subset of teammates is to send individual `message` calls to each one. Broadcast is all-or-nothing.
 
 The coordination topology is:
+
 - **Hub-and-spoke** for task management (lead creates/assigns tasks)
 - **Mesh** for messaging (any teammate can message any other teammate directly)
 - In practice, most communication flows through the lead, but peer-to-peer DMs are supported
@@ -264,12 +272,12 @@ Tasks are JSON files with status tracking, ownership, and dependency management.
 
 The most commonly reported bug. Multiple variations:
 
-| Issue | Description | Status |
-|-------|-------------|--------|
-| [#23415](https://github.com/anthropics/claude-code/issues/23415) | Teammates don't poll inbox in tmux mode on macOS | Open |
-| [#24108](https://github.com/anthropics/claude-code/issues/24108) | Teammates stuck at idle, mailbox never polled | Open |
-| [#24771](https://github.com/anthropics/claude-code/issues/24771) | Split panes open but teammates disconnected from messaging | Open |
-| [#25254](https://github.com/anthropics/claude-code/issues/25254) | Messages not delivered in VS Code extension | Open |
+| Issue                                                            | Description                                                | Status |
+| ---------------------------------------------------------------- | ---------------------------------------------------------- | ------ |
+| [#23415](https://github.com/anthropics/claude-code/issues/23415) | Teammates don't poll inbox in tmux mode on macOS           | Open   |
+| [#24108](https://github.com/anthropics/claude-code/issues/24108) | Teammates stuck at idle, mailbox never polled              | Open   |
+| [#24771](https://github.com/anthropics/claude-code/issues/24771) | Split panes open but teammates disconnected from messaging | Open   |
+| [#25254](https://github.com/anthropics/claude-code/issues/25254) | Messages not delivered in VS Code extension                | Open   |
 
 **Root cause (from debug logs)**: The `TeammateMailbox.readMailbox()` polling loop doesn't reinitialize when resuming a session with an existing team. The polling starts during initial team creation but never restarts after session end/resume.
 
@@ -286,6 +294,7 @@ Source: [Issue #23415 comment by ianterrell](https://github.com/anthropics/claud
 ### 5.3 Zombie Agents
 
 Teammates can persist as zombie processes (0 tokens, 0 tool uses) that:
+
 - Never receive their prompts
 - Survive session compaction
 - Cannot be shut down via SendMessage (messages go undelivered)
@@ -308,15 +317,16 @@ Source: [Issue #23415 comment by oskarmodig](https://github.com/anthropics/claud
 
 Three system prompt files govern teammate communication:
 
-| File | Tokens | Purpose |
-|------|--------|---------|
-| `system-prompt-teammate-communication.md` | ~127 | Core instruction: use SendMessage, text is invisible |
-| `system-reminder-team-coordination.md` | ~247 | Team coordination reminders |
-| `system-reminder-team-shutdown.md` | ~136 | Shutdown protocol instructions |
+| File                                      | Tokens | Purpose                                              |
+| ----------------------------------------- | ------ | ---------------------------------------------------- |
+| `system-prompt-teammate-communication.md` | ~127   | Core instruction: use SendMessage, text is invisible |
+| `system-reminder-team-coordination.md`    | ~247   | Team coordination reminders                          |
+| `system-reminder-team-shutdown.md`        | ~136   | Shutdown protocol instructions                       |
 
 Full text of the teammate communication prompt:
 
 > IMPORTANT: You are running as an agent in a team. To communicate with anyone on your team:
+>
 > - Use the SendMessage tool with type `message` to send messages to specific teammates
 > - Use the SendMessage tool with type `broadcast` sparingly for team-wide announcements
 >
@@ -330,11 +340,11 @@ Source: [Piebald-AI teammate-communication prompt](https://github.com/Piebald-AI
 
 ## 7. Evolution of the Messaging System (from CHANGELOG)
 
-| Version | Change |
-|---------|--------|
-| v2.1.20 | Added SendMessageTool and teammate communication system prompt. Removed broadcast from TeammateTool operations. |
+| Version | Change                                                                                                                                                                                                                                           |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| v2.1.20 | Added SendMessageTool and teammate communication system prompt. Removed broadcast from TeammateTool operations.                                                                                                                                  |
 | v2.1.30 | **Major restructure**: Flattened protocol to use specific types (`shutdown_request`, `shutdown_response`, `plan_approval_response`). Added required `summary` field for `message` and `broadcast`. Removed nested request/response architecture. |
-| v2.1.32 | Removed structured JSON status message requirement for teammates. Added automatic message delivery note. Simplified TeammateTool to core team management. |
+| v2.1.32 | Removed structured JSON status message requirement for teammates. Added automatic message delivery note. Simplified TeammateTool to core team management.                                                                                        |
 
 Source: [Piebald-AI CHANGELOG](https://github.com/Piebald-AI/claude-code-system-prompts/blob/main/CHANGELOG.md)
 
@@ -349,9 +359,11 @@ When teammate A DMs teammate B, the lead receives a brief summary of the DM as p
 ### 8.2 Message Injection Format
 
 Messages are injected into conversations using XML-style markup:
+
 ```
 <teammate-message teammate_id="[agent_id]">message content</teammate-message>
 ```
+
 This is not documented anywhere official; it was reverse-engineered from logs.
 
 ### 8.3 Queued Delivery During Active Turns
@@ -370,13 +382,13 @@ The official `claude-code-teams-mcp` reimplementation enforces a restriction tha
 
 ## 9. Comparison: Native vs. MCP Reimplementation
 
-| Feature | Native (Claude Code) | claude-code-teams-mcp |
-|---------|---------------------|----------------------|
-| Inbox storage | `~/.claude/teams/<team>/inboxes/` | Same path convention |
-| Concurrency | File locking (implementation unclear) | `filelock` + atomic `os.replace` |
-| Peer messaging | Any-to-any (mesh) | Lead-only (hub-and-spoke) |
-| Broadcast | Lead can broadcast to all | Lead-only broadcast |
-| Message types | 5 types (message, broadcast, shutdown_*, plan_approval_*) | DM, broadcast, shutdown, plan responses |
+| Feature        | Native (Claude Code)                                        | claude-code-teams-mcp                   |
+| -------------- | ----------------------------------------------------------- | --------------------------------------- |
+| Inbox storage  | `~/.claude/teams/<team>/inboxes/`                           | Same path convention                    |
+| Concurrency    | File locking (implementation unclear)                       | `filelock` + atomic `os.replace`        |
+| Peer messaging | Any-to-any (mesh)                                           | Lead-only (hub-and-spoke)               |
+| Broadcast      | Lead can broadcast to all                                   | Lead-only broadcast                     |
+| Message types  | 5 types (message, broadcast, shutdown*\*, plan_approval*\*) | DM, broadcast, shutdown, plan responses |
 
 Source: [claude-code-teams-mcp](https://github.com/cs50victor/claude-code-teams-mcp)
 

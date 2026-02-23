@@ -13,6 +13,7 @@ There are **three viable approaches**, each operating at a different layer. The 
 ### Architecture
 
 When running `tmux -CC` (control mode) with iTerm2:
+
 - Each **tmux window** maps to an **iTerm2 tab**
 - Each **tmux pane** within a window maps to an **iTerm2 split pane**
 - iTerm2 subscribes to the tmux control mode protocol and receives `%window-renamed` notifications when window names change
@@ -21,17 +22,18 @@ When running `tmux -CC` (control mode) with iTerm2:
 
 tmux has three distinct naming concepts:
 
-| Concept | Set By | Shown In | Relevant To Us |
-|:--------|:-------|:---------|:---------------|
-| **Window name** | `tmux rename-window` or `automatic-rename` | iTerm2 tab title | **YES** — this is what the user sees as the tab label |
-| **Pane title** | `select-pane -T` or `printf '\033]2;title\007'` | Per-pane title bar (if enabled in iTerm2 → Preferences → Appearance → Panes) | Useful if multiple panes per window |
-| **Terminal title** | `set-titles` + `set-titles-string` | iTerm2 window title bar | Less relevant — only affects the overall window |
+| Concept            | Set By                                          | Shown In                                                                     | Relevant To Us                                        |
+| :----------------- | :---------------------------------------------- | :--------------------------------------------------------------------------- | :---------------------------------------------------- |
+| **Window name**    | `tmux rename-window` or `automatic-rename`      | iTerm2 tab title                                                             | **YES** — this is what the user sees as the tab label |
+| **Pane title**     | `select-pane -T` or `printf '\033]2;title\007'` | Per-pane title bar (if enabled in iTerm2 → Preferences → Appearance → Panes) | Useful if multiple panes per window                   |
+| **Terminal title** | `set-titles` + `set-titles-string`              | iTerm2 window title bar                                                      | Less relevant — only affects the overall window       |
 
 **Confidence**: High — verified from [iTerm2 tmux docs](https://iterm2.com/documentation-tmux-integration.html), [tmux Control Mode wiki](https://github.com/tmux/tmux/wiki/Control-Mode), and [tmux Advanced Use wiki](https://github.com/tmux/tmux/wiki/Advanced-Use).
 
 ### iTerm2 tmux Title Configuration
 
 For iTerm2 3.3.0+ with tmux 2.9+, add to `~/.tmux.conf`:
+
 ```
 set-option -g set-titles on
 set-option -g set-titles-string '#T'
@@ -51,6 +53,7 @@ set-option -g set-titles-string '#T'
 4. There is **no evidence** that Claude Code sets pane titles or window names when spawning teammates
 
 ### Known Issues
+
 - Pane splitting corrupts `send-keys` at scale ([#23615](https://github.com/anthropics/claude-code/issues/23615))
 - Feature requests exist for spawning in separate windows instead of panes ([#25396](https://github.com/anthropics/claude-code/issues/25396), [#23615](https://github.com/anthropics/claude-code/issues/23615))
 - The tab title currently shows whatever the shell or Claude Code process sets as the terminal title — usually a summary of the running command
@@ -60,6 +63,7 @@ set-option -g set-titles-string '#T'
 ### What Environment Variables Are Available
 
 From the [hooks documentation](https://code.claude.com/docs/en/hooks):
+
 - `TeammateIdle` hooks receive `teammate_name` and `team_name`
 - `TaskCompleted` hooks receive `teammate_name` and `team_name`
 - `SessionStart` hooks receive `session_id`, `source`, `model`, and optionally `agent_type`
@@ -76,6 +80,7 @@ However, from the [agent teams docs](https://code.claude.com/docs/en/agent-teams
 Use a `SessionStart` hook to rename the tmux window/pane when each agent starts.
 
 **How it works:**
+
 ```json
 {
   "hooks": {
@@ -95,6 +100,7 @@ Use a `SessionStart` hook to rename the tmux window/pane when each agent starts.
 ```
 
 **Hook script** (`.claude/hooks/set-pane-title.sh`):
+
 ```bash
 #!/bin/bash
 # Read hook input to get agent_type
@@ -117,12 +123,14 @@ exit 0
 ```
 
 **Pros:**
+
 - Works today, no Claude Code changes needed
 - Runs automatically when each agent starts
 - Uses official hook system
 - Simple (~10 lines of shell)
 
 **Cons:**
+
 - `agent_type` in SessionStart input may not contain the display name — it may be the agent type slug (e.g., `deep-researcher` not `Road R (researcher)`)
 - `CLAUDE_CODE_AGENT_NAME` availability in the hook environment is not 100% confirmed
 - If Claude Code or the shell sets the terminal title after the hook runs, it could override the name
@@ -134,19 +142,24 @@ exit 0
 
 Have each agent run `tmux rename-window` as its first action via a behavior doc or system prompt instruction.
 
-```markdown
+````markdown
 ## Session Start Behavior
+
 When you start a session, immediately run:
+
 ```bash
 tmux rename-window "Road R (researcher)" && tmux set-window-option automatic-rename off
 ```
+````
 
 **Pros:**
+
 - Fully within agent-team's control
 - Can use the exact display name
 - No hook configuration needed
 
 **Cons:**
+
 - Relies on the agent actually executing the command
 - Adds noise to the agent's transcript
 - The agent could forget or deprioritize it
@@ -165,11 +178,13 @@ tmux select-pane -t "$pane_target" -T "$agent_display_name"
 ```
 
 **Pros:**
+
 - Most reliable — happens at infrastructure level
 - Uses the exact display name from the agent config
 - No dependency on hooks or agent behavior
 
 **Cons:**
+
 - Requires launcher code changes
 - Only applies when using our custom launcher, not native Claude Code `--teammate-mode tmux`
 - Needs to handle the timing correctly (after `split-window` but before the command runs)
@@ -181,10 +196,13 @@ tmux select-pane -t "$pane_target" -T "$agent_display_name"
 ### `automatic-rename` Must Be Disabled
 
 By default, tmux renames windows based on the running command. This will override any title we set. The fix:
+
 ```bash
 tmux set-window-option automatic-rename off
 ```
+
 This must be set per-window after renaming, or globally in `~/.tmux.conf`:
+
 ```
 set-option -g automatic-rename off
 ```
@@ -196,10 +214,12 @@ Claude Code's TUI likely sets the terminal title (OSC escape sequences) as part 
 ### Pane Titles vs Window Names
 
 If teammates are split panes within the same window (current Claude Code behavior):
+
 - `rename-window` changes the tab title for ALL panes in that window — not useful for differentiating
 - `select-pane -T` sets per-pane titles, shown in the pane title bar
 
 If teammates are in separate windows (requested in [#25396](https://github.com/anthropics/claude-code/issues/25396)):
+
 - `rename-window` gives each tab a distinct name — this is the ideal case
 
 **Current recommendation**: Use both `rename-window` (for the tab) and `select-pane -T` (for the pane title bar). When Claude Code switches to per-window spawning, `rename-window` will be the primary mechanism.
@@ -207,6 +227,7 @@ If teammates are in separate windows (requested in [#25396](https://github.com/a
 ### iTerm2 Pane Title Bar
 
 To see per-pane titles in iTerm2:
+
 - iTerm2 → Preferences → Appearance → Panes → Check "Show per-pane title bar with split panes"
 
 This is off by default. Users need to enable it to see pane-level titles when multiple panes share a window.
@@ -223,6 +244,7 @@ This is off by default. Users need to enable it to see pane-level titles when mu
 ### Next (Phase 2): Launcher Integration
 
 When the custom launcher is ready:
+
 1. After `tmux split-window` (or `tmux new-window`), call `tmux rename-window` with the agent's display name
 2. Call `tmux select-pane -T` with the display name
 3. Set `automatic-rename off` on the window
@@ -230,6 +252,7 @@ When the custom launcher is ready:
 ### tmux.conf Prerequisites
 
 Add to `~/.tmux.conf` (or document as a setup requirement):
+
 ```
 # Show tmux titles in iTerm2 tabs
 set-option -g set-titles on
@@ -248,16 +271,16 @@ set-option -g pane-border-format " #{pane_index}: #{pane_title} "
 
 ## Confidence Levels
 
-| Finding | Confidence |
-|:--------|:-----------|
-| iTerm2 tabs reflect tmux window names in -CC mode | High |
-| `tmux rename-window` works in control mode (sends `%window-renamed`) | High |
-| `select-pane -T` sets per-pane titles | High |
-| `automatic-rename off` is needed to preserve titles | High |
-| SessionStart hook can call tmux commands | High |
-| `agent_type` or `CLAUDE_CODE_AGENT_NAME` available in SessionStart | Medium |
-| Claude Code doesn't set pane titles when spawning teammates | Medium-High |
-| Claude Code may override titles via terminal escape sequences | Medium |
+| Finding                                                              | Confidence  |
+| :------------------------------------------------------------------- | :---------- |
+| iTerm2 tabs reflect tmux window names in -CC mode                    | High        |
+| `tmux rename-window` works in control mode (sends `%window-renamed`) | High        |
+| `select-pane -T` sets per-pane titles                                | High        |
+| `automatic-rename off` is needed to preserve titles                  | High        |
+| SessionStart hook can call tmux commands                             | High        |
+| `agent_type` or `CLAUDE_CODE_AGENT_NAME` available in SessionStart   | Medium      |
+| Claude Code doesn't set pane titles when spawning teammates          | Medium-High |
+| Claude Code may override titles via terminal escape sequences        | Medium      |
 
 ## Sources
 

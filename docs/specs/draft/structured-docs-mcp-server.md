@@ -46,13 +46,13 @@ This means: even if the agent never calls the tool, it has seen the critical rul
 
 ### Prior Art
 
-| Project | Approach | Gap |
-|:--------|:---------|:----|
-| [rules-mcp](https://github.com/rules-mcp/rules-mcp) | Markdown + frontmatter, tag filtering, `alwaysApply` | Tools-only (no resources). Descriptions describe the tool, not the rules. |
-| [claude-critical-rules-mcp](https://github.com/optimaquantum/claude-critical-rules-mcp) | Rules in tool descriptions as forcing function | Hardcoded to 21 specific rules, not configurable |
-| [library-mcp](https://github.com/lethain/library-mcp) | Markdown knowledge base, tag/date retrieval | Tools-only. Descriptions describe the tool's function, not the content. |
-| [docs-mcp-server](https://github.com/arabold/docs-mcp-server) | Semantic search over docs from multiple sources | Overkill for internal rules. Requires embedding provider. |
-| [MCPRules](https://github.com/bartwisch/MCPRules) | Category-based programming guidelines | No dual-channel pattern. Tools-only. |
+| Project                                                                                 | Approach                                             | Gap                                                                       |
+| :-------------------------------------------------------------------------------------- | :--------------------------------------------------- | :------------------------------------------------------------------------ |
+| [rules-mcp](https://github.com/rules-mcp/rules-mcp)                                     | Markdown + frontmatter, tag filtering, `alwaysApply` | Tools-only (no resources). Descriptions describe the tool, not the rules. |
+| [claude-critical-rules-mcp](https://github.com/optimaquantum/claude-critical-rules-mcp) | Rules in tool descriptions as forcing function       | Hardcoded to 21 specific rules, not configurable                          |
+| [library-mcp](https://github.com/lethain/library-mcp)                                   | Markdown knowledge base, tag/date retrieval          | Tools-only. Descriptions describe the tool's function, not the content.   |
+| [docs-mcp-server](https://github.com/arabold/docs-mcp-server)                           | Semantic search over docs from multiple sources      | Overkill for internal rules. Requires embedding provider.                 |
+| [MCPRules](https://github.com/bartwisch/MCPRules)                                       | Category-based programming guidelines                | No dual-channel pattern. Tools-only.                                      |
 
 **Key gap**: No existing project puts rule summaries in tool descriptions AND serves full content via resources.
 
@@ -90,13 +90,13 @@ variable defaults. All secrets must be managed through a secrets manager
 
 **Frontmatter fields**:
 
-| Field | Type | Required | Purpose |
-|:------|:-----|:---------|:--------|
-| `tool` | string | Yes | MCP tool name (unique identifier) |
-| `summary` | string (multiline) | Yes | Placed directly in the MCP tool `description`. This is what the agent always sees. |
-| `tags` | string[] | No | For filtering and categorization |
-| `alwaysApply` | boolean | No | If true, full content included in initial context (via a prompt or resource) |
-| `globs` | string[] | No | File patterns this document applies to (e.g., `["**/*.ts"]`) |
+| Field         | Type               | Required | Purpose                                                                            |
+| :------------ | :----------------- | :------- | :--------------------------------------------------------------------------------- |
+| `tool`        | string             | Yes      | MCP tool name (unique identifier)                                                  |
+| `summary`     | string (multiline) | Yes      | Placed directly in the MCP tool `description`. This is what the agent always sees. |
+| `tags`        | string[]           | No       | For filtering and categorization                                                   |
+| `alwaysApply` | boolean            | No       | If true, full content included in initial context (via a prompt or resource)       |
+| `globs`       | string[]           | No       | File patterns this document applies to (e.g., `["**/*.ts"]`)                       |
 
 ### Architecture
 
@@ -147,6 +147,7 @@ variable defaults. All secrets must be managed through a secrets manager
 **Step 1**: Claude Code starts, connects to MCP server, calls `tools/list`.
 
 The response includes:
+
 ```json
 {
   "name": "security-rules",
@@ -158,6 +159,7 @@ The response includes:
 The agent now **always has** the critical security rules visible — even if it never calls the tool. Even with deferred tool loading, the description survives `ToolSearch`.
 
 **Step 2**: When the agent needs the full policy (e.g., before a security-related change), it either:
+
 - Calls `security-rules` tool → gets the full 300-line document as tool output
 - Reads `docs://security-rules/full` resource → same content via resource protocol
 
@@ -186,7 +188,7 @@ The agent now **always has** the critical security rules visible — even if it 
 # config.yaml
 docs_dir: ./rules
 transport: stdio
-watch: true           # re-scan on file changes
+watch: true # re-scan on file changes
 resource_prefix: docs # URI prefix (docs://...)
 ```
 
@@ -206,10 +208,10 @@ resource_prefix: docs # URI prefix (docs://...)
 
 ### Phases
 
-| Phase | Scope | Deliverable |
-|:------|:------|:------------|
-| **v0.1** | Static scanning, tools with summaries in descriptions, resource URIs, stdio | Core dual-channel server |
-| **v0.2** | File watching, `list-documents` with tag/glob filtering, `search-documents` | Discovery and filtering |
+| Phase    | Scope                                                                                | Deliverable              |
+| :------- | :----------------------------------------------------------------------------------- | :----------------------- |
+| **v0.1** | Static scanning, tools with summaries in descriptions, resource URIs, stdio          | Core dual-channel server |
+| **v0.2** | File watching, `list-documents` with tag/glob filtering, `search-documents`          | Discovery and filtering  |
 | **v0.3** | `alwaysApply` documents auto-included via MCP prompts, glob-based contextual loading | Smart context management |
 
 ### Why This Matters for Claude Code Specifically

@@ -41,24 +41,24 @@ The agent-team repository is a well-structured proof-of-concept for declarative 
 
 ## Tech Debt Inventory
 
-| Item | Severity | Location | Description |
-|:-----|:---------|:---------|:------------|
-| Launch does not spawn | Critical | `bin/agent-launch.ts:138-160` | `launch` command prints args but never calls `spawnAgent()`. The tool's primary function is unimplemented. |
-| Health always UNKNOWN | High | `bin/agent-launch.ts:88-118` | `health` subcommand ignores tmux pane tracking. Should use `isTmuxPaneAlive()` like `listAgents()` does. |
-| teamName unused in spawn | High | `src/spawn.ts:27-87` | `buildSpawnArgs()` accepts `teamName` but never includes it in output args or env. Team membership is unaddressed. |
-| No `start` command | High | `bin/agent-launch.ts` | Spec section 10 defines `start` to launch the orchestrator/lead session. Not implemented. |
-| No `--all` batch launch | Medium | `bin/agent-launch.ts` | Spec section 5 defines `launch --all`. Not implemented. |
-| No graceful shutdown | Medium | `src/lifecycle.ts:140-184` | Goes straight to force kill. Spec requires 10s graceful timeout via SendMessage. |
-| `relaunch` uses stale discovery | Medium | `bin/agent-launch.ts:163-196` | Comment says "Re-discover agent (file may have changed)" but reuses the `discoverResult` from line 121, which was computed before the kill. |
-| No `role` field for orchestrator | Medium | `src/types.ts` | `AgentFrontmatter` has no `role` field. Orchestrator identification logic from spec section 9 is missing. |
-| No path traversal protection | Medium | `src/discover.ts:56-148`, `src/prompt.ts:83-89` | `base_prompt` file path from frontmatter is joined to project root without sanitization. A path like `../../etc/passwd` would be read. |
-| Implicit Bun dependency | Medium | `src/lifecycle.ts`, `src/discover.ts` | Uses `Bun.spawnSync()` and `Bun.spawn()` directly. Not abstracted behind an interface. If Bun API changes or someone runs with Node, it breaks with no clear error. |
-| `gray-matter` is the only runtime dep | Low | `package.json` | Single dependency is clean, but the Bun-specific APIs (`Bun.spawnSync`, `Bun.spawn`, `Glob`) create implicit dependencies not tracked in package.json. |
-| Temp directories not cleaned in tests | Low | `src/__tests__/discover.test.ts` | `mkdtempSync` creates temp dirs that are never cleaned up. Not urgent but will accumulate over many test runs. |
-| `--` passthrough not implemented | Low | `bin/agent-launch.ts` | Spec section 10 defines `--` separator for passing extra args to claude CLI. Not implemented. |
-| No `--verbose` flag | Low | `bin/agent-launch.ts` | Spec defines `--verbose` global flag. Not implemented. |
-| No `--project-root` flag | Low | `bin/agent-launch.ts` | Spec defines `--project-root` override. Not in `parseArgs`. |
-| lint task duplicates fmt-check | Low | `mise.toml:12-14` | `lint` and `fmt-check` run identical commands. Lint should include type checking or additional checks. |
+| Item                                  | Severity | Location                                        | Description                                                                                                                                                         |
+| :------------------------------------ | :------- | :---------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Launch does not spawn                 | Critical | `bin/agent-launch.ts:138-160`                   | `launch` command prints args but never calls `spawnAgent()`. The tool's primary function is unimplemented.                                                          |
+| Health always UNKNOWN                 | High     | `bin/agent-launch.ts:88-118`                    | `health` subcommand ignores tmux pane tracking. Should use `isTmuxPaneAlive()` like `listAgents()` does.                                                            |
+| teamName unused in spawn              | High     | `src/spawn.ts:27-87`                            | `buildSpawnArgs()` accepts `teamName` but never includes it in output args or env. Team membership is unaddressed.                                                  |
+| No `start` command                    | High     | `bin/agent-launch.ts`                           | Spec section 10 defines `start` to launch the orchestrator/lead session. Not implemented.                                                                           |
+| No `--all` batch launch               | Medium   | `bin/agent-launch.ts`                           | Spec section 5 defines `launch --all`. Not implemented.                                                                                                             |
+| No graceful shutdown                  | Medium   | `src/lifecycle.ts:140-184`                      | Goes straight to force kill. Spec requires 10s graceful timeout via SendMessage.                                                                                    |
+| `relaunch` uses stale discovery       | Medium   | `bin/agent-launch.ts:163-196`                   | Comment says "Re-discover agent (file may have changed)" but reuses the `discoverResult` from line 121, which was computed before the kill.                         |
+| No `role` field for orchestrator      | Medium   | `src/types.ts`                                  | `AgentFrontmatter` has no `role` field. Orchestrator identification logic from spec section 9 is missing.                                                           |
+| No path traversal protection          | Medium   | `src/discover.ts:56-148`, `src/prompt.ts:83-89` | `base_prompt` file path from frontmatter is joined to project root without sanitization. A path like `../../etc/passwd` would be read.                              |
+| Implicit Bun dependency               | Medium   | `src/lifecycle.ts`, `src/discover.ts`           | Uses `Bun.spawnSync()` and `Bun.spawn()` directly. Not abstracted behind an interface. If Bun API changes or someone runs with Node, it breaks with no clear error. |
+| `gray-matter` is the only runtime dep | Low      | `package.json`                                  | Single dependency is clean, but the Bun-specific APIs (`Bun.spawnSync`, `Bun.spawn`, `Glob`) create implicit dependencies not tracked in package.json.              |
+| Temp directories not cleaned in tests | Low      | `src/__tests__/discover.test.ts`                | `mkdtempSync` creates temp dirs that are never cleaned up. Not urgent but will accumulate over many test runs.                                                      |
+| `--` passthrough not implemented      | Low      | `bin/agent-launch.ts`                           | Spec section 10 defines `--` separator for passing extra args to claude CLI. Not implemented.                                                                       |
+| No `--verbose` flag                   | Low      | `bin/agent-launch.ts`                           | Spec defines `--verbose` global flag. Not implemented.                                                                                                              |
+| No `--project-root` flag              | Low      | `bin/agent-launch.ts`                           | Spec defines `--project-root` override. Not in `parseArgs`.                                                                                                         |
+| lint task duplicates fmt-check        | Low      | `mise.toml:12-14`                               | `lint` and `fmt-check` run identical commands. Lint should include type checking or additional checks.                                                              |
 
 ## Industry Alignment
 
@@ -68,21 +68,23 @@ The agent-team project occupies a unique niche: **declarative agent lifecycle ma
 
 **Closest competitors and how they differ:**
 
-| Tool | Similarity | Key Difference |
-|:-----|:-----------|:---------------|
-| **Claude Flow** (14.1k stars) | tmux orchestration, stage-based pipelines | Self-optimizing; uses RuVector for knowledge graphs. More mature, but Claude-Code-specific and not declarative-config-driven. |
-| **Oh My Claude Code** (6.4k stars) | Multi-agent Claude Code coordination | Web dashboard approach vs CLI; session caching (93% token reduction). Different UX paradigm. |
-| **CrewAI** | Role-based agent teams with delegation | Python framework, not shell-based. Heavier abstraction. Provider-locked to specific LLMs per agent. |
-| **LangGraph** | Graph-based orchestration with state machines | Much more structured; compiles to state machines. Overkill for the "launch/kill/relaunch" lifecycle use case. |
-| **AutoGen** | Conversation-driven multi-agent groups | Microsoft ecosystem. Group chat model vs hierarchical teams. |
-| **OpenHands** | Event-sourced immutable state, pluggable workspaces | Full platform (67.9k stars). Docker-based isolation. Much larger scope. |
+| Tool                               | Similarity                                          | Key Difference                                                                                                                |
+| :--------------------------------- | :-------------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- |
+| **Claude Flow** (14.1k stars)      | tmux orchestration, stage-based pipelines           | Self-optimizing; uses RuVector for knowledge graphs. More mature, but Claude-Code-specific and not declarative-config-driven. |
+| **Oh My Claude Code** (6.4k stars) | Multi-agent Claude Code coordination                | Web dashboard approach vs CLI; session caching (93% token reduction). Different UX paradigm.                                  |
+| **CrewAI**                         | Role-based agent teams with delegation              | Python framework, not shell-based. Heavier abstraction. Provider-locked to specific LLMs per agent.                           |
+| **LangGraph**                      | Graph-based orchestration with state machines       | Much more structured; compiles to state machines. Overkill for the "launch/kill/relaunch" lifecycle use case.                 |
+| **AutoGen**                        | Conversation-driven multi-agent groups              | Microsoft ecosystem. Group chat model vs hierarchical teams.                                                                  |
+| **OpenHands**                      | Event-sourced immutable state, pluggable workspaces | Full platform (67.9k stars). Docker-based isolation. Much larger scope.                                                       |
 
 **Where agent-team is well-positioned:**
+
 - Declarative YAML-frontmatter agent definitions are simpler than any competitor's config format
 - Tight integration with Claude Code's native agent teams (tmux panes, team config) is unmatched
 - The spec's MCP abstraction layer for future provider-agnostic support is aligned with the industry trend (every major platform is adopting MCP)
 
 **Where agent-team trails the industry:**
+
 - No container isolation (OpenHands, Codex have this; it is planned for Phase 9)
 - No event-sourced state (OpenHands' key advantage for replay/pause/resume)
 - No token optimization (Oh My Claude Code's 93% reduction via session caching)
@@ -121,6 +123,7 @@ However, the MCP layer is entirely in spec form -- zero implementation exists. G
 ### Will It Scale to 10+ Agents?
 
 Not without the planned Phase 2+ work. Specifically:
+
 - Need a backend abstraction (tmux vs Docker vs K8s) before scaling beyond single-machine
 - Need file locking or a proper database for team config
 - Need async/parallel discovery and spawning
@@ -196,20 +199,20 @@ However, there is no enforcement mechanism to prevent an agent definition from s
 
 ## Confidence Levels
 
-| Finding | Confidence |
-|:--------|:-----------|
-| Launch command does not actually spawn agents | Verified -- read source, confirmed "not yet implemented" message |
-| Health always UNKNOWN for health subcommand | Verified -- read source, confirmed hardcoded "UNKNOWN" on line 108 |
-| teamName not used in spawn args | Verified -- `buildSpawnArgs` source confirmed, no team-related flag in output |
-| Path traversal risk in base_prompt | High -- `join()` without path validation confirmed in source |
-| Config file race condition risk | High -- synchronous read/write without locking confirmed in source |
-| Relaunch uses stale discovery | Verified -- `discoverResult` computed on line 121, relaunch on line 178 reuses it |
-| 54 tests passing | Verified -- ran `bun test`, all pass (142ms) |
-| Industry alignment assessment | High -- based on 25+ research reports in docs/research/ and direct source review |
-| Scalability limits at 10+ agents | Medium-High -- based on tmux architecture analysis and file I/O patterns |
-| Environment variable leakage concern | Verified -- `{ ...process.env, ...env }` spread in spawn.ts:104 |
-| tmux approach is validated by community | High -- Claude Flow (14.1k stars), ntm, ccswarm all use tmux patterns |
-| MCP adoption trend | High -- documented in orchestration-platforms-index.md with references to Codex, Gemini, LangGraph |
+| Finding                                       | Confidence                                                                                         |
+| :-------------------------------------------- | :------------------------------------------------------------------------------------------------- |
+| Launch command does not actually spawn agents | Verified -- read source, confirmed "not yet implemented" message                                   |
+| Health always UNKNOWN for health subcommand   | Verified -- read source, confirmed hardcoded "UNKNOWN" on line 108                                 |
+| teamName not used in spawn args               | Verified -- `buildSpawnArgs` source confirmed, no team-related flag in output                      |
+| Path traversal risk in base_prompt            | High -- `join()` without path validation confirmed in source                                       |
+| Config file race condition risk               | High -- synchronous read/write without locking confirmed in source                                 |
+| Relaunch uses stale discovery                 | Verified -- `discoverResult` computed on line 121, relaunch on line 178 reuses it                  |
+| 54 tests passing                              | Verified -- ran `bun test`, all pass (142ms)                                                       |
+| Industry alignment assessment                 | High -- based on 25+ research reports in docs/research/ and direct source review                   |
+| Scalability limits at 10+ agents              | Medium-High -- based on tmux architecture analysis and file I/O patterns                           |
+| Environment variable leakage concern          | Verified -- `{ ...process.env, ...env }` spread in spawn.ts:104                                    |
+| tmux approach is validated by community       | High -- Claude Flow (14.1k stars), ntm, ccswarm all use tmux patterns                              |
+| MCP adoption trend                            | High -- documented in orchestration-platforms-index.md with references to Codex, Gemini, LangGraph |
 
 ## References
 

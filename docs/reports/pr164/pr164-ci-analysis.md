@@ -7,20 +7,21 @@
 
 ## CI Check Results (as of commit ca42d6f9)
 
-| Check | Status | Notes |
-|-------|--------|-------|
-| check-version-files | PASS | Was failing due to accidental plugin.json edit, reverted in ca42d6f9 |
-| lint | PASS | |
-| preview-version-bump | PASS | |
-| validate | **FAIL** | Pre-existing bug on main (see below) |
-| bump-and-update-marketplace | SKIPPING | Expected — only runs on main |
-| claude-review | SKIPPING | Expected — conditional |
+| Check                       | Status   | Notes                                                                |
+| --------------------------- | -------- | -------------------------------------------------------------------- |
+| check-version-files         | PASS     | Was failing due to accidental plugin.json edit, reverted in ca42d6f9 |
+| lint                        | PASS     |                                                                      |
+| preview-version-bump        | PASS     |                                                                      |
+| validate                    | **FAIL** | Pre-existing bug on main (see below)                                 |
+| bump-and-update-marketplace | SKIPPING | Expected — only runs on main                                         |
+| claude-review               | SKIPPING | Expected — conditional                                               |
 
 ## Validate Failure: Pre-existing on Main
 
 **Failing plugin**: `plugins/plugin-management/.claude-plugin/plugin.json`
 
 **Error**:
+
 ```
 ✘ Found 1 error:
   ❯ author: Invalid input: expected object, received string
@@ -28,11 +29,13 @@
 ```
 
 **Current value on main** (line 5 of `plugins/plugin-management/.claude-plugin/plugin.json`):
+
 ```json
 "author": "nsheaps"
 ```
 
 **Expected format** (per schema, matching all other plugins):
+
 ```json
 "author": {
   "name": "Nathan Heaps",
@@ -54,6 +57,7 @@
 ### Why We Can't Fix It in This PR
 
 The `check-version-files` CI check rejects ANY changes to `plugin.json` files in PRs:
+
 ```bash
 CHANGED_VERSION_FILES=$(git diff --name-only "origin/main..HEAD" -- \
   'plugins/*/.claude-plugin/plugin.json' \
@@ -76,6 +80,7 @@ I attempted the fix (commit `3d90fdd6`) but had to revert (commit `ca42d6f9`) be
 ## Our PR's Changes
 
 The statusline fix commits only touch:
+
 - `plugins/statusline/hooks/configure-statusline.sh`
 - `plugins/statusline-iterm/hooks/configure-statusline.sh`
 - `plugins/shared/lib/safe-settings-write.sh` (new)

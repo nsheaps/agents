@@ -29,6 +29,7 @@ The agent definition says the AI Agent Eng "observes team interactions for proce
 **Impact**: The agent definition sets an expectation the agent cannot fulfill. When the AI Agent Eng is spawned, its instructions claim it should "proactively check task status and teammate messages for signs of trouble" — but it literally cannot see those messages unless they're forwarded.
 
 **What needs to change**:
+
 1. `ai-agent-eng.md` responsibilities: Change "Observe team interactions" → "Analyze flagged issues from team lead"
 2. `ai-agent-eng.md` edge case: "Nobody messages you about failures: Proactively check..." → This is the wrong advice. Should say "If no issues are flagged, check in with team lead periodically"
 3. Standing task descriptions: "Monitor team" → "Analyze and correct flagged issues"
@@ -48,6 +49,7 @@ The `behaviors/README.md` clearly defines what a behavior is ("complex, multi-st
 **Question**: What distinguishes a rule from a behavior in this repo? The ai-mktpl repo uses `.ai/rules/` for short behavioral directives. This repo uses `.claude/behaviors/` for the same purpose. Having both directories without a clear boundary will cause future confusion about where new content goes.
 
 **Recommendation**: Document the distinction in `.claude/rules/README.md` or in the behaviors README. Suggested criteria:
+
 - **Rules** = short declarative constraints ("always do X", "never do Y") — loaded on every API call
 - **Behaviors** = multi-step procedures with steps, anti-patterns, and quality standards
 
@@ -156,12 +158,12 @@ Now that `.claude/rules/` exists, define it as a first-class concept alongside b
 
 ## Summary
 
-| Severity | Count | Key Items |
-|----------|-------|-----------|
-| Critical | 1 | AI Agent Eng "monitoring" role is architecturally impossible — corrector/recorder, not observer |
-| High | 3 | Rules/behaviors boundary, verify-before-blaming duplication, stale nsheaps/.ai reference |
-| Medium | 5 | Plugin version field, no rules README, inconsistent cross-refs, cleanup contradiction, tmp accumulation |
-| Low | 3 | claude-utils dependency, license mismatch, no scope creep behavior |
-| Improvement | 3 | Behavior index, behavior chaining, rules as first-class |
+| Severity    | Count | Key Items                                                                                               |
+| ----------- | ----- | ------------------------------------------------------------------------------------------------------- |
+| Critical    | 1     | AI Agent Eng "monitoring" role is architecturally impossible — corrector/recorder, not observer         |
+| High        | 3     | Rules/behaviors boundary, verify-before-blaming duplication, stale nsheaps/.ai reference                |
+| Medium      | 5     | Plugin version field, no rules README, inconsistent cross-refs, cleanup contradiction, tmp accumulation |
+| Low         | 3     | claude-utils dependency, license mismatch, no scope creep behavior                                      |
+| Improvement | 3     | Behavior index, behavior chaining, rules as first-class                                                 |
 
 The behavioral framework is the team's strongest asset. The main risk is organizational — as the repo grows, the distinction between rules, behaviors, skills, and agent instructions needs to stay clear. The stale reference (H3) should be fixed immediately as it affects agent behavior.

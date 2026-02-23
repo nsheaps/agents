@@ -6,16 +6,16 @@ Analysis of how to turn agent-team's `.claude/` content into installable plugin(
 
 ### Agents (`.claude/agents/`) — 8 files
 
-| Agent | Purpose | Project-specific? |
-|:------|:--------|:------------------|
-| `orchestrator.md` | Team lead, spawns and coordinates | **Reusable** with minor edits (remove looney-tunes persona refs) |
-| `software-eng.md` | Primary implementation agent | **Reusable** — generic SWE role |
-| `quality-assurance.md` | Testing and validation | **Reusable** — generic QA role |
-| `docs-writer.md` | Documentation maintenance | **Reusable** — generic docs role |
-| `project-manager.md` | Task list and coordination | **Reusable** — generic PM role |
-| `deep-researcher.md` | Complex multi-source research | **Reusable** — generic research role |
-| `ops-eng.md` | CI/CD, repos, tooling | **Reusable** — generic ops role |
-| `ai-agent-eng.md` | Observes failures, records patterns | **Reusable** — novel "coach" role |
+| Agent                  | Purpose                             | Project-specific?                                                |
+| :--------------------- | :---------------------------------- | :--------------------------------------------------------------- |
+| `orchestrator.md`      | Team lead, spawns and coordinates   | **Reusable** with minor edits (remove looney-tunes persona refs) |
+| `software-eng.md`      | Primary implementation agent        | **Reusable** — generic SWE role                                  |
+| `quality-assurance.md` | Testing and validation              | **Reusable** — generic QA role                                   |
+| `docs-writer.md`       | Documentation maintenance           | **Reusable** — generic docs role                                 |
+| `project-manager.md`   | Task list and coordination          | **Reusable** — generic PM role                                   |
+| `deep-researcher.md`   | Complex multi-source research       | **Reusable** — generic research role                             |
+| `ops-eng.md`           | CI/CD, repos, tooling               | **Reusable** — generic ops role                                  |
+| `ai-agent-eng.md`      | Observes failures, records patterns | **Reusable** — novel "coach" role                                |
 
 **Assessment**: All 8 agents are reusable team roles. The looney-tunes naming/personas are project-specific flavor but the roles themselves are generic.
 
@@ -27,43 +27,43 @@ Each persona adds a character identity (name, personality, communication style, 
 
 ### Behaviors (`.claude/behaviors/`) — 16 files
 
-| Behavior | Purpose | Reusable? |
-|:---------|:--------|:----------|
-| `pre-task-checklist.md` | Mandatory step-0 before any task | **Highly reusable** |
-| `failure-reporting.md` | Report failures to AI Agent Eng | **Highly reusable** |
-| `research.md` | Deep investigation procedure | **Highly reusable** |
-| `self-correction.md` | Detect and fix own mistakes | **Highly reusable** |
-| `verification.md` | Verify work before declaring done | **Highly reusable** |
-| `lifecycle-management.md` | Agent spawn/shutdown/cleanup | **Highly reusable** |
-| `team-member-cleanup.md` | Detect/remove stale team members | **Highly reusable** |
-| `communication-verification.md` | Verify message recipients exist | **Highly reusable** |
-| `code-review.md` | Code review procedure | **Highly reusable** |
-| `commit-hygiene.md` | Commit message standards | **Highly reusable** |
-| `documentation.md` | Documentation standards | **Highly reusable** |
-| `ticket-hygiene.md` | Task naming and formatting | **Highly reusable** |
-| `task-subject-formatting.md` | Task subject conventions | **Highly reusable** |
-| `incremental-design.md` | Incremental development approach | **Highly reusable** |
-| `conversation-search.md` | Search past conversations | **Highly reusable** |
-| `verify-before-blaming.md` | Verify state before blaming tools | **Highly reusable** |
-| `requirements-verification.md` | Verify requirements before implementing | **Highly reusable** |
-| `README.md` | Explains behavior vs agent vs skill | **Reusable** (meta-doc) |
+| Behavior                        | Purpose                                 | Reusable?               |
+| :------------------------------ | :-------------------------------------- | :---------------------- |
+| `pre-task-checklist.md`         | Mandatory step-0 before any task        | **Highly reusable**     |
+| `failure-reporting.md`          | Report failures to AI Agent Eng         | **Highly reusable**     |
+| `research.md`                   | Deep investigation procedure            | **Highly reusable**     |
+| `self-correction.md`            | Detect and fix own mistakes             | **Highly reusable**     |
+| `verification.md`               | Verify work before declaring done       | **Highly reusable**     |
+| `lifecycle-management.md`       | Agent spawn/shutdown/cleanup            | **Highly reusable**     |
+| `team-member-cleanup.md`        | Detect/remove stale team members        | **Highly reusable**     |
+| `communication-verification.md` | Verify message recipients exist         | **Highly reusable**     |
+| `code-review.md`                | Code review procedure                   | **Highly reusable**     |
+| `commit-hygiene.md`             | Commit message standards                | **Highly reusable**     |
+| `documentation.md`              | Documentation standards                 | **Highly reusable**     |
+| `ticket-hygiene.md`             | Task naming and formatting              | **Highly reusable**     |
+| `task-subject-formatting.md`    | Task subject conventions                | **Highly reusable**     |
+| `incremental-design.md`         | Incremental development approach        | **Highly reusable**     |
+| `conversation-search.md`        | Search past conversations               | **Highly reusable**     |
+| `verify-before-blaming.md`      | Verify state before blaming tools       | **Highly reusable**     |
+| `requirements-verification.md`  | Verify requirements before implementing | **Highly reusable**     |
+| `README.md`                     | Explains behavior vs agent vs skill     | **Reusable** (meta-doc) |
 
 **Assessment**: ALL behaviors are reusable. They're role-agnostic procedures any team can use.
 
 ### Team Docs (`.claude/docs/`) — 3 files
 
-| Doc | Purpose | Reusable? |
-|:----|:--------|:----------|
-| `team-structure.md` | Role table, hierarchy, display names | **Template** — structure is reusable, content is project-specific |
-| `team-rules.md` | Standing orders for all teammates | **Highly reusable** — generic team governance |
-| `communication-protocol.md` | Message routing, escalation | **Reusable** — generic team comms protocol |
+| Doc                         | Purpose                              | Reusable?                                                         |
+| :-------------------------- | :----------------------------------- | :---------------------------------------------------------------- |
+| `team-structure.md`         | Role table, hierarchy, display names | **Template** — structure is reusable, content is project-specific |
+| `team-rules.md`             | Standing orders for all teammates    | **Highly reusable** — generic team governance                     |
+| `communication-protocol.md` | Message routing, escalation          | **Reusable** — generic team comms protocol                        |
 
 ### Existing Plugin (`plugins/agent-team-skills/`) — 2 skills
 
-| Skill | Purpose | Reusable? |
-|:------|:--------|:----------|
-| `writing-agent-team-agents/SKILL.md` | How to create agent files | **Reusable** — meta-skill for agent development |
-| `tmux-usage/SKILL.md` | tmux usage for agent teams | **Reusable** — reference material |
+| Skill                                | Purpose                    | Reusable?                                       |
+| :----------------------------------- | :------------------------- | :---------------------------------------------- |
+| `writing-agent-team-agents/SKILL.md` | How to create agent files  | **Reusable** — meta-skill for agent development |
+| `tmux-usage/SKILL.md`                | tmux usage for agent teams | **Reusable** — reference material               |
 
 ### Settings (`.claude/settings.json`)
 
@@ -163,11 +163,11 @@ Same as Option B but split roles from docs:
 
 ## Recommendation: Option B (Three Plugins)
 
-| Plugin | Location | Content | Install When |
-|:-------|:---------|:--------|:-------------|
-| `agent-teams-skills` | `nsheaps/.ai` (done) | Skills: enabling, config, hooks reference | Any project using agent teams |
-| `agent-team-behaviors` | `agent-team` repo | 16 behaviors + README | Any project using agent teams |
-| `agent-team-roles` | `agent-team` repo | 8 agents, 8 personas, 3 team docs | Want a ready-made team composition |
+| Plugin                 | Location             | Content                                   | Install When                       |
+| :--------------------- | :------------------- | :---------------------------------------- | :--------------------------------- |
+| `agent-teams-skills`   | `nsheaps/.ai` (done) | Skills: enabling, config, hooks reference | Any project using agent teams      |
+| `agent-team-behaviors` | `agent-team` repo    | 16 behaviors + README                     | Any project using agent teams      |
+| `agent-team-roles`     | `agent-team` repo    | 8 agents, 8 personas, 3 team docs         | Want a ready-made team composition |
 
 ### Why This Split
 
@@ -230,16 +230,16 @@ Before packaging as plugins, some content references project-specific details:
 
 ## Estimated Scope
 
-| Work | Effort |
-|:-----|:-------|
-| Create `agent-team-behaviors` plugin structure | Small — mkdir + plugin.json + move files |
-| Create `agent-team-roles` plugin structure | Small — mkdir + plugin.json + move files |
-| Move `tmux-usage` to `agent-teams-skills` in nsheaps/.ai | Small — file move + commit |
-| Retire old `plugins/agent-team-skills/` | Small — git rm |
-| Genericize agent files (strip project-specific refs) | Medium — 8 files to review and edit |
-| Template-ize team docs | Small — 3 files to add markers |
-| Update `.claude.json` in consuming repos | Small — add new plugin paths |
-| **Total** | **~1-2 hours of work** |
+| Work                                                     | Effort                                   |
+| :------------------------------------------------------- | :--------------------------------------- |
+| Create `agent-team-behaviors` plugin structure           | Small — mkdir + plugin.json + move files |
+| Create `agent-team-roles` plugin structure               | Small — mkdir + plugin.json + move files |
+| Move `tmux-usage` to `agent-teams-skills` in nsheaps/.ai | Small — file move + commit               |
+| Retire old `plugins/agent-team-skills/`                  | Small — git rm                           |
+| Genericize agent files (strip project-specific refs)     | Medium — 8 files to review and edit      |
+| Template-ize team docs                                   | Small — 3 files to add markers           |
+| Update `.claude.json` in consuming repos                 | Small — add new plugin paths             |
+| **Total**                                                | **~1-2 hours of work**                   |
 
 ---
 

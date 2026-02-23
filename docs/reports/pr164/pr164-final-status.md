@@ -6,21 +6,23 @@
 
 ## CI Status: ALL GREEN
 
-| Check | Status |
-|-------|--------|
-| check-version-files | PASS |
-| lint | PASS |
-| preview-version-bump | PASS |
-| validate | PASS |
+| Check                       | Status               |
+| --------------------------- | -------------------- |
+| check-version-files         | PASS                 |
+| lint                        | PASS                 |
+| preview-version-bump        | PASS                 |
+| validate                    | PASS                 |
 | bump-and-update-marketplace | SKIPPING (main-only) |
-| claude-review | SKIPPING |
+| claude-review               | SKIPPING             |
 
 ## Key Commits
 
 ### On main
+
 - `af6f0bf6` — fix(plugin-management): use object format for author in plugin.json
 
 ### On fix/statusline-direct-write
+
 - `5e0005bb` — Initial direct write + teammate skip guard
 - `bfe3214b` — Core fix: mkdir lock + mktemp + jq validation + atomic rename
 - `5faa693c` — Extract safe_write_settings to shared lib, fix retry counter

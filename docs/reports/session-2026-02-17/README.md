@@ -5,13 +5,13 @@ for permanent research, specs, or deliverables.
 
 ## Cleanup Convention
 
-| Content Type | Action | Destination |
-|:-------------|:-------|:------------|
-| Research findings worth keeping | Move to `docs/research/` | Committed and preserved |
-| Spec drafts | Move to `docs/specs/draft/` | Follows spec lifecycle |
-| Swarm review outputs | Keep until findings are triaged, then delete | Ephemeral |
-| Session scratch / QA output | Delete after session ends | Not preserved |
-| Reports sent to teammates | Delete after confirmed received | Deliverable was the message |
+| Content Type                    | Action                                       | Destination                 |
+| :------------------------------ | :------------------------------------------- | :-------------------------- |
+| Research findings worth keeping | Move to `docs/research/`                     | Committed and preserved     |
+| Spec drafts                     | Move to `docs/specs/draft/`                  | Follows spec lifecycle      |
+| Swarm review outputs            | Keep until findings are triaged, then delete | Ephemeral                   |
+| Session scratch / QA output     | Delete after session ends                    | Not preserved               |
+| Reports sent to teammates       | Delete after confirmed received              | Deliverable was the message |
 
 **Rule**: If a file in `.claude/tmp/` would be useful in a future session, it
 does not belong here. Move it to `docs/research/` or another permanent location.
