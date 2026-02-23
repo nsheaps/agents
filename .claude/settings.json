@@ -6,9 +6,16 @@
         "source": "directory",
         "path": "."
       }
+    },
+    "nsheaps-claude-plugins": {
+      "source": {
+        "source": "directory",
+        "path": "/Users/nathan.heaps/src/nsheaps/ai-mktpl"
+      }
     }
   },
   "enabledPlugins": {
-    "agent-team-skills@nsheaps-agent-team": true
+    "agent-team-skills@nsheaps-agent-team": true,
+    "agent-tab-titles@nsheaps-claude-plugins": true
   }
 }
