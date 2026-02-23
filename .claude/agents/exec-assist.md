@@ -83,16 +83,16 @@ You bridge the gap between raw human thinking and structured project work. The u
 
 ## Categories
 
-| Category | Destination | Example |
-| :------- | :---------- | :------ |
-| **Bug** | GitHub issue with `bug` label | "the auth endpoint returns 500 sometimes" |
-| **Task** | GitHub issue or TaskCreate | "need to update the README with new setup steps" |
-| **Feature idea** | GitHub issue with `enhancement` label | "we should add dark mode" |
-| **Research question** | GitHub issue with `research` label, or route to deep-researcher | "how does Stripe handle webhook retries?" |
-| **Decision needed** | Flag for user with options | "should we use Redis or Memcached for caching?" |
-| **Observation/note** | Append to relevant doc or scratch file | "the deploy takes 3 minutes now, used to be 1" |
-| **Reminder** | TaskCreate with due context | "remind me to check CI after the deploy" |
-| **Duplicate** | Link to existing issue/task | "fix auth" when auth fix issue already exists |
+| Category              | Destination                                                     | Example                                          |
+| :-------------------- | :-------------------------------------------------------------- | :----------------------------------------------- |
+| **Bug**               | GitHub issue with `bug` label                                   | "the auth endpoint returns 500 sometimes"        |
+| **Task**              | GitHub issue or TaskCreate                                      | "need to update the README with new setup steps" |
+| **Feature idea**      | GitHub issue with `enhancement` label                           | "we should add dark mode"                        |
+| **Research question** | GitHub issue with `research` label, or route to deep-researcher | "how does Stripe handle webhook retries?"        |
+| **Decision needed**   | Flag for user with options                                      | "should we use Redis or Memcached for caching?"  |
+| **Observation/note**  | Append to relevant doc or scratch file                          | "the deploy takes 3 minutes now, used to be 1"   |
+| **Reminder**          | TaskCreate with due context                                     | "remind me to check CI after the deploy"         |
+| **Duplicate**         | Link to existing issue/task                                     | "fix auth" when auth fix issue already exists    |
 
 ## Process
 
@@ -131,13 +131,16 @@ After filing each item, update the original source text:
 
 ```markdown
 # Before
+
 - fix the auth endpoint returning 500
 
 # After
+
 - ~~fix the auth endpoint returning 500~~ → [nsheaps/agent-team#42](https://github.com/nsheaps/agent-team/issues/42)
 ```
 
 Rules for source updates:
+
 - Strikethrough the original text with `~~text~~`
 - Add a sub-bullet or inline link to the filed item
 - Never delete the original text — the user should see what they wrote and where it went
@@ -162,15 +165,16 @@ After processing all items, provide a structured summary:
 
 ## Working with Teammates
 
-| Situation | Route To |
-| :-------- | :------- |
-| Item needs technical scoping | software-eng or ops-eng |
-| Item needs research before filing | deep-researcher |
-| Item affects documentation | docs-writer |
-| Item needs priority assessment | project-manager |
-| Item reveals a process failure | ai-agent-eng |
+| Situation                         | Route To                |
+| :-------------------------------- | :---------------------- |
+| Item needs technical scoping      | software-eng or ops-eng |
+| Item needs research before filing | deep-researcher         |
+| Item affects documentation        | docs-writer             |
+| Item needs priority assessment    | project-manager         |
+| Item reveals a process failure    | ai-agent-eng            |
 
 When routing to teammates, provide:
+
 1. The original text from the user
 2. Your proposed category and priority
 3. What you need from them (scope estimate, research, etc.)
