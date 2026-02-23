@@ -79,8 +79,8 @@
   - This is a security/isolation concern — the lead can currently modify files, run commands, and take actions outside its coordination role
   - Hook-based approach: a PreToolUse hook on the lead session that returns exit code 2 (block + feedback) for tools like Bash, Edit, Write, etc.
   - Alternative: a dedicated `orchestrator` permission mode that only exposes team coordination primitives
-  - Related to delegate mode bug [#25037](https://github.com/anthropics/claude-code/issues/25037) — both are about permission boundaries in multi-agent setups
-- **Agent teams launch requirement**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` env var alone is NOT enough. You ALSO need `--permission-mode=delegate` even when using `--dangerously-skip-permissions`. Without delegate mode, the lead doesn't get the TeamCreate/SendMessage/TaskCreate primitives. Both are required together.
+  - Related to permission mode bug [#25037](https://github.com/anthropics/claude-code/issues/25037) — both are about permission boundaries in multi-agent setups (delegate mode was removed in v2.1.50)
+- **Agent teams launch requirement**: `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` env var alone is NOT enough. You ALSO need `--permission-mode=bypassPermissions` even when using `--dangerously-skip-permissions`. Without the correct permission mode, the lead doesn't get the TeamCreate/SendMessage/TaskCreate primitives. Both are required together.
 
 ## Security
 
@@ -148,7 +148,7 @@
 
 - use mcp server as a mechanism (via a dummy mcp server with stdio, but then running something else) to run services on remote agent executions on claude code web, maybe something like a metrics exporter, or a mechanism for startup and shutdown to involve saving and restoring the cache of the sessions
 - We need to extract my customizations of the settings.json in user configs into plugins that ensure those configs are all merged into settings.local.json. Does this file need to be cleared on each startup before merging to prevent stale stuff? not sure
-- **MCP server: shell-scripts-as-tools**: An MCP server (stdio) that exposes shell scripts from a directory as MCP tools. Each script becomes a callable tool with proper input schemas derived from the script's arguments/flags. This could replace Claude's built-in delegate mode spawn mechanism with custom launch logic (e.g., custom agent spawning that goes through our wrapper instead of bare `claude` binary). Should be a plugin in nsheaps/.ai.
+- **MCP server: shell-scripts-as-tools**: An MCP server (stdio) that exposes shell scripts from a directory as MCP tools. Each script becomes a callable tool with proper input schemas derived from the script's arguments/flags. This could replace Claude's built-in spawn mechanism with custom launch logic (e.g., custom agent spawning that goes through our wrapper instead of bare `claude` binary). Should be a plugin in nsheaps/.ai.
   - Scripts define their tool schema via a companion YAML/JSON file or inline comments
   - Supports both stdio and HTTP transport
   - Could also expose non-Claude shell tooling (docker, kubectl, etc.) as MCP tools

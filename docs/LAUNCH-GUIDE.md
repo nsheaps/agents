@@ -46,7 +46,7 @@ CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude \
   --continue \
   --dangerously-skip-permissions \
   --teammate-mode tmux \
-  --permission-mode delegate \
+  --permission-mode bypassPermissions \
   --append-system-prompt "You are an orchestrator. Spawn teammates using Task with team_name. Coordinate via SendMessage and TaskCreate/TaskUpdate/TaskList."
 ```
 
@@ -57,7 +57,7 @@ Key flags:
 | `--continue`                     | Resume the previous session if one exists            |
 | `--dangerously-skip-permissions` | Skip permission prompts for the orchestrator         |
 | `--teammate-mode tmux`           | Spawn teammates in tmux panes (iTerm2 uses -CC mode) |
-| `--permission-mode delegate`     | Orchestrator delegates permission decisions          |
+| `--permission-mode bypassPermissions` | Skip all permission prompts for the orchestrator     |
 | `--append-system-prompt "..."`   | Inject orchestrator identity into system prompt      |
 
 ## What Happens at Launch
@@ -104,7 +104,7 @@ In **in-process mode**, teammates run as hidden sessions within the same process
 
 ### Known issues
 
-- **Delegate mode bug**: Teammates may inherit the lead's delegate-mode restrictions incorrectly instead of getting full tool access ([#25037](https://github.com/anthropics/claude-code/issues/25037))
+- **Permission inheritance**: Teammates inherit the lead's permission settings. Use `bypassPermissions` mode to ensure teammates get full tool access ([#25037](https://github.com/anthropics/claude-code/issues/25037))
 - **Simultaneous spawning**: Spawning many teammates at once via tmux can garble `send-keys` commands ([#23615](https://github.com/anthropics/claude-code/issues/23615)). Spawn sequentially if you hit this.
 - **iTerm2 detection prompts**: Set `teammateMode` in settings.json (see Prerequisites) to avoid repeated prompts ([#24301](https://github.com/anthropics/claude-code/issues/24301))
 

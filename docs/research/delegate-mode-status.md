@@ -1,3 +1,5 @@
+> **Note (2026-02-23):** `delegate` permission mode was removed in Claude Code v2.1.50. The replacement is `bypassPermissions`. This document reflects findings at the time of writing.
+
 # Delegate Mode Status in Claude Code
 
 **Research Date**: February 23, 2026
