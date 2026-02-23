@@ -35,7 +35,7 @@ base_prompt: _builtin
 framework: claude-code
 model: claude-opus-4-6
 role: orchestrator
-permission_mode: delegate
+permission_mode: bypassPermissions
 dangerously_skip_permissions: true
 display_name: "Orchestrator"
 tools:
