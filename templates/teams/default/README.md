@@ -4,16 +4,16 @@ An 8-role agent team with professional, non-themed identities. Designed for comp
 
 ## Roles
 
-| Role              | Display Name       |
-| :---------------- | :----------------- |
-| Orchestrator      | Team Lead          |
-| Software Eng      | Software Engineer  |
-| AI Agent Eng      | AI Agent Engineer  |
-| Docs Writer       | Docs Writer        |
-| Quality Assurance | QA Engineer        |
-| Project Manager   | Project Manager    |
-| Deep Researcher   | Researcher         |
-| Ops Eng           | Ops Engineer       |
+| Role              | Display Name      |
+| :---------------- | :---------------- |
+| Orchestrator      | Team Lead         |
+| Software Eng      | Software Engineer |
+| AI Agent Eng      | AI Agent Engineer |
+| Docs Writer       | Docs Writer       |
+| Quality Assurance | QA Engineer       |
+| Project Manager   | Project Manager   |
+| Deep Researcher   | Researcher        |
+| Ops Eng           | Ops Engineer      |
 
 ## Usage
 
