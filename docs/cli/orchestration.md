@@ -6,12 +6,12 @@ How agent teams are spawned and managed across different backends.
 
 Agent teams can run on different orchestration backends depending on the environment and requirements. Each backend has different characteristics for isolation, visibility, resource management, and scalability.
 
-| Backend | Status | Isolation | Visibility | Best For |
-|:--------|:-------|:----------|:-----------|:---------|
-| [tmux](#tmux-backend) | Current | Per-pane | iTerm2 tabs | Local development, full team |
-| [In-process](#in-process-backend) | Current | Per-session | Shift+Up/Down | Quick tasks, minimal overhead |
-| [Docker](#docker-backend) | Planned (Phase 9) | Per-container | docker logs | Reproducible environments |
-| [Kubernetes](#kubernetes-backend) | Planned (Phase 11+) | Per-pod | kubectl logs | Production, multi-machine |
+| Backend                           | Status              | Isolation     | Visibility    | Best For                      |
+| :-------------------------------- | :------------------ | :------------ | :------------ | :---------------------------- |
+| [tmux](#tmux-backend)             | Current             | Per-pane      | iTerm2 tabs   | Local development, full team  |
+| [In-process](#in-process-backend) | Current             | Per-session   | Shift+Up/Down | Quick tasks, minimal overhead |
+| [Docker](#docker-backend)         | Planned (Phase 9)   | Per-container | docker logs   | Reproducible environments     |
+| [Kubernetes](#kubernetes-backend) | Planned (Phase 11+) | Per-pod       | kubectl logs  | Production, multi-machine     |
 
 ## tmux Backend
 
@@ -264,16 +264,16 @@ graph LR
     style K8s fill:#ffd,stroke:#333
 ```
 
-| Aspect | In-Process | tmux | Docker | Kubernetes |
-|:-------|:-----------|:-----|:-------|:-----------|
-| **Setup** | None | `brew install tmux` | Docker Desktop | k8s cluster |
-| **Isolation** | Shared process | Separate processes | Containers | Pods |
-| **Communication** | In-process | SendMessage (team config) | Mesh MCP | Mesh MCP + Redis |
-| **Persistence** | Session only | tmux sessions + `--continue` | Volumes + session save | PVC + S3 |
-| **Scaling** | Single machine | Single machine | Single machine | Multi-machine |
-| **Debugging** | Shift+Up/Down | iTerm2 tabs | `docker logs` | `kubectl logs` + OTEL |
-| **Resource control** | None | None | Per-container limits | K8s requests/limits |
-| **Phase** | Current | Current | Phase 9 | Phase 11+ |
+| Aspect               | In-Process     | tmux                         | Docker                 | Kubernetes            |
+| :------------------- | :------------- | :--------------------------- | :--------------------- | :-------------------- |
+| **Setup**            | None           | `brew install tmux`          | Docker Desktop         | k8s cluster           |
+| **Isolation**        | Shared process | Separate processes           | Containers             | Pods                  |
+| **Communication**    | In-process     | SendMessage (team config)    | Mesh MCP               | Mesh MCP + Redis      |
+| **Persistence**      | Session only   | tmux sessions + `--continue` | Volumes + session save | PVC + S3              |
+| **Scaling**          | Single machine | Single machine               | Single machine         | Multi-machine         |
+| **Debugging**        | Shift+Up/Down  | iTerm2 tabs                  | `docker logs`          | `kubectl logs` + OTEL |
+| **Resource control** | None           | None                         | Per-container limits   | K8s requests/limits   |
+| **Phase**            | Current        | Current                      | Phase 9                | Phase 11+             |
 
 ## References
 

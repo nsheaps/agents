@@ -6,10 +6,10 @@ Two modes exist — **persistent** (teammates stay alive between tasks) and **ep
 
 ## Scripts
 
-| Script | Path | Mode |
-|:-------|:-----|:-----|
+| Script                       | Path                             | Mode                 |
+| :--------------------------- | :------------------------------- | :------------------- |
 | `run-claude-team-persistent` | `bin/run-claude-team-persistent` | Persistent teammates |
-| `run-claude-team-ephemeral` | `bin/run-claude-team-ephemeral` | Ephemeral teammates |
+| `run-claude-team-ephemeral`  | `bin/run-claude-team-ephemeral`  | Ephemeral teammates  |
 
 ## Usage
 
@@ -29,20 +29,20 @@ ct
 
 ## Environment Variables
 
-| Variable | Required | Description |
-|:---------|:---------|:------------|
-| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | Set automatically | Enables agent teams feature |
-| `CLAUDE_TEAM_DEFAULT_MODE` | No | Default teammate mode (`auto`, `in-process`, `tmux`) |
+| Variable                               | Required          | Description                                          |
+| :------------------------------------- | :---------------- | :--------------------------------------------------- |
+| `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` | Set automatically | Enables agent teams feature                          |
+| `CLAUDE_TEAM_DEFAULT_MODE`             | No                | Default teammate mode (`auto`, `in-process`, `tmux`) |
 
 ## Flags Passed to Claude
 
 Both scripts pass these flags to the `claude` CLI:
 
-| Flag | Value | Purpose |
-|:-----|:------|:--------|
-| `--teammate-mode` | `auto` | How teammates are displayed |
-| `--append-system-prompt` | Orchestrator prompt | Inject orchestrator identity |
-| `--dangerously-skip-permissions` | — | Skip permission prompts |
+| Flag                             | Value               | Purpose                      |
+| :------------------------------- | :------------------ | :--------------------------- |
+| `--teammate-mode`                | `auto`              | How teammates are displayed  |
+| `--append-system-prompt`         | Orchestrator prompt | Inject orchestrator identity |
+| `--dangerously-skip-permissions` | —                   | Skip permission prompts      |
 
 ## Persistent vs Ephemeral
 

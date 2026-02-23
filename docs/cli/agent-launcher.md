@@ -12,14 +12,14 @@ agent-launcher --team-name <name> <command> [args]
 
 ## Global Flags
 
-| Flag | Env Var | Default | Description |
-|:-----|:--------|:--------|:------------|
-| `--team-name <name>` | `AGENT_TEAM_NAME` | (required) | Team name for config and coordination |
-| `--teammate-mode <mode>` | `CLAUDE_TEAM_DEFAULT_MODE` | `auto` | Teammate display mode: `auto`, `in-process`, `tmux` |
-| `--no-interactive` | — | — | Skip interactive prompts, use defaults |
-| `--project-root <path>` | — | git root or cwd | Override project root for agent discovery |
-| `--verbose` | — | — | Verbose output |
-| `--` | — | — | Pass remaining args through to `claude` CLI |
+| Flag                     | Env Var                    | Default         | Description                                         |
+| :----------------------- | :------------------------- | :-------------- | :-------------------------------------------------- |
+| `--team-name <name>`     | `AGENT_TEAM_NAME`          | (required)      | Team name for config and coordination               |
+| `--teammate-mode <mode>` | `CLAUDE_TEAM_DEFAULT_MODE` | `auto`          | Teammate display mode: `auto`, `in-process`, `tmux` |
+| `--no-interactive`       | —                          | —               | Skip interactive prompts, use defaults              |
+| `--project-root <path>`  | —                          | git root or cwd | Override project root for agent discovery           |
+| `--verbose`              | —                          | —               | Verbose output                                      |
+| `--`                     | —                          | —               | Pass remaining args through to `claude` CLI         |
 
 ## Commands
 
@@ -138,12 +138,12 @@ Road R (researcher)      RUNNING   tmux        %44
 
 **Health statuses:**
 
-| Status | Meaning |
-|:-------|:--------|
-| `RUNNING` | Config entry exists, tmux pane alive |
-| `DEAD` | Config entry exists, tmux pane not found (stale) |
-| `UNKNOWN` | Config entry exists but no tmux pane ID |
-| `NOT_SPAWNED` | Agent file exists but no config entry |
+| Status        | Meaning                                          |
+| :------------ | :----------------------------------------------- |
+| `RUNNING`     | Config entry exists, tmux pane alive             |
+| `DEAD`        | Config entry exists, tmux pane not found (stale) |
+| `UNKNOWN`     | Config entry exists but no tmux pane ID          |
+| `NOT_SPAWNED` | Agent file exists but no config entry            |
 
 ### `cleanup`
 
@@ -163,8 +163,8 @@ name: software-eng
 description: |
   Use this agent for implementation tasks.
 color: cyan
-prompt_mode: extend        # extend (default) or replace
-base_prompt: _builtin      # _builtin (default) or path to file
+prompt_mode: extend # extend (default) or replace
+base_prompt: _builtin # _builtin (default) or path to file
 framework: claude-code
 model: claude-opus-4-6
 permission_mode: delegate

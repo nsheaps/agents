@@ -4,10 +4,10 @@ Command-line tools for managing agent teams.
 
 ## Tools
 
-| Tool | Status | Description |
-|:-----|:-------|:------------|
-| [`claude-team`](./claude-team.md) | Current | Shell scripts for launching agent team sessions |
-| [`agent-launcher`](./agent-launcher.md) | Planned (Phase 1) | Declarative agent lifecycle manager |
+| Tool                                    | Status            | Description                                     |
+| :-------------------------------------- | :---------------- | :---------------------------------------------- |
+| [`claude-team`](./claude-team.md)       | Current           | Shell scripts for launching agent team sessions |
+| [`agent-launcher`](./agent-launcher.md) | Planned (Phase 1) | Declarative agent lifecycle manager             |
 
 ## Relationship
 
