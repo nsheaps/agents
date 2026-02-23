@@ -4,14 +4,14 @@ Place files according to their permanence. Temporary artifacts go in `.claude/tm
 
 ## Quick Reference
 
-| Content | Location |
-|:--------|:---------|
-| Research findings | `docs/research/` |
-| Specifications | `docs/specs/{draft,reviewed,in-progress,live,deprecated,archive}/` |
-| Implementation plans | `.claude/plans/` |
-| Working notes | `.claude/scratch/` |
-| Intermediate/disposable output | `.claude/tmp/` |
-| Team working files | `.claude/tmp/` (shared between teammates) |
+| Content                        | Location                                                           |
+| :----------------------------- | :----------------------------------------------------------------- |
+| Research findings              | `docs/research/`                                                   |
+| Specifications                 | `docs/specs/{draft,reviewed,in-progress,live,deprecated,archive}/` |
+| Implementation plans           | `.claude/plans/`                                                   |
+| Working notes                  | `.claude/scratch/`                                                 |
+| Intermediate/disposable output | `.claude/tmp/`                                                     |
+| Team working files             | `.claude/tmp/` (shared between teammates)                          |
 
 ## The Test
 

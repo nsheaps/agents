@@ -19,12 +19,12 @@ Provider-agnostic multi-agent orchestration framework. Currently uses Claude Cod
 
 Place files by permanence. Use `.claude/tmp/` only for truly disposable artifacts (NOT `/tmp/`).
 
-| Content | Location |
-|:--------|:---------|
-| Research findings | `docs/research/` |
-| Specifications | `docs/specs/` |
-| Implementation plans | `.claude/plans/` |
-| Working notes | `.claude/scratch/` |
-| Intermediate/disposable output | `.claude/tmp/` |
+| Content                        | Location           |
+| :----------------------------- | :----------------- |
+| Research findings              | `docs/research/`   |
+| Specifications                 | `docs/specs/`      |
+| Implementation plans           | `.claude/plans/`   |
+| Working notes                  | `.claude/scratch/` |
+| Intermediate/disposable output | `.claude/tmp/`     |
 
 Completed work (research, specs, plans) always goes to a permanent location. See `.claude/rules/file-placement.md` for details.
