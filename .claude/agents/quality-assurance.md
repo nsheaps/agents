@@ -34,7 +34,7 @@ prompt_mode: extend
 base_prompt: _builtin
 framework: claude-code
 model: claude-opus-4-6
-permission_mode: delegate
+permission_mode: bypassPermissions
 display_name: "Daffy D (qa)"
 tools:
   - Read
