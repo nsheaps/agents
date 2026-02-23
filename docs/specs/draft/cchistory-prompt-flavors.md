@@ -79,14 +79,14 @@ A "flavor" is a named configuration that produces a distinct system prompt from 
 
 ### 3.2 Proposed Flavor Dimensions
 
-| Dimension           | Values                                             | Prompt Impact                                                |
-| :------------------ | :------------------------------------------------- | :----------------------------------------------------------- |
+| Dimension           | Values                                                           | Prompt Impact                                                |
+| :------------------ | :--------------------------------------------------------------- | :----------------------------------------------------------- |
 | **Permission mode** | `default`, `acceptEdits`, `plan`, `dontAsk`, `bypassPermissions` | Changes tool restrictions and behavioral instructions        |
-| **Agent teams**     | Off, Lead session, Teammate session                | Adds team primitives (7 tools), teammate communication rules |
-| **Teammate mode**   | N/A, `in-process`, `tmux`                          | Minor differences in spawn backend instructions              |
-| **Plan mode**       | Off, Active                                        | Restricts to read-only tools, adds planning instructions     |
-| **MCP servers**     | None, Specific server configs                      | Injects server tools and instructions                        |
-| **Plugins**         | None, Specific plugin set                          | Injects skills, agents, hooks, commands                      |
+| **Agent teams**     | Off, Lead session, Teammate session                              | Adds team primitives (7 tools), teammate communication rules |
+| **Teammate mode**   | N/A, `in-process`, `tmux`                                        | Minor differences in spawn backend instructions              |
+| **Plan mode**       | Off, Active                                                      | Restricts to read-only tools, adds planning instructions     |
+| **MCP servers**     | None, Specific server configs                                    | Injects server tools and instructions                        |
+| **Plugins**         | None, Specific plugin set                                        | Injects skills, agents, hooks, commands                      |
 
 ### 3.3 Flavor Extraction
 

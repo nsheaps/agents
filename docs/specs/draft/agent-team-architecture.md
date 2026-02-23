@@ -117,14 +117,14 @@ Each role owns specific fields in the agent definition. This prevents conflicts 
 
 #### Security Consultant Fields
 
-| Field                          | Description                                   |
-| :----------------------------- | :-------------------------------------------- |
+| Field                          | Description                                                |
+| :----------------------------- | :--------------------------------------------------------- |
 | `permission_mode`              | default / bypassPermissions / acceptEdits / dontAsk / plan |
-| `dangerously_skip_permissions` | Whether to bypass all permission checks       |
-| `tools`                        | Whitelist of available tools                  |
-| `disallowed_tools`             | Blacklist of tools (with pattern support)     |
-| `permissions.allowed`          | Allowed command patterns (Phase 2 agent.yaml) |
-| `permissions.denied`           | Denied command patterns (Phase 2 agent.yaml)  |
+| `dangerously_skip_permissions` | Whether to bypass all permission checks                    |
+| `tools`                        | Whitelist of available tools                               |
+| `disallowed_tools`             | Blacklist of tools (with pattern support)                  |
+| `permissions.allowed`          | Allowed command patterns (Phase 2 agent.yaml)              |
+| `permissions.denied`           | Denied command patterns (Phase 2 agent.yaml)               |
 
 #### Ops Eng Fields
 

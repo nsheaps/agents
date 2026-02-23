@@ -52,13 +52,13 @@ CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude \
 
 Key flags:
 
-| Flag                             | Purpose                                              |
-| :------------------------------- | :--------------------------------------------------- |
-| `--continue`                     | Resume the previous session if one exists            |
-| `--dangerously-skip-permissions` | Skip permission prompts for the orchestrator         |
-| `--teammate-mode tmux`           | Spawn teammates in tmux panes (iTerm2 uses -CC mode) |
+| Flag                                  | Purpose                                              |
+| :------------------------------------ | :--------------------------------------------------- |
+| `--continue`                          | Resume the previous session if one exists            |
+| `--dangerously-skip-permissions`      | Skip permission prompts for the orchestrator         |
+| `--teammate-mode tmux`                | Spawn teammates in tmux panes (iTerm2 uses -CC mode) |
 | `--permission-mode bypassPermissions` | Skip all permission prompts for the orchestrator     |
-| `--append-system-prompt "..."`   | Inject orchestrator identity into system prompt      |
+| `--append-system-prompt "..."`        | Inject orchestrator identity into system prompt      |
 
 ## What Happens at Launch
 
