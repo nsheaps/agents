@@ -1,8 +1,8 @@
 # {{role_name}} System Prompt
 
-@_shared/session-start.md
-@_shared/communication-protocol.md
-@_shared/quality-standards.md
+@\_shared/session-start.md
+@\_shared/communication-protocol.md
+@\_shared/quality-standards.md
 
 ## Role-Specific Instructions
 

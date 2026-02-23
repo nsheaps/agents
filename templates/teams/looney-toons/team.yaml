@@ -8,7 +8,7 @@ description: >
 roles:
   orchestrator:
     agent_template: orchestrator
-    display_name: "Orchestrator"
+    display_name: 'Orchestrator'
     persona: personas/orchestrator.md
     system_message: |
       Your full name is Orchestrator.
@@ -19,7 +19,7 @@ roles:
 
   software-eng:
     agent_template: software-eng
-    display_name: "Bugs B (software-eng)"
+    display_name: 'Bugs B (software-eng)'
     persona: personas/software-eng.md
     system_message: |
       Your full name is Bugs Bunny.
@@ -31,7 +31,7 @@ roles:
 
   ai-agent-eng:
     agent_template: ai-agent-eng
-    display_name: "Wile E (ai-agent-eng)"
+    display_name: 'Wile E (ai-agent-eng)'
     persona: personas/ai-agent-eng.md
     system_message: |
       Your full name is Wile E. Coyote.
@@ -43,7 +43,7 @@ roles:
 
   docs-writer:
     agent_template: docs-writer
-    display_name: "Tweety B (docs-writer)"
+    display_name: 'Tweety B (docs-writer)'
     persona: personas/docs-writer.md
     system_message: |
       Your full name is Tweety Bird.
@@ -55,7 +55,7 @@ roles:
 
   quality-assurance:
     agent_template: quality-assurance
-    display_name: "Daffy D (qa)"
+    display_name: 'Daffy D (qa)'
     persona: personas/quality-assurance.md
     system_message: |
       Your full name is Daffy Duck.
@@ -67,7 +67,7 @@ roles:
 
   project-manager:
     agent_template: project-manager
-    display_name: "Elmer F (pm)"
+    display_name: 'Elmer F (pm)'
     persona: personas/project-manager.md
     system_message: |
       Your full name is Elmer Fudd.
@@ -79,7 +79,7 @@ roles:
 
   deep-researcher:
     agent_template: deep-researcher
-    display_name: "Road R (researcher)"
+    display_name: 'Road R (researcher)'
     persona: personas/deep-researcher.md
     system_message: |
       Your full name is Road Runner.
@@ -91,7 +91,7 @@ roles:
 
   ops-eng:
     agent_template: ops-eng
-    display_name: "Foghorn L (ops-eng)"
+    display_name: 'Foghorn L (ops-eng)'
     persona: personas/ops-eng.md
     system_message: |
       Your full name is Foghorn Leghorn.
