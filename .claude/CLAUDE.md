@@ -10,8 +10,8 @@ Provider-agnostic multi-agent orchestration framework. Currently uses Claude Cod
 
 ## Key Conventions
 
-- Save reports and deliverables to files -- never return large outputs only in messages
-- All teammates share a task list -- use `TaskCreate`, `TaskUpdate`, `TaskList` to coordinate
+- Save reports and deliverables to files — never return large outputs only in messages
+- All teammates share a task list — use `TaskCreate`, `TaskUpdate`, `TaskList` to coordinate
 - Message the AI Agent Eng when something goes wrong
 - Verify message recipients exist before sending (SendMessage silently succeeds for missing recipients)
 
