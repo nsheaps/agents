@@ -19,7 +19,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Check formatting
-        run: mise run fmt-check
+        run: mise run format-check
 
   test:
     runs-on: ubuntu-latest
