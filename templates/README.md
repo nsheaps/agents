@@ -45,9 +45,10 @@ This would read the team manifest, copy agent templates into `.claude/agents/`, 
 
 ## Available Templates
 
-| Template                            | Description                    | Roles                                                                                        |
-| :---------------------------------- | :----------------------------- | :------------------------------------------------------------------------------------------- |
-| [looney-toons](teams/looney-toons/) | Looney Tunes character theming | 8 roles (orchestrator, software-eng, ai-agent-eng, docs-writer, qa, pm, researcher, ops-eng) |
+| Template                            | Description                              | Roles                                                                                        |
+| :---------------------------------- | :--------------------------------------- | :------------------------------------------------------------------------------------------- |
+| [default](teams/default/)           | Professional, non-themed team identities | 8 roles (orchestrator, software-eng, ai-agent-eng, docs-writer, qa, pm, researcher, ops-eng) |
+| [looney-toons](teams/looney-toons/) | Looney Tunes character theming           | 8 roles (orchestrator, software-eng, ai-agent-eng, docs-writer, qa, pm, researcher, ops-eng) |
 
 ## References
 
