@@ -19,6 +19,7 @@ ORG="${ORG:-nsheaps}"
 LIMIT="${LIMIT:-200}"
 TMP_FILE="${REPO_ROOT}/.claude/tmp/gh-repo-list.json"
 PR_TMP_FILE="${REPO_ROOT}/.claude/tmp/gh-pr-counts.json"
+ISSUE_TMP_FILE="${REPO_ROOT}/.claude/tmp/gh-issue-counts.json"
 OUTPUT_FILE="/Users/nathan.heaps/src/nsheaps/obsidian-vaults/dash/nsheaps-repos.md"
 
 # Allow CLI overrides
@@ -89,20 +90,74 @@ END_TS=$(date +%s)
 ELAPSED=$((END_TS - START_TS))
 echo "PR fetch complete in ${ELAPSED}s."
 
+# Fetch issue counts for each non-archived repo
+echo "Fetching issue counts for each repo (this may take a minute)..."
+ISSUE_START_TS=$(date +%s)
+
+python3 - "${TMP_FILE}" "${ORG}" "${ISSUE_TMP_FILE}" << 'ISSUEEOF'
+import json
+import subprocess
+import sys
+
+src_file, org, out_file = sys.argv[1], sys.argv[2], sys.argv[3]
+
+with open(src_file) as f:
+    repos = json.load(f)
+
+non_archived = [r['name'] for r in repos if not r['isArchived']]
+total = len(non_archived)
+issue_counts = {}
+
+for i, repo_name in enumerate(non_archived, 1):
+    print(f"  [{i}/{total}] {org}/{repo_name}", flush=True)
+    result = subprocess.run(
+        [
+            "gh", "issue", "list",
+            "--repo", f"{org}/{repo_name}",
+            "--state", "open",
+            "--json", "number",
+            "--limit", "500",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print(f"    WARNING: gh issue list failed for {repo_name}: {result.stderr.strip()}", flush=True)
+        issue_counts[repo_name] = 0
+        continue
+
+    issues = json.loads(result.stdout)
+    issue_counts[repo_name] = len(issues)
+
+with open(out_file, "w") as f:
+    json.dump(issue_counts, f)
+
+print(f"Issue counts written to {out_file}", flush=True)
+ISSUEEOF
+
+ISSUE_END_TS=$(date +%s)
+ISSUE_ELAPSED=$((ISSUE_END_TS - ISSUE_START_TS))
+echo "Issue fetch complete in ${ISSUE_ELAPSED}s."
+
+TOTAL_ELAPSED=$((ELAPSED + ISSUE_ELAPSED))
+
 echo "Processing ${TMP_FILE}..."
 
-python3 - "${TMP_FILE}" "${OUTPUT_FILE}" "${ORG}" "${PR_TMP_FILE}" "${ELAPSED}" << 'PYEOF'
+python3 - "${TMP_FILE}" "${OUTPUT_FILE}" "${ORG}" "${PR_TMP_FILE}" "${ISSUE_TMP_FILE}" "${TOTAL_ELAPSED}" << 'PYEOF'
 import json
 import sys
 from datetime import datetime, timezone
 
-src_file, out_file, org, pr_file, elapsed_str = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
+src_file, out_file, org, pr_file, issue_file, elapsed_str = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5], sys.argv[6]
 
 with open(src_file) as f:
     repos = json.load(f)
 
 with open(pr_file) as f:
     pr_counts = json.load(f)
+
+with open(issue_file) as f:
+    issue_counts = json.load(f)
 
 NOW = datetime.now(tz=timezone.utc)
 GEN_DATE = NOW.strftime('%Y-%m-%d')
@@ -155,6 +210,13 @@ def pr_label(repo_name):
     return f"{o} open + {d} draft"
 
 
+def issue_label(repo_name):
+    count = issue_counts.get(repo_name, 0)
+    if count == 0:
+        return "—"
+    return str(count)
+
+
 # Annotate and sort
 for r in repos:
     d = days_ago(r['pushedAt'])
@@ -186,7 +248,8 @@ def make_table_rows(repo_list):
         emoji = r['_emoji']
         age = r['_age_label']
         prs = pr_label(name) if not r['isArchived'] else '—'
-        lines.append(f"| [{name}]({url}) | {desc} | {visibility} | {arch} | {prs} | {emoji} {age} |")
+        issues = issue_label(name) if not r['isArchived'] else '—'
+        lines.append(f"| [{name}]({url}) | {desc} | {visibility} | {arch} | {prs} | {issues} | {emoji} {age} |")
     return '\n'.join(lines)
 
 
@@ -195,7 +258,7 @@ archived_rows = make_table_rows(archived)
 
 report = f"""# {org} GitHub Repository Inventory
 
-Generated: {GEN_DATE} (PR fetch: {elapsed_str}s)
+Generated: {GEN_DATE} (PR + issue fetch: {elapsed_str}s)
 
 ## Summary
 
@@ -224,16 +287,16 @@ Generated: {GEN_DATE} (PR fetch: {elapsed_str}s)
 
 ## Active Repositories ({len(active)})
 
-| Repo | Description | Visibility | Archived | Open PRs | Last Push |
-| :--- | :---------- | :--------- | :------- | :------- | :-------- |
+| Repo | Description | Visibility | Archived | Open PRs | Open Issues | Last Push |
+| :--- | :---------- | :--------- | :------- | :------- | :---------- | :-------- |
 {active_rows}
 
 ---
 
 ## Archived Repositories ({archived_count})
 
-| Repo | Description | Visibility | Archived | Open PRs | Last Push |
-| :--- | :---------- | :--------- | :------- | :------- | :-------- |
+| Repo | Description | Visibility | Archived | Open PRs | Open Issues | Last Push |
+| :--- | :---------- | :--------- | :------- | :------- | :---------- | :-------- |
 {archived_rows}
 """
 
