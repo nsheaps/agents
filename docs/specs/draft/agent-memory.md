@@ -1,15 +1,10 @@
----
-title: Agent Memory
-status: draft
-author: Tweety B (docs-writer)
-date: 2026-02-23
-informs:
-  - https://github.com/nsheaps/agent-team/issues/116
-  - https://github.com/nsheaps/agent-team/issues/117
-source: docs/research/agent-memory-mechanisms.md
----
-
 # Agent Memory Spec
+
+> **Status**: Draft
+> **Author**: Tweety B (docs-writer)
+> **Date**: 2026-02-23
+> **Informs**: [agent-team#116](https://github.com/nsheaps/agent-team/issues/116), [agent-team#117](https://github.com/nsheaps/agent-team/issues/117)
+> **Source**: [docs/research/agent-memory-mechanisms.md](../../research/agent-memory-mechanisms.md)
 
 Defines how agents in agent-team persist, share, and secure knowledge across sessions.
 
@@ -52,11 +47,11 @@ Three distinct backends, each with a different concern:
 
 **Storage**: Claude Code native `memory:` frontmatter scopes
 
-| Scope     | Location                              | Git-tracked       | Sharing                           |
-| --------- | ------------------------------------- | ----------------- | --------------------------------- |
-| `project` | `.claude/agent-memory/<agent>/`       | Yes (recommended) | All team members with repo access |
-| `local`   | `.claude/agent-memory-local/<agent>/` | No (gitignored)   | None                              |
-| `user`    | `~/.claude/agent-memory/<agent>/`     | No                | Same machine, cross-project       |
+| Scope     | Location                              | Git-tracked                                       | Sharing                           |
+| --------- | ------------------------------------- | ------------------------------------------------- | --------------------------------- |
+| `project` | `.claude/agent-memory/<agent>/`       | Yes (recommended)                                 | All team members with repo access |
+| `local`   | `.claude/agent-memory-local/<agent>/` | No (requires `.gitignore` entry — Phase 1 Step 2) | None                              |
+| `user`    | `~/.claude/agent-memory/<agent>/`     | No                                                | Same machine, cross-project       |
 
 **Default scope per agent**:
 
@@ -71,7 +66,17 @@ Three distinct backends, each with a different concern:
 | ops-eng           | `user`                  | Infra patterns apply across projects         |
 | orchestrator      | `project`               | Team config and history is project-specific  |
 
-**Format**: MEMORY.md as concise index (≤200 lines enforced by Claude Code), with overflow in linked topic files (`debugging.md`, `patterns.md`, etc.).
+**Format**: MEMORY.md as concise index (≤200 lines; team convention enforced via CI in Phase 2), with overflow in linked topic files (`debugging.md`, `patterns.md`, etc.).
+
+**Example agent frontmatter with `memory:` field** (`.claude/agents/software-eng.md`):
+
+```markdown
+---
+name: software-eng
+description: Primary implementation agent. Writes code, tests changes, commits.
+memory: project
+---
+```
 
 ### 2.2 Agent Backend — Identity Persistence
 
@@ -265,6 +270,13 @@ These are safe to store in any memory scope, including git-tracked `project` sco
 
 Sensitive knowledge that must be remembered should go in `local`-scoped memory (gitignored) or a secure backend (1Password, HashiCorp Vault).
 
+**If a secret is accidentally committed to memory**:
+
+1. **Rotate the credential immediately** — assume it is compromised
+2. **Purge from git history** using `git filter-repo` or BFG Repo-Cleaner (do not just delete the file — the history still contains it)
+3. **Force-push with team-lead approval** — this is one of the few authorized uses of `--force-with-lease`
+4. **Notify AI Agent Eng** — record the incident per failure reporting protocol
+
 ### 5.3 Encryption for Cloud Backups
 
 If memory is backed up to cloud storage:
@@ -356,14 +368,16 @@ These paths agents should read but never write:
 
 ## 8. Open Questions / Human Decisions Required
 
-| Decision                       | Options                                        | Who Decides             |
-| ------------------------------ | ---------------------------------------------- | ----------------------- |
-| Memory scope per agent         | `project` vs `user` (see §2.1 recommendations) | Team lead + spec review |
-| Git-track agent memory?        | Yes (recommended) vs No (local only)           | Repo owner              |
-| Shared memory repo structure   | In-repo (recommended) vs Federated             | Architect               |
-| Identity persistence needed?   | Phase 3 MCP vs `user`-scope MEMORY.md interim  | Product owner           |
-| Cloud backup required?         | rclone crypt to S3/GCS vs local only           | Ops owner               |
-| Promotion workflow for shared/ | PR-based review vs direct agent push           | Team lead               |
+| Decision                           | Options                                                                              | Who Decides             |
+| ---------------------------------- | ------------------------------------------------------------------------------------ | ----------------------- |
+| Memory scope per agent             | `project` vs `user` (see §2.1 recommendations)                                       | Team lead + spec review |
+| Git-track agent memory?            | Yes (recommended) vs No (local only)                                                 | Repo owner              |
+| Shared memory repo structure       | In-repo (recommended) vs Federated                                                   | Architect               |
+| Identity persistence needed?       | Phase 3 MCP vs `user`-scope MEMORY.md interim                                        | Product owner           |
+| Cloud backup required?             | rclone crypt to S3/GCS vs local only                                                 | Ops owner               |
+| Concurrent write conflicts         | Single-session-per-agent constraint vs explicit merge strategy                       | Team lead               |
+| Memory pruning when cap is hit     | Manual curation vs automated archival vs expand cap                                  | Team lead + spec review |
+| Inter-agent read access at runtime | Permitted by default (all `project`-scoped files readable) vs explicit access grants | Architect               |
 
 ---
 
