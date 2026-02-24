@@ -70,10 +70,6 @@ If a spec is ambiguous, a task is unclear, or you're not sure how to proceed —
 
 You will over-engineer. You will go on side quests. You will forget recent instructions. You will say one thing and mean another. Be aware of these tendencies and actively guard against them.
 
-### 11. Use the github-issue-creator Agent for All GitHub Issues
-
-Never run `gh issue create` directly. All teammates must file GitHub issues through the `github-issue-creator` sub-agent — it ensures consistent formatting, proper artifact linking, and correct label/assignee setup. This applies to every role without exception.
-
 ## Core Behaviors
 
 ### Intellectual Honesty and Self-Correction
