@@ -45,3 +45,127 @@ jobs:
           TAG=$(git describe --tags --abbrev=0)
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+  update-homebrew:
+    needs: release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Get job context
+        id: context
+        uses: qoomon/actions--context@v4
+
+      - name: Authenticate as GitHub App
+        id: auth
+        uses: ./.github/actions/github-app-auth
+        with:
+          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Get release info
+        id: release
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          VERSION="${{ needs.release.outputs.version }}"
+          TAG="${{ needs.release.outputs.tag }}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+          # Download archive tarball and calculate SHA256
+          TARBALL_URL="https://github.com/${{ github.repository }}/archive/refs/tags/${TAG}.tar.gz"
+          echo "Downloading tarball from: $TARBALL_URL"
+          curl -fsSL "$TARBALL_URL" -o /tmp/archive.tar.gz
+          SHA256=$(sha256sum /tmp/archive.tar.gz | cut -d' ' -f1)
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+          echo "Successfully got SHA256: $SHA256"
+
+      - name: Clone homebrew-devsetup
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          gh repo clone nsheaps/homebrew-devsetup homebrew-devsetup
+
+      - name: Install gomplate
+        run: |
+          GOMPLATE_VERSION="v4.3.0"
+          GOMPLATE_SHA256="8adb82e5be7dfde49857ebd7c948fd8f9b10cdcdb13f71b74685dff6e6756890"
+          curl -fsSL "https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64" -o /usr/local/bin/gomplate
+          echo "$GOMPLATE_SHA256  /usr/local/bin/gomplate" | sha256sum -c
+          chmod +x /usr/local/bin/gomplate
+
+      - name: Generate formulas from templates
+        env:
+          Tag: ${{ steps.release.outputs.tag }}
+          SHA256: ${{ steps.release.outputs.sha256 }}
+        run: |
+          gomplate -f Formula/agent-team.rb.gotmpl -o homebrew-devsetup/Formula/agent-team.rb
+          gomplate -f Formula/claude-team.rb.gotmpl -o homebrew-devsetup/Formula/claude-team.rb
+
+      - name: Close stale formula PRs
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          cd homebrew-devsetup
+          # Close any open PRs from previous formula updates — they're superseded
+          # Convention dependency: PR title prefix must match "chore: update agent-team claude-team to"
+          stale_prs=$(gh pr list --state open --search "chore: update agent-team claude-team to" --json number --jq '.[].number' || true)
+          for pr_num in $stale_prs; do
+            echo "Closing superseded PR #${pr_num}"
+            gh pr close "$pr_num" --comment "Superseded by v${{ steps.release.outputs.version }} update."
+          done
+
+      - name: Create PR to update formula
+        id: formula-pr
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+          RELEASE_URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.release.outputs.tag }}
+          JOB_URL: ${{ steps.context.outputs.job_url }}
+          VERSION: ${{ steps.release.outputs.version }}
+          TAG: ${{ steps.release.outputs.tag }}
+        run: |
+          cd homebrew-devsetup
+          BRANCH="bump-agent-team-claude-team-${VERSION}"
+
+          # Delete remote branch if it exists from a previous failed run
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+
+          git checkout -b "$BRANCH"
+          git add Formula/agent-team.rb Formula/claude-team.rb
+          git commit -m "chore: update agent-team claude-team to ${VERSION}"
+          git push -u origin "$BRANCH"
+
+          cat > /tmp/pr-body.md <<BODY_EOF
+Automated formula update from agent-team release
+
+**Release:** ${RELEASE_URL}
+**Workflow:** ${JOB_URL}
+BODY_EOF
+
+          PR_URL=$(gh pr create \
+            --title "chore: update agent-team claude-team to ${VERSION}" \
+            --body-file /tmp/pr-body.md \
+            --base main)
+          echo "pr_url=$PR_URL" >> "$GITHUB_OUTPUT"
+
+      - name: Enable auto-merge with retry
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+          PR_URL: ${{ steps.formula-pr.outputs.pr_url }}
+        run: |
+          # Retry auto-merge — CI checks on the target repo need time to start,
+          # and the GraphQL API rejects enablePullRequestAutoMerge while the PR
+          # is in "unstable" (checks pending) status.
+          for attempt in 1 2 3 4 5; do
+            if gh pr merge "$PR_URL" --auto --squash; then
+              echo "Auto-merge enabled successfully on attempt ${attempt}"
+              exit 0
+            fi
+            wait=$((attempt * 10))
+            echo "Auto-merge not ready (attempt ${attempt}/5), waiting ${wait}s..."
+            sleep "$wait"
+          done
+          echo "::warning::Could not enable auto-merge after 5 attempts. PR was created successfully at ${PR_URL} — merge manually or re-run."
