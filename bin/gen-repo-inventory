@@ -116,7 +116,7 @@ def make_table_rows(repo_list):
         name = r['name']
         url = r['url']
         desc = (r['description'] or '').replace('|', r'\|')
-        visibility = 'Private' if r['isPrivate'] else 'Public'
+        visibility = '🔒 Private' if r['isPrivate'] else '🌐 Public'
         arch = 'Yes' if r['isArchived'] else 'No'
         emoji = r['_emoji']
         age = r['_age_label']
