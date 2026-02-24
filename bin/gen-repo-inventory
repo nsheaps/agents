@@ -75,26 +75,26 @@ def age_label(days):
         return f"~{y} years"
 
 
-def color_for_days(days):
+def emoji_for_days(days):
     if days < 30:
-        return "brightgreen"
+        return "🟢"
     elif days < 90:
-        return "yellow"
+        return "🟡"
     elif days < 180:
-        return "orange"
+        return "🟠"
     elif days < 365:
-        return "red"
+        return "🔴"
     elif days < 730:
-        return "black"
+        return "⚫"
     else:
-        return "lightgrey"
+        return "⚪"
 
 
 # Annotate and sort
 for r in repos:
     d = days_ago(r['pushedAt'])
     r['_days'] = d
-    r['_color'] = color_for_days(d)
+    r['_emoji'] = emoji_for_days(d)
     r['_age_label'] = age_label(d)
 
 repos.sort(key=lambda r: r['pushedAt'], reverse=True)
@@ -118,10 +118,9 @@ def make_table_rows(repo_list):
         desc = (r['description'] or '').replace('|', r'\|')
         visibility = 'Private' if r['isPrivate'] else 'Public'
         arch = 'Yes' if r['isArchived'] else 'No'
-        color = r['_color']
-        badge_url = f"https://img.shields.io/github/last-commit/{org}/{name}?color={color}"
-        badge = f"[![last-commit]({badge_url})]({url})"
-        lines.append(f"| [{name}]({url}) | {desc} | {visibility} | {arch} | {badge} |")
+        emoji = r['_emoji']
+        age = r['_age_label']
+        lines.append(f"| [{name}]({url}) | {desc} | {visibility} | {arch} | {emoji} {age} |")
     return '\n'.join(lines)
 
 
@@ -144,16 +143,16 @@ Generated: {GEN_DATE}
 | Active < 3 months | {active_lt3mo} |
 | Stale > 6 months | {stale_gt6mo} |
 
-### Badge Color Key
+### Recency Key
 
-| Color | Age |
+| Emoji | Age |
 | :---- | :-- |
-| ![brightgreen](https://img.shields.io/badge/age-brightgreen-brightgreen) | < 1 month |
-| ![yellow](https://img.shields.io/badge/age-yellow-yellow) | 1–3 months |
-| ![orange](https://img.shields.io/badge/age-orange-orange) | 3–6 months |
-| ![red](https://img.shields.io/badge/age-red-red) | 6–12 months |
-| ![black](https://img.shields.io/badge/age-black-black) | 12–24 months |
-| ![lightgrey](https://img.shields.io/badge/age-lightgrey-lightgrey) | 24+ months |
+| 🟢 | < 1 month |
+| 🟡 | 1–3 months |
+| 🟠 | 3–6 months |
+| 🔴 | 6–12 months |
+| ⚫ | 12–24 months |
+| ⚪ | 24+ months |
 
 ---
 
