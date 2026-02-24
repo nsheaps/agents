@@ -48,6 +48,7 @@ This would read the team manifest, copy agent templates into `.claude/agents/`, 
 | Template                            | Description                              | Roles                                                                                        |
 | :---------------------------------- | :--------------------------------------- | :------------------------------------------------------------------------------------------- |
 | [default](teams/default/)           | Professional, non-themed team identities | 8 roles (orchestrator, software-eng, ai-agent-eng, docs-writer, qa, pm, researcher, ops-eng) |
+| [dev-team](teams/dev-team/)         | Minimal dev team for focused tasks       | 3 roles (pm, software-eng, qa)                                                               |
 | [looney-toons](teams/looney-toons/) | Looney Tunes character theming           | 8 roles (orchestrator, software-eng, ai-agent-eng, docs-writer, qa, pm, researcher, ops-eng) |
 
 ## References
