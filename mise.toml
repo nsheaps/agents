@@ -1,19 +1,24 @@
 [tools]
 bun = "latest"
 
-[tasks.fmt]
+[tasks.format]
 description = "Format markdown files with prettier"
 run = "bun run prettier --write '**/*.md'"
 
-[tasks.fmt-check]
+[tasks.format-check]
 description = "Check markdown formatting with prettier"
 run = "bun run prettier --check '**/*.md'"
 
 [tasks.lint]
 description = "Run all linting checks"
-depends = ["fmt-check"]
+depends = ["format-check"]
 run = "echo 'All lint checks passed'"
 
 [tasks.test]
 description = "Run tests"
 run = "bun test"
+
+[tasks.check]
+description = "Run all checks (format + lint + test)"
+depends = ["lint", "test"]
+run = "echo 'All checks passed'"
