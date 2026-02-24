@@ -59,11 +59,11 @@ claude-team team create --team-name my-project-team \
 | :------------------ | :----- | :-------------------- | :--------------------------------------------------------- |
 | `--team-name`       | string | (prompted)            | Team identifier (kebab-case)                               |
 | `--description`     | string | (prompted)            | Human-readable team description                            |
-| `--template`        | string | `"default"`           | Base template from `templates/teams/` to copy from         |
+| `--template`        | string | `"default"`           | Base template from `templates/teams/`, or `none` for empty team |
 | `--output-dir`      | string | `"templates/teams/"`  | Directory to create the team in (relative to project root) |
 | `--no-personas`     | bool   | `false`               | Skip creating persona files                                |
 | `--model`           | string | `"claude-opus-4-6"`   | Default model for team agents                              |
-| `--permission-mode` | string | `"bypassPermissions"` | Default permission mode for team agents                    |
+| `--permission-mode` | string | `"default"`           | Default permission mode for team agents (see §2.2 note)    |
 | `--teammate-mode`   | string | `"auto"`              | Teammate display mode (auto, in-process, tmux)             |
 | `--framework`       | string | `"claude-code"`       | Agent framework (only claude-code supported currently)     |
 
@@ -138,7 +138,7 @@ roles:
 # Team-level settings
 settings:
   teammate_mode: auto
-  permission_mode: bypassPermissions
+  permission_mode: default
   framework: claude-code
   model: claude-opus-4-6
 ```
@@ -178,12 +178,17 @@ claude-team agent create --name frontend-eng \
 | `--name`             | string | (prompted)            | Agent identifier (kebab-case), becomes the filename            |
 | `--description`      | string | (prompted)            | When to invoke this agent (used by Claude Code for selection)  |
 | `--model`            | string | (none -- use default) | Model override (e.g., `claude-opus-4-6`, `sonnet`, `haiku`)    |
-| `--permission-mode`  | string | `"bypassPermissions"` | One of: default, plan, bypassPermissions, acceptEdits, dontAsk |
+| `--permission-mode`  | string | `"default"`           | One of: default, plan, bypassPermissions, acceptEdits, dontAsk |
 | `--color`            | string | (none)                | Terminal UI color for the agent                                |
 | `--prompt-mode`      | string | `"extend"`            | How the agent prompt combines with base: extend or replace     |
 | `--tools`            | string | (all)                 | Comma-separated whitelist of allowed tools                     |
 | `--disallowed-tools` | string | (none)                | Comma-separated blacklist of tools to remove                   |
 | `--output-dir`       | string | `.claude/agents/`     | Directory to create the agent file in                          |
+| `--overwrite`        | bool   | `false`               | Overwrite existing agent file if it exists                     |
+
+> **Permission mode tradeoffs**: `default` inherits the parent session's permission mode, which is safest for general-purpose agents and untrusted workloads. `bypassPermissions` grants unrestricted tool access and is appropriate for agent team teammates that need autonomous operation (e.g., in `run-claude-team-persistent` sessions). When creating agents for team use, the interactive flow highlights `bypassPermissions` as the recommended choice for teammates specifically.
+
+> **Tool flag semantics**: `--tools` (whitelist) and `--disallowed-tools` (blacklist) are mutually exclusive — specifying both produces an error: `"Cannot use --tools and --disallowed-tools together."` When `--tools` is unset, all tools are available (the default). When set to an explicit list, only those tools are allowed. Unknown tool names produce a warning but are not rejected (tools may be added by plugins or MCP servers at runtime).
 
 #### Interactive Flow
 
@@ -201,9 +206,9 @@ Model override (enter for framework default):
   4. haiku
   > 1
 
-Permission mode [bypassPermissions]:
-  1. bypassPermissions (Recommended for teammates)
-  2. default
+Permission mode [default]:
+  1. default (Inherits parent session permissions)
+  2. bypassPermissions (Recommended for agent team teammates)
   3. acceptEdits
   4. plan
   5. dontAsk
@@ -226,12 +231,7 @@ Creates `.claude/agents/{name}.md`:
 name: frontend-eng
 description: |
   Frontend specialist for React and TypeScript UI work.
-permission_mode: bypassPermissions
-model: claude-opus-4-6
-prompt_mode: extend
-color: cyan
-tools: []
-disallowed_tools: []
+permission_mode: default
 ---
 
 # Frontend Engineer
@@ -251,13 +251,14 @@ You are a frontend engineer specializing in React and TypeScript.
 Start your session by reading the files in .claude/docs/.
 ```
 
-> **Note**: Fields with empty or default values (`tools`, `disallowed_tools`, `model`, `color`) are only included in the output when explicitly set via flags. The minimal output includes only `name`, `description`, and `permission_mode`.
+> **Note**: The minimal output includes only `name`, `description`, and `permission_mode` — these are the only fields consumed by the current Claude Code runtime. Fields `model`, `prompt_mode`, `color`, `tools`, and `disallowed_tools` are only included when explicitly set via flags. Of these, `model` is live today; `prompt_mode`, `color`, `tools`, and `disallowed_tools` are **planned fields** defined in the [Agent Launcher Spec](agent-launcher.md) but not yet consumed by the Claude Code runtime.
 
 #### Error Handling
 
 | Condition                                 | Behavior                                              |
 | :---------------------------------------- | :---------------------------------------------------- |
-| Agent name already exists                 | Error: "Agent '{name}' already exists at {path}"      |
+| Agent name already exists (no `--overwrite`) | Error: "Agent '{name}' already exists at {path}. Use --overwrite to replace." |
+| Agent name already exists (`--overwrite`)    | Warning: "Overwriting existing agent at {path}". Proceeds. |
 | Invalid name (not kebab-case)             | Error: "Agent name must be kebab-case: {suggestion}"  |
 | `.claude/agents/` directory doesn't exist | Create it automatically                               |
 | Invalid permission mode                   | Error: "Invalid permission mode. Valid: default, ..." |
@@ -462,6 +463,8 @@ Available on all commands:
 | `--no-color` | bool   | false   | Disable colored output    |
 | `--cwd`      | string | `"."`   | Project root directory    |
 
+> **Path resolution**: All relative paths in flags (e.g., `--output-dir`, agent file paths) are resolved relative to `--cwd`. Example: `--cwd /some/project --output-dir templates/teams/` writes to `/some/project/templates/teams/`.
+
 ---
 
 ## 5. File Conventions
@@ -512,6 +515,16 @@ The `claude-team` CLI creates _templates_ (in the repo). The runtime creates _in
 - Must not conflict with existing agents in `.claude/agents/`
 - Must not use reserved names: `orchestrator` is valid but has special semantics
 - Maximum 30 characters
+
+### Templates
+
+- Must be a directory name in `templates/teams/`, or the special value `none`
+- `none` creates an empty team with no roles (see §7 edge cases)
+
+### Tool Flags
+
+- `--tools` and `--disallowed-tools` are mutually exclusive — error if both provided
+- Unknown tool names produce a warning but are accepted (tools may be added at runtime by plugins or MCP servers)
 
 ### Display Names
 
