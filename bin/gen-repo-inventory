@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+# bin/gen-repo-inventory
+#
+# Fetches nsheaps GitHub repo list and generates the repo inventory dashboard in Obsidian.
+# Default output: /Users/nathan.heaps/src/nsheaps/obsidian-vaults/dash/nsheaps-repos.md
+#
+# Dependencies: gh (GitHub CLI), python3 (stdlib only)
+# Usage: bin/gen-repo-inventory [--org ORG] [--limit N] [--output PATH]
+#
+# The script is self-contained. Run it from the repo root:
+#   ./bin/gen-repo-inventory
+
+set -euo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+
+ORG="${ORG:-nsheaps}"
+LIMIT="${LIMIT:-200}"
+TMP_FILE="${REPO_ROOT}/.claude/tmp/gh-repo-list.json"
+OUTPUT_FILE="/Users/nathan.heaps/src/nsheaps/obsidian-vaults/dash/nsheaps-repos.md"
+
+# Allow CLI overrides
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --org) ORG="$2"; shift 2 ;;
+    --limit) LIMIT="$2"; shift 2 ;;
+    --output) OUTPUT_FILE="$2"; shift 2 ;;
+    *) echo "Unknown argument: $1"; exit 1 ;;
+  esac
+done
+
+echo "Fetching repo list for ${ORG} (limit ${LIMIT})..."
+mkdir -p "$(dirname "${TMP_FILE}")"
+gh repo list "${ORG}" --limit "${LIMIT}" \
+  --json name,description,pushedAt,isArchived,isPrivate,url \
+  > "${TMP_FILE}"
+
+echo "Processing ${TMP_FILE}..."
+
+python3 - "${TMP_FILE}" "${OUTPUT_FILE}" "${ORG}" << 'PYEOF'
+import json
+import sys
+from datetime import datetime, timezone
+
+src_file, out_file, org = sys.argv[1], sys.argv[2], sys.argv[3]
+
+with open(src_file) as f:
+    repos = json.load(f)
+
+NOW = datetime.now(tz=timezone.utc)
+GEN_DATE = NOW.strftime('%Y-%m-%d')
+
+
+def days_ago(pushed_at_str):
+    dt = datetime.fromisoformat(pushed_at_str.replace('Z', '+00:00'))
+    return (NOW - dt).days
+
+
+def age_label(days):
+    if days < 30:
+        return "< 1 month"
+    elif days < 90:
+        m = days // 30
+        return f"~{m} month{'s' if m > 1 else ''}"
+    elif days < 365:
+        m = days // 30
+        return f"~{m} months"
+    elif days < 730:
+        y = days // 365
+        rem = (days % 365) // 30
+        return f"~{y}y {rem}mo" if rem > 0 else f"~{y} year"
+    else:
+        y = days // 365
+        return f"~{y} years"
+
+
+def color_for_days(days):
+    if days < 30:
+        return "brightgreen"
+    elif days < 90:
+        return "yellow"
+    elif days < 180:
+        return "orange"
+    elif days < 365:
+        return "red"
+    elif days < 730:
+        return "black"
+    else:
+        return "lightgrey"
+
+
+# Annotate and sort
+for r in repos:
+    d = days_ago(r['pushedAt'])
+    r['_days'] = d
+    r['_color'] = color_for_days(d)
+    r['_age_label'] = age_label(d)
+
+repos.sort(key=lambda r: r['pushedAt'], reverse=True)
+
+active = [r for r in repos if not r['isArchived']]
+archived = [r for r in repos if r['isArchived']]
+
+total = len(repos)
+public_count = sum(1 for r in repos if not r['isPrivate'])
+private_count = sum(1 for r in repos if r['isPrivate'])
+archived_count = len(archived)
+active_lt3mo = sum(1 for r in active if r['_days'] < 90)
+stale_gt6mo = sum(1 for r in repos if r['_days'] > 180)
+
+
+def make_table_rows(repo_list):
+    lines = []
+    for r in repo_list:
+        name = r['name']
+        url = r['url']
+        desc = (r['description'] or '').replace('|', r'\|')
+        visibility = 'Private' if r['isPrivate'] else 'Public'
+        arch = 'Yes' if r['isArchived'] else 'No'
+        color = r['_color']
+        badge_url = f"https://img.shields.io/github/last-commit/{org}/{name}?color={color}"
+        badge = f"[![last-commit]({badge_url})]({url})"
+        lines.append(f"| [{name}]({url}) | {desc} | {visibility} | {arch} | {badge} |")
+    return '\n'.join(lines)
+
+
+active_rows = make_table_rows(active)
+archived_rows = make_table_rows(archived)
+
+report = f"""# {org} GitHub Repository Inventory
+
+Generated: {GEN_DATE}
+
+## Summary
+
+| Metric | Count |
+| :----- | ----: |
+| Total repositories | {total} |
+| Public | {public_count} |
+| Private | {private_count} |
+| Archived | {archived_count} |
+| Active (non-archived) | {len(active)} |
+| Active < 3 months | {active_lt3mo} |
+| Stale > 6 months | {stale_gt6mo} |
+
+### Badge Color Key
+
+| Color | Age |
+| :---- | :-- |
+| ![brightgreen](https://img.shields.io/badge/age-brightgreen-brightgreen) | < 1 month |
+| ![yellow](https://img.shields.io/badge/age-yellow-yellow) | 1–3 months |
+| ![orange](https://img.shields.io/badge/age-orange-orange) | 3–6 months |
+| ![red](https://img.shields.io/badge/age-red-red) | 6–12 months |
+| ![black](https://img.shields.io/badge/age-black-black) | 12–24 months |
+| ![lightgrey](https://img.shields.io/badge/age-lightgrey-lightgrey) | 24+ months |
+
+---
+
+## Active Repositories ({len(active)})
+
+| Repo | Description | Visibility | Archived | Last Push |
+| :--- | :---------- | :--------- | :------- | :-------- |
+{active_rows}
+
+---
+
+## Archived Repositories ({archived_count})
+
+| Repo | Description | Visibility | Archived | Last Push |
+| :--- | :---------- | :--------- | :------- | :-------- |
+{archived_rows}
+"""
+
+with open(out_file, 'w') as f:
+    f.write(report)
+
+print(f"Written: {out_file}")
+print(f"Total: {total}  Public: {public_count}  Private: {private_count}  Archived: {archived_count}")
+print(f"Active <3mo: {active_lt3mo}  Stale >6mo: {stale_gt6mo}")
+PYEOF
+
+echo "Done. Report at: ${OUTPUT_FILE}"
