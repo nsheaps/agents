@@ -18,6 +18,7 @@ REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ORG="${ORG:-nsheaps}"
 LIMIT="${LIMIT:-200}"
 TMP_FILE="${REPO_ROOT}/.claude/tmp/gh-repo-list.json"
+PR_TMP_FILE="${REPO_ROOT}/.claude/tmp/gh-pr-counts.json"
 OUTPUT_FILE="/Users/nathan.heaps/src/nsheaps/obsidian-vaults/dash/nsheaps-repos.md"
 
 # Allow CLI overrides
@@ -36,17 +37,72 @@ gh repo list "${ORG}" --limit "${LIMIT}" \
   --json name,description,pushedAt,isArchived,isPrivate,url \
   > "${TMP_FILE}"
 
+# Fetch PR counts for each non-archived repo
+echo "Fetching PR counts for each repo (this may take a minute)..."
+START_TS=$(date +%s)
+
+# Build a JSON object mapping repo name -> {open, draft}
+python3 - "${TMP_FILE}" "${ORG}" "${PR_TMP_FILE}" << 'PREOF'
+import json
+import subprocess
+import sys
+
+src_file, org, out_file = sys.argv[1], sys.argv[2], sys.argv[3]
+
+with open(src_file) as f:
+    repos = json.load(f)
+
+non_archived = [r['name'] for r in repos if not r['isArchived']]
+total = len(non_archived)
+pr_counts = {}
+
+for i, repo_name in enumerate(non_archived, 1):
+    print(f"  [{i}/{total}] {org}/{repo_name}", flush=True)
+    result = subprocess.run(
+        [
+            "gh", "pr", "list",
+            "--repo", f"{org}/{repo_name}",
+            "--state", "open",
+            "--json", "isDraft",
+            "--limit", "500",
+        ],
+        capture_output=True,
+        text=True,
+    )
+    if result.returncode != 0:
+        print(f"    WARNING: gh pr list failed for {repo_name}: {result.stderr.strip()}", flush=True)
+        pr_counts[repo_name] = {"open": 0, "draft": 0}
+        continue
+
+    prs = json.loads(result.stdout)
+    draft_count = sum(1 for pr in prs if pr["isDraft"])
+    open_count = len(prs) - draft_count
+    pr_counts[repo_name] = {"open": open_count, "draft": draft_count}
+
+with open(out_file, "w") as f:
+    json.dump(pr_counts, f)
+
+print(f"PR counts written to {out_file}", flush=True)
+PREOF
+
+END_TS=$(date +%s)
+ELAPSED=$((END_TS - START_TS))
+echo "PR fetch complete in ${ELAPSED}s."
+
 echo "Processing ${TMP_FILE}..."
 
-python3 - "${TMP_FILE}" "${OUTPUT_FILE}" "${ORG}" << 'PYEOF'
+python3 - "${TMP_FILE}" "${OUTPUT_FILE}" "${ORG}" "${PR_TMP_FILE}" "${ELAPSED}" << 'PYEOF'
 import json
 import sys
 from datetime import datetime, timezone
 
-src_file, out_file, org = sys.argv[1], sys.argv[2], sys.argv[3]
+src_file, out_file, org, pr_file, elapsed_str = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
 
 with open(src_file) as f:
     repos = json.load(f)
+
+with open(pr_file) as f:
+    pr_counts = json.load(f)
 
 NOW = datetime.now(tz=timezone.utc)
 GEN_DATE = NOW.strftime('%Y-%m-%d')
@@ -90,6 +146,15 @@ def emoji_for_days(days):
         return "⚪"
 
 
+def pr_label(repo_name):
+    counts = pr_counts.get(repo_name, {"open": 0, "draft": 0})
+    o = counts["open"]
+    d = counts["draft"]
+    if o == 0 and d == 0:
+        return "—"
+    return f"{o} open + {d} draft"
+
+
 # Annotate and sort
 for r in repos:
     d = days_ago(r['pushedAt'])
@@ -120,7 +185,8 @@ def make_table_rows(repo_list):
         arch = 'Yes' if r['isArchived'] else 'No'
         emoji = r['_emoji']
         age = r['_age_label']
-        lines.append(f"| [{name}]({url}) | {desc} | {visibility} | {arch} | {emoji} {age} |")
+        prs = pr_label(name) if not r['isArchived'] else '—'
+        lines.append(f"| [{name}]({url}) | {desc} | {visibility} | {arch} | {prs} | {emoji} {age} |")
     return '\n'.join(lines)
 
 
@@ -129,7 +195,7 @@ archived_rows = make_table_rows(archived)
 
 report = f"""# {org} GitHub Repository Inventory
 
-Generated: {GEN_DATE}
+Generated: {GEN_DATE} (PR fetch: {elapsed_str}s)
 
 ## Summary
 
@@ -158,16 +224,16 @@ Generated: {GEN_DATE}
 
 ## Active Repositories ({len(active)})
 
-| Repo | Description | Visibility | Archived | Last Push |
-| :--- | :---------- | :--------- | :------- | :-------- |
+| Repo | Description | Visibility | Archived | Open PRs | Last Push |
+| :--- | :---------- | :--------- | :------- | :------- | :-------- |
 {active_rows}
 
 ---
 
 ## Archived Repositories ({archived_count})
 
-| Repo | Description | Visibility | Archived | Last Push |
-| :--- | :---------- | :--------- | :------- | :-------- |
+| Repo | Description | Visibility | Archived | Open PRs | Last Push |
+| :--- | :---------- | :--------- | :------- | :------- | :-------- |
 {archived_rows}
 """
 
