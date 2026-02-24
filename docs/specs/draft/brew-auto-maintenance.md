@@ -80,6 +80,8 @@ brew-auto-maintenance upgrade [--tap <tap>] [--formula <name>] [--casks] [--dry-
 - `--casks`: include casks (overrides config)
 - `--dry-run`: print what would be upgraded without running
 
+**Input validation (SECURITY)**: `--formula` and `--tap` values must be validated before use. Accepted pattern: `^[a-zA-Z0-9_\-/]+$`. Reject and exit 2 with an error message on any value that does not match. Arguments must be passed as individual elements to `exec.Command` — never concatenated into a shell string. Example: `exec.Command("brew", "upgrade", formulaName)`, not `exec.Command("sh", "-c", "brew upgrade "+formulaName)`.
+
 ### 3.4 `service`
 
 ```
@@ -93,13 +95,34 @@ brew-auto-maintenance service restart    # Stop + start
 
 Plist location: `~/Library/LaunchAgents/com.nsheaps.brew-auto-maintenance.plist`
 
+**State machine and error behaviors**:
+
+| Situation | Behavior |
+|-----------|----------|
+| `install` called when plist already exists | Overwrite plist and re-bootstrap; print "Reinstalling service" |
+| `install` called when binary path in plist no longer exists | Error: "Binary not found at {path}. Re-install brew-auto-maintenance first." |
+| `uninstall` called when service is currently running | Run `stop` first, then `bootout`, then remove plist |
+| `uninstall` called when service is not installed | Exit 0 with "Service not installed — nothing to do" |
+| `start` called when service is not installed | Exit 1 with "Service not installed. Run `service install` first." |
+| `stop` called when service is not running | Exit 0 with "Service not running — nothing to do" |
+| `launchctl bootstrap` fails | Print stderr from launchctl, exit 1 with "Failed to load service" |
+| Plist file has wrong permissions (not 644) | Correct to 644 before bootstrapping |
+| `brew` not found in PATH | All subcommands that invoke brew exit 1 with "brew not found in PATH. Is Homebrew installed?" Note: launchd PATH differs from interactive shell PATH — the plist may need an explicit `EnvironmentVariables` key for PATH if `brew` is not at a standard location (`/usr/local/bin/brew` or `/opt/homebrew/bin/brew`). |
+
 ### 3.5 `config`
 
 ```
 brew-auto-maintenance config show     # Print current config (with defaults)
-brew-auto-maintenance config edit     # Open config in $EDITOR
+brew-auto-maintenance config edit     # Open config in editor (see below)
 brew-auto-maintenance config reset    # Write default config (prompts if exists)
 ```
+
+**Editor resolution for `config edit`** (in priority order):
+1. `$VISUAL` environment variable
+2. `$EDITOR` environment variable
+3. `open -t {path}` (macOS TextEdit as safe fallback)
+
+The config file path is fixed at `~/Library/Application Support/brew-auto-maintenance/config.yaml` and is not user-controllable at the point of opening. `config reset` prompts via stdin (`y/N`) — it does not use a macOS dialog, so it is safe to call from a terminal context. In a TTY-less context (e.g., from launchd), `config reset` exits 1 with "Cannot prompt in non-interactive context. Use --force to overwrite."
 
 ---
 
@@ -125,9 +148,14 @@ autoUpdate: true
 # How often to check for updates (duration: e.g. "6h", "30m", "1h30m")
 checkInterval: "6h"
 
-# When to install upgrades (cron expression or duration after check)
-# cron: "0 2 * * *"   → 2:00 AM daily
-# duration: "0s"       → immediately after check
+# When to install upgrades.
+# Two formats supported — mutually exclusive:
+#   cron:     standard 5-field cron expression  (e.g. "0 2 * * *" = 2:00 AM daily)
+#   duration: Go duration string                (e.g. "0s" = immediately after check)
+#
+# Parsing rule: attempt time.ParseDuration first; if it fails, parse as cron.
+# If both fail, reject the value at startup with an error message.
+# If empty or missing, defaults to "0s" (upgrade immediately after check).
 installSchedule: "0 2 * * *"
 
 # Whether to upgrade casks in addition to formulae
@@ -152,12 +180,17 @@ taps:
 ```go
 type Config struct {
     AutoUpdate      bool         `yaml:"autoUpdate"`
-    CheckInterval   string       `yaml:"checkInterval"`   // parsed as time.Duration
-    InstallSchedule string       `yaml:"installSchedule"` // cron or duration
+    CheckInterval   string       `yaml:"checkInterval"`   // required; validated via time.ParseDuration post-unmarshal
+    InstallSchedule string       `yaml:"installSchedule"` // required; parsed as duration first, then cron (see §4.2)
     IncludeCasks    bool         `yaml:"includeCasks"`
     NotifyOnUpdate  bool         `yaml:"notifyOnUpdate"`
     Taps            []TapConfig  `yaml:"taps"`
 }
+// NOTE: CheckInterval and InstallSchedule are strings to allow YAML parsing
+// without a custom decoder, but MUST be validated after unmarshal.
+// Implement a Config.Validate() method that calls time.ParseDuration on
+// CheckInterval and applies the cron/duration disambiguation rule to
+// InstallSchedule. Return a descriptive error if either is invalid.
 
 type TapConfig struct {
     Tap      string   `yaml:"tap"`
@@ -177,11 +210,19 @@ type TapConfig struct {
 | `gopkg.in/yaml.v3` | Config parsing | Sufficient for MVP; upgrade to koanf if config grows |
 | `os/exec` | Shell out to `brew` + `launchctl` | stdlib; always use `context.WithTimeout` |
 | `text/template` | plist generation | stdlib; no launchd Go wrapper exists |
-| `cobra` | CLI subcommand parsing | Optional; plain `os.Args` switch acceptable for ≤6 commands |
+| `github.com/spf13/cobra` | CLI subcommand parsing | **Required** — nested subcommands (`service install`, `config show`) and multiple per-command flags make hand-rolled parsing error-prone |
 
 See [research §1–§4](../../research/brew-auto-maintenance.md) for library evaluation rationale.
 
 ### 5.2 launchd Integration
+
+**Log paths**: `{{.LogPath}}` and `{{.ErrLogPath}}` resolve to:
+- stdout: `~/Library/Logs/brew-auto-maintenance/brew-auto-maintenance.log`
+- stderr: `~/Library/Logs/brew-auto-maintenance/brew-auto-maintenance.error.log`
+
+These paths are hardcoded — not user-configurable — to prevent path injection.
+
+**XML escaping (SECURITY)**: All template variables (`{{.Program}}`, `{{.LogPath}}`, `{{.ErrLogPath}}`) must be XML-escaped before insertion into the plist. Use `html/template` instead of `text/template`, or apply `xml.EscapeText()` to each value before rendering. Paths containing `&`, `<`, `>`, `"`, or `'` must be escaped. Additionally, validate that `{{.Program}}` is an absolute path matching `^/[^\x00]+$` before rendering — reject relative paths or empty strings.
 
 plist template (embedded in binary via `go:embed`):
 
@@ -227,11 +268,14 @@ status:    launchctl print gui/{UID}/com.nsheaps.brew-auto-maintenance
 
 Given a `TapConfig` entry with `tap: "nsheaps/devsetup"` and `formulae: ["uufft"]`:
 
-1. Run `brew list --formula` to get installed formulae from that tap (via `brew info --json=v2 --installed`)
-2. Filter to only the listed formulae names
-3. Run `brew upgrade <formula1> <formula2> ...`
+1. Run `brew info --json=v2 --installed` to get the full JSON list of installed formulae, including each formula's tap source.
+2. Parse the JSON to identify which installed formulae belong to the configured tap.
+3. If `formulae` is non-empty, filter further to only the names listed in `formulae`.
+4. Run `exec.Command("brew", "upgrade", formula1, formula2, ...)` with the resulting list.
 
-If `formulae` is empty, run `brew upgrade $(brew list --formula | grep -f <tap-formulae-list>)`.
+If the resulting list is empty (nothing installed from that tap, or none of the listed formulae are installed), exit 0 with "Nothing to upgrade for tap {tap}."
+
+**Note**: Do not use `brew list --formula | grep` to find tap-specific formulae — `brew list` does not include tap provenance. Use `brew info --json=v2 --installed` exclusively.
 
 ### 5.4 Menu Bar (Phase 3)
 
@@ -298,6 +342,14 @@ brews:
       bin.install "brew-auto-maintenance"
 ```
 
+**CGO cross-compilation constraint**: `CGO_ENABLED=1` with cross-compilation (building `amd64` on an `arm64` machine or vice versa) requires an explicit cross-compiler toolchain. CI must either:
+- Use a macOS runner per architecture (one `macos-13` for amd64, one `macos-14`/`macos-15` for arm64), OR
+- Use a cross-compiler (e.g., `o64-clang`) via a Docker image — complex and brittle on macOS
+
+**Recommended**: Use separate GitHub Actions runners per architecture. GoReleaser's `universal_binaries` feature can then combine both outputs into a single macOS fat binary. This avoids CGO cross-compilation entirely.
+
+Note: Phase 1 (`CGO_ENABLED=0`) can cross-compile freely. The runner-per-arch requirement only applies from Phase 3 onward when systray is added.
+
 ---
 
 ## 6. Implementation Phases
@@ -305,18 +357,18 @@ brews:
 ### Phase 1: CLI Foundation (MVP)
 
 **Deliverables**:
-- `brew check` — show outdated formulae/casks
-- `brew upgrade` — run update + upgrade with tap/formula filtering
-- `brew config show/edit/reset`
+- `brew-auto-maintenance check` — show outdated formulae/casks
+- `brew-auto-maintenance upgrade` — run update + upgrade with tap/formula filtering
+- `brew-auto-maintenance config show/edit/reset`
 - Plain YAML config with all schema fields
-- No CGO, no tray — cross-compilable for development
+- No CGO (`CGO_ENABLED=0`), no tray — cross-compilable for development
 
 **Done when**: `brew-auto-maintenance check` and `brew-auto-maintenance upgrade --tap nsheaps/devsetup --formula uufft` work correctly on a real machine.
 
 ### Phase 2: launchd Service
 
 **Deliverables**:
-- `brew service install/uninstall/start/stop/status/restart`
+- `brew-auto-maintenance service install/uninstall/start/stop/status/restart`
 - Embedded plist template
 - Periodic `check` + conditional `upgrade` via `StartInterval`
 - Logs to `~/Library/Logs/brew-auto-maintenance/`
@@ -326,11 +378,13 @@ brews:
 ### Phase 3: Menu Bar
 
 **Deliverables**:
-- `brew tray` — starts menu bar app
+- `brew-auto-maintenance tray` — starts menu bar app
 - `.app` bundle structure (for distribution)
 - Template icon (22×22, dark/light mode)
 - Dynamic outdated count badge
 - "Check now" / "Upgrade now" actions
+
+**Build requirement change**: Phase 3 introduces `fyne.io/systray` (CGO), raising the build requirement from `CGO_ENABLED=0` (Phase 1–2) to `CGO_ENABLED=1`. CI must switch to per-architecture macOS runners (see §5.6).
 
 **Done when**: Menu bar icon appears, shows outdated count, triggers upgrade from menu.
 
@@ -348,9 +402,11 @@ brews:
 |---|----------|--------|
 | 1 | `brew outdated --json=v2` exact schema for tap-specific formulae | Needed for Phase 1 |
 | 2 | Notification approach: `osascript` vs CGO `UserNotifications` | Phase 3/4 |
-| 3 | Use `cobra` for subcommands or plain `os.Args` switch? | Phase 1 |
-| 4 | Code signing automation: `mitchellh/gon` or GoReleaser built-in? | Phase 4 |
-| 5 | `installSchedule` cron parsing: use `robfig/cron` or stdlib ticker? | Phase 2 |
+| 3 | Code signing automation: `mitchellh/gon` or GoReleaser built-in? | Phase 4 |
+
+**Resolved**:
+- ~~Use `cobra` for subcommands?~~ → **cobra required** (see §5.1)
+- ~~`installSchedule` cron parsing: `robfig/cron` or stdlib?~~ → **Use `robfig/cron` v3** for cron format; disambiguation rule (duration-first, then cron) specified in §4.2
 
 ---
 
