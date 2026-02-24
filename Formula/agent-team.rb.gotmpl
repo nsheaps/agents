@@ -15,7 +15,10 @@ class AgentTeam < Formula
   depends_on 'gum'
 
   def install
-    bin.install Dir['bin/*']
+    bin.install 'bin/claude-team'
+    bin.install 'bin/ct'
+    bin.install 'bin/agent-launch.ts'
+    (bin/'lib').install Dir['bin/lib/*']
   end
 
   test do

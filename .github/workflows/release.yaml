@@ -91,7 +91,10 @@ jobs:
 
       - name: Install gomplate
         run: |
-          curl -fsSL https://github.com/hairyhenderson/gomplate/releases/latest/download/gomplate_linux-amd64 -o /usr/local/bin/gomplate
+          GOMPLATE_VERSION="v4.3.0"
+          GOMPLATE_SHA256="8adb82e5be7dfde49857ebd7c948fd8f9b10cdcdb13f71b74685dff6e6756890"
+          curl -fsSL "https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64" -o /usr/local/bin/gomplate
+          echo "$GOMPLATE_SHA256  /usr/local/bin/gomplate" | sha256sum -c
           chmod +x /usr/local/bin/gomplate
 
       - name: Generate formulas from templates
@@ -108,7 +111,9 @@ jobs:
         run: |
           cd homebrew-devsetup
           # Close any open PRs from previous formula updates — they're superseded
-          gh pr list --state open --search "chore: update agent-team claude-team to" --json number,title --jq '.[].number' | while read -r pr_num; do
+          # Convention dependency: PR title prefix must match "chore: update agent-team claude-team to"
+          stale_prs=$(gh pr list --state open --search "chore: update agent-team claude-team to" --json number --jq '.[].number' || true)
+          for pr_num in $stale_prs; do
             echo "Closing superseded PR #${pr_num}"
             gh pr close "$pr_num" --comment "Superseded by v${{ steps.release.outputs.version }} update."
           done
@@ -118,7 +123,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
           RELEASE_URL: https://github.com/${{ github.repository }}/releases/tag/${{ steps.release.outputs.tag }}
-          JOB_URL: ${{ env.GITHUB_JOB_URL }}
+          JOB_URL: ${{ steps.context.outputs.job_url }}
           VERSION: ${{ steps.release.outputs.version }}
           TAG: ${{ steps.release.outputs.tag }}
         run: |
