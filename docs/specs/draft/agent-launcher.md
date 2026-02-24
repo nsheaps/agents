@@ -613,7 +613,97 @@ The `exec` pattern is critical — it replaces the shell process so the tmux ses
 
 ---
 
-## 10. CLI Interface
+## 10. Team Templates
+
+Team templates define **which agents** to spawn for a given workflow, without requiring the user to manually select teammates at session start.
+
+### Purpose
+
+Not every session needs all 8 roles. A focused development task needs PM + software-eng + QA. A research sprint needs researcher + docs-writer. Templates encode these common team compositions as declarative files.
+
+### Template File Format
+
+Templates live in `.claude/teams/templates/` within the project:
+
+```
+.claude/teams/templates/
+├── dev-team.yaml
+├── research-team.yaml
+└── full-team.yaml
+```
+
+Each template is a YAML file with three fields:
+
+| Field         | Type     | Required | Description                                                   |
+| :------------ | :------- | :------- | :------------------------------------------------------------ |
+| `name`        | string   | yes      | Template identifier (matches filename without extension)      |
+| `description` | string   | yes      | Human-readable description of when to use this team           |
+| `agents`      | string[] | yes      | List of agent names (must match `.claude/agents/<name>.md`)   |
+
+### Example Template
+
+```yaml
+# .claude/teams/templates/dev-team.yaml
+name: dev-team
+description: Minimal dev team for focused implementation tasks
+agents:
+  - project-manager
+  - software-eng
+  - quality-assurance
+```
+
+### CLI Integration
+
+The `--template` flag tells the launcher which agents to spawn:
+
+```bash
+agent-launcher --team-name my-team --template dev-team start
+# Shorthand (aspirational):
+ct --template dev-team
+```
+
+When `--template` is provided:
+
+1. Launcher reads `.claude/teams/templates/<name>.yaml`
+2. Validates that each listed agent has a corresponding `.claude/agents/<name>.md` file
+3. Launches the orchestrator with a system prompt addendum instructing it to spawn **only** the listed agents
+4. The orchestrator spawns listed agents without prompting the user
+
+When `--template` is **not** provided, the existing behavior is preserved: the orchestrator asks the user which teammates to launch (or launches all with `--all`).
+
+### Orchestrator Behavior with Templates
+
+When a template is active, the launcher adds this instruction to the orchestrator's system prompt:
+
+```
+At session start, spawn ONLY these agents: project-manager, software-eng, quality-assurance.
+Do not ask the user which teammates to launch. Do not launch agents not in this list.
+If an unlisted agent is needed later, ask the user before spawning.
+```
+
+The orchestrator still manages all coordination — the template only constrains the **initial** set of agents.
+
+### Template Validation
+
+| Condition                         | Behavior                                                       |
+| :-------------------------------- | :------------------------------------------------------------- |
+| Template file not found           | Error: "Template '{name}' not found in .claude/teams/templates/" |
+| Agent in template has no agent file | Warning: "Agent '{name}' listed in template but no .claude/agents/{name}.md found" — skip that agent |
+| Empty agents list                 | Error: "Template '{name}' has no agents listed"                |
+| Invalid YAML                      | Error: "Template '{name}' has invalid YAML"                    |
+
+### Relationship to Full Team Templates
+
+The lightweight templates in `.claude/teams/templates/` define **which agents** to spawn. The full team templates in `templates/teams/<name>/` define **who those agents are** (personas, system messages, display names). These are complementary:
+
+- `.claude/teams/templates/dev-team.yaml` → "spawn PM, software-eng, QA"
+- `templates/teams/looney-toons/team.yaml` → "PM is Elmer Fudd, software-eng is Bugs Bunny, ..."
+
+A future enhancement could combine both: `--template dev-team --theme looney-toons`.
+
+---
+
+## 11. CLI Interface
 
 ### Commands
 
@@ -636,6 +726,7 @@ Commands:
 | Flag                     | Env Var                    | Description                                                                                                |
 | :----------------------- | :------------------------- | :--------------------------------------------------------------------------------------------------------- |
 | `--team-name <name>`     | `AGENT_TEAM_NAME`          | Team name (required)                                                                                       |
+| `--template <name>`      | —                          | Team template to use (reads `.claude/teams/templates/<name>.yaml`). See §10.                               |
 | `--teammate-mode <mode>` | `CLAUDE_TEAM_DEFAULT_MODE` | Teammate display mode: `auto`, `in-process`, `tmux` (default: `auto`)                                      |
 | `--no-interactive`       | —                          | Skip interactive prompts, use defaults. Without this, launcher prompts for teammate mode if not specified. |
 | `--project-root <path>`  | —                          | Override project root (default: git root or cwd)                                                           |
@@ -658,7 +749,7 @@ agent-launcher --team-name looney-tunes start
 
 ---
 
-## 11. Migration from claude-team
+## 12. Migration from claude-team
 
 The launcher replaces `claude-team` from the claude-utils repo. Feature mapping:
 
@@ -681,7 +772,7 @@ The launcher replaces `claude-team` from the claude-utils repo. Feature mapping:
 
 ---
 
-## 12. Implementation Phases
+## 13. Implementation Phases
 
 Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 
@@ -711,7 +802,7 @@ Maps to the Phase 1 sub-phases in the multi-repo phase plan:
 
 ---
 
-## 13. Resolved Decisions
+## 14. Resolved Decisions
 
 Answers provided by team-lead. These were previously open questions.
 
@@ -730,7 +821,7 @@ Answers provided by team-lead. These were previously open questions.
 
 ---
 
-## 14. References
+## 15. References
 
 - [Multi-Repo Phase Plan](multi-repo-phase-plan.md) — Phase 1 breakdown
 - [Agent Team Architecture](agent-team-architecture.md) — Design topics

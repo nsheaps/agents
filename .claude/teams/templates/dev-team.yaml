@@ -1,0 +1,9 @@
+# Dev Team Template
+# Minimal team for focused implementation tasks.
+# Usage: agent-launcher --team-name <name> --template dev-team start
+name: dev-team
+description: Minimal dev team for focused implementation tasks
+agents:
+  - project-manager
+  - software-eng
+  - quality-assurance
