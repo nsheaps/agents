@@ -55,13 +55,17 @@ claude-team team create --team-name my-project-team \
 
 #### Flags
 
-| Flag            | Type   | Default     | Description                                                |
-| :-------------- | :----- | :---------- | :--------------------------------------------------------- |
-| `--team-name`   | string | (prompted)  | Team identifier (kebab-case)                               |
-| `--description` | string | (prompted)  | Human-readable team description                            |
-| `--template`    | string | `"default"` | Base template from `templates/teams/` to copy from         |
-| `--output-dir`  | string | `"."`       | Directory to create the team in (relative to project root) |
-| `--no-personas` | bool   | `false`     | Skip creating persona files                                |
+| Flag                | Type   | Default               | Description                                                |
+| :------------------ | :----- | :-------------------- | :--------------------------------------------------------- |
+| `--team-name`       | string | (prompted)            | Team identifier (kebab-case)                               |
+| `--description`     | string | (prompted)            | Human-readable team description                            |
+| `--template`        | string | `"default"`           | Base template from `templates/teams/` to copy from         |
+| `--output-dir`      | string | `"templates/teams/"`  | Directory to create the team in (relative to project root) |
+| `--no-personas`     | bool   | `false`               | Skip creating persona files                                |
+| `--model`           | string | `"claude-opus-4-6"`   | Default model for team agents                              |
+| `--permission-mode` | string | `"bypassPermissions"` | Default permission mode for team agents                    |
+| `--teammate-mode`   | string | `"auto"`              | Teammate display mode (auto, in-process, tmux)             |
+| `--framework`       | string | `"claude-code"`       | Agent framework (only claude-code supported currently)     |
 
 #### Interactive Flow
 
@@ -130,6 +134,13 @@ roles:
       You are quietly confident and prefer reading existing code before writing new code.
 
   # ... additional roles
+
+# Team-level settings
+settings:
+  teammate_mode: auto
+  permission_mode: bypassPermissions
+  framework: claude-code
+  model: claude-opus-4-6
 ```
 
 #### Error Handling
@@ -216,6 +227,11 @@ name: frontend-eng
 description: |
   Frontend specialist for React and TypeScript UI work.
 permission_mode: bypassPermissions
+model: claude-opus-4-6
+prompt_mode: extend
+color: cyan
+tools: []
+disallowed_tools: []
 ---
 
 # Frontend Engineer
@@ -234,6 +250,8 @@ You are a frontend engineer specializing in React and TypeScript.
 
 Start your session by reading the files in .claude/docs/.
 ```
+
+> **Note**: Fields with empty or default values (`tools`, `disallowed_tools`, `model`, `color`) are only included in the output when explicitly set via flags. The minimal output includes only `name`, `description`, and `permission_mode`.
 
 #### Error Handling
 
@@ -265,13 +283,14 @@ claude-team team add frontend-eng \
 
 #### Flags
 
-| Flag               | Type   | Default                      | Description                                  |
-| :----------------- | :----- | :--------------------------- | :------------------------------------------- |
-| `--team`           | string | (prompted if multiple teams) | Team name to add the agent to                |
-| `--display-name`   | string | (derived from agent name)    | Display name for this agent in the team      |
-| `--system-message` | string | (prompted)                   | System message defining personality/identity |
-| `--persona`        | string | (auto-generated)             | Path to persona file (relative to team dir)  |
-| `--no-persona`     | bool   | `false`                      | Skip creating a persona file                 |
+| Flag               | Type   | Default                      | Description                                                              |
+| :----------------- | :----- | :--------------------------- | :----------------------------------------------------------------------- |
+| `--team`           | string | (prompted if multiple teams) | Team name to add the agent to                                            |
+| `--display-name`   | string | (derived from agent name)    | Display name for this agent in the team                                  |
+| `--system-message` | string | (prompted)                   | System message defining personality/identity                             |
+| `--persona`        | string | (auto-generated)             | Path to persona file (relative to team dir)                              |
+| `--no-persona`     | bool   | `false`                      | Skip creating a persona file                                             |
+| `--role`           | string | (agent name)                 | Role key in team.yaml (allows same agent template under different roles) |
 
 #### Positional Arguments
 
@@ -351,6 +370,8 @@ my-project-team   9      default   templates/teams/my-project-team/
 looney-toons      8      -         templates/teams/looney-toons/
 ```
 
+> Scans `templates/teams/*/team.yaml` (or `{cwd}/*/team.yaml` if `--cwd` is set) for team definitions.
+
 ### 3.2 `claude-team team show`
 
 Shows details of a specific team.
@@ -406,6 +427,8 @@ frontend-eng      bypassPermissions   (default)  my-project-team
 exec-assist       bypassPermissions   (default)  (none)
 ```
 
+> Scans `.claude/agents/*.md` for agent definitions and cross-references all discovered `team.yaml` files for team membership.
+
 ### 3.5 `claude-team agent show`
 
 Shows details of a specific agent definition.
@@ -456,6 +479,13 @@ Available on all commands:
 - **Manifest**: `team.yaml` defines roles, display names, system messages
 - **Personas**: `personas/{role-name}.md` defines personality and public voice
 - **README**: `README.md` describes the team
+
+### Persona Files
+
+- **Location**: `templates/teams/{team-name}/personas/{role-name}.md`
+- **Purpose**: Defines the agent's public voice, personality, and communication style for external-facing actions (Slack messages, GitHub comments, blog posts)
+- **Relationship to agents**: Agent files define the job (what to do); persona files define the person (how to communicate). See [Team Structure](../../.claude/docs/team-structure.md) for details.
+- **Skipping**: Use `--no-personas` on `team create` or `--no-persona` on `team add` to skip persona file creation
 
 ### Runtime Config
 
