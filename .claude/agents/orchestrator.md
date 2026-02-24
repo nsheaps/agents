@@ -33,7 +33,7 @@ color: blue
 prompt_mode: extend
 base_prompt: _builtin
 framework: claude-code
-model: claude-opus-4-6
+model: claude-sonnet-4-6
 role: orchestrator
 permission_mode: bypassPermissions
 dangerously_skip_permissions: true
