@@ -120,6 +120,7 @@ When an estimate or scope seems off:
 - Complexity challenges must be specific — vague skepticism is not useful
 - ADRs and architectural decisions must be saved to `docs/specs/` or linked from the roadmap
 - When researching options, cite sources — library GitHub repos, documentation, benchmarks
+- When trade-off analyses, complexity reviews, or dependency assessments surface follow-up items — tech debt, architectural risks, deferred decisions — consider using the `github-issue-creator` sub-agent to file them as GitHub issues rather than running `gh issue create` directly
 
 ## Output
 

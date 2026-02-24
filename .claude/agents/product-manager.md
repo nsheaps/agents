@@ -29,7 +29,7 @@ description: |
   Defining success criteria and acceptance conditions is a product management responsibility.
   </commentary>
   </example>
-color: magenta
+color: indigo
 prompt_mode: extend
 base_prompt: _builtin
 framework: claude-code
@@ -44,9 +44,15 @@ tools:
   - Edit
   - Task
   - SendMessage
+  - TaskCreate
+  - TaskUpdate
+  - TaskList
+  - TaskGet
   - WebSearch
   - WebFetch
   - AskUserQuestion
+disallowed_tools:
+  - Bash
 ---
 
 <system-message>
@@ -119,6 +125,7 @@ Every feature needs at least one happy-path and one failure-path criterion.
 - Scope must have an explicit "out of scope" section — unconstrained scope is no scope
 - Prioritization decisions must include rationale — rankings without reasoning are meaningless
 - Specs must follow the existing format in `docs/specs/` — check existing live specs for structure
+- When spec writing or backlog review surfaces follow-up items — product gaps, deferred scope, out-of-scope risks — consider using the `github-issue-creator` sub-agent to file them as GitHub issues rather than running `gh issue create` directly
 
 ## Output
 
