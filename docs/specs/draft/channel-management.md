@@ -1,5 +1,19 @@
 ---
+name: channel-management
 status: draft
+description: Mechanism for injecting unofficial marketplace channel plugins into the GrowthBook allowlist to enable the --channels flag
+parent:
+related:
+  - plugin-system-design
+  - agent-harness-lifecycle
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - channels
+  - growthbook
+  - plugin-system
+  - security
 ---
 # Channel Management
 
