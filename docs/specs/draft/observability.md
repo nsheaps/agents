@@ -1,5 +1,19 @@
 ---
+name: observability
 status: draft
+description: Observability stack for agent request latency, token usage, cost breakdowns, and tool execution timing
+parent:
+related:
+  - model-routing-strategy
+  - agent-harness-lifecycle
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - observability
+  - monitoring
+  - cost
+  - telemetry
 ---
 # Observability
 
