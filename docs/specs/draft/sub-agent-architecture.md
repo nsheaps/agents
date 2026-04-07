@@ -1,5 +1,18 @@
 ---
+name: sub-agent-architecture
 status: draft
+description: Architecture for sub-agents used by orchestrators for parallelized work including model selection and task routing
+parent: model-routing-strategy
+related:
+  - model-routing-strategy
+  - agent-harness-lifecycle
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - architecture
+  - sub-agents
+  - model-routing
 ---
 # Sub-Agent Architecture
 
