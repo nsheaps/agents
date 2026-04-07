@@ -1,5 +1,18 @@
 ---
+name: agent-harness-lifecycle
 status: draft
+description: Reusable launcher template for AI agents with restart loop, secret injection, and tmux integration
+parent:
+related:
+  - plugin-system-design
+  - auth-credentials
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - infrastructure
+  - agent-lifecycle
+  - launcher
 ---
 # Agent Harness Lifecycle
 
