@@ -1,5 +1,18 @@
 ---
+name: model-routing-strategy
 status: draft
+description: Tiered model routing strategy assigning tasks to Opus, Sonnet, or Haiku based on complexity and cost requirements
+parent:
+related:
+  - sub-agent-architecture
+  - observability
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - model-routing
+  - cost-optimization
+  - architecture
 ---
 # Model Routing Strategy
 
