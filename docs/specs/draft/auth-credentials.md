@@ -1,5 +1,20 @@
 ---
+name: auth-credentials
 status: draft
+description: Per-agent GitHub identity isolation using GitHub App installations to prevent credential fallback to handler credentials
+parent:
+related:
+  - agent-harness-lifecycle
+  - plugin-system-design
+  - agent-directory
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - auth
+  - credentials
+  - github
+  - security
 ---
 # Auth & Credentials
 
