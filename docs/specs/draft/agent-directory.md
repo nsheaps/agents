@@ -1,5 +1,20 @@
 ---
+name: agent-directory
 status: draft
+description: Central directory of agents in the nsheaps org with capabilities, trust levels, communication channels, and current status
+parent:
+related:
+  - auth-credentials
+  - channel-management
+  - agent-harness-lifecycle
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - agent-directory
+  - discovery
+  - multi-agent
+  - infrastructure
 ---
 # Agent Directory
 
