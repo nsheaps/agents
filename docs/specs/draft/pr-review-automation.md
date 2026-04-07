@@ -1,5 +1,19 @@
 ---
+name: pr-review-automation
 status: draft
+description: Fixes for the claude-agent-trigger workflow including substring trigger false positives and missing workflow run links in automation comments
+parent:
+related:
+  - agent-directory
+  - auth-credentials
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - pr-review
+  - automation
+  - github-actions
+  - ci
 ---
 # PR Review Automation
 
