@@ -1,5 +1,19 @@
 ---
+name: plugin-system-design
 status: draft
+description: Design of the ai-mktpl plugin marketplace as the distribution mechanism for shared agent behaviors across multiple agents
+parent:
+related:
+  - agent-harness-lifecycle
+  - channel-management
+  - auth-credentials
+owner: jack
+created: 2026-04-07
+updated: 2026-04-07
+tags:
+  - plugin-system
+  - marketplace
+  - infrastructure
 ---
 # Plugin System Design
 
