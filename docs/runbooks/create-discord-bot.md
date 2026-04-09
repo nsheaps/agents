@@ -19,6 +19,53 @@ each agent needs its own identity so messages show up as `jack-nsheaps` vs
 `henry-nsheaps` etc., and so access control (the `/discord:access` skill) can
 allowlist each agent independently.
 
+## Required Bot Permissions
+
+The bot permissions below were derived from an API audit of Jack's current
+role in the development guild. Grant all 20 in the OAuth2 URL Generator
+(step 7) and in the bot's server role after invite.
+
+See `docs/specs/auth-credentials.md` for WHY each permission is needed
+at the design level; this runbook documents HOW to grant them.
+
+### Baseline (15) — required for core bot function
+
+The agent cannot function without these. Reading, posting, threading,
+and reacting to messages all require at least one of these:
+
+| Permission | Purpose |
+| :--- | :--- |
+| `VIEW_CHANNEL` | See channels the bot is a member of |
+| `VIEW_AUDIT_LOG` | Correlate bot actions with audit entries when debugging |
+| `READ_MESSAGE_HISTORY` | Fetch past messages in a channel (required for context) |
+| `SEND_MESSAGES` | Post messages to text channels |
+| `SEND_MESSAGES_IN_THREADS` | Post into threads the bot has joined |
+| `EMBED_LINKS` | Post rich embeds (structured replies, link previews) |
+| `ATTACH_FILES` | Upload files (screenshots, logs, generated artifacts) |
+| `ADD_REACTIONS` | React to handler messages (acknowledgement, status) |
+| `USE_EXTERNAL_EMOJIS` | Use custom emojis from other servers in replies |
+| `USE_EXTERNAL_STICKERS` | Use stickers from other servers |
+| `MENTION_EVERYONE` | Use `@everyone`/`@here`/role mentions when authorized |
+| `USE_APPLICATION_COMMANDS` | Register and invoke slash commands |
+| `USE_EMBEDDED_ACTIVITIES` | Launch embedded activities (voice/video features) |
+| `CREATE_PUBLIC_THREADS` | Open public work threads for features/issues |
+| `CREATE_PRIVATE_THREADS` | Open private threads for handler-only conversations |
+
+### Recommended extras (5) — enable advanced operations
+
+Without these, the bot cannot perform channel/role/webhook/thread
+management. Jack's current installation is missing all five, which
+blocks operations like creating the `#mergeathon` channel and managing
+long-running threads.
+
+| Permission | Why the bot needs it |
+| :--- | :--- |
+| `MANAGE_CHANNELS` | Create text/voice channels and categories; modify channel permissions and topics (e.g. opening `#mergeathon` for a multi-agent work session) |
+| `MANAGE_MESSAGES` | Pin messages to channels, delete other users' messages in moderation contexts, cross-post from announcement channels |
+| `MANAGE_ROLES` | Dynamically adjust role permissions for future self-service flows (e.g. granting temporary access to a work channel) |
+| `MANAGE_WEBHOOKS` | Create/list/delete webhooks for outbound integrations (e.g. routing GitHub webhook payloads into a Discord channel) |
+| `MANAGE_THREADS` | Rename, archive, and lock threads owned by other users (the bot can already manage its own threads; this extends management to the full channel) |
+
 ## Prerequisites
 
 - Discord account with 2FA enabled (Discord requires this for developer portal access)
@@ -99,19 +146,15 @@ op item edit "ENVIRONMENT" --vault "Agent-<Name>" \
 
 1. In the left sidebar, click **OAuth2**
 2. Click **URL Generator** (may be a subtab)
-3. Under **SCOPES**, check:
+3. Under **SCOPES**, check BOTH (both are required — `applications.commands`
+   alone does not install the bot user on the guild):
    - `bot`
-   - `applications.commands` (only needed if the agent will use slash commands — check it anyway for forward compat)
-4. Under **BOT PERMISSIONS** that appear below, check:
-   - **Send Messages**
-   - **Read Message History**
-   - **Create Public Threads**
-   - **Send Messages in Threads**
-   - **Create Private Threads** (optional, for handler-only conversations)
-   - **Embed Links**
-   - **Attach Files**
-   - **Add Reactions**
-   - **Use External Emojis** (optional)
+   - `applications.commands`
+4. Under **BOT PERMISSIONS**, check each permission in the grid matching
+   the lists in the [Required Bot Permissions](#required-bot-permissions)
+   section above (all 15 baseline + 5 recommended extras). The grid
+   automatically computes the integer that goes in the invite URL's
+   `permissions=` query parameter.
 5. Copy the generated URL from the **GENERATED URL** field at the bottom
 6. Open the URL in a new tab (while logged in as the Discord account that has admin on the target server)
 7. Select the target server from the dropdown
@@ -119,6 +162,59 @@ op item edit "ENVIRONMENT" --vault "Agent-<Name>" \
 
 The bot should now appear in the server's member list (it will show as offline
 until the agent actually starts up and connects with the token).
+
+#### Invite URL format
+
+If generating the URL by hand instead of via the Developer Portal UI
+(for instance, re-inviting after a permission change), use this format:
+
+```
+https://discord.com/api/oauth2/authorize?client_id={CLIENT_ID}&permissions={INTEGER}&scope=bot%20applications.commands
+```
+
+- `{CLIENT_ID}` — the application's client ID (also called Application ID)
+  from the **General Information** page
+- `{INTEGER}` — the computed permissions bitfield from step 4. You can
+  re-visit the **OAuth2 URL Generator** at any time to recompute it by
+  checking the boxes; the integer is deterministic for a given set.
+- `scope=bot%20applications.commands` — note the URL-encoded space (`%20`)
+  between the two scopes. Both are required.
+
+A common failure mode: an invite URL generated with only
+`scope=applications.commands` installs the slash-command surface but does
+NOT add the bot user to the guild. If the bot appears to already be in
+the server but has no member entry (roles, color, online status), the
+invite was missing the `bot` scope. Re-generate with both scopes and
+re-authorize.
+
+## Verifying permissions after the fact
+
+To audit a bot's current permissions on a guild (e.g. before concluding
+that the bot cannot perform an action and debugging it as code), query
+Discord's API directly. You need the bot's user ID and the guild ID.
+
+```bash
+export DISCORD_BOT_TOKEN="$(op read "op://Agent-<Name>/ENVIRONMENT/DISCORD_BOT_TOKEN")"
+
+# Fetch the bot's member entry on the guild — shows the role IDs the bot has
+curl -s "https://discord.com/api/v10/guilds/{GUILD_ID}/members/{BOT_ID}" \
+  -H "Authorization: Bot $DISCORD_BOT_TOKEN"
+
+# Fetch all guild roles — each has a `permissions` field (bitfield as string)
+curl -s "https://discord.com/api/v10/guilds/{GUILD_ID}/roles" \
+  -H "Authorization: Bot $DISCORD_BOT_TOKEN"
+
+# Decode role.permissions bitfield against Discord's permission flags
+# (https://discord.com/developers/docs/topics/permissions#permissions-bitwise-permission-flags)
+# The bot's effective permissions are the OR of all its role permissions
+# (plus any channel-level overwrites).
+```
+
+Compare the decoded bitfield against the [Required Bot Permissions](#required-bot-permissions)
+list. If any baseline permission is missing, the bot is broken for that
+operation — re-invite with the correct URL. If a recommended-extra
+permission is missing, operations that depend on it will fail with
+`50013: Missing Permissions` (log the error, re-invite).
 
 ## Verification
 
