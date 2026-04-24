@@ -1,11 +1,10 @@
 # Tiltfile — root orchestration entry point
 #
 # Usage:
-#   tilt up                   # start all agents
-#   tilt up alex              # start only Alex
-#   tilt up jack henry        # start Jack and Henry
-#   tilt down alex            # stop only Alex
+#   tilt up                   # start Tilt daemon; reads agents.yaml
+#   tilt down                 # stop all resources
 #
+# Agent lifecycle is controlled via agents.yaml (enable/disable agents there).
 # See docs/specs/tilt-orchestration.md for architecture overview.
 
 load('./tilt/agents.tiltfile', 'register_agents')

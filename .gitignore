@@ -34,5 +34,8 @@ test/tmp/
 # Team scratch/temp files
 .claude/tmp/
 
+# Agent registry (local overrides — use agents.yaml.example as template)
+agents.yaml
+
 # Logs
 *.log

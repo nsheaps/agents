@@ -4,44 +4,26 @@
 # That script manages the tmux session lifecycle; bin/agent runs INSIDE
 # the tmux session with --no-tmux.
 #
-# Resource names use the short agent name (alex, jack, henry) so that
-# `tilt up jack` and `tilt down henry` work ergonomically from the CLI.
+# Resource names use the short agent name (jack, henry, alex) so that
+# Tilt dashboard navigation is ergonomic.
 #
-# Phase 2: replace hardcoded list with dynamic discovery from agents.yaml.
-
-AGENTS_BASE = os.path.expanduser('~/src/nsheaps')
-
-def _agent_repo(name):
-    return AGENTS_BASE + '/.ai-agent-' + name
-
-def _agent_serve_cmd(name):
-    repo = _agent_repo(name)
-    return 'scripts/serve-agent.sh ' + name + ' ' + repo
-
-def _agent_deps(name):
-    repo = _agent_repo(name)
-    return [
-        repo + '/.claude/',
-        repo + '/bin/agent',
-    ]
-
-def _register_agent(name):
-    repo = _agent_repo(name)
-
-    # Guard: skip gracefully if the agent repo doesn't exist on disk.
-    # Alex may not be set up yet; that's OK.
-    if not os.path.exists(repo):
-        print('tilt/agents.tiltfile: repo not found for agent ' + name + ' (' + repo + ') — skipping')
-        return
-
-    local_resource(
-        name,
-        serve_cmd = _agent_serve_cmd(name),
-        deps = _agent_deps(name),
-        labels = ['agents'],
-    )
+# Agents are read from agents.yaml. Edit enabled: true/false there to
+# start/stop agents without editing this file. Tilt watches agents.yaml
+# and re-evaluates automatically.
 
 def register_agents():
-    _register_agent('alex')
-    _register_agent('jack')
-    _register_agent('henry')
+    config = read_yaml('agents.yaml')
+    for agent in config.get('agents', []):
+        if not agent.get('enabled', False):
+            continue
+        name = agent['name']
+        repo = os.path.expanduser(agent['repo'])
+        if not os.path.exists(repo):
+            print('tilt/agents.tiltfile: repo not found for agent ' + name + ' (' + repo + ') — skipping')
+            continue
+        local_resource(
+            name,
+            serve_cmd = 'scripts/serve-agent.sh ' + name + ' ' + repo,
+            deps = [repo + '/.claude/', repo + '/bin/agent'],
+            labels = ['agents'],
+        )
