@@ -60,6 +60,22 @@ environment for agent orchestration at Level 3–4 abstraction
 
 ## Design
 
+### Architecture Overview
+
+The Tilt orchestration has three distinct layers:
+
+1. **Tiltfile `serve_cmd`** — a shell script that manages the tmux session lifecycle
+   for each agent. It finds, creates, or restarts tmux sessions and launches `bin/agent`
+   inside them. This script is NOT `bin/agent` itself; it wraps the tmux lifecycle around it.
+
+2. **`bin/agent`** — runs INSIDE the tmux session, launched by `serve_cmd` with
+   `--no-tmux` (since the Tiltfile's serve_cmd already manages the tmux session).
+   `bin/agent` handles the Claude Code harness, restart loops, and agent lifecycle.
+
+3. **`bin/agent stream-output-as-chat`** — a subcommand that tails the agent's JSONL
+   transcript and transforms it into a human-readable chat-room format for streaming
+   into the Tilt UI. Used by transcript `local_resource` entries.
+
 ### Tiltfile Structure
 
 ```python
@@ -78,11 +94,12 @@ local_resource(
 )
 
 # --- Agents ---
-# Each agent is a local_resource with file watches on its config
+# Each agent is a local_resource whose serve_cmd is a script that
+# manages the tmux session lifecycle (see "tmux Session Lifecycle" below).
+# bin/agent runs INSIDE the tmux session, NOT as the serve_cmd directly.
 local_resource(
     'agent-jack',
-    serve_cmd='bin/agent',
-    serve_dir='../nsheaps/.ai-agent-jack',
+    serve_cmd='scripts/serve-agent.sh jack ../nsheaps/.ai-agent-jack',
     deps=[
         '../nsheaps/.ai-agent-jack/.claude/',
         '../nsheaps/.ai-agent-jack/bin/agent',
@@ -94,15 +111,13 @@ local_resource(
 # Additional agents follow the same pattern
 
 # --- Transcript Streaming ---
-# Each agent gets a log resource that tails its conversation JSONL
-# and pipes through a reformatter for human-readable chat-room output.
-# The JSONL path is discovered via .claude/tmp/session-id or newest
-# .jsonl in ~/.claude/projects/. See agents#121 scripts/tail-transcript.sh.
+# Each agent gets a log resource that calls bin/agent stream-output-as-chat
+# to tail the conversation JSONL and transform it to chat-room format.
 local_resource(
     'agent-jack-transcript',
     serve_cmd=' '.join([
-        'scripts/tail-transcript.sh',
-        '../nsheaps/.ai-agent-jack',
+        '../nsheaps/.ai-agent-jack/bin/agent',
+        'stream-output-as-chat',
     ]),
     labels=['transcripts'],
 )
@@ -123,16 +138,19 @@ dashboard and its process is stopped, but the rest of the environment stays up.
 
 ### tmux Session Lifecycle
 
-Each agent runs inside a tmux session. The Tiltfile's `serve_cmd` for an agent must
-handle the full tmux lifecycle:
+Each agent runs inside a tmux session. The Tiltfile's `serve_cmd` (e.g.,
+`scripts/serve-agent.sh`) manages the full tmux lifecycle — `bin/agent` does NOT
+receive a `--mode=tilt` flag or manage tmux itself when run under Tilt.
 
-1. **Find existing session** — check for a tmux session named after the agent
+The serve_cmd script handles:
+
+1. **Check if tmux session/window exists** — look for a session named after the agent
    (e.g., `tmux has-session -t jack 2>/dev/null`)
-2. **Create if missing** — `tmux new-session -d -s jack`
-3. **Ensure `bin/agent` is running** — check if the shell inside the session is alive
-   and the agent process is active
-4. **Restart dead sessions** — if the shell died but the tmux session still exists,
-   kill the session (`tmux kill-session -t jack`) and recreate it
+2. **If not → create and launch** — `tmux new-session -d -s jack` then send
+   `bin/agent --no-tmux` into the new session's pane
+3. **If exists but agent not running** — close the dead pane, open a new one, and
+   relaunch `bin/agent --no-tmux`
+4. **If exists and running** — attach to the existing output (stream it to Tilt)
 5. **Auto-start on `tilt up`** — agent resources use `TRIGGER_MODE_AUTO` (the default),
    not `TRIGGER_MODE_MANUAL`, so they start automatically when Tilt comes up
 
