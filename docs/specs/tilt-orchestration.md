@@ -76,6 +76,47 @@ The Tilt orchestration has three distinct layers:
    transcript and transforms it into a human-readable chat-room format for streaming
    into the Tilt UI. Used by transcript `local_resource` entries.
 
+### Architecture Diagrams
+
+#### Process Tree
+
+```mermaid
+graph TD
+    TILT[Tilt serve_cmd] -->|creates/attaches| TMUX[tmux session 'jack']
+    TMUX -->|pane runs| AGENT[bin/agent --no-tmux]
+    AGENT -->|restart loop| CLAUDE[claude]
+    CLAUDE -->|exits| AGENT
+    AGENT -->|crashes| TILT
+    TILT -->|auto-restarts| TMUX
+    
+    TILT2[Tilt local_resource: transcript] -->|runs| STREAM[bin/agent stream-output-as-chat]
+    STREAM -->|tails| JSONL[~/.claude/projects/.../session.jsonl]
+    STREAM -->|stdout → tilt UI| UI[Tilt Web Dashboard]
+```
+
+#### bin/agent Lifecycle
+
+```mermaid
+flowchart TD
+    START[bin/agent --tmux] --> CHECK{tmux session exists?}
+    CHECK -->|No| CREATE[tmux new-session -d -s jack]
+    CHECK -->|Yes| ATTACH[attach to existing]
+    CREATE --> EXEC[exec bin/agent --no-tmux inside pane]
+    ATTACH --> RUNNING{agent running in pane?}
+    RUNNING -->|Yes| MONITOR[monitor output]
+    RUNNING -->|No| KILL[close pane, open new]
+    KILL --> EXEC
+    
+    EXEC --> LOOP[Restart Loop]
+    LOOP --> ENV[Source 1Pass env]
+    ENV --> LAUNCH[Launch claude with flags]
+    LAUNCH --> EXIT{Claude exits}
+    EXIT --> FORCE{force-stop file?}
+    FORCE -->|Yes| DONE[Exit 0]
+    FORCE -->|No| WAIT[Sleep 5s grace]
+    WAIT --> LOOP
+```
+
 ### Tiltfile Structure
 
 ```python
