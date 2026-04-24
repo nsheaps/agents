@@ -36,7 +36,6 @@ framework: claude-code
 model: claude-opus-4-6
 permission_mode: bypassPermissions
 memory: project
-display_name: "Wile E (ai-agent-eng)"
 ---
 
 <system-message>

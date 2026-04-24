@@ -35,7 +35,6 @@ base_prompt: _builtin
 framework: claude-code
 model: claude-opus-4-6
 permission_mode: bypassPermissions
-display_name: "AHR Agent (agent-human-resources)"
 tools:
   - Read
   - Edit
