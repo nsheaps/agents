@@ -45,8 +45,7 @@ environment for agent orchestration at Level 3–4 abstraction
 - Hot-reload of harness scripts (`bin/agent`, launcher config)
 - Log aggregation from multiple agent processes into the Tilt dashboard
 - Health check integration (agent harness lifecycle signals)
-- MCP server lifecycle management (mesh server, stdio clients)
-- Resource grouping (agents, infrastructure, MCP servers)
+- Resource grouping (agents, transcripts)
 - Composable Tiltfile structure using `load()` / `include()`
 
 ### Out of Scope
@@ -126,51 +125,38 @@ resources, and the root Tiltfile assembles them:
 ```
 Tiltfile                — root: loads all sub-files
 tilt/agents.tiltfile    — agent local_resource definitions
-tilt/infra.tiltfile     — infrastructure resources (MCP servers, mesh)
 tilt/logs.tiltfile      — log stream resources (transcript, debug, harness)
 ```
+
+> **Note:** `tilt/infra.tiltfile` (mesh MCP server) is deferred. Infrastructure
+> resources will be added when the mesh server is ready for local orchestration.
 
 **Root Tiltfile:**
 
 ```python
 # Tiltfile (project root)
-load('./tilt/infra.tiltfile', 'define_infra')
-load('./tilt/agents.tiltfile', 'define_agents')
-load('./tilt/logs.tiltfile', 'define_logs')
+load('./tilt/agents.tiltfile', 'register_agents')
+load('./tilt/logs.tiltfile', 'register_logs')
 
-define_infra()
-define_agents()
-define_logs()
-```
-
-**tilt/infra.tiltfile:**
-
-```python
-def define_infra():
-    # MCP Servers and shared infrastructure
-    local_resource(
-        'mesh-mcp-server',
-        serve_cmd='bun run src/mesh/server.ts',
-        deps=['src/mesh/'],
-        labels=['infrastructure'],
-    )
+register_agents()
+register_logs()
 ```
 
 **tilt/agents.tiltfile:**
 
 ```python
-def define_agents():
+def register_agents():
     # Each agent is a local_resource whose serve_cmd is a script that
     # manages the tmux session lifecycle (see "tmux Session Lifecycle" below).
     # bin/agent runs INSIDE the tmux session, NOT as the serve_cmd directly.
+    # Agents with missing repos are skipped gracefully.
     local_resource(
-        'agent-jack',
-        serve_cmd='scripts/serve-agent.sh jack ../nsheaps/.ai-agent-jack',
+        'jack',
+        serve_cmd='scripts/serve-agent.sh jack ~/src/nsheaps/.ai-agent-jack',
         deps=[
-            '../nsheaps/.ai-agent-jack/.claude/',  # <agent-repo>/.claude/
-            '../nsheaps/.ai-agent-jack/bin/agent',
+            '~/src/nsheaps/.ai-agent-jack/.claude/',
+            '~/src/nsheaps/.ai-agent-jack/bin/agent',
         ],
-        resource_deps=['mesh-mcp-server'],
         labels=['agents'],
     )
     # Additional agents follow the same pattern
@@ -179,18 +165,16 @@ def define_agents():
 **tilt/logs.tiltfile:**
 
 ```python
-def define_logs():
-    # Each agent gets a log resource that calls bin/agent stream-output-as-chat
+def register_logs():
+    # Each agent gets a transcript resource that calls bin/agent stream-output-as-chat
     # to tail the conversation JSONL and transform it to chat-room format.
     local_resource(
-        'agent-jack-transcript',
-        serve_cmd=' '.join([
-            '../nsheaps/.ai-agent-jack/bin/agent',
-            'stream-output-as-chat',
-        ]),
+        'jack-transcript',
+        serve_cmd='~/src/nsheaps/.ai-agent-jack/bin/agent stream-output-as-chat',
         labels=['transcripts'],
+        resource_deps=['jack'],
     )
-    # Debug and harness streams defined here too (see Three Log Streams section)
+    # Phase 2: debug and harness log streams (tail .claude/tmp/debug.log, harness.log)
 ```
 
 ### Stopping Individual Agents
@@ -253,7 +237,7 @@ agents dynamically:
 | `<agent-repo>/.claude/settings.json` | Restart the affected agent |
 | `<agent-repo>/.claude/rules/**` | Restart the affected agent (rules load at session start) |
 | `bin/agent` | Restart the affected agent |
-| `src/mesh/**` | Rebuild and restart mesh MCP server |
+| `src/mesh/**` | Rebuild and restart mesh MCP server (Phase 2 — infra.tiltfile) |
 | `Tiltfile` | Tilt re-evaluates automatically |
 
 ### Three Log Streams per Agent
@@ -360,7 +344,7 @@ on config changes; directory resolution happens in the harness.
 ### Phase 1: Process-Mode Orchestration
 
 1. Create composable Tiltfile structure (`Tiltfile`, `tilt/agents.tiltfile`,
-   `tilt/infra.tiltfile`, `tilt/logs.tiltfile`)
+   `tilt/logs.tiltfile`; `tilt/infra.tiltfile` deferred to Phase 2)
 2. Configure file watches for agent config hot-reload
 3. Map agent harness health signals to Tilt readiness probes
 4. Document `tilt up` workflow in project README
