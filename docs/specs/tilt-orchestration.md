@@ -1,22 +1,20 @@
 ---
 name: tilt-orchestration
 status: draft
-description: Local development orchestration for multi-agent systems using Tilt (tilt.dev) with ctlptl and kind
+description: Local development orchestration for multi-agent systems using Tilt (tilt.dev) with tmux and local_resource
 parent:
 related:
-  - k8s-controllers
   - agent-harness-lifecycle
   - agent-launcher
   - agents-cli
   - agent-abstraction-levels
 owner: nate
 created: 2026-04-23
-updated: 2026-04-23
+updated: 2026-04-24
 tags:
   - infrastructure
   - development
   - orchestration
-  - kubernetes
   - tilt
 ---
 # Tilt Orchestration for Agent Development
@@ -30,11 +28,13 @@ the `agents` CLI, with no unified dev loop for iterating on agent configurations
 harness changes, or infrastructure components.
 
 [Tilt](https://tilt.dev) provides a development orchestration layer that watches files,
-rebuilds on change, and presents a unified dashboard for all running services. Combined
-with [ctlptl](https://github.com/tilt-dev/ctlptl) (cluster management) and
-[kind](https://kind.sigs.k8s.io/) (local K8s), this gives a complete local dev
+rebuilds on change, and presents a unified dashboard for all running services. Using
+`local_resource` and tmux-managed processes, this gives a complete local dev
 environment for agent orchestration at Level 3–4 abstraction
 (see `agent-abstraction-levels.md`).
+
+> **Note:** K8s support (ctlptl + kind cluster) is deferred to a future spec.
+> This spec covers the tmux/local_resource mode only.
 
 ## Scope
 
@@ -45,9 +45,9 @@ environment for agent orchestration at Level 3–4 abstraction
 - Hot-reload of harness scripts (`bin/agent`, launcher config)
 - Log aggregation from multiple agent processes into the Tilt dashboard
 - Health check integration (agent harness lifecycle signals)
-- Local K8s cluster provisioning via ctlptl + kind for K8s-mode testing
 - MCP server lifecycle management (mesh server, stdio clients)
 - Resource grouping (agents, infrastructure, MCP servers)
+- Composable Tiltfile structure using `load()` / `include()`
 
 ### Out of Scope
 
@@ -119,49 +119,78 @@ flowchart TD
 
 ### Tiltfile Structure
 
+Rather than a single monolithic Tiltfile, the Tiltfile is split into composable
+sub-files using Tilt's `load()` function. Each sub-file manages a logical group of
+resources, and the root Tiltfile assembles them:
+
+```
+Tiltfile                — root: loads all sub-files
+tilt/agents.tiltfile    — agent local_resource definitions
+tilt/infra.tiltfile     — infrastructure resources (MCP servers, mesh)
+tilt/logs.tiltfile      — log stream resources (transcript, debug, harness)
+```
+
+**Root Tiltfile:**
+
 ```python
 # Tiltfile (project root)
+load('./tilt/infra.tiltfile', 'define_infra')
+load('./tilt/agents.tiltfile', 'define_agents')
+load('./tilt/logs.tiltfile', 'define_logs')
 
-# --- Infrastructure ---
-# Local K8s cluster (only when testing K8s mode)
-# Provisioned separately via: ctlptl create cluster kind --name agents-dev
+define_infra()
+define_agents()
+define_logs()
+```
 
-# --- MCP Servers ---
-local_resource(
-    'mesh-mcp-server',
-    serve_cmd='bun run src/mesh/server.ts',
-    deps=['src/mesh/'],
-    labels=['infrastructure'],
-)
+**tilt/infra.tiltfile:**
 
-# --- Agents ---
-# Each agent is a local_resource whose serve_cmd is a script that
-# manages the tmux session lifecycle (see "tmux Session Lifecycle" below).
-# bin/agent runs INSIDE the tmux session, NOT as the serve_cmd directly.
-local_resource(
-    'agent-jack',
-    serve_cmd='scripts/serve-agent.sh jack ../nsheaps/.ai-agent-jack',
-    deps=[
-        '../nsheaps/.ai-agent-jack/.claude/',  # <agent-repo>/.claude/
-        '../nsheaps/.ai-agent-jack/bin/agent',
-    ],
-    resource_deps=['mesh-mcp-server'],
-    labels=['agents'],
-)
+```python
+def define_infra():
+    # MCP Servers and shared infrastructure
+    local_resource(
+        'mesh-mcp-server',
+        serve_cmd='bun run src/mesh/server.ts',
+        deps=['src/mesh/'],
+        labels=['infrastructure'],
+    )
+```
 
-# Additional agents follow the same pattern
+**tilt/agents.tiltfile:**
 
-# --- Transcript Streaming ---
-# Each agent gets a log resource that calls bin/agent stream-output-as-chat
-# to tail the conversation JSONL and transform it to chat-room format.
-local_resource(
-    'agent-jack-transcript',
-    serve_cmd=' '.join([
-        '../nsheaps/.ai-agent-jack/bin/agent',
-        'stream-output-as-chat',
-    ]),
-    labels=['transcripts'],
-)
+```python
+def define_agents():
+    # Each agent is a local_resource whose serve_cmd is a script that
+    # manages the tmux session lifecycle (see "tmux Session Lifecycle" below).
+    # bin/agent runs INSIDE the tmux session, NOT as the serve_cmd directly.
+    local_resource(
+        'agent-jack',
+        serve_cmd='scripts/serve-agent.sh jack ../nsheaps/.ai-agent-jack',
+        deps=[
+            '../nsheaps/.ai-agent-jack/.claude/',  # <agent-repo>/.claude/
+            '../nsheaps/.ai-agent-jack/bin/agent',
+        ],
+        resource_deps=['mesh-mcp-server'],
+        labels=['agents'],
+    )
+    # Additional agents follow the same pattern
+```
+
+**tilt/logs.tiltfile:**
+
+```python
+def define_logs():
+    # Each agent gets a log resource that calls bin/agent stream-output-as-chat
+    # to tail the conversation JSONL and transform it to chat-room format.
+    local_resource(
+        'agent-jack-transcript',
+        serve_cmd=' '.join([
+            '../nsheaps/.ai-agent-jack/bin/agent',
+            'stream-output-as-chat',
+        ]),
+        labels=['transcripts'],
+    )
+    # Debug and harness streams defined here too (see Three Log Streams section)
 ```
 
 ### Stopping Individual Agents
@@ -213,8 +242,8 @@ agents dynamically:
 | Mode | Command | What It Does |
 |:--|:--|:--|
 | **Process mode** | `tilt up` | Runs agents as local processes with file watching |
-| **K8s mode** *(Phase 2)* | `ctlptl create cluster kind; tilt up` | Runs agents in kind pods, tests K8s controllers |
-| **Hybrid** *(Phase 2)* | `tilt up -- --k8s-agents=jack` | Some agents in K8s, others as processes |
+
+> **K8s mode** (ctlptl + kind) and **Hybrid mode** are deferred to a future spec.
 
 ### File Watch Triggers
 
@@ -330,23 +359,16 @@ on config changes; directory resolution happens in the harness.
 
 ### Phase 1: Process-Mode Orchestration
 
-1. Create `Tiltfile` at project root with `local_resource` per agent
+1. Create composable Tiltfile structure (`Tiltfile`, `tilt/agents.tiltfile`,
+   `tilt/infra.tiltfile`, `tilt/logs.tiltfile`)
 2. Configure file watches for agent config hot-reload
 3. Map agent harness health signals to Tilt readiness probes
 4. Document `tilt up` workflow in project README
 
-### Phase 2: K8s-Mode Testing *(not tonight — process-mode first)*
-
-1. Create ctlptl cluster config for kind
-2. Add K8s resource definitions to Tiltfile (`k8s_yaml`, `k8s_resource`)
-3. Build agent container images via Tilt's `docker_build`
-4. Test K8s controllers (see `k8s-controllers.md`) in the local cluster
-
-### Phase 3: Hybrid and Multi-Agent
-
-1. Support mixed process/K8s mode per agent
-2. Add MCP mesh server as a K8s service
-3. Test Level 3–4 abstraction workflows end-to-end
+> **K8s support deferred to a future spec.** Phase 2 (K8s-Mode Testing) and
+> Phase 3 (Hybrid and Multi-Agent with K8s) are intentionally omitted here.
+> When K8s support is ready, a new spec covering ctlptl, kind, `k8s_yaml`,
+> and `docker_build` will be created.
 
 ## Open Questions
 
@@ -365,13 +387,15 @@ on config changes; directory resolution happens in the harness.
 ### External Documentation
 
 - [Tilt documentation](https://docs.tilt.dev/)
-- [ctlptl documentation](https://github.com/tilt-dev/ctlptl)
-- [kind documentation](https://kind.sigs.k8s.io/)
+- [Tilt `local_resource` reference](https://docs.tilt.dev/local_resource.html)
+- [Tilt `load()` / `include()` reference](https://docs.tilt.dev/api.html#api.load)
+- [nsheaps/tiltenv](https://github.com/nsheaps/tiltenv) — config-driven multi-service Tilt env tool (archived); informed the enable/disable service pattern
+
+> **ctlptl** and **kind** references removed — K8s support is deferred to a future spec.
 
 ### Internal References
 
 - `docs/scratch.md` line 123 — original note: "use tilt/ctlptl/kind for testing"
-- `docs/specs/k8s-controllers.md` — K8s controller spec (complementary)
 - `docs/specs/agent-abstraction-levels.md` — Level 3–4 abstraction
 - `docs/specs/agents-cli.md` — per-agent `<agent-repo>/.claude/` directory standard
 - `docs/specs/agent-harness-lifecycle.md` — harness restart loop and health signals
