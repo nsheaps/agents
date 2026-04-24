@@ -1,15 +1,15 @@
 ## Review: ai-mktpl#183 — remote-config plugin — Score: 93/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 92 | Plugin does one thing: sync upstream config on session start. Logic is clear. |
-| Flexibility | 94 | Supports both config file and env var override. Verbose mode allows detailed reporting. |
-| Usability | 92 | Setup requires manual YAML config creation; documentation is clear but has friction. |
-| Documentation | 94 | README covers config, behavior, status messages, and installation well. |
-| Security | 93 | ⚠️ Clones public git repo without verification. No checksum validation. Acceptable for distributed config. |
-| Pattern Matching | 93 | Follows plugin structure. yaml_get fallback to grep is reasonable for portability. |
-| Best Practices | 91 | ⚠️ git pull --ff-only can silently fail; script catches it but UX could be clearer. |
-| General QA | 92 | Version 0.1.0 appropriate. Timeout 30s is suitable for git operations. |
+| Category         | Score | Notes                                                                                                      |
+| :--------------- | ----: | :--------------------------------------------------------------------------------------------------------- |
+| Simplicity       |    92 | Plugin does one thing: sync upstream config on session start. Logic is clear.                              |
+| Flexibility      |    94 | Supports both config file and env var override. Verbose mode allows detailed reporting.                    |
+| Usability        |    92 | Setup requires manual YAML config creation; documentation is clear but has friction.                       |
+| Documentation    |    94 | README covers config, behavior, status messages, and installation well.                                    |
+| Security         |    93 | ⚠️ Clones public git repo without verification. No checksum validation. Acceptable for distributed config. |
+| Pattern Matching |    93 | Follows plugin structure. yaml_get fallback to grep is reasonable for portability.                         |
+| Best Practices   |    91 | ⚠️ git pull --ff-only can silently fail; script catches it but UX could be clearer.                        |
+| General QA       |    92 | Version 0.1.0 appropriate. Timeout 30s is suitable for git operations.                                     |
 
 > ✅ All categories ≥85% — Ready to merge
 
@@ -27,7 +27,7 @@
 
 2. **File**: `plugins/remote-config/hooks/scripts/sync-remote.sh:215-221`
    - **Severity**: Low
-   - **Description**: `git pull --ff-only` fails silently if repo is dirty or has conflicts. Error message is helpful but user must manually fix. 
+   - **Description**: `git pull --ff-only` fails silently if repo is dirty or has conflicts. Error message is helpful but user must manually fix.
    - **Expected**: Script could offer to reset to origin automatically (with user confirmation logged).
    - **Actual**: Lines 216-220 error-exit but require manual `cd` and `git status`.
    - **Recommendation**: Acceptable as-is (conservative approach). Could add recovery in v0.2.

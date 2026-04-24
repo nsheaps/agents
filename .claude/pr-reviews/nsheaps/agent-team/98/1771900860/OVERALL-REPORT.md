@@ -6,7 +6,7 @@
 ## Category Scores
 
 | Category         | Score | Status |
-|:-----------------|------:|:-------|
+| :--------------- | ----: | :----- |
 | Simplicity       |    88 | ✅     |
 | Flexibility      |    85 | ✅     |
 | Usability        |    88 | ✅     |
@@ -16,7 +16,7 @@
 | Best Practices   |    75 | ⚠️     |
 | General QA       |    72 | ⚠️     |
 
-*Three categories below 85%; score capped at 94, but weighted average is 82.*
+_Three categories below 85%; score capped at 94, but weighted average is 82._
 
 ## Findings
 

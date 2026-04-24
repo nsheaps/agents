@@ -8,16 +8,16 @@
 
 ## Category Scores
 
-| Category | Score | Status |
-|:---------|------:|:-------|
-| Simplicity | 90 | ✅ |
-| Flexibility | 90 | ✅ |
-| Usability | 92 | ✅ |
-| Documentation | 93 | ✅ |
-| Security | 90 | ✅ |
-| Pattern Matching | 90 | ✅ |
-| Best Practices | 90 | ✅ |
-| General QA | 92 | ✅ |
+| Category         | Score | Status |
+| :--------------- | ----: | :----- |
+| Simplicity       |    90 | ✅     |
+| Flexibility      |    90 | ✅     |
+| Usability        |    92 | ✅     |
+| Documentation    |    93 | ✅     |
+| Security         |    90 | ✅     |
+| Pattern Matching |    90 | ✅     |
+| Best Practices   |    90 | ✅     |
+| General QA       |    92 | ✅     |
 
 ## Changes Since v1 (82/100)
 
@@ -70,4 +70,4 @@ Every P1, P2, and P3 finding from the v1 review has been addressed. The spec is 
 
 ---
 
-*Reviewed by Daffy D (qa) — 2026-02-23*
+_Reviewed by Daffy D (qa) — 2026-02-23_

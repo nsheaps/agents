@@ -19,16 +19,16 @@ One P2 finding (DRY violation in file-finding logic), two P3s, and several P4 in
 
 ## Category Scores
 
-| # | Category        | Score | Verdict |
-|---|-----------------|-------|---------|
-| 1 | Simplicity      | 88%   | PASS    |
-| 2 | Flexibility     | 90%   | PASS    |
-| 3 | Usability       | 90%   | PASS    |
-| 4 | Documentation   | 85%   | PASS    |
-| 5 | Security        | 92%   | PASS    |
-| 6 | Pattern Match   | 87%   | PASS    |
-| 7 | Best Practices  | 85%   | PASS    |
-| 8 | General QA      | 88%   | PASS    |
+| #   | Category       | Score | Verdict |
+| --- | -------------- | ----- | ------- |
+| 1   | Simplicity     | 88%   | PASS    |
+| 2   | Flexibility    | 90%   | PASS    |
+| 3   | Usability      | 90%   | PASS    |
+| 4   | Documentation  | 85%   | PASS    |
+| 5   | Security       | 92%   | PASS    |
+| 6   | Pattern Match  | 87%   | PASS    |
+| 7   | Best Practices | 85%   | PASS    |
+| 8   | General QA     | 88%   | PASS    |
 
 ---
 
@@ -46,10 +46,12 @@ One P2 finding (DRY violation in file-finding logic), two P3s, and several P4 in
 **Severity**: P4 (Informational — Positive verification)
 **Description**: The concurrency group uses `github.ref` with a `github.sha` fallback for `main`, which is the correct pattern. The P1 bug from dotfiles#8 v1 (using `pull_request.number`) is NOT present. This is correct.
 **Actual**:
+
 ```yaml
 group: ${{ github.workflow }}-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
 cancel-in-progress: ${{ github.ref != 'refs/heads/main' }}
 ```
+
 **Verdict**: PASS — matches expected pattern.
 
 ---
@@ -82,6 +84,7 @@ The mise.toml version scans `bin`, `bin/lib`, and `test` separately. The CI vers
 **File**: All modified `bin/*` scripts
 **Severity**: P4 (Informational — Positive verification)
 **Description**: I verified every change to existing shell scripts in the diff. All changes fall into these categories:
+
 1. `case` statement reformatting (switch_case_indent = true, one statement per line)
 2. Heredoc reformatting (`$(cat <<` split across lines)
 3. Redirect operator spacing (`> ` to `>`, `&> ` to `&>`)
@@ -138,18 +141,18 @@ No logic changes detected. PASS.
 
 ## Pattern Matching Analysis (dotfiles#8 Comparison)
 
-| Element                        | Expected (from dotfiles#8)                    | Actual (claude-utils#8)                       | Match? |
-|--------------------------------|-----------------------------------------------|-----------------------------------------------|--------|
-| `.editorconfig` present        | Yes                                           | Yes                                           | PASS   |
-| `[*.sh]` section               | `switch_case_indent = true`                   | `switch_case_indent = true`                   | PASS   |
-| `.shellcheckrc` present        | Yes, with justified disables                  | Yes, SC1091 + SC2034 with comments            | PASS   |
-| `check.yaml` workflow          | Yes                                           | Yes                                           | PASS   |
-| Concurrency group              | `github.ref`/`github.sha`, NOT `PR number`    | `github.ref`/`github.sha`                     | PASS   |
-| Workflow trigger               | `push` only                                   | `push` only                                   | PASS   |
-| shfmt from `.editorconfig`     | No hardcoded flags                            | No hardcoded flags                            | PASS   |
-| mise tasks for lint/fmt/check  | Yes                                           | Yes (lint, fmt, fmt-check, check)             | PASS   |
-| Shell formatting only          | Whitespace changes to existing files           | Whitespace changes only                       | PASS   |
-| Workflow permissions            | Explicit minimal                              | Not declared                                  | DELTA  |
+| Element                       | Expected (from dotfiles#8)                 | Actual (claude-utils#8)            | Match? |
+| ----------------------------- | ------------------------------------------ | ---------------------------------- | ------ |
+| `.editorconfig` present       | Yes                                        | Yes                                | PASS   |
+| `[*.sh]` section              | `switch_case_indent = true`                | `switch_case_indent = true`        | PASS   |
+| `.shellcheckrc` present       | Yes, with justified disables               | Yes, SC1091 + SC2034 with comments | PASS   |
+| `check.yaml` workflow         | Yes                                        | Yes                                | PASS   |
+| Concurrency group             | `github.ref`/`github.sha`, NOT `PR number` | `github.ref`/`github.sha`          | PASS   |
+| Workflow trigger              | `push` only                                | `push` only                        | PASS   |
+| shfmt from `.editorconfig`    | No hardcoded flags                         | No hardcoded flags                 | PASS   |
+| mise tasks for lint/fmt/check | Yes                                        | Yes (lint, fmt, fmt-check, check)  | PASS   |
+| Shell formatting only         | Whitespace changes to existing files       | Whitespace changes only            | PASS   |
+| Workflow permissions          | Explicit minimal                           | Not declared                       | DELTA  |
 
 ---
 
@@ -164,4 +167,4 @@ No logic changes detected. PASS.
 
 ---
 
-*Report generated by Daffy D (qa) on 2026-02-23.*
+_Report generated by Daffy D (qa) on 2026-02-23._

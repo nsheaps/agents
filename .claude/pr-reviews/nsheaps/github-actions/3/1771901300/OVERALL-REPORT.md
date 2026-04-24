@@ -1,30 +1,31 @@
 # PR Review: github-actions#3 (v2 Re-review)
+
 **Score**: 88/100 ✅
 **Verdict**: Ready to merge
 **Previous**: 80/100 → 88/100
 
 ## Fix Verification
 
-| Finding | Status | Notes |
-|:--------|:-------|:------|
-| P1: `op read "$source" 2>&1` — stderr redirect removed | ✅ Fixed | Line 102: `value=$(op read "$source")` — clean, no stderr redirect. Error handled via `|| { ... }` block. Error message written to log, not captured into value. |
-| P2: yq binary download has checksum verification | ✅ Fixed | Lines 80-84: SHA256 declared, `sha256sum -c` performed before chmod. |
-| RUNNER_TEMP usage | ✅ Fixed | Line 81: `YQ_INSTALL_DIR="${RUNNER_TEMP:-/tmp}/yq-bin"` — uses RUNNER_TEMP with /tmp fallback. |
+| Finding                                                | Status   | Notes                                                                                          |
+| :----------------------------------------------------- | :------- | :--------------------------------------------------------------------------------------------- | --- | ---------------------------------------------------------------------- |
+| P1: `op read "$source" 2>&1` — stderr redirect removed | ✅ Fixed | Line 102: `value=$(op read "$source")` — clean, no stderr redirect. Error handled via `        |     | { ... }` block. Error message written to log, not captured into value. |
+| P2: yq binary download has checksum verification       | ✅ Fixed | Lines 80-84: SHA256 declared, `sha256sum -c` performed before chmod.                           |
+| RUNNER_TEMP usage                                      | ✅ Fixed | Line 81: `YQ_INSTALL_DIR="${RUNNER_TEMP:-/tmp}/yq-bin"` — uses RUNNER_TEMP with /tmp fallback. |
 
 All 3 tracked findings resolved.
 
 ## Category Scores
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Correctness & Logic | 80 | 92 | ✅ |
-| Security | 72 | 88 | ✅ |
-| Error Handling | 85 | 90 | ✅ |
-| Code Quality & Style | 85 | 88 | ✅ |
-| Documentation | 90 | 90 | ✅ |
-| Testing | 70 | 75 | ⚠️ |
-| Dependencies | 78 | 90 | ✅ |
-| Spec Compliance | 85 | 90 | ✅ |
+| Category             |  v1 |  v2 | Status |
+| :------------------- | --: | --: | :----- |
+| Correctness & Logic  |  80 |  92 | ✅     |
+| Security             |  72 |  88 | ✅     |
+| Error Handling       |  85 |  90 | ✅     |
+| Code Quality & Style |  85 |  88 | ✅     |
+| Documentation        |  90 |  90 | ✅     |
+| Testing              |  70 |  75 | ⚠️     |
+| Dependencies         |  78 |  90 | ✅     |
+| Spec Compliance      |  85 |  90 | ✅     |
 
 ## Remaining / New Findings
 
@@ -64,16 +65,16 @@ Adjusting score down from initial estimate due to the P1 checksum defect:
 **Revised Score**: 82/100 ⚠️
 **Revised Verdict**: Fix then merge
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Correctness & Logic | 80 | 82 | ⚠️ |
-| Security | 72 | 88 | ✅ |
-| Error Handling | 85 | 90 | ✅ |
-| Code Quality & Style | 85 | 88 | ✅ |
-| Documentation | 90 | 90 | ✅ |
-| Testing | 70 | 72 | ⚠️ |
-| Dependencies | 78 | 72 | ⚠️ |
-| Spec Compliance | 85 | 88 | ✅ |
+| Category             |  v1 |  v2 | Status |
+| :------------------- | --: | --: | :----- |
+| Correctness & Logic  |  80 |  82 | ⚠️     |
+| Security             |  72 |  88 | ✅     |
+| Error Handling       |  85 |  90 | ✅     |
+| Code Quality & Style |  85 |  88 | ✅     |
+| Documentation        |  90 |  90 | ✅     |
+| Testing              |  70 |  72 | ⚠️     |
+| Dependencies         |  78 |  72 | ⚠️     |
+| Spec Compliance      |  85 |  88 | ✅     |
 
 **Final Score: 84/100 ⚠️ — Fix then merge**
 

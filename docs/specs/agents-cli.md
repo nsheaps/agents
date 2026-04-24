@@ -40,12 +40,12 @@ source: https://discord.com/channels/1490863845252665415/1490930230360018944/149
 
 ### Relationship to Existing Tools
 
-| Tool                        | Purpose                                    |
-| :-------------------------- | :----------------------------------------- |
-| `agents` (this spec)        | Agent runtime management (start/stop/run) |
-| `claude-team`               | Team configuration and agent definitions  |
-| `agent-launcher` / `bin/agent` | Individual agent session lifecycle         |
-| `claude --resume`           | Reconnect to running agent                |
+| Tool                           | Purpose                                   |
+| :----------------------------- | :---------------------------------------- |
+| `agents` (this spec)           | Agent runtime management (start/stop/run) |
+| `claude-team`                  | Team configuration and agent definitions  |
+| `agent-launcher` / `bin/agent` | Individual agent session lifecycle        |
+| `claude --resume`              | Reconnect to running agent                |
 
 ---
 
@@ -340,21 +340,23 @@ agents push --force
 #### Behavior
 
 **When run from within agent runtime (parent PID detected):**
+
 - Commits outstanding changes from local repo
 - Pushes to remote repository
 - Uses agent's configured git remote
 - No manual ref needed
 
 **When run from outside agent runtime:**
+
 - Uses `find-up` to locate `agent.yaml`
 - Commits and pushes from that directory
 - Requires git remote to be configured
 
 #### Flags
 
-| Flag      | Type | Default | Description                     |
-| :-------- | :--- | :------ | :------------------------------ |
-| `--force` | bool | false   | Force push (overwrites remote)  |
+| Flag      | Type | Default | Description                    |
+| :-------- | :--- | :------ | :----------------------------- |
+| `--force` | bool | false   | Force push (overwrites remote) |
 
 #### Exit Codes
 
@@ -390,9 +392,9 @@ agents ask -p "List all tasks" < task-query.txt
 
 #### Flags
 
-| Flag | Type   | Default | Description              |
-| :--- | :----- | :------ | :----------------------- |
-| `-p` | string | (stdin) | Prompt text              |
+| Flag | Type   | Default | Description |
+| :--- | :----- | :------ | :---------- |
+| `-p` | string | (stdin) | Prompt text |
 
 #### Exit Codes
 
@@ -407,13 +409,13 @@ agents ask -p "List all tasks" < task-query.txt
 
 Available on all commands:
 
-| Flag          | Type   | Default | Description                           |
-| :------------ | :----- | :------ | :------------------------------------ |
-| `--help`      | bool   | false   | Show help for the command             |
-| `--version`   | bool   | false   | Show CLI version                      |
-| `--verbose`   | bool   | false   | Show detailed output (logs, steps)    |
-| `--quiet`     | bool   | false   | Suppress non-error output             |
-| `--config`    | string | `"~"` | Home directory for `~/.agents/` store |
+| Flag        | Type   | Default | Description                           |
+| :---------- | :----- | :------ | :------------------------------------ |
+| `--help`    | bool   | false   | Show help for the command             |
+| `--version` | bool   | false   | Show CLI version                      |
+| `--verbose` | bool   | false   | Show detailed output (logs, steps)    |
+| `--quiet`   | bool   | false   | Suppress non-error output             |
+| `--config`  | string | `"~"`   | Home directory for `~/.agents/` store |
 
 ---
 
@@ -476,6 +478,7 @@ the shared `~/.claude/`. This is the primary isolation mechanism for multi-agent
 on a shared machine.
 
 This ensures:
+
 - Agent always uses the current local configuration
 - Changes to rules/commands/skills take effect on next start
 - Multiple agents can share `.claude/` directories via symlinks

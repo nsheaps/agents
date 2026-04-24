@@ -1,31 +1,32 @@
 # PR Review: agent-team#98 (v2 Re-review)
+
 **Score**: 90/100 ✅
 **Verdict**: Ready to merge
 **Previous**: 82/100 → 90/100
 
 ## Fix Verification
 
-| Finding | Status | Notes |
-|:--------|:-------|:------|
-| P2: `bypassPermissions` default with tradeoff documentation added | ✅ Fixed | `docs/specs/draft/claude-team-cli.md` §2.2, line 195: explicit note — "bypassPermissions grants unrestricted tool access and is appropriate for agent team teammates that need autonomous operation... When creating agents for team use, the interactive flow highlights bypassPermissions as the recommended choice." Tradeoffs documented. |
-| P2: Update path for existing agents (not just error-on-conflict) | ✅ Fixed | `docs/specs/draft/claude-team-cli.md` §2.2 error handling table (line 266-267): "Agent name already exists (no --overwrite): Error ... Use --overwrite to replace." AND "Agent name already exists (--overwrite): Warning: Overwriting... Proceeds." Both create and update paths are now specified. |
-| P2: Future frontmatter fields annotated properly | ✅ Fixed | §2.2 Note (line 260): "The minimal output includes only name, description, and permission_mode... Fields model, prompt_mode, color, tools, and disallowed_tools are only included when explicitly set via flags. Of these, model is live today; prompt_mode, color, tools, and disallowed_tools are planned fields defined in the Agent Launcher Spec but not yet consumed by the Claude Code runtime." Clear live-vs-planned delineation. |
-| P3 fixes (various) | ✅ Fixed | §6 Validation Rules: team name max 50 chars, agent name max 30 chars, kebab-case regex specified, display name uniqueness and max 30 chars documented. Tool flag mutual exclusivity documented with error message. |
+| Finding                                                           | Status   | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| :---------------------------------------------------------------- | :------- | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P2: `bypassPermissions` default with tradeoff documentation added | ✅ Fixed | `docs/specs/draft/claude-team-cli.md` §2.2, line 195: explicit note — "bypassPermissions grants unrestricted tool access and is appropriate for agent team teammates that need autonomous operation... When creating agents for team use, the interactive flow highlights bypassPermissions as the recommended choice." Tradeoffs documented.                                                                                              |
+| P2: Update path for existing agents (not just error-on-conflict)  | ✅ Fixed | `docs/specs/draft/claude-team-cli.md` §2.2 error handling table (line 266-267): "Agent name already exists (no --overwrite): Error ... Use --overwrite to replace." AND "Agent name already exists (--overwrite): Warning: Overwriting... Proceeds." Both create and update paths are now specified.                                                                                                                                       |
+| P2: Future frontmatter fields annotated properly                  | ✅ Fixed | §2.2 Note (line 260): "The minimal output includes only name, description, and permission_mode... Fields model, prompt_mode, color, tools, and disallowed_tools are only included when explicitly set via flags. Of these, model is live today; prompt_mode, color, tools, and disallowed_tools are planned fields defined in the Agent Launcher Spec but not yet consumed by the Claude Code runtime." Clear live-vs-planned delineation. |
+| P3 fixes (various)                                                | ✅ Fixed | §6 Validation Rules: team name max 50 chars, agent name max 30 chars, kebab-case regex specified, display name uniqueness and max 30 chars documented. Tool flag mutual exclusivity documented with error message.                                                                                                                                                                                                                         |
 
 All 4 tracked fixes verified. Good work on the spec completeness.
 
 ## Category Scores
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Correctness & Logic | 82 | 92 | ✅ |
-| Security | 85 | 88 | ✅ |
-| Error Handling | 80 | 92 | ✅ |
-| Code Quality & Style | 85 | 92 | ✅ |
-| Documentation | 82 | 94 | ✅ |
-| Testing | 75 | 80 | ⚠️ |
-| Dependencies | 85 | 90 | ✅ |
-| Spec Compliance | 80 | 92 | ✅ |
+| Category             |  v1 |  v2 | Status |
+| :------------------- | --: | --: | :----- |
+| Correctness & Logic  |  82 |  92 | ✅     |
+| Security             |  85 |  88 | ✅     |
+| Error Handling       |  80 |  92 | ✅     |
+| Code Quality & Style |  85 |  92 | ✅     |
+| Documentation        |  82 |  94 | ✅     |
+| Testing              |  75 |  80 | ⚠️     |
+| Dependencies         |  85 |  90 | ✅     |
+| Spec Compliance      |  80 |  92 | ✅     |
 
 ## Remaining / New Findings
 

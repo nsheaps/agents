@@ -14,16 +14,16 @@
 
 ## Category Scores
 
-| # | Category | Score | Status |
-|---|----------|-------|--------|
-| 1 | Simplicity | 88 | ✅ |
-| 2 | Flexibility | 90 | ✅ |
-| 3 | Usability | 87 | ✅ |
-| 4 | Documentation | 92 | ✅ |
-| 5 | Security | 85 | ✅ |
-| 6 | Pattern Matching | 82 | ⚠️ |
-| 7 | Best Practices | 88 | ✅ |
-| 8 | General QA | 86 | ✅ |
+| #   | Category         | Score | Status |
+| --- | ---------------- | ----- | ------ |
+| 1   | Simplicity       | 88    | ✅     |
+| 2   | Flexibility      | 90    | ✅     |
+| 3   | Usability        | 87    | ✅     |
+| 4   | Documentation    | 92    | ✅     |
+| 5   | Security         | 85    | ✅     |
+| 6   | Pattern Matching | 82    | ⚠️     |
+| 7   | Best Practices   | 88    | ✅     |
+| 8   | General QA       | 86    | ✅     |
 
 ---
 
@@ -40,6 +40,7 @@
 **Description**: The existing `update-branch.md` command uses `argument-hint` and `allowed-tools` in its frontmatter. The new `code-review.md` command omits both fields. This breaks the established pattern for commands in this plugin.
 
 **Expected**:
+
 ```yaml
 ---
 name: code-review
@@ -193,4 +194,4 @@ The P2 findings should be addressed before merge. The P3 findings should be addr
 
 ---
 
-*Review by Daffy D (qa) -- 2026-02-23*
+_Review by Daffy D (qa) -- 2026-02-23_

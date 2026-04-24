@@ -9,6 +9,7 @@ The action covers a reasonable set of use cases for a first cut: two compose fil
 ## Findings
 
 ### SSH auth-type advertised but unusable
+
 **File**: `.github/actions/arcane-deploy/action.yml:53-57`
 **Severity**: High
 **Description**: `auth-type: ssh` is documented as a valid value, but there is no corresponding `ssh-key` input (or `ssh-known-hosts`). The create-repository payload unconditionally includes a `token` field (action.sh line 165). A caller who selects `ssh` has no way to supply the actual key material through this action. Either the option is incomplete or the Arcane API handles SSH differently and this is undocumented.
@@ -18,6 +19,7 @@ The action covers a reasonable set of use cases for a first cut: two compose fil
 ---
 
 ### Directory scan depth hardcoded to 2
+
 **File**: `.github/actions/arcane-deploy/action.sh:91`
 **Severity**: Medium
 **Description**: `find ... -maxdepth 2` is hardcoded. A monorepo with compose files three or more levels deep (e.g., `services/backend/api/compose.yml`) will silently produce zero results for those files without any warning. There is no `compose-scan-depth` input to override this.
@@ -27,6 +29,7 @@ The action covers a reasonable set of use cases for a first cut: two compose fil
 ---
 
 ### Per-stack sync name cannot be overridden
+
 **File**: `.github/actions/arcane-deploy/action.sh:111-127`
 **Severity**: Medium
 **Description**: Sync names are derived entirely from the compose file's parent directory name. There is no mechanism to override individual sync names. If two different services happen to live in directories with the same name (e.g., `frontend/api/compose.yml` and `backend/api/compose.yml`), both will derive the same sync name `<prefix>-api`, causing one to overwrite the other's sync registration silently. The `sync-name-prefix` input only controls the prefix, not the full name.
@@ -36,6 +39,7 @@ The action covers a reasonable set of use cases for a first cut: two compose fil
 ---
 
 ### env-vars leaks into entire downstream workflow
+
 **File**: `.github/actions/arcane-deploy/action.sh:275`
 **Severity**: Medium
 **Description**: The `env-vars` input writes `KEY=VALUE` pairs to `$GITHUB_ENV`, which makes them available to every subsequent step in the workflow — not just the Arcane deploy step. This is a side-effect with security and correctness implications: callers who only want variables scoped to compose interpolation or `.env` files will inadvertently pollute their full pipeline. There is no opt-out; the only way to avoid this behavior is to not use `env-vars` at all.
@@ -45,6 +49,7 @@ The action covers a reasonable set of use cases for a first cut: two compose fil
 ---
 
 ### No timeout control on API calls
+
 **File**: `.github/actions/arcane-deploy/action.sh:47-53`
 **Severity**: Medium
 **Description**: All `curl` calls have no `--max-time` or `--connect-timeout` flags. If the Arcane instance is unreachable or slow, the action will hang indefinitely until the GitHub Actions job-level timeout (default 6 hours) kills it. There is no `timeout` input to let callers control this behavior.
@@ -54,6 +59,7 @@ The action covers a reasonable set of use cases for a first cut: two compose fil
 ---
 
 ### sync-interval accepts unconstrained free-text with no validation
+
 **File**: `.github/actions/arcane-deploy/action.sh:206`
 **Severity**: Low
 **Description**: `SYNC_INTERVAL` is passed directly to jq as `--argjson syncInterval "${SYNC_INTERVAL}"`. The input accepts any string. If a caller passes a non-integer value (e.g., `"5m"`, `"every 5 minutes"`, or an empty string), jq will either error or send a malformed payload to the API. There is no input validation before it reaches the payload.
@@ -63,6 +69,7 @@ The action covers a reasonable set of use cases for a first cut: two compose fil
 ---
 
 ### compose-files and compose-dir combination is undocumented
+
 **File**: `.github/actions/arcane-deploy/action.sh:70-97`, `action-README.md:92`
 **Severity**: Low
 **Description**: The script silently merges results from both `compose-files` and `compose-dir` when both are provided (explicit files first, then scanned files). This combination mode is not documented. Callers may not realize they can combine both modes, or may accidentally duplicate entries if a file listed in `compose-files` also appears in the `compose-dir` scan. There is no deduplication.
@@ -72,6 +79,7 @@ The action covers a reasonable set of use cases for a first cut: two compose fil
 ---
 
 ### No support for external (non-GitHub) repository URLs in auto-detection
+
 **File**: `.github/actions/arcane-deploy/action.sh:10`
 **Severity**: Low
 **Description**: The default repository URL is hard-coded to `https://github.com/${GITHUB_REPOSITORY}.git`. Callers running in GitHub Actions but deploying from a GitLab, Gitea, or Bitbucket mirror must explicitly set `repository-url`. This is not a hard blocker since the override exists, but the default assumption of GitHub-only is worth noting as a flexibility constraint for non-GitHub-hosted codebases running in GitHub Actions.

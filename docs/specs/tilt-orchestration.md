@@ -17,6 +17,7 @@ tags:
   - orchestration
   - tilt
 ---
+
 # Tilt Orchestration for Agent Development
 
 ## Problem Statement
@@ -88,7 +89,7 @@ graph TD
     CLAUDE -->|exits| AGENT
     AGENT -->|crashes| TILT
     TILT -->|auto-restarts| TMUX
-    
+
     TILT2[Tilt local_resource: transcript] -->|runs| STREAM[bin/agent stream-output-as-chat]
     STREAM -->|tails| JSONL[$CLAUDE_PROJECT_DIR/.claude/projects/.../session.jsonl]
     STREAM -->|stdout → tilt UI| UI[Tilt Web Dashboard]
@@ -106,7 +107,7 @@ flowchart TD
     RUNNING -->|Yes| MONITOR[monitor output]
     RUNNING -->|No| KILL[close pane, open new]
     KILL --> EXEC
-    
+
     EXEC --> LOOP[Restart Loop]
     LOOP --> ENV[Source 1Pass env]
     ENV --> LAUNCH[Launch claude with flags]
@@ -258,7 +259,7 @@ agents:
 
   - name: henry
     repo: ~/src/nsheaps/.ai-agent-henry
-    enabled: false   # disabled — no Tilt resource is created
+    enabled: false # disabled — no Tilt resource is created
 
   - name: pamela
     repo: ~/src/nsheaps/.ai-agent-pamela
@@ -299,26 +300,26 @@ This keeps the Tiltfile stable as the team grows — new agents are added only t
 
 ### Development Modes
 
-| Mode | Command | What It Does |
-|:--|:--|:--|
-| **Start orchestrator** | `tilt up` | Starts the Tilt daemon and web dashboard. Does NOT auto-launch agents. Reads `agents.yaml` and creates resources only for enabled agents. |
-| **Enable an agent** | Edit `agents.yaml` → `enabled: true` | Tilt detects the change, creates the resource, and starts the agent process automatically. |
-| **Disable an agent** | Edit `agents.yaml` → `enabled: false` | Tilt detects the change, removes the resource, and stops the agent process. |
-| **Stop orchestrator** | `tilt down` | Tears down all Tilt resources and stops the daemon. Does not destroy tmux sessions. |
+| Mode                   | Command                               | What It Does                                                                                                                              |
+| :--------------------- | :------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Start orchestrator** | `tilt up`                             | Starts the Tilt daemon and web dashboard. Does NOT auto-launch agents. Reads `agents.yaml` and creates resources only for enabled agents. |
+| **Enable an agent**    | Edit `agents.yaml` → `enabled: true`  | Tilt detects the change, creates the resource, and starts the agent process automatically.                                                |
+| **Disable an agent**   | Edit `agents.yaml` → `enabled: false` | Tilt detects the change, removes the resource, and stops the agent process.                                                               |
+| **Stop orchestrator**  | `tilt down`                           | Tears down all Tilt resources and stops the daemon. Does not destroy tmux sessions.                                                       |
 
 > **K8s mode** (ctlptl + kind) and **Hybrid mode** are deferred to a future spec.
 
 ### File Watch Triggers
 
-| File Pattern | Action |
-|:--|:--|
-| `agents.yaml` | Tiltfile re-evaluates; enabled agents gain resources, disabled agents lose them |
-| `<agent-repo>/.claude/agents/*.md` | Restart the affected agent |
-| `<agent-repo>/.claude/settings.json` | Restart the affected agent |
-| `<agent-repo>/.claude/rules/**` | Restart the affected agent (rules load at session start) |
-| `bin/agent` | Restart the affected agent |
-| `src/mesh/**` | Rebuild and restart mesh MCP server (Phase 2 — infra.tiltfile) |
-| `Tiltfile` | Tilt re-evaluates automatically |
+| File Pattern                         | Action                                                                          |
+| :----------------------------------- | :------------------------------------------------------------------------------ |
+| `agents.yaml`                        | Tiltfile re-evaluates; enabled agents gain resources, disabled agents lose them |
+| `<agent-repo>/.claude/agents/*.md`   | Restart the affected agent                                                      |
+| `<agent-repo>/.claude/settings.json` | Restart the affected agent                                                      |
+| `<agent-repo>/.claude/rules/**`      | Restart the affected agent (rules load at session start)                        |
+| `bin/agent`                          | Restart the affected agent                                                      |
+| `src/mesh/**`                        | Rebuild and restart mesh MCP server (Phase 2 — infra.tiltfile)                  |
+| `Tiltfile`                           | Tilt re-evaluates automatically                                                 |
 
 ### Three Log Streams per Agent
 
@@ -366,7 +367,7 @@ invocation and does not persist. `agents.yaml` is the durable source of truth.
 agents:
   - name: henry
     repo: ~/src/nsheaps/.ai-agent-henry
-    enabled: true   # was false — Tilt will create and start the resource
+    enabled: true # was false — Tilt will create and start the resource
 ```
 
 **To stop an agent:**
@@ -374,7 +375,7 @@ agents:
 ```yaml
 agents:
   - name: henry
-    enabled: false   # Tilt will remove the resource and stop the process
+    enabled: false # Tilt will remove the resource and stop the process
 ```
 
 Tilt detects the `agents.yaml` change, re-evaluates the Tiltfile, and reconciles

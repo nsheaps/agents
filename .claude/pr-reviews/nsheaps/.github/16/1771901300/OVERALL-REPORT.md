@@ -1,29 +1,30 @@
 # PR Review: .github#16 (v2 Re-review)
+
 **Score**: 92/100 ✅
 **Verdict**: Ready to merge
 **Previous**: 84/100 → 92/100
 
 ## Fix Verification
 
-| Finding | Status | Notes |
-|:--------|:-------|:------|
-| P2: `github-label-sync` now version-pinned (3.0.0) | ✅ Fixed | `.github/workflows/sync-labels.yaml:142`: `npm install -g github-label-sync@3.0.0` — exact version pinned. No more floating `latest`. |
+| Finding                                                             | Status   | Notes                                                                                                                                                                |
+| :------------------------------------------------------------------ | :------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P2: `github-label-sync` now version-pinned (3.0.0)                  | ✅ Fixed | `.github/workflows/sync-labels.yaml:142`: `npm install -g github-label-sync@3.0.0` — exact version pinned. No more floating `latest`.                                |
 | P3: check-prerequisites job added for when GitHub App secret absent | ✅ Fixed | Lines 93-100: `check-prerequisites` job with `if: ${{ secrets.AUTOMATION_GITHUB_APP_ID == '' }}` that exits 1 with a clear error message when the secret is missing. |
 
 2 of 2 tracked findings resolved.
 
 ## Category Scores
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Correctness & Logic | 85 | 93 | ✅ |
-| Security | 82 | 90 | ✅ |
-| Error Handling | 80 | 92 | ✅ |
-| Code Quality & Style | 86 | 92 | ✅ |
-| Documentation | 88 | 93 | ✅ |
-| Testing | 82 | 88 | ✅ |
-| Dependencies | 82 | 95 | ✅ |
-| Spec Compliance | 85 | 92 | ✅ |
+| Category             |  v1 |  v2 | Status |
+| :------------------- | --: | --: | :----- |
+| Correctness & Logic  |  85 |  93 | ✅     |
+| Security             |  82 |  90 | ✅     |
+| Error Handling       |  80 |  92 | ✅     |
+| Code Quality & Style |  86 |  92 | ✅     |
+| Documentation        |  88 |  93 | ✅     |
+| Testing              |  82 |  88 | ✅     |
+| Dependencies         |  82 |  95 | ✅     |
+| Spec Compliance      |  85 |  92 | ✅     |
 
 ## Remaining / New Findings
 
@@ -53,15 +54,15 @@
 
 The two tracked findings from v1 were addressed with good intent but the implementation of secret-based conditional logic doesn't work in GitHub Actions (secrets are masked in `if:` expressions). The workflow will fail on every run due to the check-prerequisites job always triggering, and the sync-labels job never running. This needs to be addressed before merge.
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Correctness & Logic | 85 | 78 | ⚠️ |
-| Security | 82 | 90 | ✅ |
-| Error Handling | 80 | 82 | ⚠️ |
-| Code Quality & Style | 86 | 90 | ✅ |
-| Documentation | 88 | 93 | ✅ |
-| Testing | 82 | 82 | ⚠️ |
-| Dependencies | 82 | 95 | ✅ |
-| Spec Compliance | 85 | 88 | ✅ |
+| Category             |  v1 |  v2 | Status |
+| :------------------- | --: | --: | :----- |
+| Correctness & Logic  |  85 |  78 | ⚠️     |
+| Security             |  82 |  90 | ✅     |
+| Error Handling       |  80 |  82 | ⚠️     |
+| Code Quality & Style |  86 |  90 | ✅     |
+| Documentation        |  88 |  93 | ✅     |
+| Testing              |  82 |  82 | ⚠️     |
+| Dependencies         |  82 |  95 | ✅     |
+| Spec Compliance      |  85 |  88 | ✅     |
 
 **Final Score: 87/100 ✅ — but correctness-1 and correctness-2 are P2 defects that make the workflow non-functional. Recommend fix before merge.**

@@ -16,12 +16,13 @@ When an orchestrator session crashes or freezes, the teammates continue running 
 ## The Problem
 
 Agent team sessions have a 1:1 mapping between:
+
 - The **team name** (e.g., `looney-toons-20260223`)
 - The **team config** at `~/.claude/teams/{team-name}/config.json`
 - The **task list** at `~/.claude/tasks/{team-name}/`
 - The **orchestrator's agent name** in the config (e.g., `team-lead`)
 
-If any of these are mismatched during reconnection, the orchestrator starts in a state that *appears* connected but cannot actually communicate with teammates or access the shared task list.
+If any of these are mismatched during reconnection, the orchestrator starts in a state that _appears_ connected but cannot actually communicate with teammates or access the shared task list.
 
 ---
 
@@ -48,6 +49,7 @@ cat ~/.claude/teams/{team-name}/config.json
 ```
 
 Note these critical values:
+
 - `name` — the exact team name (used for `--team-name`)
 - `leadAgentId` — the orchestrator's agent ID (format: `{name}@{team-name}`)
 - `leadSessionId` — the session ID to resume
@@ -66,10 +68,10 @@ CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 claude \
 
 **Every parameter must match the config exactly:**
 
-| Parameter | Must Match | Where to Find |
-|:----------|:-----------|:--------------|
-| `--resume` | `leadSessionId` | `config.json` → `leadSessionId` |
-| `--team-name` | `name` | `config.json` → `name` |
+| Parameter      | Must Match           | Where to Find                     |
+| :------------- | :------------------- | :-------------------------------- |
+| `--resume`     | `leadSessionId`      | `config.json` → `leadSessionId`   |
+| `--team-name`  | `name`               | `config.json` → `name`            |
 | `--agent-name` | Lead member's `name` | `config.json` → `members[0].name` |
 
 ### Step 4: Verify Reconnection
@@ -90,7 +92,8 @@ If any of these fail silently (no error but no results), the reconnection parame
 
 **What happened in this session**: The user typed `looney-toons-2026-0223` (extra dash) instead of `looney-toons-20260223`.
 
-**Result**: Claude Code created a *new* empty team context instead of connecting to the existing one. The orchestrator had:
+**Result**: Claude Code created a _new_ empty team context instead of connecting to the existing one. The orchestrator had:
+
 - No access to the existing task list
 - No ability to send messages to existing teammates
 - No error message indicating anything was wrong
@@ -122,6 +125,7 @@ If any of these fail silently (no error but no results), the reconnection parame
 If the tmux session itself crashed (not just the orchestrator), all teammates are gone. Reconnecting the orchestrator won't bring them back.
 
 **Verification**:
+
 ```bash
 # Check if teammate processes are running
 tmux list-panes -a -F "#{pane_id} #{pane_pid} #{pane_current_command}"
@@ -138,14 +142,14 @@ If panes are gone, teammates must be relaunched. The team config still has their
 
 When reconnection seems to work but something is off:
 
-| Symptom | Likely Cause | Fix |
-|:--------|:-------------|:----|
-| `TaskList` returns empty | Wrong team name (pointing to empty/nonexistent task dir) | Check `--team-name` matches config exactly |
-| `SendMessage` succeeds but teammate never responds | Wrong team name (messages going to void) | Check `--team-name` matches config exactly |
-| Teammates don't recognize you | Wrong `--agent-name` | Check `--agent-name` matches config's lead member name |
-| No conversation history | Missing `--resume` | Add `--resume {leadSessionId}` |
-| "Team not found" error | Team config deleted or moved | Check `~/.claude/teams/` for the config file |
-| Teammate panes show "exited" | Teammate processes crashed | Must relaunch teammates (context lost) |
+| Symptom                                            | Likely Cause                                             | Fix                                                    |
+| :------------------------------------------------- | :------------------------------------------------------- | :----------------------------------------------------- |
+| `TaskList` returns empty                           | Wrong team name (pointing to empty/nonexistent task dir) | Check `--team-name` matches config exactly             |
+| `SendMessage` succeeds but teammate never responds | Wrong team name (messages going to void)                 | Check `--team-name` matches config exactly             |
+| Teammates don't recognize you                      | Wrong `--agent-name`                                     | Check `--agent-name` matches config's lead member name |
+| No conversation history                            | Missing `--resume`                                       | Add `--resume {leadSessionId}`                         |
+| "Team not found" error                             | Team config deleted or moved                             | Check `~/.claude/teams/` for the config file           |
+| Teammate panes show "exited"                       | Teammate processes crashed                               | Must relaunch teammates (context lost)                 |
 
 ---
 
@@ -201,6 +205,7 @@ exec claude \
 ```
 
 Usage:
+
 ```bash
 ./reconnect-team.sh looney-toons-20260223
 # Optionally pass additional flags:
@@ -216,6 +221,7 @@ This eliminates typo risk by reading all parameters directly from the config.
 ### Why Silent Failures Happen
 
 Claude Code's `--team-name` parameter does not validate against existing configs. It's treated as a namespace identifier:
+
 - If the team config exists → connects to it
 - If it doesn't exist → creates a new empty context
 - No warning in either case

@@ -9,30 +9,30 @@
 
 ### agent-team Repository
 
-| PR # | Title | Score | Status | Notes |
-|:-----|:------|------:|:-------|:------|
-| 97 | Rename fmt→format, add check meta-task | 98/100 | ✅ MERGE | Trivial, clean, all categories ≥85% |
+| PR # | Title                                  |  Score | Status   | Notes                               |
+| :--- | :------------------------------------- | -----: | :------- | :---------------------------------- |
+| 97   | Rename fmt→format, add check meta-task | 98/100 | ✅ MERGE | Trivial, clean, all categories ≥85% |
 
 ### ai-mktpl Repository
 
-| PR # | Title | Score | Status | Notes |
-|:-----|:------|------:|:-------|:------|
-| 185 | context-bloat-prevention plugin | 96/100 | ✅ MERGE | Verify plugin dir exists before merge |
-| 191 | answer-before-acting rule | 94/100 | ✅ MERGE | Minor: unrelated formatting bundled |
-| 184 | git-spice push rejection hook | 94/100 | ✅ MERGE | Low findings: timeout, error handling |
-| 192 | statusline settings.local.json fix | 93/100 | ✅ MERGE | Low findings: race condition possible |
-| 181 | agent-tab-titles plugin | 94/100 | ✅ MERGE | Low findings: silent failures in tmux |
-| 183 | remote-config plugin | 93/100 | ✅ MERGE | Low findings: YAML parsing fragility |
-| 188 | word-vomit plugin | 93/100 | ✅ MERGE | Low findings: agent dependency |
-| 187 | skill-required plugin | 93/100 | ✅ MERGE | Medium findings: path collision risk |
+| PR # | Title                              |  Score | Status   | Notes                                 |
+| :--- | :--------------------------------- | -----: | :------- | :------------------------------------ |
+| 185  | context-bloat-prevention plugin    | 96/100 | ✅ MERGE | Verify plugin dir exists before merge |
+| 191  | answer-before-acting rule          | 94/100 | ✅ MERGE | Minor: unrelated formatting bundled   |
+| 184  | git-spice push rejection hook      | 94/100 | ✅ MERGE | Low findings: timeout, error handling |
+| 192  | statusline settings.local.json fix | 93/100 | ✅ MERGE | Low findings: race condition possible |
+| 181  | agent-tab-titles plugin            | 94/100 | ✅ MERGE | Low findings: silent failures in tmux |
+| 183  | remote-config plugin               | 93/100 | ✅ MERGE | Low findings: YAML parsing fragility  |
+| 188  | word-vomit plugin                  | 93/100 | ✅ MERGE | Low findings: agent dependency        |
+| 187  | skill-required plugin              | 93/100 | ✅ MERGE | Medium findings: path collision risk  |
 
 ## Scoring Summary
 
-| Score Range | Count | PRs |
-|:-----------|------:|:-----|
-| 96-98 | 2 | 97, 185 |
-| 93-95 | 7 | 191, 184, 192, 181, 183, 188, 187 |
-| Below 93 | 0 | — |
+| Score Range | Count | PRs                               |
+| :---------- | ----: | :-------------------------------- |
+| 96-98       |     2 | 97, 185                           |
+| 93-95       |     7 | 191, 184, 192, 181, 183, 188, 187 |
+| Below 93    |     0 | —                                 |
 
 **Average Score**: 93.8/100
 
@@ -45,6 +45,7 @@ All PRs have all 8 quality categories above 85%. No defects that prevent merging
 ### Low-Severity Findings (13 total)
 
 Common patterns:
+
 - Silent error handling (tmux scripts, git commands) — acceptable for non-critical operations
 - Configuration/UX clarity — not blocking, can be improved in v0.2
 - YAML parsing fragility — acceptable given simple config format
@@ -54,7 +55,6 @@ Common patterns:
 
 1. **ai-mktpl#187 (skill-required)**: project_slug collision via sed — use hash instead
    - Mitigation: Very unlikely in practice (requires dashes in project path)
-   
 2. **ai-mktpl#184 (git-spice hook)**: PreToolUse timeout 5s may be too short for slow `gs log short`
    - Mitigation: Hook still works (allows push on timeout, which is safe-fail)
 
@@ -63,6 +63,7 @@ Both are acceptable for 0.1.0 releases.
 ## Report Files
 
 All detailed reviews saved to:
+
 - `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/pr-reviews/nsheaps/agent-team/97/1771900804/OVERALL-REPORT.md`
 - `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/pr-reviews/nsheaps/ai-mktpl/{185,191,184,192,181,183,188,187}/1771900804/OVERALL-REPORT.md`
 

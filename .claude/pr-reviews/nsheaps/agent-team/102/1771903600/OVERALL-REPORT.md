@@ -5,16 +5,16 @@
 
 ## Category Scores
 
-| Category | Score | Status |
-|:---------|------:|:-------|
-| Simplicity | 95 | ✅ |
-| Flexibility | 93 | ✅ |
-| Usability | 95 | ✅ |
-| Documentation | 95 | ✅ |
-| Security | 95 | ✅ |
-| Pattern Matching | 92 | ✅ |
-| Best Practices | 90 | ✅ |
-| General QA | 92 | ✅ |
+| Category         | Score | Status |
+| :--------------- | ----: | :----- |
+| Simplicity       |    95 | ✅     |
+| Flexibility      |    93 | ✅     |
+| Usability        |    95 | ✅     |
+| Documentation    |    95 | ✅     |
+| Security         |    95 | ✅     |
+| Pattern Matching |    92 | ✅     |
+| Best Practices   |    90 | ✅     |
+| General QA       |    92 | ✅     |
 
 ## Findings
 
