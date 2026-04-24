@@ -33,7 +33,7 @@ color: yellow
 prompt_mode: extend
 base_prompt: _builtin
 framework: claude-code
-model: claude-sonnet-4-6
+model: claude-haiku-4-5-20251001
 permission_mode: bypassPermissions
 tools:
   - Read
