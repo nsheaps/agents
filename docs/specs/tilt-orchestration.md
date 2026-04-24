@@ -317,8 +317,14 @@ Tilt's web dashboard (default `localhost:10350`) provides:
 
 Each agent's Tilt resource reads configuration from the agent's repo-local `.claude/`
 directory, consistent with the per-agent `.claude/` directory standard
-(see `agents-cli.md` §Per-Agent `.claude/` Directory Standard). The Tiltfile sets
-`CLAUDE_SETTINGS_DIR` per resource to ensure isolation.
+(see `agents-cli.md` §Per-Agent `.claude/` Directory Standard).
+
+**Note on `CLAUDE_SETTINGS_DIR`:** The Tiltfile passes `AGENT_NAME` to the resource's
+`serve_cmd`, but does NOT set `CLAUDE_SETTINGS_DIR` directly. The harness script
+(`bin/agent`) is responsible for resolving the correct settings directory based on
+`AGENT_NAME` (see tracking issue [agents#116](https://github.com/nsheaps/agents/issues/116)
+for per-agent settings isolation). The Tiltfile's role is only to trigger hot-reload
+on config changes; directory resolution happens in the harness.
 
 ## Implementation Phases
 
@@ -352,9 +358,18 @@ directory, consistent with the per-agent `.claude/` directory standard
 
 ## References
 
+### Related Issues
+
+- [agents#116](https://github.com/nsheaps/agents/issues/116) — Per-agent settings isolation and harness responsibility for directory resolution
+
+### External Documentation
+
 - [Tilt documentation](https://docs.tilt.dev/)
 - [ctlptl documentation](https://github.com/tilt-dev/ctlptl)
 - [kind documentation](https://kind.sigs.k8s.io/)
+
+### Internal References
+
 - `docs/scratch.md` line 123 — original note: "use tilt/ctlptl/kind for testing"
 - `docs/specs/k8s-controllers.md` — K8s controller spec (complementary)
 - `docs/specs/agent-abstraction-levels.md` — Level 3–4 abstraction
