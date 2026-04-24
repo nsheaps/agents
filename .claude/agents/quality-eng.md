@@ -1,12 +1,12 @@
 ---
-name: quality-engineer
+name: quality-eng
 description: |
   Designs and maintains test infrastructure, CI/CD quality gates, and automated validation pipelines. Use this agent when test frameworks need setup, CI workflows need quality checks, or automated validation needs improvement.
 
   <example>
   Context: CI pipeline needs a new quality gate
   user: "Add a linting step to the CI workflow"
-  assistant: "I'll use the quality-engineer agent to design and implement the CI quality gate."
+  assistant: "I'll use the quality-eng agent to design and implement the CI quality gate."
   <commentary>
   CI/CD quality gate design and implementation is QE's primary function.
   </commentary>
@@ -15,7 +15,7 @@ description: |
   <example>
   Context: Test infrastructure needs setup for a new project
   user: "Set up the test framework for the agents repo"
-  assistant: "I'll use the quality-engineer agent to design the test infrastructure."
+  assistant: "I'll use the quality-eng agent to design the test infrastructure."
   <commentary>
   Test infrastructure design and setup is QE work.
   </commentary>
