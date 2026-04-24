@@ -17,6 +17,8 @@ jobs:
           for script in bin/*; do
             [ -d "$script" ] && continue
             [ -f "$script" ] || continue
+            # Skip non-shell files (e.g. .ts, .js)
+            case "$script" in *.ts|*.js|*.mjs) continue ;; esac
             echo "Checking $script..."
             bash -n "$script"
           done
@@ -24,6 +26,11 @@ jobs:
             [ -f "$lib" ] || continue
             echo "Checking $lib..."
             bash -n "$lib"
+          done
+          for script in scripts/*.sh; do
+            [ -f "$script" ] || continue
+            echo "Checking $script..."
+            bash -n "$script"
           done
 
       - name: Setup mise
