@@ -41,7 +41,7 @@ environment for agent orchestration at Level 3–4 abstraction
 ### In Scope
 
 - Tiltfile configuration for launching agents in local development
-- Hot-reload of agent definitions (`.claude/agents/*.md`, `agent.yaml`)
+- Hot-reload of agent definitions (`<agent-repo>/.claude/agents/*.md`, `agent.yaml`)
 - Hot-reload of harness scripts (`bin/agent`, launcher config)
 - Log aggregation from multiple agent processes into the Tilt dashboard
 - Health check integration (agent harness lifecycle signals)
@@ -90,7 +90,7 @@ graph TD
     TILT -->|auto-restarts| TMUX
     
     TILT2[Tilt local_resource: transcript] -->|runs| STREAM[bin/agent stream-output-as-chat]
-    STREAM -->|tails| JSONL[~/.claude/projects/.../session.jsonl]
+    STREAM -->|tails| JSONL[$CLAUDE_PROJECT_DIR/.claude/projects/.../session.jsonl]
     STREAM -->|stdout → tilt UI| UI[Tilt Web Dashboard]
 ```
 
@@ -142,7 +142,7 @@ local_resource(
     'agent-jack',
     serve_cmd='scripts/serve-agent.sh jack ../nsheaps/.ai-agent-jack',
     deps=[
-        '../nsheaps/.ai-agent-jack/.claude/',
+        '../nsheaps/.ai-agent-jack/.claude/',  # <agent-repo>/.claude/
         '../nsheaps/.ai-agent-jack/bin/agent',
     ],
     resource_deps=['mesh-mcp-server'],
@@ -220,9 +220,9 @@ agents dynamically:
 
 | File Pattern | Action |
 |:--|:--|
-| `.claude/agents/*.md` | Restart the affected agent |
-| `.claude/settings.json` | Restart the affected agent |
-| `.claude/rules/**` | Restart the affected agent (rules load at session start) |
+| `<agent-repo>/.claude/agents/*.md` | Restart the affected agent |
+| `<agent-repo>/.claude/settings.json` | Restart the affected agent |
+| `<agent-repo>/.claude/rules/**` | Restart the affected agent (rules load at session start) |
 | `bin/agent` | Restart the affected agent |
 | `src/mesh/**` | Rebuild and restart mesh MCP server |
 | `Tiltfile` | Tilt re-evaluates automatically |
@@ -246,13 +246,13 @@ own `local_resource` (or Tilt log stream) so operators can view them independent
 # Example Tiltfile additions per agent
 local_resource(
     'agent-jack-debug',
-    serve_cmd='tail -F ../nsheaps/.ai-agent-jack/.claude/tmp/debug.log',
+    serve_cmd='tail -F ../nsheaps/.ai-agent-jack/.claude/tmp/debug.log',  # <agent-repo>/.claude/tmp/debug.log
     labels=['logs'],
 )
 
 local_resource(
     'agent-jack-harness',
-    serve_cmd='tail -F ../nsheaps/.ai-agent-jack/.claude/tmp/harness.log',
+    serve_cmd='tail -F ../nsheaps/.ai-agent-jack/.claude/tmp/harness.log',  # <agent-repo>/.claude/tmp/harness.log
     labels=['logs'],
 )
 ```
@@ -315,9 +315,9 @@ Tilt's web dashboard (default `localhost:10350`) provides:
 
 ### Per-Agent Configuration
 
-Each agent's Tilt resource reads configuration from the agent's repo-local `.claude/`
+Each agent's Tilt resource reads configuration from the agent's repo-local `<agent-repo>/.claude/`
 directory, consistent with the per-agent `.claude/` directory standard
-(see `agents-cli.md` §Per-Agent `.claude/` Directory Standard).
+(see `agents-cli.md` §Per-Agent `<agent-repo>/.claude/` Directory Standard).
 
 **Note on `CLAUDE_SETTINGS_DIR`:** The Tiltfile passes `AGENT_NAME` to the resource's
 `serve_cmd`, but does NOT set `CLAUDE_SETTINGS_DIR` directly. The harness script
@@ -373,5 +373,5 @@ on config changes; directory resolution happens in the harness.
 - `docs/scratch.md` line 123 — original note: "use tilt/ctlptl/kind for testing"
 - `docs/specs/k8s-controllers.md` — K8s controller spec (complementary)
 - `docs/specs/agent-abstraction-levels.md` — Level 3–4 abstraction
-- `docs/specs/agents-cli.md` — per-agent `.claude/` directory standard
+- `docs/specs/agents-cli.md` — per-agent `<agent-repo>/.claude/` directory standard
 - `docs/specs/agent-harness-lifecycle.md` — harness restart loop and health signals
