@@ -17,6 +17,7 @@ tags:
   - orchestration
   - tilt
 ---
+
 # Tilt Orchestration for Agent Development
 
 ## Problem Statement
@@ -41,12 +42,12 @@ environment for agent orchestration at Level 3–4 abstraction
 ### In Scope
 
 - Tiltfile configuration for launching agents in local development
+- Config-driven agent registry (`agents.yaml`) for enabling/disabling agents without editing the Tiltfile
 - Hot-reload of agent definitions (`<agent-repo>/.claude/agents/*.md`, `agent.yaml`)
 - Hot-reload of harness scripts (`bin/agent`, launcher config)
 - Log aggregation from multiple agent processes into the Tilt dashboard
 - Health check integration (agent harness lifecycle signals)
-- MCP server lifecycle management (mesh server, stdio clients)
-- Resource grouping (agents, infrastructure, MCP servers)
+- Resource grouping (agents, transcripts)
 - Composable Tiltfile structure using `load()` / `include()`
 
 ### Out of Scope
@@ -88,7 +89,7 @@ graph TD
     CLAUDE -->|exits| AGENT
     AGENT -->|crashes| TILT
     TILT -->|auto-restarts| TMUX
-    
+
     TILT2[Tilt local_resource: transcript] -->|runs| STREAM[bin/agent stream-output-as-chat]
     STREAM -->|tails| JSONL[$CLAUDE_PROJECT_DIR/.claude/projects/.../session.jsonl]
     STREAM -->|stdout → tilt UI| UI[Tilt Web Dashboard]
@@ -106,7 +107,7 @@ flowchart TD
     RUNNING -->|Yes| MONITOR[monitor output]
     RUNNING -->|No| KILL[close pane, open new]
     KILL --> EXEC
-    
+
     EXEC --> LOOP[Restart Loop]
     LOOP --> ENV[Source 1Pass env]
     ENV --> LAUNCH[Launch claude with flags]
@@ -126,85 +127,98 @@ resources, and the root Tiltfile assembles them:
 ```
 Tiltfile                — root: loads all sub-files
 tilt/agents.tiltfile    — agent local_resource definitions
-tilt/infra.tiltfile     — infrastructure resources (MCP servers, mesh)
 tilt/logs.tiltfile      — log stream resources (transcript, debug, harness)
 ```
+
+> **Note:** `tilt/infra.tiltfile` (mesh MCP server) is deferred. Infrastructure
+> resources will be added when the mesh server is ready for local orchestration.
 
 **Root Tiltfile:**
 
 ```python
 # Tiltfile (project root)
-load('./tilt/infra.tiltfile', 'define_infra')
-load('./tilt/agents.tiltfile', 'define_agents')
-load('./tilt/logs.tiltfile', 'define_logs')
+load('./tilt/agents.tiltfile', 'register_agents')
+load('./tilt/logs.tiltfile', 'register_logs')
 
-define_infra()
-define_agents()
-define_logs()
-```
-
-**tilt/infra.tiltfile:**
-
-```python
-def define_infra():
-    # MCP Servers and shared infrastructure
-    local_resource(
-        'mesh-mcp-server',
-        serve_cmd='bun run src/mesh/server.ts',
-        deps=['src/mesh/'],
-        labels=['infrastructure'],
-    )
+register_agents()
+register_logs()
 ```
 
 **tilt/agents.tiltfile:**
 
 ```python
-def define_agents():
-    # Each agent is a local_resource whose serve_cmd is a script that
-    # manages the tmux session lifecycle (see "tmux Session Lifecycle" below).
-    # bin/agent runs INSIDE the tmux session, NOT as the serve_cmd directly.
-    local_resource(
-        'agent-jack',
-        serve_cmd='scripts/serve-agent.sh jack ../nsheaps/.ai-agent-jack',
-        deps=[
-            '../nsheaps/.ai-agent-jack/.claude/',  # <agent-repo>/.claude/
-            '../nsheaps/.ai-agent-jack/bin/agent',
-        ],
-        resource_deps=['mesh-mcp-server'],
-        labels=['agents'],
-    )
-    # Additional agents follow the same pattern
+def register_agents():
+    # Read the agent registry. Tilt re-evaluates whenever agents.yaml changes,
+    # so enabling/disabling an agent in that file immediately creates or tears
+    # down the corresponding resource — no Tiltfile edits required.
+    config = read_yaml('agents.yaml')
+
+    for agent in config.get('agents', []):
+        if not agent.get('enabled', False):
+            continue  # skip disabled agents — they get no resource
+
+        name = agent['name']
+        repo = agent['repo']
+
+        # Each agent is a local_resource whose serve_cmd manages the tmux
+        # session lifecycle (see "tmux Session Lifecycle" below).
+        # bin/agent runs INSIDE the tmux session, NOT as the serve_cmd directly.
+        local_resource(
+            name,
+            serve_cmd='scripts/serve-agent.sh %s %s' % (name, repo),
+            deps=[
+                repo + '/.claude/',
+                repo + '/bin/agent',
+            ],
+            labels=['agents'],
+        )
 ```
 
 **tilt/logs.tiltfile:**
 
 ```python
-def define_logs():
-    # Each agent gets a log resource that calls bin/agent stream-output-as-chat
-    # to tail the conversation JSONL and transform it to chat-room format.
-    local_resource(
-        'agent-jack-transcript',
-        serve_cmd=' '.join([
-            '../nsheaps/.ai-agent-jack/bin/agent',
-            'stream-output-as-chat',
-        ]),
-        labels=['transcripts'],
-    )
-    # Debug and harness streams defined here too (see Three Log Streams section)
+def register_logs():
+    # Mirror the agents.yaml registry so transcript resources are created only
+    # for agents that are currently enabled.
+    config = read_yaml('agents.yaml')
+
+    for agent in config.get('agents', []):
+        if not agent.get('enabled', False):
+            continue
+
+        name = agent['name']
+        repo = agent['repo']
+
+        # Each enabled agent gets a transcript resource that tails the JSONL
+        # conversation file and transforms it to chat-room format.
+        local_resource(
+            name + '-transcript',
+            serve_cmd=repo + '/bin/agent stream-output-as-chat',
+            labels=['transcripts'],
+            resource_deps=[name],
+        )
+    # Phase 2: debug and harness log streams (tail .claude/tmp/debug.log, harness.log)
 ```
 
-### Stopping Individual Agents
+### Enabling and Disabling Individual Agents
 
-Tilt supports stopping individual agent resources without bringing down the whole
-environment. Use Tilt's built-in resource disable:
+Agent lifecycle is controlled entirely through `agents.yaml`. To start or stop an
+individual agent without touching the rest of the environment:
 
 ```bash
-tilt disable agent-jack          # stop Jack's resource (and its transcript)
-tilt enable agent-jack           # re-enable it later
+# Edit agents.yaml — set enabled: true or false for the target agent
+# Tilt detects the file change, re-parses the Tiltfile, and:
+#   - creates the resource if newly enabled
+#   - tears down the resource if newly disabled
 ```
 
-This is the equivalent of `tilt down <agent-name>` — the resource is disabled in the
-dashboard and its process is stopped, but the rest of the environment stays up.
+Tilt's `TRIGGER_MODE_AUTO` ensures that newly created resources start immediately;
+disabled agents have no resource at all (they are never registered with Tilt, so
+there is nothing to disable or stop manually).
+
+Do NOT use `tilt disable`/`tilt enable` CLI commands as the primary lifecycle
+mechanism — those only affect the in-process Tilt state and do not persist across
+`tilt up` restarts. The `agents.yaml` file is the source of truth.
 
 ### tmux Session Lifecycle
 
@@ -220,54 +234,105 @@ The serve_cmd script handles:
    `bin/agent --no-tmux` into the new session's pane
 3. **If exists but agent not running** — close the dead pane, open a new one, and
    relaunch `bin/agent --no-tmux`
-4. **If exists and running** — attach to the existing output (stream it to Tilt)
-5. **Auto-start on `tilt up`** — agent resources use `TRIGGER_MODE_AUTO` (the default),
-   not `TRIGGER_MODE_MANUAL`, so they start automatically when Tilt comes up
+4. **If exists and running** — attach to the existing output (stream it to Tilt).
+   This means agents already running in tmux before `tilt up` are adopted, not
+   restarted.
+5. **Auto-start when enabled** — enabled agent resources use `TRIGGER_MODE_AUTO`
+   (the default), so Tilt starts them immediately when the resource is created
+   (i.e., when the agent is enabled in `agents.yaml` and Tilt re-parses). Disabled
+   agents are never registered, so `TRIGGER_MODE_AUTO` has no effect on them.
+
+### Agent Registry (`agents.yaml`)
+
+The Tiltfile reads a declarative registry file (`agents.yaml` in the repo root)
+to determine which agents exist and which are currently enabled. This is the
+config-driven pattern inspired by [nsheaps/tiltenv](https://github.com/nsheaps/tiltenv).
+
+**Format:**
+
+```yaml
+# agents.yaml
+agents:
+  - name: jack
+    repo: ~/src/nsheaps/.ai-agent-jack
+    enabled: true
+
+  - name: henry
+    repo: ~/src/nsheaps/.ai-agent-henry
+    enabled: false # disabled — no Tilt resource is created
+
+  - name: pamela
+    repo: ~/src/nsheaps/.ai-agent-pamela
+    enabled: true
+```
+
+**Lifecycle rules:**
+
+- `tilt up` starts the Tilt daemon and dashboard. It does NOT auto-launch agents.
+  Only agents with `enabled: true` get a Tilt resource; Tilt then starts those
+  resources via `TRIGGER_MODE_AUTO`.
+- Changing `enabled: false → true` in `agents.yaml`: Tilt detects the file change,
+  re-parses the Tiltfile, and immediately creates and starts the new resource.
+- Changing `enabled: true → false`: Tilt re-parses, removes the resource, and
+  tears down the running process. The tmux session may still exist; `serve_cmd`
+  handles cleanup.
+- Agents already running in tmux when they become enabled are adopted (attached
+  to), not restarted.
+
+**Tilt watch integration:**
+
+`agents.yaml` is listed as a `watch_file` dependency so that Tilt re-evaluates
+the Tiltfile whenever the registry changes. No manual Tiltfile edits are needed
+to add, remove, enable, or disable agents.
 
 ### Dynamic Resource Detection
 
-Rather than hardcoding one `local_resource` per agent, the Tiltfile should discover
-agents dynamically:
+Rather than hardcoding one `local_resource` per agent in the Tiltfile, resources
+are generated dynamically by iterating over the enabled entries in `agents.yaml`.
+This keeps the Tiltfile stable as the team grows — new agents are added only to
+`agents.yaml`.
 
-- **One Tilt resource per tmux window** in the agent's session, enabling multi-window
-  agents to surface each window as a separate resource in the dashboard
-- **Auto-refresh via file watch** — watch an agent registry YAML
-  (e.g., `agents.yaml` or a config directory) so that adding/removing agents triggers
-  Tiltfile re-evaluation without manual edits
-- **Discovery from disk** — alternatively, glob agent repo directories on disk and
-  generate resources for each discovered agent
+- **One Tilt resource per enabled agent** — disabled agents produce no resource
+- **Auto-refresh via file watch** — `agents.yaml` is watched; any change triggers
+  Tiltfile re-evaluation and resource reconciliation
+- **Multi-window agents (future)** — one resource per tmux window is a possible
+  future extension, deferred until needed
 
 ### Development Modes
 
-| Mode | Command | What It Does |
-|:--|:--|:--|
-| **Process mode** | `tilt up` | Runs agents as local processes with file watching |
+| Mode                   | Command                               | What It Does                                                                                                                              |
+| :--------------------- | :------------------------------------ | :---------------------------------------------------------------------------------------------------------------------------------------- |
+| **Start orchestrator** | `tilt up`                             | Starts the Tilt daemon and web dashboard. Does NOT auto-launch agents. Reads `agents.yaml` and creates resources only for enabled agents. |
+| **Enable an agent**    | Edit `agents.yaml` → `enabled: true`  | Tilt detects the change, creates the resource, and starts the agent process automatically.                                                |
+| **Disable an agent**   | Edit `agents.yaml` → `enabled: false` | Tilt detects the change, removes the resource, and stops the agent process.                                                               |
+| **Stop orchestrator**  | `tilt down`                           | Tears down all Tilt resources and stops the daemon. Does not destroy tmux sessions.                                                       |
 
 > **K8s mode** (ctlptl + kind) and **Hybrid mode** are deferred to a future spec.
 
 ### File Watch Triggers
 
-| File Pattern | Action |
-|:--|:--|
-| `<agent-repo>/.claude/agents/*.md` | Restart the affected agent |
-| `<agent-repo>/.claude/settings.json` | Restart the affected agent |
-| `<agent-repo>/.claude/rules/**` | Restart the affected agent (rules load at session start) |
-| `bin/agent` | Restart the affected agent |
-| `src/mesh/**` | Rebuild and restart mesh MCP server |
-| `Tiltfile` | Tilt re-evaluates automatically |
+| File Pattern                         | Action                                                                          |
+| :----------------------------------- | :------------------------------------------------------------------------------ |
+| `agents.yaml`                        | Tiltfile re-evaluates; enabled agents gain resources, disabled agents lose them |
+| `<agent-repo>/.claude/agents/*.md`   | Restart the affected agent                                                      |
+| `<agent-repo>/.claude/settings.json` | Restart the affected agent                                                      |
+| `<agent-repo>/.claude/rules/**`      | Restart the affected agent (rules load at session start)                        |
+| `bin/agent`                          | Restart the affected agent                                                      |
+| `src/mesh/**`                        | Rebuild and restart mesh MCP server (Phase 2 — infra.tiltfile)                  |
+| `Tiltfile`                           | Tilt re-evaluates automatically                                                 |
 
 ### Three Log Streams per Agent
 
 Each agent surfaces **three separate log streams** in the Tilt web UI, each as its
 own `local_resource` (or Tilt log stream) so operators can view them independently:
 
-1. **Conversation transcript** (`agent-jack-transcript`) — tails the JSONL conversation
-   file and pipes through a reformatter for human-readable chat-room output. This is the
-   existing transcript resource shown in the Tiltfile example above.
-2. **Claude Code debug logs** (`agent-jack-debug`) — captures Claude Code's stderr
+1. **Conversation transcript** (`<agent>-transcript`) — tails the JSONL conversation
+   file and pipes through a reformatter for human-readable chat-room output. Generated
+   dynamically from `agents.yaml` (see `tilt/logs.tiltfile` above).
+2. **Claude Code debug logs** (`<agent>-debug`) — captures Claude Code's stderr
    output (the `CLAUDE_DEBUG` / verbose stream). Useful for diagnosing MCP failures,
    tool errors, and internal Claude Code behavior.
-3. **Agent harness logs** (`agent-jack-harness`) — captures stdout/stderr from `bin/agent`
+3. **Agent harness logs** (`<agent>-harness`) — captures stdout/stderr from `bin/agent`
    itself (the launcher/harness script). Shows restart loop activity, health check results,
    tmux session management, and environment setup.
 
@@ -289,46 +354,53 @@ local_resource(
 All three streams appear in the Tilt dashboard under their respective labels, allowing
 operators to view conversation flow, Claude internals, and harness lifecycle independently.
 
-### Individual Agent Control via CLI
+### Individual Agent Control
 
-Tilt supports targeting individual resources from the command line. From the
-`nsheaps/agents` directory (where the Tiltfile lives):
+Agent lifecycle is controlled through `agents.yaml`, not through `tilt up <resource>`
+arguments. The reason: `tilt up` with resource arguments affects only the current
+invocation and does not persist. `agents.yaml` is the durable source of truth.
 
-```bash
-tilt up jack          # start only Jack (and his log streams + dependencies)
-tilt down jack        # stop only Jack
-tilt up jack henry    # start Jack and Henry
-tilt down henry       # stop Henry while Jack keeps running
+**To start an agent:**
+
+```yaml
+# agents.yaml
+agents:
+  - name: henry
+    repo: ~/src/nsheaps/.ai-agent-henry
+    enabled: true # was false — Tilt will create and start the resource
 ```
 
-This works via Tilt's resource selection arguments — `tilt up <resource>` starts only
-the named resources (plus their `resource_deps`), and `tilt down <resource>` tears down
-only those resources. The Tiltfile must use resource names that match the short agent
-names (e.g., `jack` not `agent-jack`) for ergonomic CLI usage, or define
-`tilt_args`-based aliases.
+**To stop an agent:**
+
+```yaml
+agents:
+  - name: henry
+    enabled: false # Tilt will remove the resource and stop the process
+```
+
+Tilt detects the `agents.yaml` change, re-evaluates the Tiltfile, and reconciles
+resources accordingly — all without restarting the Tilt daemon or touching other agents.
 
 ### Agent Self-Management
 
-Agents themselves can control other agents (or themselves) by running Tilt CLI commands.
-Because the Tiltfile lives in `nsheaps/agents` and Tilt manages local processes, any
-agent with filesystem access can:
+Agents themselves can control other agents (or themselves) by editing `agents.yaml`.
+Because `agents.yaml` lives in `nsheaps/agents` and Tilt watches it, any agent with
+filesystem access can modify the registry to bring agents online or offline:
 
 ```bash
-cd /home/nsheaps/src/nsheaps/agents
-tilt up henry         # Jack can bring Henry online
-tilt down henry       # Jack can take Henry offline
-tilt up jack          # An agent can even restart itself (harness will re-launch)
+# Jack enables Henry by editing agents.yaml (e.g., via yq or sed)
+yq e '.agents[] |= if .name == "henry" then .enabled = true else . end' \
+    -i /home/nsheaps/src/nsheaps/agents/agents.yaml
+# Tilt detects the change and starts Henry automatically.
 ```
 
 **Requirements for agent self-management:**
 
-- The `tilt` binary must be on the agent's `$PATH`
-- The agent must have filesystem access to the `nsheaps/agents` directory
-- Agents should use the `bin/agent` harness or a dedicated skill/tool to wrap these
-  commands with appropriate guardrails (e.g., confirming with the handler before
-  stopping another agent in production-like environments)
-- Self-restart (`tilt down jack` followed by `tilt up jack`) relies on the harness
-  restart loop — the agent process exits and Tilt restarts the resource
+- The agent must have filesystem write access to `agents.yaml` in `nsheaps/agents`
+- Agents should confirm with the handler before enabling/disabling agents in
+  production-like environments
+- Self-restart: set `enabled: false`, wait for the resource to stop, then set
+  `enabled: true`. The harness restart loop will re-launch inside the tmux session.
 
 This enables autonomous fleet management where agents can scale the team up or down
 based on workload, bring up specialists on demand, or gracefully shut down idle agents.
@@ -359,11 +431,15 @@ on config changes; directory resolution happens in the harness.
 
 ### Phase 1: Process-Mode Orchestration
 
-1. Create composable Tiltfile structure (`Tiltfile`, `tilt/agents.tiltfile`,
-   `tilt/infra.tiltfile`, `tilt/logs.tiltfile`)
-2. Configure file watches for agent config hot-reload
-3. Map agent harness health signals to Tilt readiness probes
-4. Document `tilt up` workflow in project README
+1. Create `agents.yaml` registry with all known agents (`enabled: false` by default
+   for agents not yet under Tilt management)
+2. Create composable Tiltfile structure (`Tiltfile`, `tilt/agents.tiltfile`,
+   `tilt/logs.tiltfile`; `tilt/infra.tiltfile` deferred to Phase 2)
+3. Tiltfile reads `agents.yaml` via `read_yaml()` and registers resources only for
+   enabled agents; watch `agents.yaml` for live enable/disable
+4. Configure file watches for agent config hot-reload
+5. Map agent harness health signals to Tilt readiness probes
+6. Document `tilt up` workflow and `agents.yaml` editing in project README
 
 > **K8s support deferred to a future spec.** Phase 2 (K8s-Mode Testing) and
 > Phase 3 (Hybrid and Multi-Agent with K8s) are intentionally omitted here.
@@ -375,8 +451,12 @@ on config changes; directory resolution happens in the harness.
 - Should the Tiltfile live in `nsheaps/agents` (orchestration repo) or in each agent's
   own repo? The monorepo vision (agents#111) suggests the former.
 - How does tilt interact with the `agents` CLI? Should `agents run` delegate to
-  `tilt up` internally, or are they independent workflows?
-- What is the minimum viable Tiltfile for a single-agent dev loop?
+  editing `agents.yaml` internally, or are they independent workflows?
+- Should `agents.yaml` be committed to the repo (shared default registry) or
+  gitignored (per-developer local overrides)? A possible pattern: commit
+  `agents.yaml.example` with all agents disabled, gitignore `agents.yaml`.
+- Should agents be able to edit `agents.yaml` autonomously, or should self-management
+  require handler approval?
 
 ## References
 

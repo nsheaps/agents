@@ -10,17 +10,17 @@
 
 ## Score Summary
 
-| Category | v1 | v2 | v3 | v2→v3 | Status |
-|:---------|---:|---:|---:|------:|:------:|
-| Best Practices | 74 | 95 | 96 | +1 | ✅ |
-| Documentation | 81 | 94 | 96 | +2 | ✅ |
-| Security | 42 | 82 | 90 | +8 | ✅ |
-| Flexibility | 62 | 82 | 90 | +8 | ✅ |
-| Simplicity | 72 | 82 | 86 | +4 | ✅ |
-| Pattern Matching | 88 | 84 | 85 | +1 | ✅ |
-| Usability | 72 | 83 | 85 | +2 | ✅ |
-| General QA | 62 | 76 | 80 | +4 | ⚠️ |
-| **Overall** | **69** | **85** | **88** | **+3** | **✅** |
+| Category         |     v1 |     v2 |     v3 |  v2→v3 | Status |
+| :--------------- | -----: | -----: | -----: | -----: | :----: |
+| Best Practices   |     74 |     95 |     96 |     +1 |   ✅   |
+| Documentation    |     81 |     94 |     96 |     +2 |   ✅   |
+| Security         |     42 |     82 |     90 |     +8 |   ✅   |
+| Flexibility      |     62 |     82 |     90 |     +8 |   ✅   |
+| Simplicity       |     72 |     82 |     86 |     +4 |   ✅   |
+| Pattern Matching |     88 |     84 |     85 |     +1 |   ✅   |
+| Usability        |     72 |     83 |     85 |     +2 |   ✅   |
+| General QA       |     62 |     76 |     80 |     +4 |   ⚠️   |
+| **Overall**      | **69** | **85** | **88** | **+3** | **✅** |
 
 > Legend: ✅ ≥85% — ⚠️ 70–84% — 🚨 <70%
 >
@@ -44,11 +44,11 @@ The 3 targeted fixes from v2 were precise and effective:
 
 ## v3 Fixes — Verification
 
-| v2 Finding | Fix | Verified | Categories Improved |
-|:-----------|:----|:--------:|:--------------------|
-| N1: AUTO_SYNC not validated as boolean | `action.sh:377-380` — explicit `true`/`false` check | ✅ | Security (+2), Simplicity (+4), General QA (+4) |
-| M2: No HTTPS enforcement on arcane-url | `action.sh:388-392` — `https://*` prefix check | ✅ | Security (+6) |
-| M8: maxdepth 2 undocumented | `action.yml:24` + `README:69` — depth documented | ✅ | Documentation (+2), Flexibility (+6) |
+| v2 Finding                             | Fix                                                 | Verified | Categories Improved                             |
+| :------------------------------------- | :-------------------------------------------------- | :------: | :---------------------------------------------- |
+| N1: AUTO_SYNC not validated as boolean | `action.sh:377-380` — explicit `true`/`false` check |    ✅    | Security (+2), Simplicity (+4), General QA (+4) |
+| M2: No HTTPS enforcement on arcane-url | `action.sh:388-392` — `https://*` prefix check      |    ✅    | Security (+6)                                   |
+| M8: maxdepth 2 undocumented            | `action.yml:24` + `README:69` — depth documented    |    ✅    | Documentation (+2), Flexibility (+6)            |
 
 All 3 fixes are correctly implemented, well-positioned in the validation section, and follow established patterns.
 
@@ -58,21 +58,21 @@ All 3 fixes are correctly implemented, well-positioned in the validation section
 
 ### Medium (5 remaining)
 
-| ID | Finding | File | Categories |
-|:---|:--------|:-----|:-----------|
-| M3 | Temp files not cleaned on signals (no trap) | action.sh:66 | Security, General QA |
-| M4 | `sync_name_from_path` collisions on multi-level dirs | action.sh:162-178 | General QA, Simplicity |
-| M5 | No deduplication of compose files from both sources | action.sh:119-156 | General QA |
-| M7 | `auth-type: none` still sends empty token in create payload | action.sh:212-217 | General QA |
-| M14 | No tests, no shellcheck | — | General QA |
+| ID  | Finding                                                     | File              | Categories             |
+| :-- | :---------------------------------------------------------- | :---------------- | :--------------------- |
+| M3  | Temp files not cleaned on signals (no trap)                 | action.sh:66      | Security, General QA   |
+| M4  | `sync_name_from_path` collisions on multi-level dirs        | action.sh:162-178 | General QA, Simplicity |
+| M5  | No deduplication of compose files from both sources         | action.sh:119-156 | General QA             |
+| M7  | `auth-type: none` still sends empty token in create payload | action.sh:212-217 | General QA             |
+| M14 | No tests, no shellcheck                                     | —                 | General QA             |
 
 ### Medium-New (3 remaining from v2)
 
-| ID | Finding | File | Categories |
-|:---|:--------|:-----|:-----------|
-| N2 | Trigger-sync `|| true` silently eats all failures | action.sh:303 | Best Practices, General QA |
-| N3 | `jq` and `curl` runtime dependencies undeclared | action.sh | Pattern Matching |
-| N4 | `auth-type: none` use case never documented | action.yml:50 | Usability |
+| ID  | Finding                                         | File          | Categories                       |
+| :-- | :---------------------------------------------- | :------------ | :------------------------------- | ------------- | -------------------------- |
+| N2  | Trigger-sync `                                  |               | true` silently eats all failures | action.sh:303 | Best Practices, General QA |
+| N3  | `jq` and `curl` runtime dependencies undeclared | action.sh     | Pattern Matching                 |
+| N4  | `auth-type: none` use case never documented     | action.yml:50 | Usability                        |
 
 ### Low (14 remaining — non-blocking)
 
@@ -86,15 +86,15 @@ See individual category reports for full details.
 
 These findings should be tracked but do not block merge:
 
-| Priority | Finding | Effort | Impact |
-|:---------|:--------|:-------|:-------|
-| High | M14: Add test suite (bats or shellcheck) | Medium | Enables CI validation of all guard clauses |
-| High | M4: Sync name collision detection | Low | Prevents silent overwrite of stacks |
-| Medium | M3: Add trap for temp file cleanup | Low | Defense-in-depth for self-hosted runners |
-| Medium | M5: Deduplicate compose file list | Low | Prevents double-upsert edge case |
-| Medium | M7: Omit token field when auth-type=none | Low | Consistency between create and update paths |
-| Medium | N3: Add curl/jq pre-flight guards | Low | Better errors on self-hosted runners |
-| Low | All Low findings | Various | Polish and consistency improvements |
+| Priority | Finding                                  | Effort  | Impact                                      |
+| :------- | :--------------------------------------- | :------ | :------------------------------------------ |
+| High     | M14: Add test suite (bats or shellcheck) | Medium  | Enables CI validation of all guard clauses  |
+| High     | M4: Sync name collision detection        | Low     | Prevents silent overwrite of stacks         |
+| Medium   | M3: Add trap for temp file cleanup       | Low     | Defense-in-depth for self-hosted runners    |
+| Medium   | M5: Deduplicate compose file list        | Low     | Prevents double-upsert edge case            |
+| Medium   | M7: Omit token field when auth-type=none | Low     | Consistency between create and update paths |
+| Medium   | N3: Add curl/jq pre-flight guards        | Low     | Better errors on self-hosted runners        |
+| Low      | All Low findings                         | Various | Polish and consistency improvements         |
 
 ---
 
@@ -112,25 +112,25 @@ These are all low-effort fixes that address structural correctness without addin
 
 ## Category Reports
 
-| Category | v3 Score | Report |
-|:---------|:--------:|:-------|
-| Best Practices | 96 | [`best-practices/REPORT.md`](best-practices/REPORT.md) |
-| Documentation | 96 | [`documentation/REPORT.md`](documentation/REPORT.md) |
-| Security | 90 | [`security/REPORT.md`](security/REPORT.md) |
-| Flexibility | 90 | [`flexibility/REPORT.md`](flexibility/REPORT.md) |
-| Simplicity | 86 | [`simplicity/REPORT.md`](simplicity/REPORT.md) |
-| Pattern Matching | 85 | [`pattern-matching/REPORT.md`](pattern-matching/REPORT.md) |
-| Usability | 85 | [`usability/REPORT.md`](usability/REPORT.md) |
-| General QA | 80 | [`general-qa/REPORT.md`](general-qa/REPORT.md) |
+| Category         | v3 Score | Report                                                     |
+| :--------------- | :------: | :--------------------------------------------------------- |
+| Best Practices   |    96    | [`best-practices/REPORT.md`](best-practices/REPORT.md)     |
+| Documentation    |    96    | [`documentation/REPORT.md`](documentation/REPORT.md)       |
+| Security         |    90    | [`security/REPORT.md`](security/REPORT.md)                 |
+| Flexibility      |    90    | [`flexibility/REPORT.md`](flexibility/REPORT.md)           |
+| Simplicity       |    86    | [`simplicity/REPORT.md`](simplicity/REPORT.md)             |
+| Pattern Matching |    85    | [`pattern-matching/REPORT.md`](pattern-matching/REPORT.md) |
+| Usability        |    85    | [`usability/REPORT.md`](usability/REPORT.md)               |
+| General QA       |    80    | [`general-qa/REPORT.md`](general-qa/REPORT.md)             |
 
 ---
 
 ## Journey: v1 → v2 → v3
 
-| Milestone | Score | Categories at 85%+ | Key Changes |
-|:----------|------:|:-------------------:|:------------|
-| v1 | 69 | 0 of 8 | Initial implementation |
-| v2 | 85 | 2 of 8 | Fixed 2 Critical, 5 High, 4 Medium findings |
-| v3 | 88 | 7 of 8 | Fixed 3 targeted findings (AUTO_SYNC, HTTPS, maxdepth docs) |
+| Milestone | Score | Categories at 85%+ | Key Changes                                                 |
+| :-------- | ----: | :----------------: | :---------------------------------------------------------- |
+| v1        |    69 |       0 of 8       | Initial implementation                                      |
+| v2        |    85 |       2 of 8       | Fixed 2 Critical, 5 High, 4 Medium findings                 |
+| v3        |    88 |       7 of 8       | Fixed 3 targeted findings (AUTO_SYNC, HTTPS, maxdepth docs) |
 
 From 0/8 categories passing to 7/8 in three iterations. The action went from having critical security vulnerabilities to being production-ready with comprehensive input validation, proper secret handling, and accurate documentation.

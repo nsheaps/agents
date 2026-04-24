@@ -13,16 +13,16 @@ Both templates are well-structured, follow the established agent format, and car
 
 ## Category Scores
 
-| # | Category | Score | Status |
-|---|----------|-------|--------|
-| 1 | Simplicity | 90 | ✅ |
-| 2 | Flexibility | 88 | ✅ |
-| 3 | Usability | 88 | ✅ |
-| 4 | Documentation | 90 | ✅ |
-| 5 | Security | 92 | ✅ |
-| 6 | Pattern Matching | 85 | ✅ |
-| 7 | Best Practices | 88 | ✅ |
-| 8 | General QA | 85 | ✅ |
+| #   | Category         | Score | Status |
+| --- | ---------------- | ----- | ------ |
+| 1   | Simplicity       | 90    | ✅     |
+| 2   | Flexibility      | 88    | ✅     |
+| 3   | Usability        | 88    | ✅     |
+| 4   | Documentation    | 90    | ✅     |
+| 5   | Security         | 92    | ✅     |
+| 6   | Pattern Matching | 85    | ✅     |
+| 7   | Best Practices   | 88    | ✅     |
+| 8   | General QA       | 85    | ✅     |
 
 ---
 
@@ -88,6 +88,7 @@ Both templates are well-structured, follow the established agent format, and car
 
 **Severity**: P4 (positive)
 **Description**: Both files follow the established agent template format:
+
 - Frontmatter with name, description (with examples), color, prompt_mode, base_prompt, framework, model, permission_mode, display_name, tools
 - `<system-message>` block with character traits
 - H1 with character name and role
@@ -106,11 +107,11 @@ Both templates are well-structured, follow the established agent format, and car
 **Severity**: P4 (positive)
 **Description**: The three PM-adjacent roles are clearly distinct:
 
-| Role | Owns | Does NOT |
-|------|------|----------|
-| Project Manager (Elmer) | Task list, coordination, handoffs | Make technical decisions, write code |
-| TPM (Porky) | Technical roadmap, trade-offs, dependencies | Assign tasks, write code |
-| Product Manager (Pepé) | What to build and why, PRDs, acceptance criteria | Assign tasks, make architecture decisions |
+| Role                    | Owns                                             | Does NOT                                  |
+| ----------------------- | ------------------------------------------------ | ----------------------------------------- |
+| Project Manager (Elmer) | Task list, coordination, handoffs                | Make technical decisions, write code      |
+| TPM (Porky)             | Technical roadmap, trade-offs, dependencies      | Assign tasks, write code                  |
+| Product Manager (Pepé)  | What to build and why, PRDs, acceptance criteria | Assign tasks, make architecture decisions |
 
 No meaningful overlap. The TPM explicitly notes it operates "at higher altitude than the Project Manager." The product PM explicitly defers architectural decisions to the TPM.
 
@@ -118,6 +119,7 @@ No meaningful overlap. The TPM explicitly notes it operates "at higher altitude 
 
 **Severity**: P4 (positive)
 **Description**: Both follow the "First L (role)" pattern:
+
 - `Porky P (tpm)` — correct
 - `Pepé L (product-mgr)` — correct
 
@@ -125,22 +127,22 @@ No meaningful overlap. The TPM explicitly notes it operates "at higher altitude 
 
 ## Pattern Match Table
 
-| Element | Expected (existing agents) | TPM | Product PM |
-|---------|---------------------------|-----|------------|
-| Frontmatter with examples | 3 examples | 3 examples ✅ | 3 examples ✅ |
-| color (unique) | Unique per agent | cyan ✅ | magenta ⚠️ (conflicts with PM) |
-| prompt_mode: extend | Yes | Yes ✅ | Yes ✅ |
-| model: claude-opus-4-6 | Varies | opus ✅ | opus ✅ |
-| permission_mode: bypassPermissions | Yes | Yes ✅ | Yes ✅ |
-| display_name format | "First L (role)" | ✅ | ✅ |
-| tools appropriate for role | Varies | Read-only + tasks ✅ | Read/Write + tasks ⚠️ (missing task tools) |
-| disallowed_tools | Present on read-only agents | Present ✅ | Missing ⚠️ |
-| system-message block | Present | Present ✅ | Present ✅ |
-| Persona reference | Present | Present ✅ | Present ✅ |
-| Session Start | Present | Present ✅ | Present ✅ |
-| References section | Present | Present ✅ | Present ✅ |
-| Edge cases section | Present | Present ✅ | Present ✅ |
-| SendMessage warning | Present | Present ✅ | Not present ⚠️ |
+| Element                            | Expected (existing agents)  | TPM                  | Product PM                                 |
+| ---------------------------------- | --------------------------- | -------------------- | ------------------------------------------ |
+| Frontmatter with examples          | 3 examples                  | 3 examples ✅        | 3 examples ✅                              |
+| color (unique)                     | Unique per agent            | cyan ✅              | magenta ⚠️ (conflicts with PM)             |
+| prompt_mode: extend                | Yes                         | Yes ✅               | Yes ✅                                     |
+| model: claude-opus-4-6             | Varies                      | opus ✅              | opus ✅                                    |
+| permission_mode: bypassPermissions | Yes                         | Yes ✅               | Yes ✅                                     |
+| display_name format                | "First L (role)"            | ✅                   | ✅                                         |
+| tools appropriate for role         | Varies                      | Read-only + tasks ✅ | Read/Write + tasks ⚠️ (missing task tools) |
+| disallowed_tools                   | Present on read-only agents | Present ✅           | Missing ⚠️                                 |
+| system-message block               | Present                     | Present ✅           | Present ✅                                 |
+| Persona reference                  | Present                     | Present ✅           | Present ✅                                 |
+| Session Start                      | Present                     | Present ✅           | Present ✅                                 |
+| References section                 | Present                     | Present ✅           | Present ✅                                 |
+| Edge cases section                 | Present                     | Present ✅           | Present ✅                                 |
+| SendMessage warning                | Present                     | Present ✅           | Not present ⚠️                             |
 
 ---
 
@@ -150,4 +152,4 @@ Well-crafted agent templates with clear role differentiation. The two P2 finding
 
 ---
 
-*Reviewed by Daffy D (qa) — 2026-02-24*
+_Reviewed by Daffy D (qa) — 2026-02-24_

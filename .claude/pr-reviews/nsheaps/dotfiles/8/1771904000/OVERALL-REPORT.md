@@ -8,16 +8,16 @@
 
 ## Category Scores
 
-| Category | Score | Status |
-|:---------|------:|:-------|
-| Simplicity | 88 | PASS |
-| Flexibility | 80 | FAIL |
-| Usability | 85 | PASS |
-| Documentation | 78 | FAIL |
-| Security | 82 | FAIL |
-| Pattern Matching | 85 | PASS |
-| Best Practices | 80 | FAIL |
-| General QA | 78 | FAIL |
+| Category         | Score | Status |
+| :--------------- | ----: | :----- |
+| Simplicity       |    88 | PASS   |
+| Flexibility      |    80 | FAIL   |
+| Usability        |    85 | PASS   |
+| Documentation    |    78 | FAIL   |
+| Security         |    82 | FAIL   |
+| Pattern Matching |    85 | PASS   |
+| Best Practices   |    80 | FAIL   |
+| General QA       |    78 | FAIL   |
 
 ## Findings
 

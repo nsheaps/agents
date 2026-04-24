@@ -1,15 +1,15 @@
 # Review: claude-team CLI Specification — Score: 88/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 85 | Well-structured spec with clear sections. 8 commands is reasonable scope. Markdown organization is clean. However, some flag tables are dense (7+ flags per command). |
-| Flexibility | 87 | Spec allows both interactive and scripted workflows. Multiple permission modes supported. Minor: no mention of custom template directories or pluggable output formats. |
-| Usability | 89 | Interactive flows are clear. Error messages include helpful hints. Non-goals section explicitly manages expectations. However, some flag names could be shorter (--permission-mode vs -p). |
-| Documentation | 92 | Comprehensive. Reference section links to related specs. Future Considerations section is transparent about scope. Error handling is detailed. |
-| Security | 82 | No explicit mention of file permission handling (.claude/agents/ directory creation). No validation rules for team.yaml write access. No audit trail or versioning strategy documented. Risk is moderate for multi-user teams. |
-| Pattern Matching | 85 | Follows conventions from similar CLI tools. References existing Agent Launcher Spec appropriately. Edge cases section shows thought given to real scenarios. |
-| Best Practices | 84 | YAML format is standard. Interactive mode uses `gum` (good choice). However: no documentation of how to handle conflicts when adding duplicate roles. No discussion of idempotence (can you re-run `team add` safely?). |
-| General QA | 88 | All 3 main commands well-specified (team create, agent create, team add). 5 supporting commands documented in §3. Tests are implied but not explicit. No mention of backwards compatibility for v1→v2 migrations. |
+| Category         | Score | Notes                                                                                                                                                                                                                          |
+| :--------------- | ----: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Simplicity       |    85 | Well-structured spec with clear sections. 8 commands is reasonable scope. Markdown organization is clean. However, some flag tables are dense (7+ flags per command).                                                          |
+| Flexibility      |    87 | Spec allows both interactive and scripted workflows. Multiple permission modes supported. Minor: no mention of custom template directories or pluggable output formats.                                                        |
+| Usability        |    89 | Interactive flows are clear. Error messages include helpful hints. Non-goals section explicitly manages expectations. However, some flag names could be shorter (--permission-mode vs -p).                                     |
+| Documentation    |    92 | Comprehensive. Reference section links to related specs. Future Considerations section is transparent about scope. Error handling is detailed.                                                                                 |
+| Security         |    82 | No explicit mention of file permission handling (.claude/agents/ directory creation). No validation rules for team.yaml write access. No audit trail or versioning strategy documented. Risk is moderate for multi-user teams. |
+| Pattern Matching |    85 | Follows conventions from similar CLI tools. References existing Agent Launcher Spec appropriately. Edge cases section shows thought given to real scenarios.                                                                   |
+| Best Practices   |    84 | YAML format is standard. Interactive mode uses `gum` (good choice). However: no documentation of how to handle conflicts when adding duplicate roles. No discussion of idempotence (can you re-run `team add` safely?).        |
+| General QA       |    88 | All 3 main commands well-specified (team create, agent create, team add). 5 supporting commands documented in §3. Tests are implied but not explicit. No mention of backwards compatibility for v1→v2 migrations.              |
 
 > ⚠️ Security: 82% — Below 85% threshold
 
@@ -54,7 +54,8 @@ None. Security score below 85% is advisory, not blocking, because this is a spec
 
 Solid spec document. The CLI surface is well-designed and the interactive workflows are thoughtful. Core three commands are complete and clear. The security gap is documented above but not severe — it's about missing guidance for multi-user scenarios, not fundamental flaws.
 
-**Recommendation**: 
+**Recommendation**:
+
 - **APPROVE with guidance**: This spec is ready to implement
 - **Before implementation**: Address security file handling (§9) and idempotence guarantees
 - **Post-implementation**: Add version validation to team.yaml parsing

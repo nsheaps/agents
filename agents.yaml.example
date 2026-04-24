@@ -1,0 +1,22 @@
+# agents.yaml.example — template for agent registry
+#
+# Copy to agents.yaml and enable agents as needed:
+#   cp agents.yaml.example agents.yaml
+#
+# All agents are disabled by default. Enable only what you need for the
+# current session — disabled agents produce no Tilt resource at all.
+#
+# This file is committed to the repo. agents.yaml is gitignored.
+# See docs/specs/tilt-orchestration.md for details.
+agents:
+  - name: jack
+    repo: ~/src/nsheaps/.ai-agent-jack
+    enabled: false
+
+  - name: henry
+    repo: ~/src/nsheaps/.ai-agent-henry
+    enabled: false
+
+  - name: alex
+    repo: ~/src/nsheaps/.ai-agent-alex
+    enabled: false

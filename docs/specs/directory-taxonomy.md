@@ -15,22 +15,22 @@ tags:
 
 ## Directory Types
 
-| Path | Scope | Description | Example |
-|------|-------|-------------|---------|
-| `~/.claude/` | User/system | Shared between all agents on the machine. Plugins, marketplace cache, channels, global settings | `~/.claude/settings.json` |
-| `$CLAUDE_PROJECT_DIR/.claude/` | Project | Per-repo config, checked into git. Rules, skills, settings, agents | `<agent-repo>/.claude/settings.json` |
-| `~/.agents/${AGENT_NAME}/.config/` | Per-agent runtime | Runtime-generated config (tokens, PEM keys, env files). NOT checked in. | `~/.agents/jack/.config/github-app-env` |
-| `~/.agents/${AGENT_NAME}/.claude/` | Per-agent settings (future) | Per-agent Claude settings dir via `CLAUDE_SETTINGS_DIR`. Isolates plugins, channels, etc. | `~/.agents/jack/.claude/settings.json` |
-| `<agent-repo>/.claude/` | Agent project | The agent's own repo-level config (same as `$CLAUDE_PROJECT_DIR` when working in the agent's repo) | `/home/nsheaps/src/nsheaps/.ai-agent-jack/.claude/` |
+| Path                               | Scope                       | Description                                                                                        | Example                                             |
+| ---------------------------------- | --------------------------- | -------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| `~/.claude/`                       | User/system                 | Shared between all agents on the machine. Plugins, marketplace cache, channels, global settings    | `~/.claude/settings.json`                           |
+| `$CLAUDE_PROJECT_DIR/.claude/`     | Project                     | Per-repo config, checked into git. Rules, skills, settings, agents                                 | `<agent-repo>/.claude/settings.json`                |
+| `~/.agents/${AGENT_NAME}/.config/` | Per-agent runtime           | Runtime-generated config (tokens, PEM keys, env files). NOT checked in.                            | `~/.agents/jack/.config/github-app-env`             |
+| `~/.agents/${AGENT_NAME}/.claude/` | Per-agent settings (future) | Per-agent Claude settings dir via `CLAUDE_SETTINGS_DIR`. Isolates plugins, channels, etc.          | `~/.agents/jack/.claude/settings.json`              |
+| `<agent-repo>/.claude/`            | Agent project               | The agent's own repo-level config (same as `$CLAUDE_PROJECT_DIR` when working in the agent's repo) | `/home/nsheaps/src/nsheaps/.ai-agent-jack/.claude/` |
 
 ## Environment Variables
 
-| Variable | Points To | Set By |
-|----------|-----------|--------|
-| `CLAUDE_PROJECT_DIR` | Current working directory's project root | Claude Code (automatic) |
-| `CLAUDE_SETTINGS_DIR` | Per-agent settings directory (future) | `bin/agent` harness |
-| `AGENT_NAME` | Agent identifier (e.g., "jack") | 1Password ENVIRONMENT item |
-| `AGENT_CONFIG_DIR` | `~/.agents/${AGENT_NAME}/.config/` | github-app plugin's `lib/agent-paths.sh` |
+| Variable              | Points To                                | Set By                                   |
+| --------------------- | ---------------------------------------- | ---------------------------------------- |
+| `CLAUDE_PROJECT_DIR`  | Current working directory's project root | Claude Code (automatic)                  |
+| `CLAUDE_SETTINGS_DIR` | Per-agent settings directory (future)    | `bin/agent` harness                      |
+| `AGENT_NAME`          | Agent identifier (e.g., "jack")          | 1Password ENVIRONMENT item               |
+| `AGENT_CONFIG_DIR`    | `~/.agents/${AGENT_NAME}/.config/`       | github-app plugin's `lib/agent-paths.sh` |
 
 ## Key Distinctions
 
@@ -40,16 +40,17 @@ This directory is shared by **all agents and users on the machine**. Writing
 agent-specific configuration here will bleed across agents. Examples of what
 belongs here vs. what does not:
 
-| Belongs in `~/.claude/` | Does NOT belong in `~/.claude/` |
-|-------------------------|----------------------------------|
-| Marketplace plugin cache | Agent-specific channels config |
-| Global settings (theme, etc.) | Per-agent token files |
-| System-wide MCP server config | Agent-specific rules or skills |
+| Belongs in `~/.claude/`       | Does NOT belong in `~/.claude/` |
+| ----------------------------- | ------------------------------- |
+| Marketplace plugin cache      | Agent-specific channels config  |
+| Global settings (theme, etc.) | Per-agent token files           |
+| System-wide MCP server config | Agent-specific rules or skills  |
 
 ### `<agent-repo>/.claude/` is the agent's identity
 
 Each agent's repo contains its configuration checked into git. This is the canonical
 source of truth for:
+
 - Rules (`.claude/rules/`)
 - Skills (`.claude/skills/`)
 - Agents (`.claude/agents/`)
@@ -60,6 +61,7 @@ When Claude Code runs inside an agent's repo, `$CLAUDE_PROJECT_DIR` points here.
 ### `~/.agents/${AGENT_NAME}/.config/` is runtime-only
 
 Runtime secrets and generated files go here — never committed. Examples:
+
 - GitHub App installation tokens
 - Private key PEM files
 - Env files with injected secrets

@@ -8,23 +8,25 @@
 
 ## Category Scores
 
-| Category | Score | Status |
-|:---------|------:|:-------|
-| Simplicity | 92 | ✅ |
-| Flexibility | 88 | ✅ |
-| Usability | 90 | ✅ |
-| Documentation | 88 | ✅ |
-| Security | 88 | ✅ |
-| Pattern Matching | 92 | ✅ |
-| Best Practices | 90 | ✅ |
-| General QA | 90 | ✅ |
+| Category         | Score | Status |
+| :--------------- | ----: | :----- |
+| Simplicity       |    92 | ✅     |
+| Flexibility      |    88 | ✅     |
+| Usability        |    90 | ✅     |
+| Documentation    |    88 | ✅     |
+| Security         |    88 | ✅     |
+| Pattern Matching |    92 | ✅     |
+| Best Practices   |    90 | ✅     |
+| General QA       |    90 | ✅     |
 
 ## Changes Since v1 (82/100)
 
 ### ci-5 (P1) — FIXED
+
 Concurrency group now uses `${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}`. Dead `pull_request.number` reference removed. Clean.
 
 ### ci-3 (P2) — FIXED
+
 `shfmt -d $bash_files` — no more hardcoded `-i 2 -ci`. Comment explicitly states "indent settings sourced from .editorconfig". Additionally, `.editorconfig` now has `[*.sh]` section with `switch_case_indent = true` — proper single source of truth.
 
 ## Remaining Items (non-blocking, documented as follow-ups)
@@ -42,4 +44,4 @@ Both must-fix items addressed cleanly. The `.editorconfig` addition for `[*.sh]`
 
 ---
 
-*Reviewed by Daffy D (qa) — 2026-02-23*
+_Reviewed by Daffy D (qa) — 2026-02-23_

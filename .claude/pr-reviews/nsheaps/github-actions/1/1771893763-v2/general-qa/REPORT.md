@@ -27,6 +27,7 @@ two lows remain (L5, L12, L14), and there are three new findings including one m
 ## Previous Findings — Status
 
 ### C1 (Critical): API key masked after first use
+
 **Status: FIXED**
 
 `action-v2.sh` lines 22–23 mask both `API_KEY` and `GIT_TOKEN` immediately at script top,
@@ -40,6 +41,7 @@ before any `log_info` or API call.
 ---
 
 ### H2 (High): `|| true` on curl creates silent failure
+
 **Status: FIXED**
 
 `arcane_api()` (lines 70–81) now captures the curl exit code and uses `|| { log_error ...; return 1; }`
@@ -49,6 +51,7 @@ are no longer swallowed.
 ---
 
 ### H3 (High): SYNC_INTERVAL passed as --argjson without numeric validation
+
 **Status: FIXED**
 
 Lines 377–380 validate `SYNC_INTERVAL` with `^[1-9][0-9]*$` before it reaches `--argjson`.
@@ -57,6 +60,7 @@ Non-integer or zero values now produce a clean error and exit.
 ---
 
 ### H7 (High): jq failures on malformed API responses unguarded
+
 **Status: FIXED**
 
 `jq_extract_id()` (lines 104–116) validates both parse success and non-null/non-empty value.
@@ -66,6 +70,7 @@ in `ensure_repository` (line 192) cleanly handles absent match without producing
 ---
 
 ### M3 (Medium): Temp files not cleaned up on signals (no trap)
+
 **Status: STILL PRESENT**
 
 `arcane_api()` uses `mktemp` (line 66) and cleans up on every normal return path (lines 79, 87,
@@ -80,6 +85,7 @@ SIGTERM, or unexpected exits mid-curl. If the runner is cancelled while a curl c
 ---
 
 ### M4 (Medium): sync_name_from_path collisions on multi-level dirs
+
 **Status: STILL PRESENT (partial improvement)**
 
 The fix changed from `basename "${path}"` to `basename "$(dirname "${path}")"`, which correctly
@@ -100,6 +106,7 @@ different subtrees produce identical sync names
 ---
 
 ### M5 (Medium): No deduplication of compose files
+
 **Status: STILL PRESENT**
 
 Lines 123–148 append both explicit `compose-files` entries and `compose-dir` scan results
@@ -113,6 +120,7 @@ AND whose directory scan also finds it will process and upsert it twice in the s
 ---
 
 ### M6 (Medium): REPOSITORY_ID set to "null" on unexpected API response
+
 **Status: FIXED**
 
 `ensure_repository` (lines 190–194) now explicitly guards `[[ -n "${REPOSITORY_ID}" && "${REPOSITORY_ID}" != "null" ]]`.
@@ -121,13 +129,14 @@ The `jq_extract_id` helper on the create path ensures "null" is never silently a
 ---
 
 ### M7 (Medium): auth-type: none still sends empty token in create payload
+
 **Status: STILL PRESENT**
 
 Lines 212–217 build `create_payload` unconditionally including `--arg token "${GIT_TOKEN}"`.
 When `AUTH_TYPE` is `none`, `GIT_TOKEN` is empty string, and the payload becomes:
 
 ```json
-{"name":"...","url":"...","authType":"none","token":""}
+{ "name": "...", "url": "...", "authType": "none", "token": "" }
 ```
 
 The Arcane API may reject this or silently ignore it, but the intent is clearly to send
@@ -142,6 +151,7 @@ the inconsistency more visible.
 ---
 
 ### L5 (Low): REPOSITORY_ID as mutable global state
+
 **Status: STILL PRESENT**
 
 `REPOSITORY_ID` is declared as a global on line 27 and mutated by `ensure_repository`.
@@ -151,6 +161,7 @@ script is ever refactored to be concurrent or modular. No change from v1.
 ---
 
 ### L12 (Low): existing_syncs stale after first upsert in loop
+
 **Status: STILL PRESENT**
 
 `existing_syncs` is fetched once at line 400 and passed unchanged to every `upsert_sync`
@@ -164,6 +175,7 @@ duplicate syncs being created for the same compose file in a single run.
 ---
 
 ### L14 (Low): GITHUB_WORKSPACE fallback undocumented
+
 **Status: STILL PRESENT**
 
 Line 133 uses `${GITHUB_WORKSPACE:-.}` silently falling back to `.` when
@@ -176,6 +188,7 @@ environments will not know the script falls back to the current working director
 ---
 
 ### M14 (Medium): No tests, no shellcheck
+
 **Status: STILL PRESENT**
 
 No test files are present. `action-v2.yml` does not include a shellcheck or bats step.
@@ -183,6 +196,7 @@ The script has grown in complexity (jq_extract_id helper, numeric validation, ne
 without any automated test coverage to verify these branches work as intended.
 
 Notable untested behaviors:
+
 - `jq_extract_id` returning failure on malformed JSON
 - `SYNC_INTERVAL` validation rejecting `0`, `-1`, `abc`
 - `M7` token-in-none-auth-create path
@@ -251,14 +265,14 @@ how other required variables are validated.
 
 ## Score Summary
 
-| Category        | v1 | v2 | Delta |
-|-----------------|----|----|-------|
-| Critical        | -20| 0  | +20   |
-| High            | -18| 0  | +18   |
-| Medium          | -12| -8 | +4    |
-| Low             | -8 | -6 | +2    |
-| New findings    | 0  | -6 | -6    |
-| **Total**       | 62 | **76** |   |
+| Category     | v1  | v2     | Delta |
+| ------------ | --- | ------ | ----- |
+| Critical     | -20 | 0      | +20   |
+| High         | -18 | 0      | +18   |
+| Medium       | -12 | -8     | +4    |
+| Low          | -8  | -6     | +2    |
+| New findings | 0   | -6     | -6    |
+| **Total**    | 62  | **76** |       |
 
 **Score: 76/100**
 

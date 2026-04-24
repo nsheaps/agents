@@ -15,6 +15,7 @@ tags:
   - marketplace
   - infrastructure
 ---
+
 # Plugin System Design
 
 ## Problem Statement
@@ -39,7 +40,7 @@ harness configuration needs to be codified so new agents can be set up consisten
    - `hooks/` — lifecycle scripts (SessionStart, PreToolUse, PostToolUse, Stop)
    - `agents/` — agent definitions with frontmatter (model, tools, etc.)
    - `mcpServers/` — MCP server configuration
-   Source: `docs/research/ai-mktpl-deep-dive.md`.
+     Source: `docs/research/ai-mktpl-deep-dive.md`.
 
 3. **Secret injection via `plugins.settings.yaml`**: Each agent declares 1Password
    item references (`op://vault/item`) in its `plugins.settings.yaml`. The `1pass`

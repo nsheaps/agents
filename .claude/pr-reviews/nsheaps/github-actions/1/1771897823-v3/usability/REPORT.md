@@ -18,7 +18,7 @@
 
 ```yaml
 environment-id:
-  description: 'Arcane environment ID to deploy to'
+  description: "Arcane environment ID to deploy to"
 ```
 
 Identical to v2. No format guidance (numeric? UUID? slug?), no UI location hint, no example value. The README inputs table line 68 remains equally bare. README examples still hard-code `environment-id: '1'` (see N2 for that aspect).
@@ -35,7 +35,7 @@ Identical to v2. No format guidance (numeric? UUID? slug?), no UI location hint,
 
 ```yaml
 auth-type:
-  description: 'Git authentication type: none or http'
+  description: "Git authentication type: none or http"
 ```
 
 Identical to v2. No documented use case. A user with a private repo who sees `git-token` as optional might try `none`, the action will exit cleanly, and the failure will surface inside Arcane at clone time — not in the workflow log.
@@ -52,7 +52,7 @@ Identical to v2. No documented use case. A user with a private repo who sees `gi
 
 ```yaml
 arcane-api-key:
-  description: 'API key for Arcane authentication (from Settings > API Keys)'
+  description: "API key for Arcane authentication (from Settings > API Keys)"
 ```
 
 Identical to v2. The UI location hint remains; the action correctly masks the key. However the description and README still do not explicitly say "store this as a GitHub Actions secret." A user new to GitHub Actions can still hardcode the value.
@@ -76,6 +76,7 @@ This finding requires inspection of `action.sh`, which is not included in the v3
 **Status: STILL PRESENT**
 
 README still has only two examples:
+
 - "Directory scan" (lines 16–27)
 - "Explicit file list" (lines 29–43)
 - "With workflow environment variables" (lines 45–60)
@@ -93,7 +94,7 @@ No example combining `compose-dir` and `compose-files` together, despite line 92
 README examples at lines 24, 37, and 53 still show:
 
 ```yaml
-environment-id: '1'
+environment-id: "1"
 ```
 
 No annotation that this is a placeholder. New users copy-pasting will get a 404 from the Arcane API unless they happen to have environment ID 1. The value reads as a real value, not like `${{ secrets.ARCANE_URL }}`.
@@ -110,7 +111,7 @@ No annotation that this is a placeholder. New users copy-pasting will get a 404 
 
 ```yaml
 sync-name-prefix:
-  description: 'Prefix for sync names in Arcane. Defaults to the GitHub repository name.'
+  description: "Prefix for sync names in Arcane. Defaults to the GitHub repository name."
 ```
 
 Identical to v2. No note that if two repositories with identical short names deploy to the same environment, they will collide on sync names. No warning guidance.
@@ -147,17 +148,17 @@ This addition clarifies a depth constraint that users would otherwise discover o
 
 ### Finding Delta (v2 → v3)
 
-| Finding | v2 Status | v3 Status | Points change |
-|---|---|---|---|
-| M10 — environment-id no format hint | Still present | Still present | 0 |
-| N1 — auth-type: none undocumented | Still present | Still present | 0 |
-| L8 — arcane-api-key secrets guidance | Partially fixed | Partially fixed | 0 |
-| L13 — raw stderr API errors | Still present | Cannot verify | 0 |
-| L15 — no compose combo example | Still present | Still present | 0 |
-| N2 — environment-id placeholder | Still present | Still present | 0 |
-| N3 — sync-name-prefix collision | Still present | Still present | 0 |
-| (new) HTTPS enforcement polish | — | Added | +1 |
-| (new) Compose-dir depth documentation | — | Added | +1 |
+| Finding                               | v2 Status       | v3 Status       | Points change |
+| ------------------------------------- | --------------- | --------------- | ------------- |
+| M10 — environment-id no format hint   | Still present   | Still present   | 0             |
+| N1 — auth-type: none undocumented     | Still present   | Still present   | 0             |
+| L8 — arcane-api-key secrets guidance  | Partially fixed | Partially fixed | 0             |
+| L13 — raw stderr API errors           | Still present   | Cannot verify   | 0             |
+| L15 — no compose combo example        | Still present   | Still present   | 0             |
+| N2 — environment-id placeholder       | Still present   | Still present   | 0             |
+| N3 — sync-name-prefix collision       | Still present   | Still present   | 0             |
+| (new) HTTPS enforcement polish        | —               | Added           | +1            |
+| (new) Compose-dir depth documentation | —               | Added           | +1            |
 
 **v2 score:** 83  
 **Points recovered:** 0  
@@ -185,14 +186,14 @@ The cross-category improvements (HTTPS and depth guidance) demonstrate continued
 
 ### Recommendations for v4
 
-| ID | Severity | Action |
-|---|---|---|
-| M10 + N2 | High priority | Combine: Add format guidance to `environment-id` description ("typically numeric, found in Arcane Settings > Environments") and replace hard-coded `'1'` with `'<your-environment-id>'` or similar labeled placeholder in all examples. |
-| N1 | Medium priority | Add use case guidance: "Use `none` for public repositories only. For private repositories, use `http` (default) and set `git-token`." |
-| L8 | Low priority | Add: "Store as a GitHub Actions secret for security." |
-| L15 | Low priority | Add a fourth example showing `compose-files` and `compose-dir` together. |
-| N3 | Low priority | Add note: "Ensure `sync-name-prefix` is unique across all workflows deploying to this environment." |
-| L13 | Low priority | Format API error responses with `::error::` wrapping or pretty-print JSON. |
+| ID       | Severity        | Action                                                                                                                                                                                                                                  |
+| -------- | --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| M10 + N2 | High priority   | Combine: Add format guidance to `environment-id` description ("typically numeric, found in Arcane Settings > Environments") and replace hard-coded `'1'` with `'<your-environment-id>'` or similar labeled placeholder in all examples. |
+| N1       | Medium priority | Add use case guidance: "Use `none` for public repositories only. For private repositories, use `http` (default) and set `git-token`."                                                                                                   |
+| L8       | Low priority    | Add: "Store as a GitHub Actions secret for security."                                                                                                                                                                                   |
+| L15      | Low priority    | Add a fourth example showing `compose-files` and `compose-dir` together.                                                                                                                                                                |
+| N3       | Low priority    | Add note: "Ensure `sync-name-prefix` is unique across all workflows deploying to this environment."                                                                                                                                     |
+| L13      | Low priority    | Format API error responses with `::error::` wrapping or pretty-print JSON.                                                                                                                                                              |
 
 ---
 
@@ -201,4 +202,3 @@ The cross-category improvements (HTTPS and depth guidance) demonstrate continued
 - `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/tmp/action-v3.yml` (lines 1–122)
 - `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/tmp/action-readme-v3.md` (lines 1–98)
 - v2 baseline report: `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/pr-reviews/nsheaps/github-actions/1/1771893763-v2/usability/REPORT.md`
-

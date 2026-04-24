@@ -160,18 +160,18 @@ Note: The M5 deduplication fix reduces the impact of this finding. With duplicat
 
 ## Score Calculation
 
-| Finding | v3 Status | v4 Status | Points |
-|---------|-----------|-----------|--------|
-| M5: No deduplication | Still present | **FIXED** | +4 |
-| M7: Empty token in none-auth | Still present | **FIXED** | +4 |
-| N2: Silent trigger-sync | Still present | **FIXED** | +2 |
-| M3: No trap cleanup | Still present | Still present | -3 |
-| M4: Sync name collisions | Still present | Still present | -3 |
-| M14: No tests | Still present | Still present | -4 |
-| L5: Global state | Still present | Still present | -1 |
-| L12: Stale syncs (reduced impact) | Still present | Still present | -0.5 |
-| L14: GITHUB_WORKSPACE fallback | Still present | Still present | -0.5 |
-| N3: GITHUB_ENV/OUTPUT unguarded | Still present | Still present | -1 |
+| Finding                           | v3 Status     | v4 Status     | Points |
+| --------------------------------- | ------------- | ------------- | ------ |
+| M5: No deduplication              | Still present | **FIXED**     | +4     |
+| M7: Empty token in none-auth      | Still present | **FIXED**     | +4     |
+| N2: Silent trigger-sync           | Still present | **FIXED**     | +2     |
+| M3: No trap cleanup               | Still present | Still present | -3     |
+| M4: Sync name collisions          | Still present | Still present | -3     |
+| M14: No tests                     | Still present | Still present | -4     |
+| L5: Global state                  | Still present | Still present | -1     |
+| L12: Stale syncs (reduced impact) | Still present | Still present | -0.5   |
+| L14: GITHUB_WORKSPACE fallback    | Still present | Still present | -0.5   |
+| N3: GITHUB_ENV/OUTPUT unguarded   | Still present | Still present | -1     |
 
 **Previous score**: 80
 **Points recovered**: +10

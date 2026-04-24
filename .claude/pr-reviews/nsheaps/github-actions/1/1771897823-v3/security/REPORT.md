@@ -84,6 +84,7 @@ if [[ "${TRIGGER_SYNC}" == "true" ]]; then
 ### Input Validation Ordering
 
 The validation section (lines 354-392) now follows a logical order:
+
 1. Required inputs (lines 355-357)
 2. Mutual exclusivity check (lines 359-362)
 3. Conditional requirements — git-token when auth-type=http (lines 365-368)
@@ -109,14 +110,14 @@ This is correct and unchanged from v2. Both secrets are masked before any `log_i
 
 ## Score Calculation
 
-| Finding | v2 Status | v3 Status | Weight | Change |
-|---------|-----------|-----------|--------|--------|
-| C1: Secrets not masked | FIXED (v2) | Still fixed | — | 0 |
-| C2: Token in logs | FIXED (v2) | Still fixed | — | 0 |
-| M2: No HTTPS enforcement | STILL PRESENT | **FIXED** | — | +6 |
-| M3: No trap cleanup | STILL PRESENT | Still present | -4 | 0 |
-| N2: AUTO_SYNC unvalidated | STILL PRESENT | **FIXED** | — | +2 |
-| N3: TRIGGER_SYNC inconsistent | STILL PRESENT | Still present | -1 | 0 |
+| Finding                       | v2 Status     | v3 Status     | Weight | Change |
+| ----------------------------- | ------------- | ------------- | ------ | ------ |
+| C1: Secrets not masked        | FIXED (v2)    | Still fixed   | —      | 0      |
+| C2: Token in logs             | FIXED (v2)    | Still fixed   | —      | 0      |
+| M2: No HTTPS enforcement      | STILL PRESENT | **FIXED**     | —      | +6     |
+| M3: No trap cleanup           | STILL PRESENT | Still present | -4     | 0      |
+| N2: AUTO_SYNC unvalidated     | STILL PRESENT | **FIXED**     | —      | +2     |
+| N3: TRIGGER_SYNC inconsistent | STILL PRESENT | Still present | -1     | 0      |
 
 **Previous score**: 82
 **Adjustments**: +6 (M2 fixed) +2 (N2 fixed) = **+8**
@@ -132,6 +133,7 @@ v3 addresses the two most significant open security findings:
 2. **N2 (AUTO_SYNC validation)**: The jq injection vector via `--argjson` is eliminated.
 
 The remaining findings are low-to-medium severity:
+
 - **M3 (trap cleanup)**: Temp file persistence on signal interruption. Low probability on GitHub-hosted runners. Would require adding a trap handler.
 - **N3 (TRIGGER_SYNC)**: Inconsistent validation pattern. Not a security risk, just a UX gap.
 

@@ -6,10 +6,10 @@
 
 ## Fix Verification
 
-| Finding | Status | Notes |
-|:--------|:-------|:------|
+| Finding                                          | Status          | Notes                                                                                     |
+| :----------------------------------------------- | :-------------- | :---------------------------------------------------------------------------------------- |
 | security-1 (P2): `arcane-deploy@main` no SHA pin | ✅ Acknowledged | TODO comment with tracking issue [nsheaps/iac#3](https://github.com/nsheaps/iac/issues/3) |
-| security-3 (P3): `n8agent` PAT naming | ✅ Resolved | 1Password action removed entirely. Now uses repo-level `secrets.GIT_TOKEN` |
+| security-3 (P3): `n8agent` PAT naming            | ✅ Resolved     | 1Password action removed entirely. Now uses repo-level `secrets.GIT_TOKEN`                |
 
 ## v3 Changes
 
@@ -17,16 +17,16 @@
 
 ## Category Scores
 
-| Category | v2 | v3 | Status |
-|:---------|---:|---:|:-------|
-| Simplicity | 92 | 95 | ✅ |
-| Flexibility | 85 | 88 | ✅ |
-| Usability | 90 | 93 | ✅ |
-| Documentation | 90 | 95 | ✅ |
-| Security | 88 | 90 | ✅ |
-| Pattern Matching | 92 | 92 | ✅ |
-| Best Practices | 90 | 90 | ✅ |
-| General QA | 90 | 92 | ✅ |
+| Category         |  v2 |  v3 | Status |
+| :--------------- | --: | --: | :----- |
+| Simplicity       |  92 |  95 | ✅     |
+| Flexibility      |  85 |  88 | ✅     |
+| Usability        |  90 |  93 | ✅     |
+| Documentation    |  90 |  95 | ✅     |
+| Security         |  88 |  90 | ✅     |
+| Pattern Matching |  92 |  92 | ✅     |
+| Best Practices   |  90 |  90 | ✅     |
+| General QA       |  90 |  92 | ✅     |
 
 ## Remaining Findings
 

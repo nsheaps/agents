@@ -1,0 +1,36 @@
+# tilt/agents.tiltfile — agent local_resource definitions
+#
+# Each agent is a local_resource whose serve_cmd is scripts/serve-agent.sh.
+# That script manages the tmux session lifecycle; bin/agent runs INSIDE
+# the tmux session with --no-tmux.
+#
+# Resource names use the short agent name (jack, henry, alex) so that
+# Tilt dashboard navigation is ergonomic.
+#
+# Agents are read from agents.yaml. Edit enabled: true/false there to
+# start/stop agents without editing this file. Tilt watches agents.yaml
+# and re-evaluates automatically.
+
+def expand_home(path):
+    """Expand ~ to $HOME since os.path.expanduser is not available in Starlark."""
+    home = str(local('echo $HOME', quiet=True)).strip()
+    if path.startswith('~/'):
+        return home + path[1:]
+    return path
+
+def register_agents():
+    config = read_yaml('agents.yaml')
+    for agent in config.get('agents', []):
+        if not agent.get('enabled', False):
+            continue
+        name = agent['name']
+        repo = expand_home(agent['repo'])
+        if not os.path.exists(repo):
+            print('tilt/agents.tiltfile: repo not found for agent ' + name + ' (' + repo + ') — skipping')
+            continue
+        local_resource(
+            name,
+            serve_cmd = 'scripts/serve-agent.sh ' + name + ' ' + repo,
+            deps = [repo + '/.claude/', repo + '/bin/agent'],
+            labels = ['agents'],
+        )

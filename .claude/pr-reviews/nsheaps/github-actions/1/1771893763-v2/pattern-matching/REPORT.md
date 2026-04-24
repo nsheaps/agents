@@ -16,9 +16,11 @@
 **Status: STILL PRESENT**
 
 **Evidence**: `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/tmp/action-v2.sh:1`
+
 ```bash
 #!/bin/bash
 ```
+
 The shebang was not changed to `#!/usr/bin/env bash`. On self-hosted runners where bash is not at `/bin/bash` (e.g., NixOS, some Alpine setups), this will fail with "No such file or interpreter." Low severity on GitHub-hosted runners, real risk on self-hosted.
 
 ---
@@ -39,12 +41,12 @@ Note: The `action.yml` referenced on line 105 of the yml file (`run: ${{ github.
 
 **Evidence**: The following inputs have meaningful computed defaults in the shell script but are documented with `default: ''` in the yml, which is misleading to users reading the action definition:
 
-| Input | action-v2.yml default | Actual default (computed in shell) |
-|---|---|---|
-| `repository-url` | `''` (line 37) | `https://github.com/${GITHUB_REPOSITORY}.git` (script line 10) |
-| `repository-name` | `''` (line 41) | `${GITHUB_REPOSITORY##*/}` (script line 11) |
-| `branch` | `''` (line 46) | `${GITHUB_REF_NAME:-main}` (script line 12) |
-| `sync-name-prefix` | `''` (line 77) | `${GITHUB_REPOSITORY##*/}` (script line 19) |
+| Input              | action-v2.yml default | Actual default (computed in shell)                             |
+| ------------------ | --------------------- | -------------------------------------------------------------- |
+| `repository-url`   | `''` (line 37)        | `https://github.com/${GITHUB_REPOSITORY}.git` (script line 10) |
+| `repository-name`  | `''` (line 41)        | `${GITHUB_REPOSITORY##*/}` (script line 11)                    |
+| `branch`           | `''` (line 46)        | `${GITHUB_REF_NAME:-main}` (script line 12)                    |
+| `sync-name-prefix` | `''` (line 77)        | `${GITHUB_REPOSITORY##*/}` (script line 19)                    |
 
 A user reading the yml has no way to know what these inputs actually default to without reading the shell script. This is a documentation gap. The description fields partially compensate (e.g., `branch` says "Defaults to the branch that triggered the workflow") but the `default:` field itself is still empty, which tooling like Dependabot, linters, and IDE plugins may surface incorrectly.
 
@@ -61,6 +63,7 @@ Compare with `auth-type` (line 51, `default: 'http'`), `auto-sync` (line 63, `de
 **Description**: The script depends on both `jq` (lines 107, 190, 200, 212, 239, 249, 272) and `curl` (line 70) but performs no pre-flight check that either tool is available. On GitHub-hosted `ubuntu-*` runners both are present, but on self-hosted runners or container-based runners (e.g., `container: alpine`), either may be absent. The failure mode is an unhelpful error deep in the execution rather than a clear "dependency missing" message.
 
 **Expected**: A pre-flight guard at the top of the script:
+
 ```bash
 for cmd in curl jq; do
   command -v "${cmd}" >/dev/null 2>&1 || {
@@ -69,6 +72,7 @@ for cmd in curl jq; do
   }
 done
 ```
+
 **Actual**: No such guard exists. The first missing-dependency failure will produce an obscure "command not found" buried in API call logic.
 **Steps to reproduce**: Run the action on a runner without `jq` installed and observe the error message.
 
@@ -79,16 +83,20 @@ done
 **File**: `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/tmp/action-v2.sh:338`
 **Severity**: Low
 **Description**: In `export_env_vars`, the mask command is emitted unconditionally before checking whether the value is non-empty:
+
 ```bash
 echo "::add-mask::${value}"
 echo "${key}=${value}" >> "${GITHUB_ENV}"
 ```
+
 If a user passes `KEY=` (intentional empty value), this emits `::add-mask::` with an empty string. GitHub Actions masks the empty string, which means every occurrence of the empty string in subsequent log output is redacted — producing garbled or partially-redacted logs. This is a latent defect for any caller who legitimately sets an empty env var.
 
 **Expected**: Guard the mask call:
+
 ```bash
 [[ -n "${value}" ]] && echo "::add-mask::${value}"
 ```
+
 **Actual**: `echo "::add-mask::${value}"` runs unconditionally.
 **Steps to reproduce**: Pass `env-vars: "MY_VAR="` to the action and observe subsequent step log output.
 
@@ -96,13 +104,13 @@ If a user passes `KEY=` (intentional empty value), this emits `::add-mask::` wit
 
 ## Summary
 
-| Finding | ID | Severity | Status |
-|---|---|---|---|
-| Shebang not portable | L1 | Low | STILL PRESENT |
-| `.yml` extension | L2 | Low | STILL PRESENT |
-| Computed defaults undocumented | L9 | Low | STILL PRESENT |
-| `jq`/`curl` not guarded | N1 | Medium | NEW |
-| Empty env-var mask emission | N2 | Low | NEW |
+| Finding                        | ID  | Severity | Status        |
+| ------------------------------ | --- | -------- | ------------- |
+| Shebang not portable           | L1  | Low      | STILL PRESENT |
+| `.yml` extension               | L2  | Low      | STILL PRESENT |
+| Computed defaults undocumented | L9  | Low      | STILL PRESENT |
+| `jq`/`curl` not guarded        | N1  | Medium   | NEW           |
+| Empty env-var mask emission    | N2  | Low      | NEW           |
 
 **Score: 84/100**
 

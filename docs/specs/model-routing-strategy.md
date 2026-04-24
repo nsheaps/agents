@@ -14,6 +14,7 @@ tags:
   - cost-optimization
   - architecture
 ---
+
 # Model Routing Strategy
 
 ## Problem Statement
@@ -43,7 +44,7 @@ to each task type, balancing quality and cost.
    - Orchestrator: medium (saves tokens while maintaining decision quality)
    - Quality sub-agents: high (Sonnet+high ≈ Opus+low in practice)
    - Mechanical sub-agents: not applicable (Haiku lacks extended thinking)
-   Source: model-cost-optimization research, section 2.
+     Source: model-cost-optimization research, section 2.
 
 5. **Task-type suitability matrix** (from research):
    - Complex architecture decisions → Opus
@@ -54,7 +55,7 @@ to each task type, balancing quality and cost.
    - Simple git operations → Haiku
    - File reading/summarization → Haiku
    - Tool-heavy orchestration → Sonnet
-   Source: model-cost-optimization research, section 3.
+     Source: model-cost-optimization research, section 3.
 
 6. **No automatic complexity-detection routing**: LiteLLM and other routers do not
    provide built-in complexity detection. Model selection must be explicit at the

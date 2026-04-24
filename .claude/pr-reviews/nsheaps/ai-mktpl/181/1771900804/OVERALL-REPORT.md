@@ -1,15 +1,15 @@
 ## Review: ai-mktpl#181 — agent-tab-titles plugin — Score: 94/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 95 | Plugin is focused and simple: set tmux/iTerm2 titles on session start, disable LLM titles. |
-| Flexibility | 94 | Honors CLAUDE_CODE_AGENT_NAME env var; falls back to agent_type gracefully. |
-| Usability | 95 | Clear documentation; title resolution priority is transparent. Prerequisites for iTerm2 are well-explained. |
-| Documentation | 95 | README covers what it does, how it works, prerequisites, and references. Well-written. |
-| Security | 98 | No security concerns. Script runs as user, modifies terminal only. |
-| Pattern Matching | 95 | Follows plugin structure perfectly: plugin.json, hooks.json, scripts, README, .release-it.js. |
-| Best Practices | 93 | ⚠️ Script uses `|| true` for tmux commands without checking if tmux is actually available. |
-| General QA | 94 | Version 0.1.0 is appropriate. Hook timeout 5s is suitable for terminal operations. |
+| Category         | Score | Notes                                                                                                       |
+| :--------------- | ----: | :---------------------------------------------------------------------------------------------------------- | --- | ----------------------------------------------------------------------- |
+| Simplicity       |    95 | Plugin is focused and simple: set tmux/iTerm2 titles on session start, disable LLM titles.                  |
+| Flexibility      |    94 | Honors CLAUDE_CODE_AGENT_NAME env var; falls back to agent_type gracefully.                                 |
+| Usability        |    95 | Clear documentation; title resolution priority is transparent. Prerequisites for iTerm2 are well-explained. |
+| Documentation    |    95 | README covers what it does, how it works, prerequisites, and references. Well-written.                      |
+| Security         |    98 | No security concerns. Script runs as user, modifies terminal only.                                          |
+| Pattern Matching |    95 | Follows plugin structure perfectly: plugin.json, hooks.json, scripts, README, .release-it.js.               |
+| Best Practices   |    93 | ⚠️ Script uses `                                                                                            |     | true` for tmux commands without checking if tmux is actually available. |
+| General QA       |    94 | Version 0.1.0 is appropriate. Hook timeout 5s is suitable for terminal operations.                          |
 
 > ✅ All categories ≥85% — Ready to merge
 

@@ -16,6 +16,7 @@ tags:
   - multi-agent
   - infrastructure
 ---
+
 # Agent Directory
 
 ## Problem Statement
@@ -35,7 +36,7 @@ discover each other and know how to route work.
      a dispatch-review workflow. CI currently failing (2 workflows broken as of 2026-04-06).
    - Pamela — Planned triage and prioritization agent. `nsheaps/.ai-agent-pamela` repo
      exists but no implementation started. Depends on reusable agent template (jack#27).
-   Source: `docs/research/agent-teams-infrastructure.md` in ai-agent-jack.
+     Source: `docs/research/agent-teams-infrastructure.md` in ai-agent-jack.
 
 2. **Contact files for agent trust and routing**: Jack maintains `.claude/contacts/`
    files for other agents with a trust level (`basic`, `trusted`, etc.) and

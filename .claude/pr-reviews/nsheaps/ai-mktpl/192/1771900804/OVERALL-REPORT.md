@@ -1,15 +1,15 @@
 ## Review: ai-mktpl#192 — statusline settings.local.json fix — Score: 93/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 92 | Changes are straightforward: migrate settings writes from settings.json to settings.local.json. |
-| Flexibility | 94 | Merge behavior (settings.local.json on top of settings.json) is standard and flexible. |
-| Usability | 93 | Documentation updated to reflect new file target. User-facing changes are minimal. |
-| Documentation | 93 | Comments and docs updated to explain why settings.local.json prevents truncation. |
-| Security | 95 | No new security surface; safer design (prevents config truncation). |
-| Pattern Matching | 92 | ⚠️ Applies to both statusline and statusline-iterm. Consistent pattern applied. |
-| Best Practices | 91 | ⚠️ shared/lib/safe-settings-write.sh docstring updated; unclear if existing code uses it. |
-| General QA | 92 | Version bumps are appropriate (0.1.20→0.1.21, 0.1.23→0.1.24). |
+| Category         | Score | Notes                                                                                           |
+| :--------------- | ----: | :---------------------------------------------------------------------------------------------- |
+| Simplicity       |    92 | Changes are straightforward: migrate settings writes from settings.json to settings.local.json. |
+| Flexibility      |    94 | Merge behavior (settings.local.json on top of settings.json) is standard and flexible.          |
+| Usability        |    93 | Documentation updated to reflect new file target. User-facing changes are minimal.              |
+| Documentation    |    93 | Comments and docs updated to explain why settings.local.json prevents truncation.               |
+| Security         |    95 | No new security surface; safer design (prevents config truncation).                             |
+| Pattern Matching |    92 | ⚠️ Applies to both statusline and statusline-iterm. Consistent pattern applied.                 |
+| Best Practices   |    91 | ⚠️ shared/lib/safe-settings-write.sh docstring updated; unclear if existing code uses it.       |
+| General QA       |    92 | Version bumps are appropriate (0.1.20→0.1.21, 0.1.23→0.1.24).                                   |
 
 > ✅ All categories ≥85% — Ready to merge
 

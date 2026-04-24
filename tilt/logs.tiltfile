@@ -1,0 +1,33 @@
+# tilt/logs.tiltfile — log stream resources
+#
+# Phase 1: transcript resource per agent (tails JSONL via bin/agent stream-output-as-chat).
+# Phase 2: debug and harness log streams (tail .claude/tmp/debug.log and harness.log).
+#
+# Each transcript resource appears in the Tilt dashboard under the 'transcripts' label
+# and runs independently from the agent resource so operators can view conversation
+# flow even when the agent itself is stopped.
+#
+# Agents are read from agents.yaml — only enabled agents get transcript resources.
+
+def expand_home(path):
+    """Expand ~ to $HOME since os.path.expanduser is not available in Starlark."""
+    home = str(local('echo $HOME', quiet=True)).strip()
+    if path.startswith('~/'):
+        return home + path[1:]
+    return path
+
+def register_logs():
+    config = read_yaml('agents.yaml')
+    for agent in config.get('agents', []):
+        if not agent.get('enabled', False):
+            continue
+        name = agent['name']
+        repo = expand_home(agent['repo'])
+        if not os.path.exists(repo):
+            continue
+        local_resource(
+            name + '-transcript',
+            serve_cmd = repo + '/bin/agent stream-output-as-chat',
+            labels = ['transcripts'],
+            resource_deps = [name],
+        )

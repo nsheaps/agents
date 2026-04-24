@@ -1,5 +1,28 @@
 [tools]
 bun = "latest"
+"ubi:mikefarah/yq" = "latest"
+
+# Dev lifecycle — tilt wrapper
+[tasks."dev:up"]
+description = "Start tilt in background"
+run = "scripts/dev.sh up"
+
+[tasks."dev:start"]
+description = "Start tilt in foreground with streaming"
+run = "scripts/dev.sh start"
+
+[tasks."dev:stop"]
+description = "Stop tilt"
+run = "scripts/dev.sh stop"
+
+# Agent management
+[tasks."agent:enable"]
+description = "Enable an agent in agents.yaml"
+run = "scripts/agent-toggle.sh enable {{arg(name='agent')}}"
+
+[tasks."agent:disable"]
+description = "Disable an agent in agents.yaml"
+run = "scripts/agent-toggle.sh disable {{arg(name='agent')}}"
 
 [tasks.format]
 description = "Format markdown files with prettier"
@@ -24,6 +47,11 @@ for lib in bin/lib/*.sh; do
   [ -f "$lib" ] || continue
   echo "Checking $lib..."
   bash -n "$lib"
+done
+for script in scripts/*.sh; do
+  [ -f "$script" ] || continue
+  echo "Checking $script..."
+  bash -n "$script"
 done
 echo "All lint checks passed."
 """
