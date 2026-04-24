@@ -92,15 +92,70 @@ local_resource(
 )
 
 # Additional agents follow the same pattern
+
+# --- Transcript Streaming ---
+# Each agent gets a log resource that tails its conversation JSONL
+# and pipes through a reformatter for human-readable chat-room output.
+# The JSONL path is discovered via .claude/tmp/session-id or newest
+# .jsonl in ~/.claude/projects/. See agents#121 scripts/tail-transcript.sh.
+local_resource(
+    'agent-jack-transcript',
+    serve_cmd=' '.join([
+        'scripts/tail-transcript.sh',
+        '../nsheaps/.ai-agent-jack',
+    ]),
+    labels=['transcripts'],
+)
 ```
+
+### Stopping Individual Agents
+
+Tilt supports stopping individual agent resources without bringing down the whole
+environment. Use Tilt's built-in resource disable:
+
+```bash
+tilt disable agent-jack          # stop Jack's resource (and its transcript)
+tilt enable agent-jack           # re-enable it later
+```
+
+This is the equivalent of `tilt down <agent-name>` — the resource is disabled in the
+dashboard and its process is stopped, but the rest of the environment stays up.
+
+### tmux Session Lifecycle
+
+Each agent runs inside a tmux session. The Tiltfile's `serve_cmd` for an agent must
+handle the full tmux lifecycle:
+
+1. **Find existing session** — check for a tmux session named after the agent
+   (e.g., `tmux has-session -t jack 2>/dev/null`)
+2. **Create if missing** — `tmux new-session -d -s jack`
+3. **Ensure `bin/agent` is running** — check if the shell inside the session is alive
+   and the agent process is active
+4. **Restart dead sessions** — if the shell died but the tmux session still exists,
+   kill the session (`tmux kill-session -t jack`) and recreate it
+5. **Auto-start on `tilt up`** — agent resources use `TRIGGER_MODE_AUTO` (the default),
+   not `TRIGGER_MODE_MANUAL`, so they start automatically when Tilt comes up
+
+### Dynamic Resource Detection
+
+Rather than hardcoding one `local_resource` per agent, the Tiltfile should discover
+agents dynamically:
+
+- **One Tilt resource per tmux window** in the agent's session, enabling multi-window
+  agents to surface each window as a separate resource in the dashboard
+- **Auto-refresh via file watch** — watch an agent registry YAML
+  (e.g., `agents.yaml` or a config directory) so that adding/removing agents triggers
+  Tiltfile re-evaluation without manual edits
+- **Discovery from disk** — alternatively, glob agent repo directories on disk and
+  generate resources for each discovered agent
 
 ### Development Modes
 
 | Mode | Command | What It Does |
 |:--|:--|:--|
 | **Process mode** | `tilt up` | Runs agents as local processes with file watching |
-| **K8s mode** | `ctlptl create cluster kind; tilt up` | Runs agents in kind pods, tests K8s controllers |
-| **Hybrid** | `tilt up -- --k8s-agents=jack` | Some agents in K8s, others as processes |
+| **K8s mode** *(Phase 2)* | `ctlptl create cluster kind; tilt up` | Runs agents in kind pods, tests K8s controllers |
+| **Hybrid** *(Phase 2)* | `tilt up -- --k8s-agents=jack` | Some agents in K8s, others as processes |
 
 ### File Watch Triggers
 
@@ -138,7 +193,7 @@ directory, consistent with the per-agent `.claude/` directory standard
 3. Map agent harness health signals to Tilt readiness probes
 4. Document `tilt up` workflow in project README
 
-### Phase 2: K8s-Mode Testing
+### Phase 2: K8s-Mode Testing *(not tonight — process-mode first)*
 
 1. Create ctlptl cluster config for kind
 2. Add K8s resource definitions to Tiltfile (`k8s_yaml`, `k8s_resource`)
