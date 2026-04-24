@@ -168,11 +168,88 @@ agents dynamically:
 | `src/mesh/**` | Rebuild and restart mesh MCP server |
 | `Tiltfile` | Tilt re-evaluates automatically |
 
+### Three Log Streams per Agent
+
+Each agent surfaces **three separate log streams** in the Tilt web UI, each as its
+own `local_resource` (or Tilt log stream) so operators can view them independently:
+
+1. **Conversation transcript** (`agent-jack-transcript`) — tails the JSONL conversation
+   file and pipes through a reformatter for human-readable chat-room output. This is the
+   existing transcript resource shown in the Tiltfile example above.
+2. **Claude Code debug logs** (`agent-jack-debug`) — captures Claude Code's stderr
+   output (the `CLAUDE_DEBUG` / verbose stream). Useful for diagnosing MCP failures,
+   tool errors, and internal Claude Code behavior.
+3. **Agent harness logs** (`agent-jack-harness`) — captures stdout/stderr from `bin/agent`
+   itself (the launcher/harness script). Shows restart loop activity, health check results,
+   tmux session management, and environment setup.
+
+```python
+# Example Tiltfile additions per agent
+local_resource(
+    'agent-jack-debug',
+    serve_cmd='tail -F ../nsheaps/.ai-agent-jack/.claude/tmp/debug.log',
+    labels=['logs'],
+)
+
+local_resource(
+    'agent-jack-harness',
+    serve_cmd='tail -F ../nsheaps/.ai-agent-jack/.claude/tmp/harness.log',
+    labels=['logs'],
+)
+```
+
+All three streams appear in the Tilt dashboard under their respective labels, allowing
+operators to view conversation flow, Claude internals, and harness lifecycle independently.
+
+### Individual Agent Control via CLI
+
+Tilt supports targeting individual resources from the command line. From the
+`nsheaps/agents` directory (where the Tiltfile lives):
+
+```bash
+tilt up jack          # start only Jack (and his log streams + dependencies)
+tilt down jack        # stop only Jack
+tilt up jack henry    # start Jack and Henry
+tilt down henry       # stop Henry while Jack keeps running
+```
+
+This works via Tilt's resource selection arguments — `tilt up <resource>` starts only
+the named resources (plus their `resource_deps`), and `tilt down <resource>` tears down
+only those resources. The Tiltfile must use resource names that match the short agent
+names (e.g., `jack` not `agent-jack`) for ergonomic CLI usage, or define
+`tilt_args`-based aliases.
+
+### Agent Self-Management
+
+Agents themselves can control other agents (or themselves) by running Tilt CLI commands.
+Because the Tiltfile lives in `nsheaps/agents` and Tilt manages local processes, any
+agent with filesystem access can:
+
+```bash
+cd /home/nsheaps/src/nsheaps/agents
+tilt up henry         # Jack can bring Henry online
+tilt down henry       # Jack can take Henry offline
+tilt up jack          # An agent can even restart itself (harness will re-launch)
+```
+
+**Requirements for agent self-management:**
+
+- The `tilt` binary must be on the agent's `$PATH`
+- The agent must have filesystem access to the `nsheaps/agents` directory
+- Agents should use the `bin/agent` harness or a dedicated skill/tool to wrap these
+  commands with appropriate guardrails (e.g., confirming with the handler before
+  stopping another agent in production-like environments)
+- Self-restart (`tilt down jack` followed by `tilt up jack`) relies on the harness
+  restart loop — the agent process exits and Tilt restarts the resource
+
+This enables autonomous fleet management where agents can scale the team up or down
+based on workload, bring up specialists on demand, or gracefully shut down idle agents.
+
 ### Dashboard Integration
 
 Tilt's web dashboard (default `localhost:10350`) provides:
 
-- Real-time logs per agent
+- Real-time logs per agent (conversation, debug, and harness streams)
 - Health status indicators (mapped from agent harness lifecycle)
 - Restart buttons per resource
 - Build/reload history
