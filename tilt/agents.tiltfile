@@ -11,13 +11,20 @@
 # start/stop agents without editing this file. Tilt watches agents.yaml
 # and re-evaluates automatically.
 
+def expand_home(path):
+    """Expand ~ to $HOME since os.path.expanduser is not available in Starlark."""
+    home = str(local('echo $HOME', quiet=True)).strip()
+    if path.startswith('~/'):
+        return home + path[1:]
+    return path
+
 def register_agents():
     config = read_yaml('agents.yaml')
     for agent in config.get('agents', []):
         if not agent.get('enabled', False):
             continue
         name = agent['name']
-        repo = os.path.expanduser(agent['repo'])
+        repo = expand_home(agent['repo'])
         if not os.path.exists(repo):
             print('tilt/agents.tiltfile: repo not found for agent ' + name + ' (' + repo + ') — skipping')
             continue
