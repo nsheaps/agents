@@ -6,6 +6,8 @@ parent: agent-launcher
 related:
   - agent-harness-lifecycle
   - claude-team-cli
+  - auth-credentials
+  - agent-directory
 owner: nate
 created: 2026-04-13
 updated: 2026-04-13
@@ -75,6 +77,43 @@ Each agent has a canonical location in the global agent store:
 ```
 
 When an agent is started, it syncs `.claude/` directories from the local repo (via symlinks) into the global store, ensuring the agent uses the current configuration.
+
+### Per-Agent `.claude/` Directory Standard
+
+Each agent repo MUST contain its own `.claude/` directory as the canonical location for
+all agent-specific Claude Code configuration. This ensures agent isolation on shared
+machines and prevents cross-contamination via `~/.claude/`.
+
+**Required structure** (minimum viable):
+
+```
+{agent-repo}/.claude/
+├── settings.json       # Agent-specific Claude Code settings (MCP, hooks, permissions)
+├── rules/              # Agent-specific behavior rules
+├── skills/             # Agent-specific operational skills
+├── commands/           # Agent-specific slash commands
+├── MEMORY.md           # Agent memory index
+├── memory/             # Memory files
+└── prompts/            # Prompt templates (continuation, scheduled)
+```
+
+**Isolation mechanism**: The agent launcher sets `CLAUDE_SETTINGS_DIR` to the agent's
+repo-local `.claude/` directory at launch time, overriding the default `~/.claude/`.
+This ensures:
+
+- Each agent has its own `settings.json` (MCP servers, hooks, plugins)
+- Rules, skills, and commands are scoped to the agent
+- Memory files are isolated per agent
+- No shared-machine credential bleed (see `auth-credentials.md` §7)
+
+**What MUST NOT be in `~/.claude/`** for multi-agent setups:
+
+- Agent-specific MCP server configurations
+- Agent-specific hooks or plugin settings
+- Agent-specific secrets references (`plugins.settings.yaml`)
+- Anything that differs between agents on the same machine
+
+See also: `agent-directory.md` §7, `auth-credentials.md` §7–8.
 
 ### Operation Modes
 
@@ -421,19 +460,26 @@ Available on all commands:
 
 ## Configuration Sync
 
-When an agent starts, the `agents` CLI establishes symlinks:
+When an agent starts, the `agents` CLI establishes symlinks from the global store to the
+agent's repo-local `.claude/` directory:
 
 ```bash
-~/.agents/{name}/.claude/commands     -> {project}/.claude/commands
-~/.agents/{name}/.claude/rules        -> {project}/.claude/rules
-~/.agents/{name}/.claude/skills       -> {project}/.claude/skills
+~/.agents/{name}/.claude/commands      -> {project}/.claude/commands
+~/.agents/{name}/.claude/rules         -> {project}/.claude/rules
+~/.agents/{name}/.claude/skills        -> {project}/.claude/skills
 ~/.agents/{name}/.claude/settings.json -> {project}/.claude/settings.json
 ```
+
+Additionally, the launcher sets `CLAUDE_SETTINGS_DIR={project}/.claude` so that the
+Claude Code process reads its configuration from the agent's own directory rather than
+the shared `~/.claude/`. This is the primary isolation mechanism for multi-agent setups
+on a shared machine.
 
 This ensures:
 - Agent always uses the current local configuration
 - Changes to rules/commands/skills take effect on next start
 - Multiple agents can share `.claude/` directories via symlinks
+- No cross-contamination between agents sharing a machine (`CLAUDE_SETTINGS_DIR` isolation)
 
 ---
 

@@ -66,8 +66,11 @@ identity with no visible error.
 7. **`CLAUDE_SETTINGS_DIR` isolation needed**: On a shared machine, all agents read
    from the same `~/.claude/` directory by default. Without per-agent settings
    isolation, one agent's credentials can bleed into another's environment.
-   Implementing `CLAUDE_SETTINGS_DIR` per agent is a prerequisite for safe multi-agent
-   operation. Source: `docs/research/agent-teams-infrastructure.md`; nsheaps/agents issue #116.
+   Each agent repo MUST maintain its own `.claude/` directory with agent-specific
+   configuration (settings.json, rules, skills, plugins.settings.yaml). The launcher
+   sets `CLAUDE_SETTINGS_DIR` to the agent's repo-local `.claude/` at launch time.
+   See `agents-cli.md` §Per-Agent `.claude/` Directory Standard for the full layout.
+   Source: `docs/research/agent-teams-infrastructure.md`; nsheaps/agents issue #116.
 
 8. **Never write secrets to `~/.claude/settings.local.json`**: This file is shared
    across all agents on the machine. Agent-specific secrets belong in the agent's own

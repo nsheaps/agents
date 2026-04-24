@@ -68,7 +68,10 @@ discover each other and know how to route work.
 7. **`CLAUDE_SETTINGS_DIR` isolation before adding agents**: Running additional agents
    on the shared machine without per-agent settings directories causes cross-
    contamination. This must be resolved (agents#116) before safely provisioning Pamela
-   or any additional agents. Source: `docs/research/agent-teams-infrastructure.md`.
+   or any additional agents. The standard is for each agent repo to maintain its own
+   `.claude/` directory with all agent-specific configuration, and for the launcher to
+   set `CLAUDE_SETTINGS_DIR` at launch time (see `agents-cli.md` §Per-Agent `.claude/`
+   Directory Standard). Source: `docs/research/agent-teams-infrastructure.md`.
 
 8. **Agents monorepo vision** (long-term, agents#111): Combine agent definitions, MCP
    servers, and agent-team orchestration into a unified monorepo with support for
