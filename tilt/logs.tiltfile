@@ -1,0 +1,33 @@
+# tilt/logs.tiltfile — log stream resources
+#
+# Phase 1: transcript resource per agent (tails JSONL via bin/agent stream-output-as-chat).
+# Phase 2: debug and harness log streams (tail .claude/tmp/debug.log and harness.log).
+#
+# Each transcript resource appears in the Tilt dashboard under the 'transcripts' label
+# and runs independently from the agent resource so operators can view conversation
+# flow even when the agent itself is stopped.
+
+AGENTS_BASE = os.path.expanduser('~/src/nsheaps')
+
+def _agent_repo(name):
+    return AGENTS_BASE + '/.ai-agent-' + name
+
+def _register_agent_logs(name):
+    repo = _agent_repo(name)
+
+    # Guard: skip gracefully if the agent repo doesn't exist.
+    if not os.path.exists(repo):
+        return
+
+    # Transcript: tail JSONL and transform to human-readable chat format.
+    local_resource(
+        name + '-transcript',
+        serve_cmd = repo + '/bin/agent stream-output-as-chat',
+        labels = ['transcripts'],
+        resource_deps = [name],
+    )
+
+def register_logs():
+    _register_agent_logs('alex')
+    _register_agent_logs('jack')
+    _register_agent_logs('henry')

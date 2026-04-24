@@ -1,0 +1,47 @@
+# tilt/agents.tiltfile — agent local_resource definitions
+#
+# Each agent is a local_resource whose serve_cmd is scripts/serve-agent.sh.
+# That script manages the tmux session lifecycle; bin/agent runs INSIDE
+# the tmux session with --no-tmux.
+#
+# Resource names use the short agent name (alex, jack, henry) so that
+# `tilt up jack` and `tilt down henry` work ergonomically from the CLI.
+#
+# Phase 2: replace hardcoded list with dynamic discovery from agents.yaml.
+
+AGENTS_BASE = os.path.expanduser('~/src/nsheaps')
+
+def _agent_repo(name):
+    return AGENTS_BASE + '/.ai-agent-' + name
+
+def _agent_serve_cmd(name):
+    repo = _agent_repo(name)
+    return 'scripts/serve-agent.sh ' + name + ' ' + repo
+
+def _agent_deps(name):
+    repo = _agent_repo(name)
+    return [
+        repo + '/.claude/',
+        repo + '/bin/agent',
+    ]
+
+def _register_agent(name):
+    repo = _agent_repo(name)
+
+    # Guard: skip gracefully if the agent repo doesn't exist on disk.
+    # Alex may not be set up yet; that's OK.
+    if not os.path.exists(repo):
+        print('tilt/agents.tiltfile: repo not found for agent ' + name + ' (' + repo + ') — skipping')
+        return
+
+    local_resource(
+        name,
+        serve_cmd = _agent_serve_cmd(name),
+        deps = _agent_deps(name),
+        labels = ['agents'],
+    )
+
+def register_agents():
+    _register_agent('alex')
+    _register_agent('jack')
+    _register_agent('henry')
