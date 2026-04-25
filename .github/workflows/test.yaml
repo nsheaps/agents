@@ -17,6 +17,10 @@ jobs:
           for script in bin/*; do
             [ -d "$script" ] && continue
             [ -f "$script" ] || continue
+            # Skip non-shell files (TypeScript, JavaScript, Python, etc.)
+            case "$script" in
+              *.ts|*.js|*.py|*.rb|*.go) continue ;;
+            esac
             echo "Checking $script..."
             bash -n "$script"
           done
