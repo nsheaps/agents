@@ -16,6 +16,7 @@
 **Status: STILL PRESENT**
 
 **Evidence**: `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/tmp/action-v3.sh:1`
+
 ```bash
 #!/bin/bash
 ```
@@ -38,12 +39,12 @@ No change from v2. The shebang remains incompatible with self-hosted runners whe
 
 **Evidence**: The following inputs still show `default: ''` despite computing their values in the script:
 
-| Input | action-v3.yml default | Actual default (computed in shell) |
-|---|---|---|
-| `repository-url` | `''` (line 37) | `https://github.com/${GITHUB_REPOSITORY}.git` (script line 10) |
-| `repository-name` | `''` (line 42) | `${GITHUB_REPOSITORY##*/}` (script line 11) |
-| `branch` | `''` (line 47) | `${GITHUB_REF_NAME:-main}` (script line 12) |
-| `sync-name-prefix` | `''` (line 78) | `${GITHUB_REPOSITORY##*/}` (script line 19) |
+| Input              | action-v3.yml default | Actual default (computed in shell)                             |
+| ------------------ | --------------------- | -------------------------------------------------------------- |
+| `repository-url`   | `''` (line 37)        | `https://github.com/${GITHUB_REPOSITORY}.git` (script line 10) |
+| `repository-name`  | `''` (line 42)        | `${GITHUB_REPOSITORY##*/}` (script line 11)                    |
+| `branch`           | `''` (line 47)        | `${GITHUB_REF_NAME:-main}` (script line 12)                    |
+| `sync-name-prefix` | `''` (line 78)        | `${GITHUB_REPOSITORY##*/}` (script line 19)                    |
 
 This remains a documentation gap for users and tooling.
 
@@ -54,6 +55,7 @@ This remains a documentation gap for users and tooling.
 **Status: STILL PRESENT**
 
 **Evidence**: No pre-flight dependency check exists. The script assumes both `jq` and `curl` are available but provides no guard before they are used:
+
 - `curl` at line 70
 - `jq` at lines 107, 190, 200, 212, 239, 249, 272
 
@@ -66,6 +68,7 @@ On self-hosted runners without these tools, the failure mode is an unhelpful "co
 **Status: STILL PRESENT**
 
 **Evidence**: `/Users/nathan.heaps/src/nsheaps/agent-team/.claude/tmp/action-v3.sh:338`
+
 ```bash
 echo "::add-mask::${value}"
 echo "${key}=${value}" >> "${GITHUB_ENV}"
@@ -107,13 +110,13 @@ New validation ensuring the Arcane URL uses HTTPS. This is a security-forward pa
 
 ## Summary
 
-| Finding | ID | Severity | v2 Status | v3 Status |
-|---|---|---|---|---|
-| Shebang not portable | L1 | Low | STILL PRESENT | STILL PRESENT |
-| `.yml` extension | L2 | Low | STILL PRESENT | STILL PRESENT |
-| Computed defaults undocumented | L9 | Low | STILL PRESENT | STILL PRESENT |
-| `jq`/`curl` not guarded | N1 | Medium | NEW | STILL PRESENT |
-| Empty env-var mask emission | N2 | Low | NEW | STILL PRESENT |
+| Finding                        | ID  | Severity | v2 Status     | v3 Status     |
+| ------------------------------ | --- | -------- | ------------- | ------------- |
+| Shebang not portable           | L1  | Low      | STILL PRESENT | STILL PRESENT |
+| `.yml` extension               | L2  | Low      | STILL PRESENT | STILL PRESENT |
+| Computed defaults undocumented | L9  | Low      | STILL PRESENT | STILL PRESENT |
+| `jq`/`curl` not guarded        | N1  | Medium   | NEW           | STILL PRESENT |
+| Empty env-var mask emission    | N2  | Low      | NEW           | STILL PRESENT |
 
 **Score: 85/100**
 

@@ -1,15 +1,15 @@
 ## Review: ai-mktpl#190 — review-changes skill enhancement — Score: 88/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 85 | The `--thorough` flag adds real complexity (8 parallel agents), but complexity is proportionate to the feature. The quick mode remains simple. |
-| Flexibility | 90 | Good extensibility: output paths adapt to repo/PR context, shields.io badges are configurable, `--thorough` is opt-in |
-| Usability | 88 | Clear argument examples, well-documented scoring thresholds, P1-P4 severity levels are industry-standard. The `$ARGUMENTS` placeholder at the bottom (Focus Area section) feels dangling after the extensive restructuring |
-| Documentation | 92 | Excellent — 8 categories are well-defined with examples. Score guidelines, severity levels, finding ID format, inline comment prefixes, and review lifecycle management are all documented. |
-| Security | 90 | No direct security concerns. The `--allow-added-labels` flag usage in the label sync reference is noted but not part of this diff. The `gh pr edit` commands use safe flag syntax. |
-| Pattern Matching | 87 | Follows existing command frontmatter format. Adds `baseRefName` to `gh pr view` JSON fields (small, correct). The formatting changes to `datadog-otel-setup` README are cosmetic whitespace normalization — fine but noise in the diff. |
-| Best Practices | 88 | Cap rule (max 94% overall if any category is warning) is sensible. Review lifecycle management (dismissing old reviews, resolving old inline comments) is solid. The label management (`ready` label) is a good CI integration pattern. |
-| General QA | 85 | The `$ARGUMENTS` variable appears twice: once in the Focus Area section at the bottom, and once described as `[--thorough] [focus area or file pattern]`. The parsing logic for separating `--thorough` from the rest of `$ARGUMENTS` is not specified — the command must parse this out but the spec doesn't tell it how. |
+| Category         | Score | Notes                                                                                                                                                                                                                                                                                                                      |
+| :--------------- | ----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Simplicity       |    85 | The `--thorough` flag adds real complexity (8 parallel agents), but complexity is proportionate to the feature. The quick mode remains simple.                                                                                                                                                                             |
+| Flexibility      |    90 | Good extensibility: output paths adapt to repo/PR context, shields.io badges are configurable, `--thorough` is opt-in                                                                                                                                                                                                      |
+| Usability        |    88 | Clear argument examples, well-documented scoring thresholds, P1-P4 severity levels are industry-standard. The `$ARGUMENTS` placeholder at the bottom (Focus Area section) feels dangling after the extensive restructuring                                                                                                 |
+| Documentation    |    92 | Excellent — 8 categories are well-defined with examples. Score guidelines, severity levels, finding ID format, inline comment prefixes, and review lifecycle management are all documented.                                                                                                                                |
+| Security         |    90 | No direct security concerns. The `--allow-added-labels` flag usage in the label sync reference is noted but not part of this diff. The `gh pr edit` commands use safe flag syntax.                                                                                                                                         |
+| Pattern Matching |    87 | Follows existing command frontmatter format. Adds `baseRefName` to `gh pr view` JSON fields (small, correct). The formatting changes to `datadog-otel-setup` README are cosmetic whitespace normalization — fine but noise in the diff.                                                                                    |
+| Best Practices   |    88 | Cap rule (max 94% overall if any category is warning) is sensible. Review lifecycle management (dismissing old reviews, resolving old inline comments) is solid. The label management (`ready` label) is a good CI integration pattern.                                                                                    |
+| General QA       |    85 | The `$ARGUMENTS` variable appears twice: once in the Focus Area section at the bottom, and once described as `[--thorough] [focus area or file pattern]`. The parsing logic for separating `--thorough` from the rest of `$ARGUMENTS` is not specified — the command must parse this out but the spec doesn't tell it how. |
 
 > ✅ All categories ≥85% — Ready to merge (with minor clarifications)
 
@@ -21,8 +21,8 @@
 
 **File**: `plugins/review-changes/commands/review-changes.md` (Focus Area section, line ~583)
 **Severity**: Medium
-**Description**: The Focus Area section at the bottom references `$ARGUMENTS` directly: "If provided, focus the review on: $ARGUMENTS". But the new format of `$ARGUMENTS` is `[--thorough] [focus area or file pattern]`, meaning the literal string might include `--thorough`. The command needs to strip the `--thorough` flag before using the remainder as the focus area. This is not specified in the spec.
-**Expected**: Explicit parsing instruction: "Strip `--thorough` from `$ARGUMENTS` if present; remainder is the focus area/file pattern"
+**Description**: The Focus Area section at the bottom references `$ARGUMENTS` directly: "If provided, focus the review on: $ARGUMENTS". But the new format of `$ARGUMENTS`is`[--thorough] [focus area or file pattern]`, meaning the literal string might include `--thorough`. The command needs to strip the `--thorough`flag before using the remainder as the focus area. This is not specified in the spec.
+**Expected**: Explicit parsing instruction: "Strip`--thorough`from`$ARGUMENTS` if present; remainder is the focus area/file pattern"
 **Actual**: Raw `$ARGUMENTS` usage without stripping flag
 
 ---

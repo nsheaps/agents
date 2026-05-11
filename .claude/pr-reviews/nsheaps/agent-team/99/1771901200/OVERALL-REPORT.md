@@ -12,7 +12,7 @@
 ## Category Scores
 
 | Category         | Score | Status |
-|:-----------------|------:|:-------|
+| :--------------- | ----: | :----- |
 | Simplicity       |    85 | ✅     |
 | Flexibility      |    88 | ✅     |
 | Usability        |    80 | ⚠️     |

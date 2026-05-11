@@ -3,6 +3,7 @@ bun = "latest"
 
 [tasks.format]
 description = "Format markdown files with prettier"
+# todo: this needs to come from mise, not bun
 run = "bun run prettier --write '**/*.md'"
 
 [tasks.format-check]

@@ -22,6 +22,7 @@ A haiku-based prompt hook evaluates incoming messages and coordinates responses 
 ### 1. Confidence Evaluation (Haiku Hook)
 
 When a message arrives in a monitored channel:
+
 - A haiku-based prompt hook evaluates the message
 - Returns a confidence score indicating whether the agent should respond
 - If above a configurable threshold, the agent proceeds to evaluate whether to respond
@@ -29,11 +30,13 @@ When a message arrives in a monitored channel:
 ### 2. Response Classification
 
 **Informational (no bidding needed):**
+
 - Status of the agent's own work
 - Direct responses about things only this agent knows
 - These should be posted immediately without waiting
 
 **Potentially shared (bidding required):**
+
 - Messages that might not be directed at this specific agent
 - General questions multiple agents could answer
 - Requests that could be handled by any available agent
@@ -58,6 +61,7 @@ For messages requiring bidding:
 ### 4. Channel Plugin Requirements
 
 Channel plugins (Discord, Telegram) must support:
+
 - Reaction add/remove on messages
 - Event timestamp tracking for reactions (if not natively available from platform)
 - Streaming channel events into the agent's conversation context

@@ -4,7 +4,7 @@
 **Review round:** v2 (re-review after fixes)  
 **Reviewer:** Daffy D (qa)  
 **Date:** 2026-02-23  
-**Previous score:** 72/100  
+**Previous score:** 72/100
 
 ---
 
@@ -83,7 +83,7 @@ The duplication-avoidance branch at lines 173–175 (preventing `prefix-prefix` 
 
 ```yaml
 environment-id:
-  description: 'Arcane environment ID to deploy to'
+  description: "Arcane environment ID to deploy to"
 ```
 
 No format hint (numeric? UUID? slug?), no UI location hint, no example value. The README inputs table line 68 is equally bare. The README examples hard-code `environment-id: '1'` which implies numeric but is not labeled as intentional guidance — it looks like a placeholder. A new user cannot find this value without guessing or diving into Arcane's UI.
@@ -112,7 +112,7 @@ However the documentation gap that was the real problem remains: `auth-type: non
 
 ```yaml
 arcane-api-key:
-  description: 'API key for Arcane authentication (from Settings > API Keys)'
+  description: "API key for Arcane authentication (from Settings > API Keys)"
 ```
 
 The UI location hint (`Settings > API Keys`) has been added. The script correctly masks the key at line 22 with `::add-mask::`. However neither the input description nor the README inputs table explicitly says "store this as a GitHub Actions secret." The README examples use `${{ secrets.ARCANE_API_KEY }}` correctly but without explanation. A user new to GitHub Actions can still hardcode the value and not realize it will appear in workflow logs.
@@ -191,20 +191,20 @@ The README now has two usage examples (lines 16–43): one for `compose-dir` alo
 
 ### Finding Delta
 
-| Finding | v1 deduction | v2 status | Points recovered |
-|---|---|---|---|
-| H3 — sync-interval jq abort | -8 | Fixed | +8 |
-| H5 — git-token silent requirement | -7 | Fixed | +7 |
-| H6 — env-vars description wrong | -6 | Fixed | +6 |
-| M9 — naming algorithm docs | -4 | Fixed | +4 |
-| M10 — environment-id no format hint | -3 | Still present | 0 |
-| M11 — SSH auth / none undocumented | -3 | Still present (reframed as N1) | 0 |
-| L8 — arcane-api-key secrets guidance | -2 | Partially fixed | +1 |
-| L13 — raw stderr for API errors | -1 | Still present | 0 |
-| L15 — no compose combo example | -1 | Still present | 0 |
-| N1 — auth-type: none use case missing | new | Medium | -2 |
-| N2 — environment-id placeholder issue | new | Low | -1 |
-| N3 — sync-name-prefix collision | new | Low | -1 |
+| Finding                               | v1 deduction | v2 status                      | Points recovered |
+| ------------------------------------- | ------------ | ------------------------------ | ---------------- |
+| H3 — sync-interval jq abort           | -8           | Fixed                          | +8               |
+| H5 — git-token silent requirement     | -7           | Fixed                          | +7               |
+| H6 — env-vars description wrong       | -6           | Fixed                          | +6               |
+| M9 — naming algorithm docs            | -4           | Fixed                          | +4               |
+| M10 — environment-id no format hint   | -3           | Still present                  | 0                |
+| M11 — SSH auth / none undocumented    | -3           | Still present (reframed as N1) | 0                |
+| L8 — arcane-api-key secrets guidance  | -2           | Partially fixed                | +1               |
+| L13 — raw stderr for API errors       | -1           | Still present                  | 0                |
+| L15 — no compose combo example        | -1           | Still present                  | 0                |
+| N1 — auth-type: none use case missing | new          | Medium                         | -2               |
+| N2 — environment-id placeholder issue | new          | Low                            | -1               |
+| N3 — sync-name-prefix collision       | new          | Low                            | -1               |
 
 **Starting score:** 72  
 **Points recovered:** +26  
@@ -221,12 +221,12 @@ What remains is entirely in the documentation layer. No open finding will break 
 
 ### Open Items for v3
 
-| ID | Severity | File | Action needed |
-|---|---|---|---|
-| M10 | Medium | `action-v2.yml:19` | Add format hint and UI location for `environment-id` |
-| N1 | Medium | `action-v2.yml:50` | Document when to use `auth-type: none` vs `http` |
-| L8 | Low | `action-v2.yml:15` | Add "store as a GitHub Actions secret" to `arcane-api-key` description |
-| L13 | Low | `action-v2.sh:92` | Group API error body or add `::debug::` prefix |
-| L15 | Low | `action-readme-v2.md` | Add example combining `compose-dir` + `compose-files` |
-| N2 | Low | `action-readme-v2.md:24` | Replace `environment-id: '1'` with labeled placeholder |
-| N3 | Low | `action-v2.yml:76` | Add uniqueness note to `sync-name-prefix` description |
+| ID  | Severity | File                     | Action needed                                                          |
+| --- | -------- | ------------------------ | ---------------------------------------------------------------------- |
+| M10 | Medium   | `action-v2.yml:19`       | Add format hint and UI location for `environment-id`                   |
+| N1  | Medium   | `action-v2.yml:50`       | Document when to use `auth-type: none` vs `http`                       |
+| L8  | Low      | `action-v2.yml:15`       | Add "store as a GitHub Actions secret" to `arcane-api-key` description |
+| L13 | Low      | `action-v2.sh:92`        | Group API error body or add `::debug::` prefix                         |
+| L15 | Low      | `action-readme-v2.md`    | Add example combining `compose-dir` + `compose-files`                  |
+| N2  | Low      | `action-readme-v2.md:24` | Replace `environment-id: '1'` with labeled placeholder                 |
+| N3  | Low      | `action-v2.yml:76`       | Add uniqueness note to `sync-name-prefix` description                  |

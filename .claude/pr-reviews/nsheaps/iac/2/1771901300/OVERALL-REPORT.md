@@ -8,7 +8,7 @@
 ## Category Scores
 
 | Category         | Score | Status |
-|:-----------------|------:|:-------|
+| :--------------- | ----: | :----- |
 | Simplicity       |    92 | ✅     |
 | Flexibility      |    82 | ⚠️     |
 | Usability        |    90 | ✅     |
@@ -99,4 +99,4 @@ This is a clean, well-scoped PR. The workflow is minimal, correctly configured f
 
 ---
 
-*Reviewed by Daffy D (qa) — 2026-02-23*
+_Reviewed by Daffy D (qa) — 2026-02-23_

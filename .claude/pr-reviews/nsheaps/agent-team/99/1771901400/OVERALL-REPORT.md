@@ -12,14 +12,14 @@
 
 ## Fix Verification
 
-| Finding | Status | Notes |
-|:--------|:-------|:------|
-| usability-1 | ✅ | §8 no longer lists "Promotion workflow for shared/" as open question. §2.3 prescriptive language stands. Contradiction resolved. |
-| general-qa-1 | ✅ | Agent frontmatter example block added at §2.1 (lines 77–85 of diff): `name`, `description`, `memory: project` shown for `software-eng.md`. |
-| general-qa-2 | ✅ | Line 75 now reads "≤200 lines; team convention enforced via CI in Phase 2" — no longer claims Claude Code native enforcement. |
-| security-1 | ✅ | §5.2 now includes 4-step remediation: rotate credential, purge history via `git filter-repo` or BFG, force-push with team-lead approval, notify AI Agent Eng. |
-| security-2 | ✅ | §2.1 `local` row now reads "No (requires `.gitignore` entry — Phase 1 Step 2)" — dependency made explicit. |
-| pattern-matching-1 | ✅ | Frontmatter now uses `> **Status**: Draft` blockquote format matching agent-launcher.md. No more YAML `---` fenced block. |
+| Finding            | Status | Notes                                                                                                                                                         |
+| :----------------- | :----- | :------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| usability-1        | ✅     | §8 no longer lists "Promotion workflow for shared/" as open question. §2.3 prescriptive language stands. Contradiction resolved.                              |
+| general-qa-1       | ✅     | Agent frontmatter example block added at §2.1 (lines 77–85 of diff): `name`, `description`, `memory: project` shown for `software-eng.md`.                    |
+| general-qa-2       | ✅     | Line 75 now reads "≤200 lines; team convention enforced via CI in Phase 2" — no longer claims Claude Code native enforcement.                                 |
+| security-1         | ✅     | §5.2 now includes 4-step remediation: rotate credential, purge history via `git filter-repo` or BFG, force-push with team-lead approval, notify AI Agent Eng. |
+| security-2         | ✅     | §2.1 `local` row now reads "No (requires `.gitignore` entry — Phase 1 Step 2)" — dependency made explicit.                                                    |
+| pattern-matching-1 | ✅     | Frontmatter now uses `> **Status**: Draft` blockquote format matching agent-launcher.md. No more YAML `---` fenced block.                                     |
 
 All 6 P2 findings resolved.
 
@@ -27,11 +27,11 @@ All 6 P2 findings resolved.
 
 ## Section 8 Additions
 
-| Question | Present? | Well-scoped? |
-|:---------|:---------|:-------------|
-| Concurrent writes | ✅ | Yes — options: "Single-session-per-agent constraint vs explicit merge strategy"; decision owner: Team lead. Actionable. |
-| Pruning/retention | ✅ | Yes — options: "Manual curation vs automated archival vs expand cap"; decision owner: Team lead + spec review. Actionable. |
-| Inter-agent read | ✅ | Yes — options: "Permitted by default (all `project`-scoped files readable) vs explicit access grants"; decision owner: Architect. Actionable. |
+| Question          | Present? | Well-scoped?                                                                                                                                  |
+| :---------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------------------- |
+| Concurrent writes | ✅       | Yes — options: "Single-session-per-agent constraint vs explicit merge strategy"; decision owner: Team lead. Actionable.                       |
+| Pruning/retention | ✅       | Yes — options: "Manual curation vs automated archival vs expand cap"; decision owner: Team lead + spec review. Actionable.                    |
+| Inter-agent read  | ✅       | Yes — options: "Permitted by default (all `project`-scoped files readable) vs explicit access grants"; decision owner: Architect. Actionable. |
 
 All 3 previously missing questions added to §8 with options and decision owners.
 
@@ -39,18 +39,19 @@ All 3 previously missing questions added to §8 with options and decision owners
 
 ## Category Scores
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Simplicity | 85 | 85 | ✅ |
-| Flexibility | 88 | 88 | ✅ |
-| Usability | 80 | 92 | ✅ |
-| Documentation | 88 | 92 | ✅ |
-| Security | 82 | 95 | ✅ |
-| Pattern Matching | 72 | 90 | ✅ |
-| Best Practices | 80 | 88 | ✅ |
-| General QA | 72 | 92 | ✅ |
+| Category         |  v1 |  v2 | Status |
+| :--------------- | --: | --: | :----- |
+| Simplicity       |  85 |  85 | ✅     |
+| Flexibility      |  88 |  88 | ✅     |
+| Usability        |  80 |  92 | ✅     |
+| Documentation    |  88 |  92 | ✅     |
+| Security         |  82 |  95 | ✅     |
+| Pattern Matching |  72 |  90 | ✅     |
+| Best Practices   |  80 |  88 | ✅     |
+| General QA       |  72 |  92 | ✅     |
 
 **Scoring notes**:
+
 - Usability: +12 — usability-1 contradiction resolved; `memory:` example added; cross-reference to Phase 1 Step 2 now explicit.
 - Documentation: +4 — frontmatter consistency improved; remediation steps add clarity; references section unchanged and still strong.
 - Security: +13 — secret remediation path now present; gitignore dependency explicit; no remaining gaps in §5.

@@ -90,6 +90,7 @@ fi
 ```
 
 However, this code does NOT handle the case of two different compose files in different directories that produce the same sync name. For example:
+
 - `myapp/compose.yml` with prefix `myapp` → sync name `myapp`
 - `compose.yml` (root) with prefix `myapp` → sync name `myapp`
 
@@ -127,16 +128,16 @@ This is captured under M8 but worth noting the How It Works section is also affe
 
 ## Summary
 
-| Finding | Previous Severity | Status       |
-| ------- | ----------------- | ------------ |
-| H4      | High              | FIXED        |
-| H6      | High              | FIXED        |
+| Finding | Previous Severity | Status        |
+| ------- | ----------------- | ------------- |
+| H4      | High              | FIXED         |
+| H6      | High              | FIXED         |
 | M8      | Medium            | STILL PRESENT |
-| L4      | Low               | FIXED        |
+| L4      | Low               | FIXED         |
 | L10     | Low               | STILL PRESENT |
 | L11     | Low               | STILL PRESENT |
-| N1      | Low (new)         | NEW          |
-| N2      | Low (new)         | NEW (see M8) |
+| N1      | Low (new)         | NEW           |
+| N2      | Low (new)         | NEW (see M8)  |
 
 **Fixes applied**: 3 of 6 previous findings resolved (H4, H6, L4). Both high-severity findings are closed.
 

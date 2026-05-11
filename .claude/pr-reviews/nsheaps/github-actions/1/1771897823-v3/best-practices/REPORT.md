@@ -20,6 +20,7 @@ The three findings from v2 remain **open and unfixed**. I have verified each one
 **Location**: `action-v3.sh:303`
 
 **Evidence**:
+
 ```bash
 arcane_api POST "/environments/${ENV_ID}/gitops-syncs/${sync_id}/sync" > /dev/null || true
 ```
@@ -35,6 +36,7 @@ The `|| true` remains unchanged. The concern still stands: both transport errors
 **Location**: `action-v3.sh:190-194`
 
 **Evidence**:
+
 ```bash
 REPOSITORY_ID=$(echo "${repos}" | jq -r \
   --arg url "${REPO_URL}" \
@@ -56,6 +58,7 @@ The inconsistency with `jq_extract_id` (used on lines 223 and 294 for create pat
 **Location**: `action-v3.sh:142-147`
 
 **Evidence**:
+
 ```bash
 done < <(find "${search_dir}" -maxdepth 2 -type f \( \
   -name "docker-compose.yml" -o \
@@ -76,6 +79,7 @@ While the three findings remain unfixed, v3 introduces new input validation guar
 ### AUTO_SYNC Boolean Validation (lines 377-380)
 
 **New pattern established**:
+
 ```bash
 if [[ "${AUTO_SYNC}" != "true" && "${AUTO_SYNC}" != "false" ]]; then
   log_error "auto-sync must be 'true' or 'false', got '${AUTO_SYNC}'"
@@ -88,6 +92,7 @@ Validates boolean inputs before passing to `jq --argjson`. This prevents malform
 ### HTTPS Enforcement (lines 388-392)
 
 **New pattern established**:
+
 ```bash
 if [[ "${ARCANE_URL}" != https://* ]]; then
   log_error "arcane-url must use HTTPS (got '${ARCANE_URL}')"
@@ -100,6 +105,7 @@ Validates that the Arcane URL uses HTTPS. This is a defense-in-depth security co
 ### SYNC_INTERVAL Positive-Integer Validation (lines 382-386)
 
 **New pattern established**:
+
 ```bash
 if [[ ! "${SYNC_INTERVAL}" =~ ^[1-9][0-9]*$ ]]; then
   log_error "sync-interval must be a positive integer, got '${SYNC_INTERVAL}'"
@@ -151,12 +157,12 @@ This pattern, if extended consistently, would **directly address all three open 
 
 ## Score Breakdown
 
-| Area | v2 | v3 | Delta | Reason |
-|------|----|----|-------|--------|
-| Trigger-sync policy documentation | -2 | -2 | 0 | Still undocumented; `|| true` suppresses without comment |
-| Repository list jq guard | -1 | -1 | 0 | Raw `jq -r` still used; inconsistent with `jq_extract_id` |
-| Symlink discovery behavior | -1 | -1 | 0 | `find -type f` still silently skips symlinks |
-| Input validation pattern strength | 0 | +1 | +1 | New AUTO_SYNC, HTTPS, SYNC_INTERVAL guards establish strong defensive pattern |
+| Area                              | v2  | v3  | Delta | Reason                                                                        |
+| --------------------------------- | --- | --- | ----- | ----------------------------------------------------------------------------- | --- | -------------------------------- |
+| Trigger-sync policy documentation | -2  | -2  | 0     | Still undocumented; `                                                         |     | true` suppresses without comment |
+| Repository list jq guard          | -1  | -1  | 0     | Raw `jq -r` still used; inconsistent with `jq_extract_id`                     |
+| Symlink discovery behavior        | -1  | -1  | 0     | `find -type f` still silently skips symlinks                                  |
+| Input validation pattern strength | 0   | +1  | +1    | New AUTO_SYNC, HTTPS, SYNC_INTERVAL guards establish strong defensive pattern |
 
 **Final score: 96/100**
 
@@ -169,6 +175,7 @@ The one-point improvement reflects the **strengthened input validation pattern**
 v3 closes **zero** of the three open findings but improves the **pattern quality** by establishing a consistent, repeatable approach to defensive input validation. The code is incrementally more maintainable and follows a clearer best-practice template.
 
 All three findings are defensible to close without further action **if and only if** they are accepted as intentional design decisions:
+
 - N1: The trigger-sync failure is non-fatal by design (acceptable if documented)
 - N2: Repository duplication is acceptable risk for the use case (low likelihood if API is stable)
 - N3: Symlinks are not supported (acceptable if documented)

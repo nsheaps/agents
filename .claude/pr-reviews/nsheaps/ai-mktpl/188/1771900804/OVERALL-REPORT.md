@@ -1,15 +1,15 @@
 ## Review: ai-mktpl#188 — word-vomit plugin — Score: 93/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 91 | Plugin combines hook detection + skill workflow. Good separation of concerns. |
-| Flexibility | 94 | Multiple trigger patterns (file naming + explicit marker). Config via skill is intuitive. |
-| Usability | 92 | Word-vomit skill is well-structured. Categories are clear. Workflow is documented. |
-| Documentation | 94 | README and SKILL.md are thorough. Examples in skill are practical. Quality standards are explicit. |
-| Security | 96 | No security concerns. Hook only reads files and injects system messages. No privileged operations. |
-| Pattern Matching | 93 | PostToolUse hook pattern is correct. File detection logic is solid. |
-| Best Practices | 91 | ⚠️ Skill hardcodes "exec-assist agent" reference; assumes agent exists. Should be softer dependency. |
-| General QA | 92 | Version 0.1.0 appropriate. Hook timeout 5s is suitable. Dependencies (jq, gh) are documented. |
+| Category         | Score | Notes                                                                                                |
+| :--------------- | ----: | :--------------------------------------------------------------------------------------------------- |
+| Simplicity       |    91 | Plugin combines hook detection + skill workflow. Good separation of concerns.                        |
+| Flexibility      |    94 | Multiple trigger patterns (file naming + explicit marker). Config via skill is intuitive.            |
+| Usability        |    92 | Word-vomit skill is well-structured. Categories are clear. Workflow is documented.                   |
+| Documentation    |    94 | README and SKILL.md are thorough. Examples in skill are practical. Quality standards are explicit.   |
+| Security         |    96 | No security concerns. Hook only reads files and injects system messages. No privileged operations.   |
+| Pattern Matching |    93 | PostToolUse hook pattern is correct. File detection logic is solid.                                  |
+| Best Practices   |    91 | ⚠️ Skill hardcodes "exec-assist agent" reference; assumes agent exists. Should be softer dependency. |
+| General QA       |    92 | Version 0.1.0 appropriate. Hook timeout 5s is suitable. Dependencies (jq, gh) are documented.        |
 
 > ✅ All categories ≥85% — Ready to merge
 

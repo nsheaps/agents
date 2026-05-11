@@ -20,12 +20,12 @@ The evidence suggests a viable architecture using `fyne.io/systray` for menu bar
 
 **Confidence: High**
 
-| Library | Stars | Last Commit | Open Issues | CGO | Recommendation |
-|---------|-------|-------------|-------------|-----|----------------|
-| [getlantern/systray](https://github.com/getlantern/systray) | 3,663 | Jul 2024 | 111 | Yes | Legacy — avoid for new projects |
-| [fyne.io/systray](https://github.com/fyne-io/systray) | 328 | Feb 2026 | 14 | Yes | **Recommended** |
-| [energye/systray](https://github.com/energye/systray) | 162 | Jan 2026 | 5 | Yes | Emerging alternative |
-| [fyne.io/fyne](https://github.com/fyne-io/fyne) (full) | — | Active | — | Yes | Overkill for tray-only |
+| Library                                                     | Stars | Last Commit | Open Issues | CGO | Recommendation                  |
+| ----------------------------------------------------------- | ----- | ----------- | ----------- | --- | ------------------------------- |
+| [getlantern/systray](https://github.com/getlantern/systray) | 3,663 | Jul 2024    | 111         | Yes | Legacy — avoid for new projects |
+| [fyne.io/systray](https://github.com/fyne-io/systray)       | 328   | Feb 2026    | 14          | Yes | **Recommended**                 |
+| [energye/systray](https://github.com/energye/systray)       | 162   | Jan 2026    | 5           | Yes | Emerging alternative            |
+| [fyne.io/fyne](https://github.com/fyne-io/fyne) (full)      | —     | Active      | —           | Yes | Overkill for tray-only          |
 
 ### Why fyne.io/systray
 
@@ -115,13 +115,13 @@ const plistTemplate = `<?xml version="1.0" encoding="UTF-8"?>
 
 ### Installing and Managing the Service
 
-| Operation | Modern (10.10+) | Legacy |
-|-----------|----------------|--------|
-| Load | `launchctl bootstrap gui/{UID} {plist}` | `launchctl load {plist}` |
-| Unload | `launchctl bootout gui/{UID} {plist}` | `launchctl unload {plist}` |
-| Start | `launchctl kickstart -kp gui/{UID}/{label}` | `launchctl start {label}` |
-| Stop | `launchctl stop gui/{UID}/{label}` | `launchctl stop {label}` |
-| Status | `launchctl print gui/{UID}/{label}` | `launchctl list \| grep {label}` |
+| Operation | Modern (10.10+)                             | Legacy                           |
+| --------- | ------------------------------------------- | -------------------------------- |
+| Load      | `launchctl bootstrap gui/{UID} {plist}`     | `launchctl load {plist}`         |
+| Unload    | `launchctl bootout gui/{UID} {plist}`       | `launchctl unload {plist}`       |
+| Start     | `launchctl kickstart -kp gui/{UID}/{label}` | `launchctl start {label}`        |
+| Stop      | `launchctl stop gui/{UID}/{label}`          | `launchctl stop {label}`         |
+| Status    | `launchctl print gui/{UID}/{label}`         | `launchctl list \| grep {label}` |
 
 **Getting UID**: `os/user.Current().Uid`
 
@@ -152,11 +152,11 @@ defer cancel()
 
 **Confidence: High**
 
-| Approach | Complexity | Dependencies | Env Var Support | Recommended |
-|----------|-----------|--------------|-----------------|-------------|
-| Plain YAML (`gopkg.in/yaml.v3`) | Very low | 1 | Manual | MVP |
-| [koanf](https://github.com/knadh/koanf) | Low | 2-3 (modular) | Built-in | v2 |
-| [viper](https://github.com/spf13/viper) | High | Many | Built-in | Avoid — overkill |
+| Approach                                | Complexity | Dependencies  | Env Var Support | Recommended      |
+| --------------------------------------- | ---------- | ------------- | --------------- | ---------------- |
+| Plain YAML (`gopkg.in/yaml.v3`)         | Very low   | 1             | Manual          | MVP              |
+| [koanf](https://github.com/knadh/koanf) | Low        | 2-3 (modular) | Built-in        | v2               |
+| [viper](https://github.com/spf13/viper) | High       | Many          | Built-in        | Avoid — overkill |
 
 ### Why Plain YAML First
 
@@ -258,13 +258,13 @@ json.Unmarshal(stdout.Bytes(), &result)
 
 ### Existing Tools
 
-| Tool | Tech | Menu Bar | Auto-Update | CLI | Status |
-|------|------|----------|-------------|-----|--------|
-| [homebrew-autoupdate](https://github.com/DomT4/homebrew-autoupdate) | Shell + launchd | Notifications only | Yes | `brew autoupdate` | Community-maintained |
-| [Cork](https://github.com/buresdv/Cork) | SwiftUI + AppKit | Yes | Yes | No | Active, paid binaries |
-| [BrewMate](https://github.com/romankurnovskii/BrewMate) | Electron | Limited | No | No | Active |
-| [Applite](https://github.com/milanvarady/Applite) | Native macOS | No | No | No | Active |
-| **brew-auto-maintenance** | **Go** | **Yes** | **Yes** | **Yes** | **Proposed** |
+| Tool                                                                | Tech             | Menu Bar           | Auto-Update | CLI               | Status                |
+| ------------------------------------------------------------------- | ---------------- | ------------------ | ----------- | ----------------- | --------------------- |
+| [homebrew-autoupdate](https://github.com/DomT4/homebrew-autoupdate) | Shell + launchd  | Notifications only | Yes         | `brew autoupdate` | Community-maintained  |
+| [Cork](https://github.com/buresdv/Cork)                             | SwiftUI + AppKit | Yes                | Yes         | No                | Active, paid binaries |
+| [BrewMate](https://github.com/romankurnovskii/BrewMate)             | Electron         | Limited            | No          | No                | Active                |
+| [Applite](https://github.com/milanvarady/Applite)                   | Native macOS     | No                 | No          | No                | Active                |
+| **brew-auto-maintenance**                                           | **Go**           | **Yes**            | **Yes**     | **Yes**           | **Proposed**          |
 
 ### Market Gap
 
@@ -342,11 +342,11 @@ Consider [cobra](https://github.com/spf13/cobra) for subcommand parsing if compl
 
 ### Build Strategy
 
-| Target | CGO | Cross-compile | Distribution |
-|--------|-----|---------------|-------------|
-| CLI commands | No | Yes (Linux/macOS/Windows) | Homebrew formula |
-| Tray app | Yes (systray) | macOS only | Homebrew formula or cask |
-| Combined binary | Yes | macOS only | Homebrew formula |
+| Target          | CGO           | Cross-compile             | Distribution             |
+| --------------- | ------------- | ------------------------- | ------------------------ |
+| CLI commands    | No            | Yes (Linux/macOS/Windows) | Homebrew formula         |
+| Tray app        | Yes (systray) | macOS only                | Homebrew formula or cask |
+| Combined binary | Yes           | macOS only                | Homebrew formula         |
 
 **Practical recommendation**: Ship a single macOS-only binary with CGO. Cross-platform CLI can be a future goal by splitting `cmd/` into two binaries.
 
@@ -374,23 +374,27 @@ brews:
 ## Recommended Implementation Phases
 
 ### Phase 1: CLI Foundation
+
 - `internal/brew/` — exec wrapper, outdated/update/upgrade
 - `internal/config/` — plain YAML config
 - `cmd/brew-auto-maintenance/` — `check`, `upgrade` subcommands
 - No CGO, no tray, cross-compilable
 
 ### Phase 2: launchd Service
+
 - `internal/launchd/` — plist generation, service management
 - `service install/start/stop/status` subcommands
 - Background periodic checks via `StartInterval`
 
 ### Phase 3: Menu Bar
+
 - `internal/tray/` — systray setup, icon management
 - `tray` subcommand
 - Show update count badge, quick-upgrade from menu
 - Requires CGO, macOS only
 
 ### Phase 4: Polish
+
 - Notifications (macOS native via `osascript` or [go-toast](https://github.com/nickkadams/go-toast))
 - GoReleaser + Homebrew tap distribution
 - Notarization for non-developer machines
@@ -399,15 +403,15 @@ brews:
 
 ## Confidence Levels
 
-| Finding | Confidence |
-|---------|------------|
-| fyne.io/systray is the best choice for new macOS tray apps | **High** — active maintenance, clean API, drop-in getlantern replacement |
-| All Go systray libraries require CGO | **High** — verified across all four options |
-| text/template + os/exec sufficient for launchd | **High** — no wrapper library exists, stdlib approach is standard |
-| Plain YAML sufficient for MVP config | **High** — 5-10 keys doesn't justify viper/koanf |
-| No existing Go-based brew tray tool | **High** — exhaustive search found Swift, Electron, shell — no Go |
-| Single binary subcommand pattern is viable | **High** — standard Go pattern, well-documented |
-| brew outdated --json=v2 is the correct JSON flag | **Medium-High** — v1 confirmed deprecated, v2 structure not fully documented |
+| Finding                                                    | Confidence                                                                   |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| fyne.io/systray is the best choice for new macOS tray apps | **High** — active maintenance, clean API, drop-in getlantern replacement     |
+| All Go systray libraries require CGO                       | **High** — verified across all four options                                  |
+| text/template + os/exec sufficient for launchd             | **High** — no wrapper library exists, stdlib approach is standard            |
+| Plain YAML sufficient for MVP config                       | **High** — 5-10 keys doesn't justify viper/koanf                             |
+| No existing Go-based brew tray tool                        | **High** — exhaustive search found Swift, Electron, shell — no Go            |
+| Single binary subcommand pattern is viable                 | **High** — standard Go pattern, well-documented                              |
+| brew outdated --json=v2 is the correct JSON flag           | **Medium-High** — v1 confirmed deprecated, v2 structure not fully documented |
 
 ---
 
@@ -423,6 +427,7 @@ brews:
 ## Sources
 
 ### System Tray
+
 - [getlantern/systray](https://github.com/getlantern/systray) — 3.6k stars, Jul 2024
 - [fyne-io/systray](https://github.com/fyne-io/systray) — 328 stars, Feb 2026
 - [energye/systray](https://github.com/energye/systray) — 162 stars, Jan 2026
@@ -431,6 +436,7 @@ brews:
 - [Bundling, signing, and notarizing Go apps](https://g3rv4.com/2019/06/bundling-signing-notarizing-go-application)
 
 ### launchd
+
 - [Create and manage MacOS LaunchAgents using Go](https://ieftimov.com/posts/create-manage-macos-launchd-agents-golang/)
 - [launchd Tutorial](https://www.launchd.info/)
 - [Apple: Creating Launch Daemons and Agents](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPSystemStartup/Chapters/CreatingLaunchdJobs.html)
@@ -438,22 +444,26 @@ brews:
 - [DHowett/go-plist](https://github.com/DHowett/go-plist) — Pure Go plist encoder
 
 ### Configuration
+
 - [knadh/koanf](https://github.com/knadh/koanf) — Lightweight config library
 - [koanf vs Viper comparison](https://github.com/knadh/koanf/wiki/Comparison-with-spf13-viper)
 - [Apple: Where to Put Application Files](https://developer.apple.com/library/archive/documentation/MacOSX/Conceptual/BPFileSystem/Articles/WhereToPutFiles.html)
 
 ### Homebrew Integration
+
 - [Homebrew JSON API Documentation](https://formulae.brew.sh/docs/api/)
 - [Go os/exec Package](https://pkg.go.dev/os/exec)
 - [Go context timeout patterns](https://golangbot.com/context-timeout-cancellation/)
 
 ### Prior Art
+
 - [DomT4/homebrew-autoupdate](https://github.com/DomT4/homebrew-autoupdate) — Shell-based auto-update
 - [buresdv/Cork](https://github.com/buresdv/Cork) — SwiftUI brew GUI
 - [romankurnovskii/BrewMate](https://github.com/romankurnovskii/BrewMate) — Electron brew manager
 - [milanvarady/Applite](https://github.com/milanvarady/Applite) — Native macOS cask manager
 
 ### Project Structure
+
 - [golang-standards/project-layout](https://github.com/golang-standards/project-layout)
 - [GoReleaser Homebrew integration](https://goreleaser.com/customization/homebrew/)
 - [Go CGO cross-compilation](https://ecostack.dev/posts/go-and-cgo-cross-compilation/)

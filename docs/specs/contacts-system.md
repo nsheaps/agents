@@ -15,6 +15,7 @@ tags:
   - discovery
   - multi-agent
 ---
+
 # Contacts System
 
 ## Problem Statement

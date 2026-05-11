@@ -1,28 +1,29 @@
 # PR Review: ai-mktpl#187 (v2 Re-review)
+
 **Score**: 95/100 ✅
 **Verdict**: Ready to merge
 **Previous**: 93/100 (had merge conflict) → 95/100
 
 ## Fix Verification
 
-| Finding | Status | Notes |
-|:--------|:-------|:------|
+| Finding                 | Status   | Notes                                                                                                                                                                                                                                                                         |
+| :---------------------- | :------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Merge conflict resolved | ✅ Fixed | The diff applies cleanly. The `docs/specs/draft/claude-team-cli.md` is a new file (new file mode) — no conflict markers present. The diff is a pure addition of 591 lines with no `<<<<<<`, `=======`, or `>>>>>>>` markers anywhere in the file. Merge conflict is resolved. |
 
 1 of 1 tracked fix verified.
 
 ## Category Scores
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Correctness & Logic | 93 | 95 | ✅ |
-| Security | 93 | 95 | ✅ |
-| Error Handling | 93 | 95 | ✅ |
-| Code Quality & Style | 94 | 95 | ✅ |
-| Documentation | 95 | 96 | ✅ |
-| Testing | 88 | 90 | ✅ |
-| Dependencies | 95 | 96 | ✅ |
-| Spec Compliance | 93 | 98 | ✅ |
+| Category             |  v1 |  v2 | Status |
+| :------------------- | --: | --: | :----- |
+| Correctness & Logic  |  93 |  95 | ✅     |
+| Security             |  93 |  95 | ✅     |
+| Error Handling       |  93 |  95 | ✅     |
+| Code Quality & Style |  94 |  95 | ✅     |
+| Documentation        |  95 |  96 | ✅     |
+| Testing              |  88 |  90 | ✅     |
+| Dependencies         |  95 |  96 | ✅     |
+| Spec Compliance      |  93 |  98 | ✅     |
 
 ## Remaining / New Findings
 

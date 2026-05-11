@@ -1,15 +1,15 @@
 ## Review: ai-mktpl#184 — git-spice push rejection hook — Score: 94/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 92 | Hook script is readable; logic is straightforward but has several exit conditions. |
-| Flexibility | 94 | Configuration via gs commands; no hard-coded rules. Allows operator control. |
-| Usability | 93 | Clear error message instructs user on correct workflow (gs stack submit). |
-| Documentation | 94 | Hook description and script comments are good. README could be more explicit on why this matters. |
-| Security | 96 | ⚠️ Minor: no validation of branch names (but grep is safe). Script runs as user. |
-| Pattern Matching | 94 | Follows PreToolUse hook pattern correctly. JSON input parsing via jq is appropriate. |
-| Best Practices | 92 | ⚠️ Multiple exit conditions (0) without validation that gs is tracking the branch. See finding. |
-| General QA | 93 | Version bump (0.1.0 → 0.2.0) is appropriate for new feature hook. |
+| Category         | Score | Notes                                                                                             |
+| :--------------- | ----: | :------------------------------------------------------------------------------------------------ |
+| Simplicity       |    92 | Hook script is readable; logic is straightforward but has several exit conditions.                |
+| Flexibility      |    94 | Configuration via gs commands; no hard-coded rules. Allows operator control.                      |
+| Usability        |    93 | Clear error message instructs user on correct workflow (gs stack submit).                         |
+| Documentation    |    94 | Hook description and script comments are good. README could be more explicit on why this matters. |
+| Security         |    96 | ⚠️ Minor: no validation of branch names (but grep is safe). Script runs as user.                  |
+| Pattern Matching |    94 | Follows PreToolUse hook pattern correctly. JSON input parsing via jq is appropriate.              |
+| Best Practices   |    92 | ⚠️ Multiple exit conditions (0) without validation that gs is tracking the branch. See finding.   |
+| General QA       |    93 | Version bump (0.1.0 → 0.2.0) is appropriate for new feature hook.                                 |
 
 > ✅ All categories ≥85% — Ready to merge
 

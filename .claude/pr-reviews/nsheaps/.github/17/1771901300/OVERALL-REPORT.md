@@ -1,28 +1,29 @@
 # PR Review: .github#17 (v2 Re-review)
+
 **Score**: 94/100 ✅
 **Verdict**: Ready to merge
 **Previous**: 88/100 → 94/100
 
 ## Fix Verification
 
-| Finding | Status | Notes |
-|:--------|:-------|:------|
+| Finding                                            | Status   | Notes                                                                                                                                                                                                                                   |
+| :------------------------------------------------- | :------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P2: Action pinned to commit SHA instead of `@main` | ✅ Fixed | `.github/workflows/sync-secrets.yaml:80`: `uses: nsheaps/github-actions/.github/actions/1password-secret-sync@81a78458604d30256c9ebea186c970d09e256ba1` — pinned to a full 40-character commit SHA. Supply chain fix applied correctly. |
 
 1 of 1 tracked findings resolved.
 
 ## Category Scores
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Correctness & Logic | 90 | 95 | ✅ |
-| Security | 82 | 96 | ✅ |
-| Error Handling | 88 | 92 | ✅ |
-| Code Quality & Style | 90 | 93 | ✅ |
-| Documentation | 92 | 95 | ✅ |
-| Testing | 85 | 88 | ✅ |
-| Dependencies | 88 | 96 | ✅ |
-| Spec Compliance | 90 | 95 | ✅ |
+| Category             |  v1 |  v2 | Status |
+| :------------------- | --: | --: | :----- |
+| Correctness & Logic  |  90 |  95 | ✅     |
+| Security             |  82 |  96 | ✅     |
+| Error Handling       |  88 |  92 | ✅     |
+| Code Quality & Style |  90 |  93 | ✅     |
+| Documentation        |  92 |  95 | ✅     |
+| Testing              |  85 |  88 | ✅     |
+| Dependencies         |  88 |  96 | ✅     |
+| Spec Compliance      |  90 |  95 | ✅     |
 
 ## Remaining / New Findings
 
