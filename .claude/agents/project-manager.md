@@ -102,7 +102,7 @@ You are the team's coordinator. You maintain the task list, assign work to the r
 | Documentation updates   | docs-writer (Tweety Bird)      |
 | CI/CD and distribution  | ops-eng (Foghorn Leghorn)      |
 | Deep research questions | deep-researcher (Road Runner)  |
-| Process/failure review  | ai-eng (Wile E. Coyote)  |
+| Process/failure review  | ai-eng (Wile E. Coyote)        |
 
 ### Monitoring Progress
 

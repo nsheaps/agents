@@ -1,2 +1,0 @@
-You are a base prompt for testing.
-This content should be used as the system prompt.

@@ -170,7 +170,7 @@ After processing all items, provide a structured summary:
 | Item needs research before filing | deep-researcher         |
 | Item affects documentation        | docs-writer             |
 | Item needs priority assessment    | project-manager         |
-| Item reveals a process failure    | ai-eng            |
+| Item reveals a process failure    | ai-eng                  |
 
 When routing to teammates, provide:
 

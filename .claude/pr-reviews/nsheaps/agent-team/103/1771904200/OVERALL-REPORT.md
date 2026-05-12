@@ -9,17 +9,17 @@
 
 ## Score Summary
 
-| # | Category | Score | Status |
-|---|----------|-------|--------|
-| 1 | Simplicity | 88 | ✅ |
-| 2 | Flexibility | 85 | ✅ |
-| 3 | Usability | 82 | ⚠️ |
-| 4 | Documentation | 90 | ✅ |
-| 5 | Security | 72 | ⚠️ |
-| 6 | Pattern Matching | 87 | ✅ |
-| 7 | Best Practices | 78 | ⚠️ |
-| 8 | General QA | 76 | ⚠️ |
-| **Overall** | | **82** (capped at 94 due to categories < 85) | ⚠️ |
+| #           | Category         | Score                                        | Status |
+| ----------- | ---------------- | -------------------------------------------- | ------ |
+| 1           | Simplicity       | 88                                           | ✅     |
+| 2           | Flexibility      | 85                                           | ✅     |
+| 3           | Usability        | 82                                           | ⚠️     |
+| 4           | Documentation    | 90                                           | ✅     |
+| 5           | Security         | 72                                           | ⚠️     |
+| 6           | Pattern Matching | 87                                           | ✅     |
+| 7           | Best Practices   | 78                                           | ⚠️     |
+| 8           | General QA       | 76                                           | ⚠️     |
+| **Overall** |                  | **82** (capped at 94 due to categories < 85) | ⚠️     |
 
 **Verdict**: Solid draft spec with a well-scoped MVP and clear phasing. However, several security gaps, ambiguous behaviors, and missing edge case definitions must be addressed before moving to `reviewed/`. The spec is not ready for implementation without the fixes below.
 
@@ -59,13 +59,14 @@
 **Finding QA-2** (P2, Category 8: General QA)
 **File**: `docs/specs/draft/brew-auto-maintenance.md:89-98`
 **Description**: The `service` subcommand defines `install` and `uninstall` but does not specify behavior when:
+
 - `install` is called and the plist already exists (overwrite? error? prompt?)
 - `uninstall` is called and the service is currently running (stop first? error?)
 - `start` is called and the service is not installed
 - The plist file permissions are wrong
 - The binary path in the plist no longer exists (e.g., after a `brew uninstall`)
-**Expected**: Each state transition should have defined behavior.
-**Actual**: Only happy paths are specified.
+  **Expected**: Each state transition should have defined behavior.
+  **Actual**: Only happy paths are specified.
 
 ---
 
@@ -200,4 +201,4 @@ This is a well-structured draft spec that demonstrates clear thinking about scop
 
 ---
 
-*Reviewed by Daffy D (qa) — 2026-02-23*
+_Reviewed by Daffy D (qa) — 2026-02-23_

@@ -1,15 +1,15 @@
 # Review: CI/CD Workflow and Homebrew Distribution — Score: 86/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 83 | Workflow is functional but complex. 122 new lines for update-homebrew job, significant gomplate/shell logic. stdlib.sh adds 59 lines of utility code. Overall necessary but dense. |
-| Flexibility | 82 | Homebrew formula is templated via gomplate (good). Shell script handles both tmux and non-tmux modes. However, no toggle for Homebrew update (always happens on release), and gum dependency is hardcoded. |
-| Usability | 88 | Shell scripts have clear help text. claude-team shows good UX with gum prompts. ct shorthand is convenient. bin/lib/stdlib.sh is well-organized. Dependency on gum/tmux may fail silently if unavailable. |
-| Documentation | 85 | Help text in claude-team (lines 246-287) is comprehensive. stdlib.sh functions are self-documenting. However: no README for bin/ directory, no deployment/distribution documentation. |
-| Security | 78 | Multiple concerns: gomplate downloads from GitHub without hash verification; Homebrew formula auto-install via --dangerously-skip-permissions (line 414); gum/tmux install via check_and_install (line 329) is unsafe in multi-user environments. |
-| Pattern Matching | 84 | Follows existing GitHub Actions patterns. Formula templates align with nsheaps/homebrew-devsetup conventions. Shell scripts use ANSI colors consistently. Minor: release.yaml uses old `qoomon/actions--context` (double dash). |
-| Best Practices | 79 | ci-related improvements to test.yaml (lines 150-163), but no integration tests for claude-team itself. gomplate installation (line 54-56) is manual and fragile. Auto-merge retry logic is sound (lines 118-126) but could be abstracted. |
-| General QA | 86 | claude-team passes basic checks (--help works per line 180). but: no tests for arg parsing, permission handling, or error paths. Homebrew formula has test do block but it's minimal (just --help). |
+| Category         | Score | Notes                                                                                                                                                                                                                                             |
+| :--------------- | ----: | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Simplicity       |    83 | Workflow is functional but complex. 122 new lines for update-homebrew job, significant gomplate/shell logic. stdlib.sh adds 59 lines of utility code. Overall necessary but dense.                                                                |
+| Flexibility      |    82 | Homebrew formula is templated via gomplate (good). Shell script handles both tmux and non-tmux modes. However, no toggle for Homebrew update (always happens on release), and gum dependency is hardcoded.                                        |
+| Usability        |    88 | Shell scripts have clear help text. claude-team shows good UX with gum prompts. ct shorthand is convenient. bin/lib/stdlib.sh is well-organized. Dependency on gum/tmux may fail silently if unavailable.                                         |
+| Documentation    |    85 | Help text in claude-team (lines 246-287) is comprehensive. stdlib.sh functions are self-documenting. However: no README for bin/ directory, no deployment/distribution documentation.                                                             |
+| Security         |    78 | Multiple concerns: gomplate downloads from GitHub without hash verification; Homebrew formula auto-install via --dangerously-skip-permissions (line 414); gum/tmux install via check_and_install (line 329) is unsafe in multi-user environments. |
+| Pattern Matching |    84 | Follows existing GitHub Actions patterns. Formula templates align with nsheaps/homebrew-devsetup conventions. Shell scripts use ANSI colors consistently. Minor: release.yaml uses old `qoomon/actions--context` (double dash).                   |
+| Best Practices   |    79 | ci-related improvements to test.yaml (lines 150-163), but no integration tests for claude-team itself. gomplate installation (line 54-56) is manual and fragile. Auto-merge retry logic is sound (lines 118-126) but could be abstracted.         |
+| General QA       |    86 | claude-team passes basic checks (--help works per line 180). but: no tests for arg parsing, permission handling, or error paths. Homebrew formula has test do block but it's minimal (just --help).                                               |
 
 > ⚠️ Security: 78% — Below 85% threshold
 > ⚠️ Best Practices: 79% — Below 85% threshold
@@ -47,12 +47,12 @@
 4. **Missing error handling for missing gum/tmux** (Usability 88%, Best Practices 79%)
    - File: `bin/lib/stdlib.sh:512-514`
    - If `gum spin` fails partway through install, the script continues silently
-   - Line 513: `gum spin --spinner dot --title "Installing..." -- bash -c "brew install..."` 
+   - Line 513: `gum spin --spinner dot --title "Installing..." -- bash -c "brew install..."`
    - If gum is not installed, command fails but script doesn't exit
    - **Recommendation**: Check for gum/tmux explicitly before attempting interactive features
 
 5. **No tests for claude-team script** (General QA 86%)
-   - File: `.github/workflows/test.yaml` now lints bin/* (good), but no functional tests
+   - File: `.github/workflows/test.yaml` now lints bin/\* (good), but no functional tests
    - Homebrew formula test (line 180) only runs `--help`, doesn't test actual functionality
    - **Missing**: Test `claude-team --mode auto --no-interactive` to verify flags work
    - **Missing**: Test error paths (invalid mode, missing team, etc.)
@@ -97,7 +97,8 @@ This is solid infrastructure work with good UX (claude-team, gum integration). H
 
 The code is not fundamentally broken — it works for the happy path — but security edges need hardening for production use.
 
-**Recommendation**: 
+**Recommendation**:
+
 - **REQUEST CHANGES** on security issues (1-3 above)
 - **Approve** once security fixes are applied
 - **Track separately**: Missing test coverage (issue #XXX) and Homebrew dependency doc (issue #YYY)

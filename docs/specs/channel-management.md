@@ -15,6 +15,7 @@ tags:
   - plugin-system
   - security
 ---
+
 # Channel Management
 
 ## Problem Statement
@@ -35,8 +36,8 @@ server-side `tengu_harbor_ledger` allowlist. Community marketplace plugins (from
    5. Session — is the server listed in `--channels`?
    6. Marketplace — does the installed plugin match the marketplace in the `--channels` tag?
    7. Allowlist — is the plugin on the approved list (unless `entry.dev` is true)?
-   Source: `docs/research/claude-code-channel-source-analysis.md`,
-   `channelNotification.ts` `gateChannelServer()`.
+      Source: `docs/research/claude-code-channel-source-analysis.md`,
+      `channelNotification.ts` `gateChannelServer()`.
 
 2. **GrowthBook ledger disk-cache bypass**: The `tengu_harbor_ledger` is stored in
    `~/.claude.json` under `cachedGrowthBookFeatures`. Writing to it directly before
@@ -54,14 +55,14 @@ server-side `tengu_harbor_ledger` allowlist. Community marketplace plugins (from
 4. **6-hour refresh risk**: GrowthBook network refreshes every 6 hours for non-ant
    users, overwriting the disk cache with server values. Re-running the injection at
    session startup (before `claude` is invoked) is sufficient mitigation because the
-   disk cache is only the fallback for the *next* restart — in-memory values take over
+   disk cache is only the fallback for the _next_ restart — in-memory values take over
    for the current session once GrowthBook refreshes in-memory.
    Source: `docs/research/growthbook-cache-bypass.md`.
 
 5. **Entries currently injected** (as of 2026-04-07):
    - `{"marketplace": "ai-mktpl", "plugin": "discord"}`
    - `{"marketplace": "ai-mktpl", "plugin": "telegram"}`
-   Source: `docs/research/growthbook-injection-implementation.md`.
+     Source: `docs/research/growthbook-injection-implementation.md`.
 
 6. **Telegram fallback**: `bin/agent` prefers `plugin:telegram@ai-mktpl` if the plugin
    directory exists, falls back to `plugin:telegram@claude-plugins-official`.

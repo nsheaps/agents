@@ -55,17 +55,17 @@ claude-team team create --team-name my-project-team \
 
 #### Flags
 
-| Flag                | Type   | Default               | Description                                                |
-| :------------------ | :----- | :-------------------- | :--------------------------------------------------------- |
-| `--team-name`       | string | (prompted)            | Team identifier (kebab-case)                               |
-| `--description`     | string | (prompted)            | Human-readable team description                            |
-| `--template`        | string | `"default"`           | Base template from `templates/teams/`, or `none` for empty team |
-| `--output-dir`      | string | `"templates/teams/"`  | Directory to create the team in (relative to project root) |
-| `--no-personas`     | bool   | `false`               | Skip creating persona files                                |
-| `--model`           | string | `"claude-opus-4-6"`   | Default model for team agents                              |
-| `--permission-mode` | string | `"default"`           | Default permission mode for team agents (see §2.2 note)    |
-| `--teammate-mode`   | string | `"auto"`              | Teammate display mode (auto, in-process, tmux)             |
-| `--framework`       | string | `"claude-code"`       | Agent framework (only claude-code supported currently)     |
+| Flag                | Type   | Default              | Description                                                     |
+| :------------------ | :----- | :------------------- | :-------------------------------------------------------------- |
+| `--team-name`       | string | (prompted)           | Team identifier (kebab-case)                                    |
+| `--description`     | string | (prompted)           | Human-readable team description                                 |
+| `--template`        | string | `"default"`          | Base template from `templates/teams/`, or `none` for empty team |
+| `--output-dir`      | string | `"templates/teams/"` | Directory to create the team in (relative to project root)      |
+| `--no-personas`     | bool   | `false`              | Skip creating persona files                                     |
+| `--model`           | string | `"claude-opus-4-6"`  | Default model for team agents                                   |
+| `--permission-mode` | string | `"default"`          | Default permission mode for team agents (see §2.2 note)         |
+| `--teammate-mode`   | string | `"auto"`             | Teammate display mode (auto, in-process, tmux)                  |
+| `--framework`       | string | `"claude-code"`      | Agent framework (only claude-code supported currently)          |
 
 #### Interactive Flow
 
@@ -255,13 +255,13 @@ Start your session by reading the files in .claude/docs/.
 
 #### Error Handling
 
-| Condition                                 | Behavior                                              |
-| :---------------------------------------- | :---------------------------------------------------- |
+| Condition                                    | Behavior                                                                      |
+| :------------------------------------------- | :---------------------------------------------------------------------------- |
 | Agent name already exists (no `--overwrite`) | Error: "Agent '{name}' already exists at {path}. Use --overwrite to replace." |
-| Agent name already exists (`--overwrite`)    | Warning: "Overwriting existing agent at {path}". Proceeds. |
-| Invalid name (not kebab-case)             | Error: "Agent name must be kebab-case: {suggestion}"  |
-| `.claude/agents/` directory doesn't exist | Create it automatically                               |
-| Invalid permission mode                   | Error: "Invalid permission mode. Valid: default, ..." |
+| Agent name already exists (`--overwrite`)    | Warning: "Overwriting existing agent at {path}". Proceeds.                    |
+| Invalid name (not kebab-case)                | Error: "Agent name must be kebab-case: {suggestion}"                          |
+| `.claude/agents/` directory doesn't exist    | Create it automatically                                                       |
+| Invalid permission mode                      | Error: "Invalid permission mode. Valid: default, ..."                         |
 
 ---
 

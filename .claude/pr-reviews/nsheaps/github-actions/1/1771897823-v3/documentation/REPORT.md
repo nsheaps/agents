@@ -36,7 +36,7 @@ The scanning constraint is now documented and discoverable by users reading eith
 
 **Status: STILL PRESENT**
 
-Evidence: `root-readme-v3.md` lines 94–107 show the `arcane-deploy` entry. Despite the v2 report noting this as a required fix before merge, the v3 source shows NO outputs section under `arcane-deploy`. 
+Evidence: `root-readme-v3.md` lines 94–107 show the `arcane-deploy` entry. Despite the v2 report noting this as a required fix before merge, the v3 source shows NO outputs section under `arcane-deploy`.
 
 Compare this to the `github-app-auth` entry (lines 21–26) which explicitly lists outputs:
 
@@ -89,12 +89,12 @@ However, the actual implementation accepts both inputs simultaneously and combin
 
 ## Summary
 
-| Finding | Previous Severity | Status           |
-| ------- | ----------------- | ---------------- |
-| H4      | High              | FIXED (v2)       |
-| H6      | High              | FIXED (v2)       |
-| M8      | Medium            | FIXED (v3) ✓     |
-| L4      | Low               | FIXED (v2)       |
+| Finding | Previous Severity | Status            |
+| ------- | ----------------- | ----------------- |
+| H4      | High              | FIXED (v2)        |
+| H6      | High              | FIXED (v2)        |
+| M8      | Medium            | FIXED (v3) ✓      |
+| L4      | Low               | FIXED (v2)        |
 | L10     | Low               | STILL PRESENT     |
 | L11     | Low               | STILL PRESENT     |
 | N1      | Low (new)         | STILL PRESENT     |

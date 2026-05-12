@@ -1,29 +1,30 @@
 # PR Review: ai-mktpl#186 (v2 Re-review)
+
 **Score**: 84/100 ⚠️
 **Verdict**: Fix then merge
 **Previous**: 75/100 → 84/100
 
 ## Fix Verification
 
-| Finding | Status | Notes |
-|:--------|:-------|:------|
-| P2: Empty `"matcher": ""` on PostToolUseFailure hook fixed | ❌ NOT Fixed | `plugins/skill-required/hooks/hooks.json` lines 122-131 still has `"matcher": ""` on the PreToolUse hook. The diff adds this file new. The fix for PostToolUseFailure in another plugin may have been addressed, but this NEW plugin introduces the same pattern. |
+| Finding                                                                 | Status            | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
+| :---------------------------------------------------------------------- | :---------------- | :------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| P2: Empty `"matcher": ""` on PostToolUseFailure hook fixed              | ❌ NOT Fixed      | `plugins/skill-required/hooks/hooks.json` lines 122-131 still has `"matcher": ""` on the PreToolUse hook. The diff adds this file new. The fix for PostToolUseFailure in another plugin may have been addressed, but this NEW plugin introduces the same pattern.                                                                                                                                                                                                                                                                |
 | P2: Unguarded glob `*.json` under `set -euo pipefail` now uses nullglob | ✅ Verified (N/A) | The diff for ai-mktpl#186 contains `.ai/rules/file-placement.md`, `.claude-plugin/marketplace.json`, `.claude/skills/code-review/SKILL.md`, `docs/specs/draft/agent-representation.md`, and `plugins/skill-required/`. No glob patterns under `set -euo pipefail` are present in the skill-required hooks scripts. The original glob fix is not visible in this diff — either it was in a different file addressed separately, or the diff is partial. The skill-required scripts use `for i in $(seq ...)` patterns, not globs. |
 
 Fix verification: 1 out of 2 tracked fixes confirmed. The empty matcher issue persists in new code.
 
 ## Category Scores
 
-| Category | v1 | v2 | Status |
-|:---------|---:|---:|:-------|
-| Correctness & Logic | 78 | 82 | ⚠️ |
-| Security | 72 | 80 | ⚠️ |
-| Error Handling | 75 | 82 | ⚠️ |
-| Code Quality & Style | 78 | 85 | ✅ |
-| Documentation | 80 | 88 | ✅ |
-| Testing | 65 | 72 | ⚠️ |
-| Dependencies | 78 | 85 | ✅ |
-| Spec Compliance | 72 | 88 | ✅ |
+| Category             |  v1 |  v2 | Status |
+| :------------------- | --: | --: | :----- |
+| Correctness & Logic  |  78 |  82 | ⚠️     |
+| Security             |  72 |  80 | ⚠️     |
+| Error Handling       |  75 |  82 | ⚠️     |
+| Code Quality & Style |  78 |  85 | ✅     |
+| Documentation        |  80 |  88 | ✅     |
+| Testing              |  65 |  72 | ⚠️     |
+| Dependencies         |  78 |  85 | ✅     |
+| Spec Compliance      |  72 |  88 | ✅     |
 
 ## Remaining / New Findings
 

@@ -16,6 +16,7 @@ tags:
   - interface
   - management
 ---
+
 # Agent Web Interface
 
 ## Problem Statement
@@ -31,12 +32,14 @@ diffs, task history).
 Two components:
 
 ### agents-api (backend)
+
 - REST/GraphQL API serving agent state, transcripts, task history, PR/issue data
 - Agents query this via MCP tools or skills — replaces manual transcript parsing and gh CLI calls
 - Source of truth for cross-agent state (who's working on what, sub-agent message IDs, etc.)
 - Aggregates data from: GitHub API, Discord/Telegram channels, agent transcripts, task databases
 
 ### agent-web / agent-ui (frontend)
+
 - Web interface consuming agents-api
 - Real-time updates via WebSocket/SSE
 - Replaces Telegram/terminal for non-urgent agent management

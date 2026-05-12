@@ -1,15 +1,15 @@
 # Review: Default Team Template — Score: 92/100
 
-| Category | Score | Notes |
-|:---------|------:|:------|
-| Simplicity | 94 | Clean YAML structure, consistent persona format. Minimal files (9 total), each focused. |
-| Flexibility | 90 | Template system allows customization, but directory structure is rigid (always templates/teams/). No option for alternative layouts. |
-| Usability | 92 | Personas provide clear guidance; system messages are practical and concise. Role descriptions are consistent and actionable. |
-| Documentation | 94 | README clearly explains purpose, files, and next steps. Persona files are well-structured with Identity/Traits/Style/Voice sections. |
-| Security | 95 | No secrets exposed, no shell injection vectors, no dangerous permissions. Baseline security solid. |
-| Pattern Matching | 88 | Follows existing looney-toons template structure well. Minor: persona files lack headers with metadata (author, date, version). |
-| Best Practices | 90 | Conventional YAML formatting, consistent markdown structure. No overcomplicated features. However, team.yaml references persona: personas/orchestrator.md without verifying paths exist at init. |
-| General QA | 92 | All 9 roles present and correct. Personas align with role responsibilities. Settings use sensible defaults (claude-opus-4-6, bypassPermissions). |
+| Category         | Score | Notes                                                                                                                                                                                            |
+| :--------------- | ----: | :----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Simplicity       |    94 | Clean YAML structure, consistent persona format. Minimal files (9 total), each focused.                                                                                                          |
+| Flexibility      |    90 | Template system allows customization, but directory structure is rigid (always templates/teams/). No option for alternative layouts.                                                             |
+| Usability        |    92 | Personas provide clear guidance; system messages are practical and concise. Role descriptions are consistent and actionable.                                                                     |
+| Documentation    |    94 | README clearly explains purpose, files, and next steps. Persona files are well-structured with Identity/Traits/Style/Voice sections.                                                             |
+| Security         |    95 | No secrets exposed, no shell injection vectors, no dangerous permissions. Baseline security solid.                                                                                               |
+| Pattern Matching |    88 | Follows existing looney-toons template structure well. Minor: persona files lack headers with metadata (author, date, version).                                                                  |
+| Best Practices   |    90 | Conventional YAML formatting, consistent markdown structure. No overcomplicated features. However, team.yaml references persona: personas/orchestrator.md without verifying paths exist at init. |
+| General QA       |    92 | All 9 roles present and correct. Personas align with role responsibilities. Settings use sensible defaults (claude-opus-4-6, bypassPermissions).                                                 |
 
 > ✅ All categories ≥85% — Ready to merge
 

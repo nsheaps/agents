@@ -1,3 +1,9 @@
+- If we're going to support multiple agent harnesses, agent-stream needs to be able to have a reference to the session within a specific harness... maybe like `claude-cli://session/{session_id}` or something (claude has the deep links defined already)?
+  - We should have a plugin for each agent harness that we support, and use ReadMcpResourceTool if we want to read transcripts?
+- if the agent has to call ListMcpResourcesTool to find the resources an mcp server supports, how will it know to use one from a specific mcp server? Is there no generic one? Perhaps we can provide a generic tool that is aware of all other MCP servers and their resources, and can route the request to the right one based on some convention in the resource name? Eg `claude-code://session/{session_id}` or `agent-team://{team_name}/config` or something like that. The tool can parse the resource name, determine which MCP server it belongs to, and then call ListMcpResourcesTool with the appropriate server identifier.
+- we should bring the incident-tracking plugin back, and have it be generic for "tracking a regression and it's fix and a retrospective" and for all behavior issue we'll have an (behavior) incident to track it. Any time it happens again, we'll forward the info into that incident. Maybe support multiple incident providers, including a file based one.
+- # How do we share contacts? 1pass backend? network volume? remote api? should all agents have all the same contacts?
+  # stuff below here is old
 - can claude write a .claude/agents/xxx.md and then immediately launch an agent with subagent-type xxx without restarting? Is it aware of it as something it can use? If so, can/should it modify them as it launches for any runtime info?
 - Can/should it start from least privelidge security, and then maybe have another team member that deems if it's safe or not?
 

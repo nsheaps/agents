@@ -22,6 +22,7 @@ Score rationale: N1 is now fixed with explicit validation at lines 376-380. This
 ## N1 Finding — Status Update
 
 ### N1 (Medium): AUTO_SYNC not validated as JSON boolean
+
 **Status: FIXED**
 
 **File**: `action.sh:376-380`
@@ -45,6 +46,7 @@ This validation is positioned BEFORE the first use of AUTO_SYNC with `--argjson`
 All findings listed below remain present in v3 with no changes detected.
 
 ### M3 (Medium): Temp files not cleaned up on signals (no trap)
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:66`
@@ -58,6 +60,7 @@ The `arcane_api()` function uses `mktemp` at line 66 and cleans up via `rm -f "$
 ---
 
 ### M4 (Medium): sync_name_from_path collisions on multi-level dirs
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:162-178`
@@ -99,6 +102,7 @@ Both paths collide to the same sync name despite being in different subtrees.
 ---
 
 ### M5 (Medium): No deduplication of compose files
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:119-156`
@@ -108,7 +112,7 @@ The `discover_compose_files()` function appends files from two sources to the sa
 ```bash
 discover_compose_files() {
   local files=()
-  
+
   # From explicit list
   if [[ -n "${COMPOSE_FILES_INPUT}" ]]; then
     while IFS= read -r file; do
@@ -117,7 +121,7 @@ discover_compose_files() {
       files+=("${file}")
     done <<< "${COMPOSE_FILES_INPUT}"
   fi
-  
+
   # From directory scan
   if [[ -n "${COMPOSE_DIR}" ]]; then
     # ... scan and append ...
@@ -126,7 +130,7 @@ discover_compose_files() {
       files+=("${rel_path}")
     done < <(find ... -print0 | sort -z)
   fi
-  
+
   printf '%s\n' "${files[@]}"
 }
 ```
@@ -141,6 +145,7 @@ A file specified explicitly in `compose-files` that is also discovered by the di
 ---
 
 ### M7 (Medium): auth-type: none still sends empty token in create payload
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:212-217`
@@ -160,7 +165,7 @@ create_payload=$(jq -n \
 When `AUTH_TYPE` is `none`, `GIT_TOKEN` is an empty string, resulting in:
 
 ```json
-{"name":"...","url":"...","authType":"none","token":""}
+{ "name": "...", "url": "...", "authType": "none", "token": "" }
 ```
 
 The update path (lines 198-207) correctly guards this with `if [[ "${AUTH_TYPE}" == "http" && -n "${GIT_TOKEN}" ]]`, but the create path does not.
@@ -172,6 +177,7 @@ The update path (lines 198-207) correctly guards this with `if [[ "${AUTH_TYPE}"
 ---
 
 ### M14 (Medium): No tests, no shellcheck
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh` (entire script)
@@ -191,6 +197,7 @@ No test files are present in the PR. The GitHub Actions workflow does not includ
 ---
 
 ### L5 (Low): REPOSITORY_ID as mutable global state
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:27`
@@ -203,6 +210,7 @@ No test files are present in the PR. The GitHub Actions workflow does not includ
 ---
 
 ### L12 (Low): existing_syncs stale after first upsert in loop
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:400, 408, 412, 420`
@@ -216,6 +224,7 @@ No test files are present in the PR. The GitHub Actions workflow does not includ
 ---
 
 ### L14 (Low): GITHUB_WORKSPACE fallback undocumented
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:133`
@@ -235,6 +244,7 @@ The action's YAML file does not document this variable as a requirement or docum
 ---
 
 ### N2 (Low): trigger-sync failure silently suppressed
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:303`
@@ -251,6 +261,7 @@ The `|| true` is intentional (sync trigger is non-blocking by design), but the a
 ---
 
 ### N3 (Low): GITHUB_ENV and GITHUB_OUTPUT used without existence check
+
 **Status: STILL PRESENT**
 
 **File**: `action.sh:341, 425-427`
@@ -271,14 +282,14 @@ Both `GITHUB_ENV` and `GITHUB_OUTPUT` are set by the GitHub Actions runner. If e
 
 ## Score Summary
 
-| Category        | v2    | v3    | Delta |
-|-----------------|-------|-------|-------|
-| Critical        | 0     | 0     | 0     |
-| High            | 0     | 0     | 0     |
-| Medium          | -8    | -4    | +4    |
-| Low             | -6    | -6    | 0     |
-| New findings    | -6    | 0     | +6    |
-| **Total**       | 76    | **80** | +4    |
+| Category     | v2  | v3     | Delta |
+| ------------ | --- | ------ | ----- |
+| Critical     | 0   | 0      | 0     |
+| High         | 0   | 0      | 0     |
+| Medium       | -8  | -4     | +4    |
+| Low          | -6  | -6     | 0     |
+| New findings | -6  | 0      | +6    |
+| **Total**    | 76  | **80** | +4    |
 
 **Score: 80/100**
 
@@ -291,6 +302,7 @@ The N1 fix (AUTO_SYNC validation) is implemented correctly and effectively preve
 However, the score ceiling remains at 80 due to the accumulation of five medium-severity findings (M3, M4, M5, M7, M14). General QA assesses the entire codebase holistically — a single script with five medium defects cannot score above 82 regardless of how well individual fixes are implemented.
 
 Recommendations for the next iteration:
+
 1. **M7** (empty token in none-auth create) is a quick fix: add conditional token inclusion matching the update path.
 2. **M5** (dedup) can be fixed by converting the files array to a unique set before returning.
 3. **M14** (no tests) requires creating a test suite; this is higher effort but critical for confidence.

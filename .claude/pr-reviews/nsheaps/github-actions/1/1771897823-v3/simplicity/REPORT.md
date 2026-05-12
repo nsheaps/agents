@@ -111,13 +111,13 @@ The script is now 430 lines (up from ~420 in v2). The 10-line increase comes fro
 
 ## Score Calculation
 
-| Finding | v2 Status | v3 Status | Weight | Change |
-|---------|-----------|-----------|--------|--------|
-| M12: Trigger-sync duplication | FIXED (v2) | Still fixed | — | 0 |
-| L3: Bare log_info strings | FIXED (v2) | Still fixed | — | 0 |
-| L4: redundant || true | FIXED (v2) | Still fixed | — | 0 |
-| M4: sync_name collisions | STILL PRESENT | Still present | -6 | 0 |
-| N1: AUTO_SYNC unvalidated | STILL PRESENT | **FIXED** | — | +4 |
+| Finding                       | v2 Status     | v3 Status     | Weight     | Change      |
+| ----------------------------- | ------------- | ------------- | ---------- | ----------- | --- | --- |
+| M12: Trigger-sync duplication | FIXED (v2)    | Still fixed   | —          | 0           |
+| L3: Bare log_info strings     | FIXED (v2)    | Still fixed   | —          | 0           |
+| L4: redundant                 |               | true          | FIXED (v2) | Still fixed | —   | 0   |
+| M4: sync_name collisions      | STILL PRESENT | Still present | -6         | 0           |
+| N1: AUTO_SYNC unvalidated     | STILL PRESENT | **FIXED**     | —          | +4          |
 
 **Previous score**: 82
 **Adjustments**: +4 (N1 fixed)

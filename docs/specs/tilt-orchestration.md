@@ -17,6 +17,7 @@ tags:
   - orchestration
   - tilt
 ---
+
 # Tilt Orchestration for Agent Development
 
 ## Problem Statement
@@ -88,7 +89,7 @@ graph TD
     CLAUDE -->|exits| AGENT
     AGENT -->|crashes| TILT
     TILT -->|auto-restarts| TMUX
-    
+
     TILT2[Tilt local_resource: transcript] -->|runs| STREAM[bin/agent stream-output-as-chat]
     STREAM -->|tails| JSONL[$CLAUDE_PROJECT_DIR/.claude/projects/.../session.jsonl]
     STREAM -->|stdout → tilt UI| UI[Tilt Web Dashboard]
@@ -106,7 +107,7 @@ flowchart TD
     RUNNING -->|Yes| MONITOR[monitor output]
     RUNNING -->|No| KILL[close pane, open new]
     KILL --> EXEC
-    
+
     EXEC --> LOOP[Restart Loop]
     LOOP --> ENV[Source 1Pass env]
     ENV --> LAUNCH[Launch claude with flags]
@@ -239,22 +240,22 @@ agents dynamically:
 
 ### Development Modes
 
-| Mode | Command | What It Does |
-|:--|:--|:--|
+| Mode             | Command   | What It Does                                      |
+| :--------------- | :-------- | :------------------------------------------------ |
 | **Process mode** | `tilt up` | Runs agents as local processes with file watching |
 
 > **K8s mode** (ctlptl + kind) and **Hybrid mode** are deferred to a future spec.
 
 ### File Watch Triggers
 
-| File Pattern | Action |
-|:--|:--|
-| `<agent-repo>/.claude/agents/*.md` | Restart the affected agent |
-| `<agent-repo>/.claude/settings.json` | Restart the affected agent |
-| `<agent-repo>/.claude/rules/**` | Restart the affected agent (rules load at session start) |
-| `bin/agent` | Restart the affected agent |
-| `src/mesh/**` | Rebuild and restart mesh MCP server |
-| `Tiltfile` | Tilt re-evaluates automatically |
+| File Pattern                         | Action                                                   |
+| :----------------------------------- | :------------------------------------------------------- |
+| `<agent-repo>/.claude/agents/*.md`   | Restart the affected agent                               |
+| `<agent-repo>/.claude/settings.json` | Restart the affected agent                               |
+| `<agent-repo>/.claude/rules/**`      | Restart the affected agent (rules load at session start) |
+| `bin/agent`                          | Restart the affected agent                               |
+| `src/mesh/**`                        | Rebuild and restart mesh MCP server                      |
+| `Tiltfile`                           | Tilt re-evaluates automatically                          |
 
 ### Three Log Streams per Agent
 

@@ -634,11 +634,11 @@ Templates live in `.claude/teams/templates/` within the project:
 
 Each template is a YAML file with three fields:
 
-| Field         | Type     | Required | Description                                                   |
-| :------------ | :------- | :------- | :------------------------------------------------------------ |
-| `name`        | string   | yes      | Template identifier (matches filename without extension)      |
-| `description` | string   | yes      | Human-readable description of when to use this team           |
-| `agents`      | string[] | yes      | List of agent names (must match `.claude/agents/<name>.md`)   |
+| Field         | Type     | Required | Description                                                 |
+| :------------ | :------- | :------- | :---------------------------------------------------------- |
+| `name`        | string   | yes      | Template identifier (matches filename without extension)    |
+| `description` | string   | yes      | Human-readable description of when to use this team         |
+| `agents`      | string[] | yes      | List of agent names (must match `.claude/agents/<name>.md`) |
 
 ### Example Template
 
@@ -685,12 +685,12 @@ The orchestrator still manages all coordination — the template only constrains
 
 ### Template Validation
 
-| Condition                         | Behavior                                                       |
-| :-------------------------------- | :------------------------------------------------------------- |
-| Template file not found           | Error: "Template '{name}' not found in .claude/teams/templates/" |
+| Condition                           | Behavior                                                                                             |
+| :---------------------------------- | :--------------------------------------------------------------------------------------------------- |
+| Template file not found             | Error: "Template '{name}' not found in .claude/teams/templates/"                                     |
 | Agent in template has no agent file | Warning: "Agent '{name}' listed in template but no .claude/agents/{name}.md found" — skip that agent |
-| Empty agents list                 | Error: "Template '{name}' has no agents listed"                |
-| Invalid YAML                      | Error: "Template '{name}' has invalid YAML"                    |
+| Empty agents list                   | Error: "Template '{name}' has no agents listed"                                                      |
+| Invalid YAML                        | Error: "Template '{name}' has invalid YAML"                                                          |
 
 ### Relationship to Full Team Templates
 

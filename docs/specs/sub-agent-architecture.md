@@ -14,6 +14,7 @@ tags:
   - sub-agents
   - model-routing
 ---
+
 # Sub-Agent Architecture
 
 ## Problem Statement
@@ -32,7 +33,7 @@ was researched and decided upon but not yet codified as a spec.
      planning (~80–90% of Opus quality at ~20% cost).
    - Tier 3 (Mechanical sub-agents): Haiku 4.5 — dashboard updates, simple git ops,
      template filling, file formatting.
-   Source: `docs/research/model-cost-optimization.md`.
+     Source: `docs/research/model-cost-optimization.md`.
 
 2. **Sonnet 4.6 with high thinking effort ≈ Opus with low thinking effort**: For
    quality-sensitive sub-agent tasks, Sonnet 4.6 with `high` thinking effort gives
