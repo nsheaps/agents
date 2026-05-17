@@ -63,6 +63,7 @@ NOTICE TO AGENTS: KEEP THIS UP TO DATE! AS STUFF GETS BUILT OUT KEEP SPECS IN TH
       - each env var should link to at least one other help doc talking about this
         - this should be programatically validateable
 - (?) is this process structure _too_ hierarchical and verbose?
+- crons should launch skills, not contain instructions — the skill is where the logic lives and evolves; the cron line stays a one-liner. (Per handler directive 2026-05-17, after the 45-line inline self-poll prompt was hoisted into [`alex's idle-5-min skill`](https://github.com/nsheaps/.ai-agent-alex/blob/main/.claude/skills/idle-5-min/SKILL.md))
 
 ## controller/service run modes
 
@@ -266,3 +267,7 @@ agent-cli:
   - Just like `bin/attach-agent` right now
 - subcommand `agent add $name $source`
 - subcommand `agent remove $name`
+
+# Open Questions
+
+Q1: should we move the bin/agents script to here then do the ts migration or just directly build the CLI in TS and migrate to that (so we can go back and forth and test till feature parity) — Nate, [Discord 2026-05-17 13:53Z](https://discord.com/channels/1490863845252665415/1497431286661517353/1505568913230921821)
