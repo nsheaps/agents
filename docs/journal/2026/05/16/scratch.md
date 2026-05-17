@@ -1,4 +1,5 @@
 ## after henry
+
 - noting to confirm fixed with henry, jack and general process later, after jack is brought up to speed errors in launcher for unknown plugins
 - 1pass plugin, posttooluse hook needs to mutate response that greps for secret values (not names) from the ENVIRONMENT secret, and replaces with xxxxREDACTED(SECRET_NAME)xxxx
 - the launcher logs still don't show the startup prompt
@@ -10,8 +11,8 @@
     seed plugins using this mechanism?: https://code.claude.com/docs/en/plugin-marketplaces#pre-populate-plugins-for-containers
   - ~~in the agent repo, .claude/SYSTEM-PROMPT-ADDENDUM.md should be passed to --system-prompt-append, .claude/AGENT.md should be the persona definition with the roles and paths to details about those roles (maybe render at runtime so we can parse frontmatter from those role files and share a brief description of the role?).~~ done https://discord.com/channels/1490863845252665415/1497431286661517353/1505286179463893053
   - The logs are too verbose. Launcher log file can contain all debug level logs (anything that was removed from stdout/stderr from other tools), but what's printed to console and passed to agent should be MUCH shorter (and agent prompt should call out link to full logs)
-   - For plugin checking -> no updates, don't print for each plugin. Print for each one that gets updated, and if none get updated, print a "no updates for any N plugins in M marketplaces" 
-   - For env vars, only print unset and export into the log file/at debug level
+  - For plugin checking -> no updates, don't print for each plugin. Print for each one that gets updated, and if none get updated, print a "no updates for any N plugins in M marketplaces"
+  - For env vars, only print unset and export into the log file/at debug level
 - need update to agent management skill: do not write directly into their console, their console is read only. Use a script to perform specific tasks that require writing into their console, but avoid it whenever possible. The agent should be able to manage their own restart proceedure. If writing into the tmux shell is needed, use a script passthrough layer.
 - agent stop should note the source of the request and the current session id to shut down in the continuation prompt.
 - agent start prompt (on both fresh session and new session) should encourage the agent to review the events prior to the continuation prompt. If a new session, then it should review the previous transcript's tail as well.
@@ -19,6 +20,7 @@
 - the .claude.json seed should disable prompt suggestions, since when you read the pane it looks like text is already entered and you don't see the cursor.
 
 ## pause
+
 - user prompt submit for channel messages (discussed elsewhere) should trigger a hook with a mini agent that gets the previous messages from the channel and if it's not directed at the agent it rejects.
 - need to confirm are todo/task consolidation and discord plugin updates part of issue migration and PR consolidation? Should those be front-loaded? Or combined?
   - task tracking, save to $AGENT_HOME_DIR/.tasks/? avoid .claude/make it more generic? Make it auto-sync up to github issues? use gh websocket streaming to get events for label add for assignment/comments to sync down? How much should be cached locally? Can Explore agent more effectively scrape locally, or should there be an ExploreTickets agent (which maybe is based on or extends an ExploreGraphQL and/or ExploreRemoteDataStore agent?)
@@ -33,9 +35,7 @@
   - what about auto-commit for agent repos?
 - somewhere is a PR for a plugin that disallows Bash(cd ... && ...) and enforces CD calls to happen separately after the dir as added to allowed dirs, can we please get that merged and added to all 3 agents?
 
-
 ## pause
-
 
 - We need a way for agents to discover and dynamically use plugins from the known marketplaces, so they can search for skills they don't have, install them, perform the task, then remove them (or install them in a forked ephemeral context in some way). Lets create a plugin-utils plugin that gives agents tools for finding, inspecting (plugin info from marketplace and local configs/state), adding, removing, updating (from a marketplace) plugins (separate from our plugin-dev plugin fork). All agents should have this plugin. Make it in nsheaps/agents. When agents use these tools, they must specify if the addition of the tool is temporary (eg goes into settings.local.json) or permanent (goes into <agent-repo>/.claude/settings.json and trickles into $AGENT_HOME_DIR/.claude/settings.json). Needs a way to also enable a sub-agent to have a plugin that others do not. Make sure skills appropriately reference sections in claude docs that would help act as supplements, like https://code.claude.com/docs/en/plugin-marketplaces#manage-marketplaces-from-the-cli
   - Note: plugins can be installed and updated at runtime, skills are dynamically loaded, and we should consider running skills in a forked context. Rules are dynamically loaded. Settings files are dynamically reloaded. (according to docs), agent files are not.
@@ -63,17 +63,16 @@
 
 ## before agent-cli migration
 
-
 - for every agent, lets update the statusline by making our own statusline plugin in nsheaps/agents similar to ai-mktpl's statusline plugin and how it sets itself up, I want to see
   - teams is claude's agent-teams
   - $SESSION_STATUS is from $CLAUDE_CONFIG_DIR/.claude/sessions/$pid.json
-  - $REPOANDBRANCH_OR_PATH: 
+  - $REPOANDBRANCH_OR_PATH:
     - if cwd is in git repo, print (with parens being diff from remote and after being ahdead/behind but with correct arrows, not ^ v):
-      $org/$repo @ $branch (+2,-3) ^ 3 v 5 
+      $org/$repo @ $branch (+2,-3) ^ 3 v 5
     - if cwd is not a git repo, print absolute path, but if /a/b/c/d/e/f/g parts are on the path, truncate with ... c/d (save first 2 and last 3):
     - for context, have a mapping of model names to context size, and honor the env var to overwrite auto-compaction context size for the actual size and %
     - the [SSSTTTCCCCCCCCC] should be different colors (using ansi) and different ascii characters (for different patterns/opacities for when color is insufficient) that shows the breakdown of sections of the context used by different pieces (system prompt, tools, conversation, free space, etc). Use /context for inspiration with colors and symbols, and make it as wide as possible (using tput or COLUMNS or whatever to ensure it's the correct width)
-  > $AGENT_NAME ($AGENT_HOME_DIR) <$GIT_AUTHOR_EMAIL> | Teams: (ON|OFF)
+      > $AGENT_NAME ($AGENT_HOME_DIR) <$GIT_AUTHOR_EMAIL> | Teammates: (ON|OFF)
   > claude($PID, v=$CLAUDE_VERSION)://$SESSION_ID | Status: $SESSION_STATUS | Model: $MODEL (effort: $MODEL_EFFORT)
   > Ctx: 248k/500k (49.6%) [SSSTTTCCCCCCCCCFFFFFFFFF]
   > Last updated: $RFC_3339_DATETIME_LOCAL_TZ
@@ -100,21 +99,21 @@
     - it's unclear how channels work in this context
     - it's hard to follow all of them
 
-
 - we need nsheaps/agents to (1) have a package for agent specific renovate-config, and (2) a plugin that the agents use to enforce that config trumps whatever it extends from, which blocks the automerge of updates to tool version files from renovate for things like mise.toml, package.json, Dockerfile, etc...all automerge is off, all agents need it to be auto-reviewed (but plugin setting allows that to be turned off) that the .ai-agent-jack/henry/alex inherit from instead of the org one.
   - bonus points if we can find a mechanism (mise plugin?) to share tool versions across the org. I want to know when there's a claude-code update but I don't wanna know once per agent, and I want to be able to test an upgrade on a specific agent.
   - when there's an update we need to programmatically test the patcher with it.
 - we need to see if we can update to the lastest claude code on the agents, one at a time, verifying with henry first
 - the self-restart stuff shouldn't block on exit, it should force the appropriate committing of things that need to be saved at that moment (including the continuation prompt), and be okay with leaving things uncommitted. It should be configurable so it can detect if the machine is ephemeral, or provide cleanup info, and let the agent confirm by stopping again immediately after if they are okay with it.
 - double verify please: each agent should be running in debug mode, and in verbose mode, and the session start hook for agentic behavior should say something like
-> <system>
->   Plugin: AGENTIC-BEHAVIOR
->   Version: $thePluginVersion
->   <agent-harness-settings>
->     Verbose: $(true or false)
->     Debug: $(false or $pathToDebugLogs)
->   </agent-harness-settings>
-> </system>
+
+  > <system>
+  >   Plugin: AGENTIC-BEHAVIOR
+  >   Version: $thePluginVersion
+  >   <agent-harness-settings>
+  >     Verbose: $(true or false)
+  >     Debug: $(false or $pathToDebugLogs)
+  >   </agent-harness-settings>
+  > </system>
 
 - we need to set up a new plugin that comes with a built in scheduled job that forces the agent to perform a self-analysis/dream cycle, then re-build their agent from the ground up, saving only what's needed, migrating any personal rules/hooks/skills/agents/etc to plugins as necessary, validating their configuration matches the claude code best ptractices against the docs using claude-code-guide for help, etc. This needs to be a well captured skill, which itself also gets maintained in this process. This will allow that agent to continually improve itself on a schedule, but be manually triggered with skill invocation too. The aim should be to fully re-create the agent using the current setp as a template (so you have to basically audit everything), plan a small, calculated, targeted change, make the change, and repeat incrementally over time. The skill should take care to hoist stuff to shared plugins (existing if it makes sense, new if not) in PRs, but note to not remove it's own behavior (should add a circuit breaker) until the plugin is updated internally. (Later?) the agent-controller will help keep the agent aware of when plugins become available for update and if restarts are required (which in turn also updates the plugins at the moment). The cron should be disabled by default, but skill available. Make this in nsheaps/agents' marketplace, and install on alex only.
   - the agent should review it's interactions in it's transcripts, especially failures, or times it needed to go back to fix something it thought was correct the first time.
