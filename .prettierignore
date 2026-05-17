@@ -3,3 +3,8 @@ node_modules
 *.lock
 package-lock.json
 CHANGELOG.md
+
+# Scratch/journal markdown — brain-dump content where prettier's
+# list/blockquote indent rules don't always converge (writes produce
+# different output than checks). Not worth restructuring scratch notes.
+docs/journal/**/scratch.md
