@@ -5,8 +5,8 @@ context: fork
 model: sonnet
 allowed-tools: Read, Grep, Glob, TaskList, TaskGet
 ---
-<!-- UPSTREAM: task-utils -->
-<!-- SEE-ALSO: bin/hooks/task-invariant.sh (lifecycle coach), bin/hooks/require-task-in-progress.sh (write gating), docs/specs/draft/task-discipline-plugin.md, docs/specs/draft/manage-tasks-skill.md -->
+<!-- SOURCE: ported from nsheaps/.ai-agent-alex (private) .claude/skills/manage-tasks/SKILL.md — keep this file as the upstream-of-record. Local copies in agent repos should be marked UPSTREAM: task-utils to track that they need to migrate here. -->
+<!-- SEE-ALSO: hooks/task-invariant.sh (lifecycle coach), hooks/require-task-in-progress.sh (write gating), both in this plugin -->
 
 # manage-tasks
 

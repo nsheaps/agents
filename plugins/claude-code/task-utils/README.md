@@ -15,6 +15,7 @@ Task discipline hooks and the `manage-tasks` skill — packages the workflow ori
 
 - **`require-task-in-progress.sh`** — gates `Write` / `Edit` / `MultiEdit` / `NotebookEdit`:
   - Denies the write tool if no task is currently `in_progress`. Keeps file edits attached to a tracked unit of work.
+  - **Known soft spot:** the `Bash` tool is NOT in the PreToolUse write-tool set (Claude Code limitation — Bash isn't in the matched set). So `bash -c 'cat > foo.txt'`, `sed -i`, `tee`, etc. bypass this gate. The invariant is "edits via Claude's native write tools require an in_progress task"; file writes via shell commands are not gated and rely on agent discipline alone.
 
 **Skill**:
 
@@ -47,6 +48,6 @@ The two PreToolUse hooks register automatically; the skill is available as `Skil
 
 ## Design
 
-Full spec: [docs/specs/draft/task-discipline-plugin.md on alex/main](https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/specs/draft/task-discipline-plugin.md).
-
 Worked example for the breakdown pattern: [nsheaps/agents/docs/journal/2026/05/16/managing-tasks-example.md](https://github.com/nsheaps/agents/blob/main/docs/journal/2026/05/16/managing-tasks-example.md).
+
+**Internal reference (private):** the full spec lives at `docs/specs/draft/task-discipline-plugin.md` and `docs/specs/draft/manage-tasks-skill.md` in the `nsheaps/.ai-agent-alex` private repo where the workflow was proven out. The behavior is fully documented in the SKILL.md doctrine sections in this plugin; the spec drafts are mainly useful for the design rationale + change history.
