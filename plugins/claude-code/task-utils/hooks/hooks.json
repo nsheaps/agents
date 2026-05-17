@@ -1,0 +1,27 @@
+{
+  "description": "Task discipline: 0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "TaskCreate|TaskUpdate",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/task-invariant.sh",
+            "timeout": 5
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/require-task-in-progress.sh",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
+}
