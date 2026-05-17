@@ -5,6 +5,7 @@ context: fork
 model: sonnet
 allowed-tools: Read, Grep, Glob, TaskList, TaskGet
 ---
+
 <!-- SOURCE: ported from nsheaps/.ai-agent-alex (private) .claude/skills/manage-tasks/SKILL.md — keep this file as the upstream-of-record. Local copies in agent repos should be marked UPSTREAM: task-utils to track that they need to migrate here. -->
 <!-- SEE-ALSO: hooks/task-invariant.sh (lifecycle coach), hooks/require-task-in-progress.sh (write gating), both in this plugin -->
 
@@ -20,8 +21,8 @@ You MUST return:
 
 - A **≤ 5-sentence imperative instruction** the parent can execute directly. Imperative form — write what the parent should DO, not abstract analysis.
 - If the doctrine prescribes task-list mutations, a numbered list of TaskCreate / TaskUpdate calls inline in your reply.
-- A one-line rationale citing the doctrine section (e.g. *"per §3 — 0-or-1 invariant"*).
-- If the proposed action is already correct: a single sentence — *"Proceed as planned — <one-clause why>."*
+- A one-line rationale citing the doctrine section (e.g. _"per §3 — 0-or-1 invariant"_).
+- If the proposed action is already correct: a single sentence — _"Proceed as planned — <one-clause why>."_
 
 You do NOT mutate state. The parent applies the decision. Your tools are read-only (Read, Grep, Glob, TaskList, TaskGet) by design — exactly one party mutates the task list and that's the parent.
 
@@ -70,6 +71,7 @@ A **behavior-changing task** updates a skill, plugin, hook, coach text, rule, or
 Behavior-changing tasks **do not get queued like routine work** (PR creation, audits, doc sweeps, content edits). They must be worked **immediately** — every action you take between "request received" and "fix landed" continues to suffer the gap they fix.
 
 Reflect this priority in the dependency graph:
+
 - `addBlocks` on the current in_progress task so the behavior-changing task surfaces NOW.
 - `addBlockedBy` on routine backlog tasks (e.g. queued PR work) to push them behind the behavior-changing task.
 - If you are about to start a routine task and a behavior-changing request arrives, the behavior-changing task takes the next slot — not "end of list".
@@ -105,6 +107,7 @@ phase 6: [x] Jack upgrade
 ```
 
 Key transitions:
+
 - When you discover the in_progress task isn't atomic, you SPAWN a "break apart X" planning task as a sibling (phase 3).
 - The parent moves to `completed` once the actionable work has migrated into the breakdown task (phase 4).
 - The breakdown task is `in_progress` while it produces atomic siblings (phase 5–6).
@@ -117,27 +120,27 @@ Key transitions:
 
 ## 5. Doctrine — lifecycle invariants
 
-| Rule | Enforcement |
-|---|---|
-| 0 or 1 task is `in_progress` at any time | `task-invariant.sh` PreToolUse hook on `TaskCreate\|TaskUpdate` denies a second `in_progress` |
-| Every write tool (Write/Edit/MultiEdit/NotebookEdit) requires a task in_progress | `require-task-in-progress.sh` PreToolUse hook denies the write otherwise |
-| `pending → in_progress` requires atomicity check | STARTED coach in `task-invariant.sh` |
-| `* → completed` requires follow-up capture | COMPLETED coach in `task-invariant.sh` |
-| Status transitions logged via dated event-log line in description | Convention; reminded by coach text |
+| Rule                                                                             | Enforcement                                                                                   |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| 0 or 1 task is `in_progress` at any time                                         | `task-invariant.sh` PreToolUse hook on `TaskCreate\|TaskUpdate` denies a second `in_progress` |
+| Every write tool (Write/Edit/MultiEdit/NotebookEdit) requires a task in_progress | `require-task-in-progress.sh` PreToolUse hook denies the write otherwise                      |
+| `pending → in_progress` requires atomicity check                                 | STARTED coach in `task-invariant.sh`                                                          |
+| `* → completed` requires follow-up capture                                       | COMPLETED coach in `task-invariant.sh`                                                        |
+| Status transitions logged via dated event-log line in description                | Convention; reminded by coach text                                                            |
 
 ---
 
 ## 6. Doctrine — status transition table
 
-| From | To | Allowed? | What to do first |
-|---|---|---|---|
-| pending | in_progress | yes if 0 others in_progress | atomicity check (if non-atomic, treat as planning) |
-| in_progress | pending | always | append event-log line "## YYYY-MM-DD HH:MMZ — parked back to pending: <why>" |
-| in_progress | completed | always | pull learnings; capture follow-ups as new TaskCreate calls with `addBlockedBy` |
-| in_progress | deleted | use only for cancelled work | append event-log line explaining cancellation |
-| pending | deleted | use only for never-started work | append event-log line |
-| completed | (anything) | NO — completed is terminal | create a new task instead |
-| pending | pending | no-op | nothing |
+| From        | To          | Allowed?                        | What to do first                                                               |
+| ----------- | ----------- | ------------------------------- | ------------------------------------------------------------------------------ |
+| pending     | in_progress | yes if 0 others in_progress     | atomicity check (if non-atomic, treat as planning)                             |
+| in_progress | pending     | always                          | append event-log line "## YYYY-MM-DD HH:MMZ — parked back to pending: <why>"   |
+| in_progress | completed   | always                          | pull learnings; capture follow-ups as new TaskCreate calls with `addBlockedBy` |
+| in_progress | deleted     | use only for cancelled work     | append event-log line explaining cancellation                                  |
+| pending     | deleted     | use only for never-started work | append event-log line                                                          |
+| completed   | (anything)  | NO — completed is terminal      | create a new task instead                                                      |
+| pending     | pending     | no-op                           | nothing                                                                        |
 
 ---
 
@@ -198,13 +201,13 @@ Tasks declare a `<validation-steps>` checklist inside their description before t
 
 ### Lifecycle interactions
 
-| Transition | Validation-step requirement |
-|---|---|
-| TaskCreate with `status=in_progress` | DENIED unconditionally — tasks are born `pending` only |
-| `pending → in_progress` | DENIED unless effective description has `<validation-steps>` block with ≥1 unchecked `- [ ]` item |
-| `in_progress → completed` | DENIED if any `- [ ]` remains OR any `- [x]` lacks a RESULT line |
-| `pending → completed` | ALLOWED with NO validation-step check (rule 4 — for cancellation, immediate-no-op tasks, etc.) |
-| `in_progress → pending` | ALLOWED, no check (park is always free) |
+| Transition                           | Validation-step requirement                                                                       |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| TaskCreate with `status=in_progress` | DENIED unconditionally — tasks are born `pending` only                                            |
+| `pending → in_progress`              | DENIED unless effective description has `<validation-steps>` block with ≥1 unchecked `- [ ]` item |
+| `in_progress → completed`            | DENIED if any `- [ ]` remains OR any `- [x]` lacks a RESULT line                                  |
+| `pending → completed`                | ALLOWED with NO validation-step check (rule 4 — for cancellation, immediate-no-op tasks, etc.)    |
+| `in_progress → pending`              | ALLOWED, no check (park is always free)                                                           |
 
 ### Same-call merge
 
@@ -269,7 +272,7 @@ Moving a task to `pending` without dispatching a subagent is fine if the parent 
 
 ### Sibling pattern: `MONITORING(<monitor-id>): <subject>`
 
-Same shape as `AGENT(<n>): ` but for tasks that wait on an *event* (a restart, a CI run, an external system change) rather than a worker doing the work. The monitor-id is the identifier of an actual entity that polls / detects the event:
+Same shape as `AGENT(<n>): ` but for tasks that wait on an _event_ (a restart, a CI run, an external system change) rather than a worker doing the work. The monitor-id is the identifier of an actual entity that polls / detects the event:
 
 - `MONITORING(cron-6a6da727): verify foo after Jack restart` — the 5-min self-poll cron (id from `CronList`) surveys pending tasks with this prefix and re-asks the parent to check them each tick.
 - `MONITORING(AGENT(jack-watch)): ...` — a background subagent specifically dispatched to watch for the event.
@@ -310,7 +313,9 @@ If your insight is too speculative to commit (single observation, might not gene
 ## 14. Worked example — Jack-upgrade decision
 
 Parent prompt:
+
 > Current task list: #2 [in_progress] Resume Jack upgrade. Proposed: spawn 6 section sibling tasks (S/P/R/I/B/L) under #2, mark #2 completed, start the smallest section.
 
 Your reply:
+
 > Proceed — matches worked example phase 3-4. Spawn the 6 sibling tasks via TaskCreate, then 1. TaskUpdate(#2, status=completed) with closing event-log line "spawned 6 section breakdowns", 2. TaskUpdate(<smallest-section-id>, status=in_progress). The L-row is itself non-atomic and will need its own sub-breakdown when reached (phase 8 recursion). Per doctrine §4 — breakdown pattern.
