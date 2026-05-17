@@ -1,0 +1,60 @@
+name: Auto-fix
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+# Share concurrency group with any other auto-commit workflow on the same ref
+# to prevent races where two workflows try to push to the same branch.
+concurrency:
+  group: pr-autofix-${{ github.head_ref || github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Authenticate as GitHub App
+        id: auth
+        uses: ./.github/actions/github-app-auth
+        with:
+          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Checkout (auth as GitHub App)
+        uses: actions/checkout@v4
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          ref: ${{ github.head_ref || github.ref }}
+
+      - name: Setup mise
+        uses: jdx/mise-action@v2
+
+      - name: Install dependencies
+        run: bun install --frozen-lockfile
+
+      - name: mise run format
+        id: format
+        run: mise run format
+        continue-on-error: true
+
+      - name: Commit fixes back to branch
+        if: ${{ ! cancelled() }}
+        id: auto-commit
+        uses: stefanzweifel/git-auto-commit-action@v7
+        with:
+          commit_message: "chore: `mise run format`"
+          commit_user_name: ${{ steps.auth.outputs.user-name }}
+          commit_user_email: ${{ steps.auth.outputs.user-id }}+${{ steps.auth.outputs.user-name }}@users.noreply.github.com
+
+      - name: Fail if changes were made or format failed
+        if: ${{ (steps.auto-commit.outputs.changes_detected == 'true' || steps.format.outcome == 'failure') && ! cancelled() }}
+        run: |
+          echo "Format produced changes (auto-committed) or failed — see logs above."
+          exit 1
