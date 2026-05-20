@@ -1,0 +1,1155 @@
+#!/usr/bin/env bash
+# agent — Generic agent self-restart launcher
+#
+# Runs the agent in a loop with support for:
+#   - Continuation prompts (CONTINUATION.md)
+#   - One-time CLI flags (restart-flags)
+#   - Permission mode preservation
+#   - Todo state preservation across restarts
+#   - Ctrl+C grace period between iterations
+#   - Self-modifiable (agent can edit this script between runs)
+#   - tmux session for terminal visibility
+#   - 1Password env injection before launch
+#
+# Usage:
+#   bin/agent                    # Start fresh or continue
+#   bin/agent --tmux             # Run inside a tmux session
+#
+# The script re-execs itself after each claude exit, so any changes
+# the agent makes to this script take effect on the next iteration.
+
+set -euo pipefail
+
+# --- Self-launch guard ---
+# Prevent the agent from launching itself recursively from inside a claude session.
+# Allow re-exec (exec "$0") by checking if the PID matches (same process, just re-started).
+if [[ -n "${AGENT_LAUNCHER_PID:-}" && "${AGENT_LAUNCHER_PID}" != "$$" ]]; then
+  echo "ERROR: Cannot launch agent from inside a running agent session." >&2
+  echo "  AGENT_LAUNCHER_PID=$AGENT_LAUNCHER_PID (this PID: $$)" >&2
+  exit 1
+fi
+export AGENT_LAUNCHER_PID=$$
+
+# Clear launcher-derived env so a stale value from the parent shell or a prior
+# re-exec iteration cannot win over what we re-derive below from AGENT_NAME.
+# AGENT_NAME is ALSO unset here so agent_name_resolve below reads agent.yaml
+# unambiguously. Inheriting AGENT_NAME from the parent tmux/shell env caused
+# the 2026-05-17 henry-as-jack contamination — a tmux server started by one
+# agent persists its AGENT_NAME to every child new-session in that server.
+# See docs/research/bin-agent-ordering-bug-2026-05-17.md (alex repo).
+unset AGENT_NAME AGENT_HOME_DIR GH_CONFIG_DIR GIT_CONFIG_GLOBAL CLAUDE_CONFIG_DIR
+# XDG vars also derive from AGENT_HOME_DIR — clear stale parent values so a
+# prior agent's paths can't shadow ours.
+unset XDG_CONFIG_HOME XDG_DATA_HOME XDG_STATE_HOME XDG_CACHE_HOME
+unset XDG_CONFIG_DIRS XDG_DATA_DIRS
+
+# Wipe credential + git-identity vars inherited from the parent shell.
+# This machine runs multiple agents (Jack, Henry, Alex) and a launcher zsh
+# may have inherited the wrong agent's vars via export chain. The github-app
+# plugin's install.sh now trusts whatever's in env (per ai-mktpl PR #487 commit
+# 037a2cf), so a wrong inherited value would silently produce a contaminated
+# static.env. The 1pass injection below repopulates these from the per-agent
+# ENVIRONMENT secret; sourcing $AGENT_HOME_DIR/.env (which sources
+# $AGENT_HOME_DIR/.env.local) after that gives us the static github-app values.
+echo "[unset] wiping inherited GH_TOKEN GITHUB_TOKEN GITHUB_APP_* GIT_AUTHOR_* GIT_COMMITTER_* CLIENT_*" >&2
+unset GH_TOKEN GITHUB_TOKEN
+unset GITHUB_APP_ID GITHUB_APP_INSTALLATION_ID GITHUB_INSTALLATION_ID
+unset GITHUB_APP_PRIVATE_KEY GITHUB_APP_PRIVATE_KEY_PATH
+unset GITHUB_APP_CLIENT_ID GITHUB_APP_CLIENT_SECRET CLIENT_ID CLIENT_SECRET
+unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL
+
+# --- Shim-required positional args ---
+# The per-agent bin/agent shim resolves <agentName> from agent.yaml and the
+# repo-dir from $(dirname "$0")/.., then execs us with both as positional args.
+# Direct invocation (without the shim) is rejected — we need both to know
+# which agent we are and which repo's files to read.
+if [[ $# -lt 2 ]]; then
+  echo "fatal: deprecated-agent must be invoked via a per-agent bin/agent shim" >&2
+  echo "       usage: deprecated-agent <agentName> <repoDir> [claude args...]" >&2
+  exit 1
+fi
+AGENT_NAME="$1"; shift
+REPO_DIR="$1"; shift
+# remaining "$@" = flags forwarded to claude (--tmux, --debug, etc.)
+
+# Self-location: find the canonical script's lib/ alongside it. realpath
+# resolves any symlink (e.g. mise-installed canonical script), so LIB_DIR
+# always points at apps/agent-cli/lib/ relative to the actual file we're
+# running, not the shim that exec'd us.
+LIB_DIR="$(dirname "$(realpath "$0")")/../lib"
+
+PROMPTS_DIR="$REPO_DIR/.claude/prompts"
+TMP_DIR="$REPO_DIR/.claude/tmp"
+LOGS_DIR="$REPO_DIR/.claude/logs"
+
+# Sanity-check the shim-supplied AGENT_NAME against $REPO_DIR/agent.yaml.
+# The shim already did this read, but a sanity check catches a misconfigured
+# shim or a malformed agent.yaml before we proceed any further.
+# shellcheck source=lib/agent-name.sh
+source "$LIB_DIR/agent-name.sh"
+expected_name="$(agent_name_read_yaml || true)"
+if [[ -z "$expected_name" ]]; then
+  echo "ERROR: no name: in $REPO_DIR/agent.yaml — shim should have failed earlier" >&2
+  exit 1
+fi
+if [[ "$expected_name" != "$AGENT_NAME" ]]; then
+  echo "ERROR: shim-supplied AGENT_NAME=$AGENT_NAME does not match $REPO_DIR/agent.yaml (name=$expected_name)" >&2
+  exit 1
+fi
+
+AGENT_HOME_DIR="$HOME/.agents/$AGENT_NAME"
+
+# Export per-agent XDG vars BEFORE mise/direnv run below — `mise install` and
+# `direnv allow` write into XDG_DATA_HOME / XDG_STATE_HOME, so if XDG isn't set
+# yet they would populate the user's shared paths and the agent's per-agent
+# data dir stays empty (mise: "could not resolve claude"; direnv: trust marker
+# in wrong dir). The late recompute at the consolidated env block below stays
+# in place as ground truth after op-exec injection. (See agent-env.sh comment.)
+# shellcheck source=lib/agent-env.sh
+source "$LIB_DIR/agent-env.sh"
+agent_env_export
+
+# AGENT_DEBUG is the launcher's own verbose flag. Defaults to "*" for active
+# development; set AGENT_DEBUG=0 (or empty) to silence launcher logs.
+# Deliberately NOT named DEBUG: DEBUG=* propagates to claude/node and triggers
+# axios (via follow-redirects) to print full request objects — including
+# `Authorization: Bearer …` headers — into launcher.log. The launcher then
+# inlines launcher.log into the next session's startup prompt, leaking the
+# OAuth token into the conversation transcript.
+export AGENT_DEBUG="${AGENT_DEBUG:-*}"
+
+# Config files the agent can write to control restart behavior
+CONTINUATION_FILE="$PROMPTS_DIR/CONTINUATION.md"
+FLAGS_FILE="$TMP_DIR/restart-flags"
+PERMISSION_MODE_FILE="$TMP_DIR/permission-mode"
+TODO_FILE="$TMP_DIR/session-todos.md"
+SESSION_ID_FILE="$TMP_DIR/session-id"
+# tmux session name — keyed off AGENT_NAME so renames don't require a code change
+TMUX_SESSION="$AGENT_NAME"
+# tmux is the default per cross-agent-consistency.md L18 — terminal visibility.
+# Pass --no-tmux to opt out (e.g., when the launcher is already inside the
+# desired tmux session, or when running headless under a process manager).
+USE_TMUX=true
+# Patch policy (Nate, Discord 2026-05-15 02:47Z):
+#   FORCE_PATCH (default false): when true, the launcher passes --force to
+#     bin/claude on the first invocation of each iteration, then NOT on
+#     subsequent invocations (one patch per iteration max).
+#   PATCH_IF_UNTESTED (default true): when true AND FORCE_PATCH=false,
+#     check whether the current claude version is in claude-utils' tested
+#     list. If untested AND no valid patched-binary symlink exists, patch
+#     once per iteration. (No structured tested-list available yet — current
+#     implementation treats ALL versions as untested, patches once if no
+#     valid symlink. See claude-utils#TODO.)
+FORCE_PATCH="${AGENT_FORCE_PATCH:-false}"
+PATCH_IF_UNTESTED="${AGENT_PATCH_IF_UNTESTED:-true}"
+DIALOG_ACCEPT_FALLBACK=false
+
+# Parse launcher-specific flags (before passing rest to claude)
+PASSTHROUGH_ARGS=()
+for arg in "$@"; do
+  case "$arg" in
+    --tmux) USE_TMUX=true ;;
+    --no-tmux) USE_TMUX=false ;;
+    --force-patch) FORCE_PATCH=true ;;
+    --no-force-patch) FORCE_PATCH=false ;;
+    --patch-if-untested) PATCH_IF_UNTESTED=true ;;
+    --no-patch-if-untested) PATCH_IF_UNTESTED=false ;;
+    --with-dialog-accept-fallback) DIALOG_ACCEPT_FALLBACK=true ;;
+    *) PASSTHROUGH_ARGS+=("$arg") ;;
+  esac
+done
+set -- "${PASSTHROUGH_ARGS[@]}"
+
+# Ensure directories exist
+mkdir -p "$PROMPTS_DIR" "$TMP_DIR" "$LOGS_DIR"
+
+# --- Logging ---
+
+# LOG_FILE is set per-iteration in the restart loop (launcher.EPOCH.log)
+# Initialize to /dev/null so log() doesn't fail before the loop starts
+LOG_FILE="/dev/null"
+RESTART_HISTORY_FILE="$LOGS_DIR/restart-history.log"
+
+log() {
+  local msg="[$(date '+%Y-%m-%d %H:%M:%S')] $1"
+  # Stderr — never stdout — so build_args() can use stdout exclusively for the
+  # args list captured by `< <(build_args)`. log() calls inside build_args
+  # would otherwise leak the colored line as a literal arg to claude.
+  echo -e "\033[0;34m[agent-launcher]\033[0m $1" >&2
+  echo "$msg" >> "$LOG_FILE"
+}
+
+# --- Signal traps ---
+# Log signals so we can diagnose mystery stops.
+# SIGKILL and SIGSTOP cannot be trapped (kernel enforced).
+for sig in HUP INT QUIT TERM USR1 USR2 PIPE ALRM; do
+  # shellcheck disable=SC2064
+  trap "log 'Received SIG${sig}'; exit 1" "$sig"
+done
+
+warn() {
+  local msg="[$(date '+%Y-%m-%d %H:%M:%S')] WARN: $1"
+  echo -e "\033[38;5;208m[agent-launcher]\033[0m $1" >&2
+  echo "$msg" >> "$LOG_FILE"
+}
+
+# Each launcher invocation gets a fresh dated log file. Set this BEFORE any
+# log() calls in the env-setup block below — otherwise log lines (including
+# 1pass injection messages, env-var sourcing) write to /dev/null. The script
+# re-execs itself via `exec "$0" "$@"` on each restart, which re-runs this
+# top-level assignment with a new $(date +%s), so fresh-per-restart works
+# without an explicit reassignment in the main loop.
+# Single epoch shared by LOG_FILE and bin/claude's per-launch patched
+# binary path (so "this run's log" and "this run's patched output" can
+# be visually correlated). bin/agent re-execs itself on each iteration,
+# which re-runs this top-level so each iteration gets its own epoch.
+LAUNCHER_EPOCH="$(date +%s)"
+export LAUNCHER_EPOCH
+LOG_FILE="$LOGS_DIR/launcher.$LAUNCHER_EPOCH.log"
+
+# Rotate launcher logs: keep only the 15 most recent. Done BEFORE writing
+# to the new LOG_FILE so the freshly-created file is never deleted by its
+# own rotation pass. Failure here is non-fatal.
+# shellcheck disable=SC2012
+ls -t "$LOGS_DIR"/launcher.*.log 2>/dev/null | tail -n +16 | xargs -r rm -f || true
+
+# Best-effort: clean up any orphaned per-claude-launch stderr captures from
+# previous launcher PIDs that crashed mid-iteration. Fresh-launch only —
+# the live launcher's $$ file is not yet created.
+find "$LOGS_DIR" -maxdepth 1 -name 'claude-stderr.*' -mtime +0 -delete 2>/dev/null || true
+
+log "$(basename "$0") starting"
+
+log_restart_history() {
+  local ts
+  ts="$(date -u '+%Y-%m-%dT%H:%M:%SZ')"
+
+  local head_hash="unknown"
+  if git -C "$REPO_DIR" rev-parse --short HEAD &>/dev/null; then
+    head_hash="$(git -C "$REPO_DIR" rev-parse --short HEAD)"
+  fi
+
+  local reason="no continuation"
+  if [[ -f "$CONTINUATION_FILE" ]]; then
+    reason="$(head -1 "$CONTINUATION_FILE" | sed 's/^#\+[[:space:]]*//' | cut -c1-120)"
+    [[ -z "$reason" ]] && reason="continuation file present (no first line)"
+  fi
+
+  local continuation="no"
+  [[ -f "$CONTINUATION_FILE" ]] && continuation="yes"
+
+  local todos="no"
+  [[ -f "$TODO_FILE" ]] && todos="yes"
+
+  echo "[$ts] restart | HEAD=$head_hash | reason=\"$reason\" | continuation=$continuation | todos=$todos" >> "$RESTART_HISTORY_FILE"
+}
+
+# --- Environment setup ---
+
+# Step 1: Source OP_SERVICE_ACCOUNT_TOKEN from settings.local.json BEFORE anything else
+# This is needed so op-exec can authenticate without interactive prompts
+SETTINGS_LOCAL="$REPO_DIR/.claude/settings.local.json"
+if [[ -f "$SETTINGS_LOCAL" ]] && command -v jq &>/dev/null; then
+  # Extract env vars from settings.local.json and export them
+  while IFS='=' read -r key value; do
+    [[ -z "$key" ]] && continue
+    export "$key=$value"
+    log "Sourced env var from settings.local.json: $key (${#value} chars)"
+  done < <(jq -r '.env // {} | to_entries[] | "\(.key)=\(.value)"' "$SETTINGS_LOCAL" 2>/dev/null || true)
+fi
+
+# Step 2: Ensure mise tools are on PATH
+#
+# mise stderr is routed to LOG_FILE (not /dev/null) so trust errors and other
+# diagnostics are captured. On a fresh clone or invalidated trust marker mise
+# emits "config is not trusted" — that's expected because rc.d/01_mise-activate.sh
+# (which calls `mise trust`) only runs later via direnv. The warn() lets us
+# distinguish "expected transient first-clone failure" from genuinely broken.
+# See docs/research/bin-agent-ordering-bug-2026-05-17.md §"Fix 3".
+if command -v mise &>/dev/null; then
+  eval "$(mise activate bash 2>>"$LOG_FILE")" || warn "[mise] activate failed (transient on first clone — rc.d auto-trust runs later via direnv)"
+  eval "$(mise env -s bash 2>>"$LOG_FILE")" || warn "[mise] env -s failed (transient on first clone)"
+fi
+
+# Step 2b: Source claude-utils lib (stdlib.sh + claude.lib.sh) so library
+# functions auto-update with `mise install`/`mise upgrade` on claude-utils.
+# Resolves the install dir via `mise where` — tracks the currently-active
+# version without hardcoded paths or readlink shim-walking.
+source_claude_utils_lib() {
+  local install_dir lib_dir
+  # stderr → LOG_FILE so "missing: <tool>" warnings are captured (was /dev/null).
+  install_dir="$(mise where github:nsheaps/claude-utils 2>>"$LOG_FILE")" || true
+  if [[ -z "$install_dir" ]]; then
+    warn "claude-utils not found — source_claude_utils_lib skipped (install claude-utils via mise)"
+    return 0
+  fi
+  lib_dir="$install_dir/lib"
+  if [[ -f "$lib_dir/stdlib.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$lib_dir/stdlib.sh"
+  fi
+  if [[ -f "$lib_dir/claude.lib.sh" ]]; then
+    # shellcheck disable=SC1091
+    source "$lib_dir/claude.lib.sh"
+  fi
+  if [[ -f "$lib_dir/stdlib.sh" || -f "$lib_dir/claude.lib.sh" ]]; then
+    log "Sourced claude-utils lib from $lib_dir"
+  else
+    warn "claude-utils lib dir not found at $lib_dir — skipping"
+  fi
+}
+# Note: source_claude_utils_lib is invoked AFTER the direnv block below, because
+# `mise where github:nsheaps/claude-utils` won't resolve until mise has installed
+# the tool — and `mise install` is triggered by direnv. Calling here on a fresh
+# clone (or post-XDG_DATA_HOME wipe) hits the warn() branch every time. Per Nate
+# (Discord 2026-05-07 02:54Z): "mise install needs to go before anything so tools
+# are available."
+
+# Legacy file cleanup is now MANUAL (handler directive, Discord 2026-05-11).
+# Previously bin/agent auto-removed $AGENT_HOME_DIR/.config/github-app-env and
+# $AGENT_HOME_DIR/.config/github-git-identity on every launch. Removed per
+# handler: "do this manually, not automated" — the github-app plugin's own
+# migrate_legacy_layout still handles it on the plugin side, and a one-time
+# `rm -f` on each agent host is sufficient. See task #567 / L38 revert.
+
+# Step 3: Template + source $AGENT_HOME_DIR/.envrc (which in turn sources
+# $AGENT_HOME_DIR/.env.local) FIRST so any stale .env.local values are loaded
+# now, then Step 4's op_inject_env can override them with fresh op-exec
+# output. Doing this in the OTHER order means a previously-broken op-exec
+# iteration's stale .env.local values survive past op_inject_env, override
+# fresh values, and propagate broken env to main claude. See ai-agent-alex
+# task #177 for the bug report.
+#
+# Template <repo>/.envrc.template → $AGENT_HOME_DIR/.envrc on first launch
+# (idempotent). The repo's .envrc.template is a checked-in shell-syntax
+# wrapper that sources $AGENT_HOME_DIR/.env.local (the 1pass-managed static
+# creds, per-agent, not in repo). Once copied, the operator (or a future
+# plugin) can edit $AGENT_HOME_DIR/.envrc to add non-secret overrides
+# without touching the repo.
+#
+# Why .envrc (not .env): the file uses bash syntax (conditional `source`),
+# which direnv's strict `dotenv` parser rejects. .envrc signals shell-format.
+if [[ -r "$REPO_DIR/.envrc.template" && ! -e "$AGENT_HOME_DIR/.envrc" ]]; then
+  cp "$REPO_DIR/.envrc.template" "$AGENT_HOME_DIR/.envrc"
+  log "templated $REPO_DIR/.envrc.template → $AGENT_HOME_DIR/.envrc"
+fi
+
+if [[ -r "$AGENT_HOME_DIR/.envrc" ]]; then
+  set -a
+  # shellcheck disable=SC1091
+  source "$AGENT_HOME_DIR/.envrc"
+  set +a
+  log "Sourced $AGENT_HOME_DIR/.envrc"
+fi
+
+# Step 4: Inject 1Password env vars (now that OP_SERVICE_ACCOUNT_TOKEN is
+# available AND .env.local has been sourced — op_inject_env's evals override
+# any stale values from .env.local).
+# shellcheck source=lib/op-inject.sh
+source "$LIB_DIR/op-inject.sh"
+op_inject_env
+
+# Step 4b: If op-inject gave us GITHUB_APP_PRIVATE_KEY content but no
+# GITHUB_APP_PRIVATE_KEY_PATH, materialize the PEM to disk now so gh-auth
+# (next step) can sign JWTs without waiting for the github-app plugin's
+# SessionStart hook to run later. Mirrors github-app/hooks/scripts/
+# github-token-init.sh:267-275 logic. Path lives under $AGENT_HOME_DIR/.config
+# (per-agent, 0600). Idempotent: overwrites each launch.
+if [[ -n "${GITHUB_APP_PRIVATE_KEY:-}" && -z "${GITHUB_APP_PRIVATE_KEY_PATH:-}" ]]; then
+  pem_dir="$AGENT_HOME_DIR/.config"
+  mkdir -p "$pem_dir"
+  GITHUB_APP_PRIVATE_KEY_PATH="$pem_dir/github-app-${GITHUB_APP_ID:-unknown}.pem"
+  printf '%s\n' "$GITHUB_APP_PRIVATE_KEY" > "$GITHUB_APP_PRIVATE_KEY_PATH"
+  chmod 600 "$GITHUB_APP_PRIVATE_KEY_PATH"
+  export GITHUB_APP_PRIVATE_KEY_PATH
+  log "[pem-materialize] wrote PEM from GITHUB_APP_PRIVATE_KEY to $GITHUB_APP_PRIVATE_KEY_PATH ($(wc -c < "$GITHUB_APP_PRIVATE_KEY_PATH") bytes)"
+fi
+
+# --- Marketplace bootstrap + plugin orphan prune ---
+# marketplace_bootstrap and marketplace_prune_orphans are defined in
+# bin/lib/marketplace.sh. They're invoked further down, AFTER LOG_FILE
+# is assigned a real file path. Calling them here would log to /dev/null
+# since LOG_FILE is still the placeholder at this point.
+# shellcheck source=lib/marketplace.sh
+source "$LIB_DIR/marketplace.sh"
+
+# --- Patch Claude CLI for channel loading ---
+# Patching is OWNED by bin/claude (the wrapper that PATH-resolves first
+# via direnv's `<repo>/bin` prepend). bin/claude:
+#   - decides whether to re-patch based on the bin/claude-patched symlink
+#     and current claude version
+#   - writes a UNIQUE per-launch output: bin/patched/<version>/claude.<epoch>
+#   - atomically relinks bin/claude-patched on success
+#   - falls back to existing patched binary (via symlink) if patcher fails,
+#     then to unpatched claude as a last resort
+#
+# bin/agent's restart loop simply runs `claude`, which resolves to bin/claude
+# via the direnv-prepended PATH. LAUNCHER_EPOCH (set above) is exported so
+# bin/claude's per-launch output filename matches launcher.<epoch>.log.
+# See bin/lib/claude-patch.sh for the lib functions and bin/claude for the
+# orchestration logic (Nate, Discord 2026-05-06 04:58Z — fix (d)).
+
+# Clean up legacy patcher artifacts (old locations) — done here once,
+# even though bin/claude is what patches now.
+rm -f "$HOME/.claude/cli.patched.js" "$HOME/.claude/cli.patched.stamp"
+[[ -f "$HOME/.claude/cli.patched" && ! -L "$HOME/.claude/cli.patched" ]] \
+  && rm -f "$HOME/.claude/cli.patched"
+# Pre-versioning artifact — single shared bin/patched/claude file.
+[[ -f "$REPO_DIR/bin/patched/claude" && ! -L "$REPO_DIR/bin/patched/claude" ]] \
+  && rm -f "$REPO_DIR/bin/patched/claude"
+
+# Step 8: direnv allow + export bash so mise tools are on PATH for everything below
+log "[direnv] allowing and exporting .envrc"
+if command -v direnv &>/dev/null; then
+  if ! command -v timeout &>/dev/null; then
+    warn "[direnv] timeout not on PATH — skipping direnv (cannot guard against hang)"
+  else
+    # Capture only `direnv allow` output (mise install/trust messages, useful in log).
+    # `direnv export bash` emits the giant DIRENV_DIFF blob and "+VAR -OTHER" diff
+    # line on stderr — route stderr to LOG_FILE so real errors are still captured,
+    # but its stdout (the export statements we eval) never hits the user pane.
+    direnv_allow_output="$(cd "$REPO_DIR" && timeout 30 direnv allow . 2>&1 || true)"
+    if [[ -n "$direnv_allow_output" ]]; then
+      echo "$direnv_allow_output" | sed 's|^|[direnv] |' >> "$LOG_FILE"
+    fi
+    # Abort the launcher iteration if direnv emitted any "error" line — a
+    # broken .envrc / rc.d means subsequent steps (mise tool resolution,
+    # marketplace bootstrap, claude exec) will silently misbehave.
+    # direnv exits 0 even when it emits `direnv: error invalid line: ...`,
+    # so we have to grep the output to catch it.
+    if echo "$direnv_allow_output" | grep -qE 'direnv: error'; then
+      warn "[direnv] error detected — aborting launcher iteration:"
+      echo "$direnv_allow_output" | grep -E 'direnv: error' | sed 's|^|[direnv] |' >> "$LOG_FILE"
+      exit 1
+    fi
+    eval "$(cd "$REPO_DIR" && timeout 30 direnv export bash 2>>"$LOG_FILE" || true)"
+    # Surface BOTH (a) every `claude` on PATH and (b) the mise-resolved one.
+    # When they differ, PATH is picking up a wrong-version claude (commonly
+    # node's npm-global) that would shadow the mise-pinned version. The patcher
+    # below uses the mise-resolved path explicitly via --binary.
+    #
+    # Listing all PATH matches answers "what would `claude` resolve to?" + "what
+    # else might shadow it?" in one pass. `which -a` is the cross-distro form
+    # (Nate, Discord 2026-05-06 16:41Z — bash builtin `type -aP` worked here
+    # but failed on his laptop; `which -a` is what we standardise on).
+    # NOTE: top-level scope here, not a function, so `local` would error.
+    paths_msg="[direnv] PATH claudes (via which -a):"
+    while IFS= read -r _which_p; do
+      [[ -n "$_which_p" ]] && paths_msg+=$'\n  - '"$_which_p"
+    done < <(which -a claude 2>/dev/null)
+    log "$paths_msg"
+    log "[direnv] mise claude:  $(cd "$REPO_DIR" && mise which claude 2>/dev/null || echo 'mise cannot resolve claude')"
+    # claude-patched: stable symlink that bin/claude exec's. Show its resolved
+    # target on a separate line so a glance at the launcher log answers "which
+    # patched binary is currently linked?" without `ls`. If the symlink is
+    # missing/broken, log a WARN so a fresh-clone or post-wipe boot is obvious.
+    link_path="$REPO_DIR/bin/claude-patched"
+    if [[ -e "$link_path" ]]; then
+      log "[direnv] claude-patched: $(readlink -f "$link_path")"
+    else
+      log "[direnv] WARN: claude-patched link does not exist. The current version will be patched to allow loading untrusted plugins' channels without a prompt at startup. See https://github.com/nsheaps/claude-utils/tree/main/cmd/claude-patch-channels"
+    fi
+  fi
+else
+  log "[direnv] direnv not on PATH — skipping (mise tools may not be available)"
+fi
+
+# Now that direnv has run `mise install`, claude-utils is available on PATH.
+# Source its lib functions for use by the rest of this script.
+source_claude_utils_lib
+
+# claude-utils stdlib.sh:55 redefines warn() to stderr-only (no $LOG_FILE write),
+# which would silently swallow launcher warnings (skip messages, error notices).
+# Re-define here AFTER the source so the launcher-local version wins and warns
+# reach the dated launcher log. Upstream fix tracked separately on claude-utils.
+warn() {
+  local msg="[$(date '+%Y-%m-%d %H:%M:%S')] WARN: $1"
+  echo -e "\033[38;5;208m[agent-launcher]\033[0m $1" >&2
+  echo "$msg" >> "$LOG_FILE"
+}
+
+# Patching is delegated to bin/claude — see comment above (~line 240).
+# bin/agent's only responsibility here is logging the resolved paths so a
+# version mismatch between PATH-claude and mise-claude is visible.
+
+# All env exports — consolidated here after patched CLI is known.
+#
+# Re-derive AGENT_HOME_DIR from AGENT_NAME right before we use it. The unset
+# at the top of this script closes the parent-shell leak, but the op-exec
+# injection above (lines ~205) `eval`s whatever sits in op://Agent-$NAME/ENVIRONMENT
+# — and that 1Pass entry has, in practice, contained a stale AGENT_HOME_DIR
+# pointing at another agent's home (alex run leaked …/agents/jack). The recompute
+# here is the ground truth: AGENT_NAME → AGENT_HOME_DIR → every per-agent path.
+# (See log launcher.1777925907.log for the original symptom.)
+# shellcheck source=lib/agent-env.sh
+source "$LIB_DIR/agent-env.sh"
+agent_env_export
+
+log "[env] export AGENT_NAME=$AGENT_NAME"
+log "[env] export AGENT_HOME_DIR=$AGENT_HOME_DIR"
+log "[env] export AGENT_DEBUG=$AGENT_DEBUG"
+log "[env] export XDG_CONFIG_HOME=$XDG_CONFIG_HOME"
+log "[env] export XDG_DATA_HOME=$XDG_DATA_HOME"
+log "[env] export XDG_STATE_HOME=$XDG_STATE_HOME"
+log "[env] export XDG_CACHE_HOME=$XDG_CACHE_HOME"
+log "[env] export XDG_CONFIG_DIRS=$XDG_CONFIG_DIRS"
+log "[env] export XDG_DATA_DIRS=$XDG_DATA_DIRS"
+log "[env] export GH_CONFIG_DIR=$GH_CONFIG_DIR"
+log "[env] export GIT_CONFIG_GLOBAL=$GIT_CONFIG_GLOBAL"
+log "[env] export CLAUDE_CONFIG_DIR=$CLAUDE_CONFIG_DIR"
+log "[env] export DISABLE_AUTOUPDATER=$DISABLE_AUTOUPDATER"
+log "[env] export FORCE_AUTOUPDATE_PLUGINS=$FORCE_AUTOUPDATE_PLUGINS"
+log "[env] export CLAUDE_CODE_ATTRIBUTION_HEADER=$CLAUDE_CODE_ATTRIBUTION_HEADER"
+log "[env] export CLAUDE_AUTO_BACKGROUND_TASKS=$CLAUDE_AUTO_BACKGROUND_TASKS"
+log "[env] export CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY=$CLAUDE_CODE_DISABLE_FEEDBACK_SURVEY"
+log "[env] export CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING=$CLAUDE_CODE_DISABLE_FILE_CHECKPOINTING"
+log "[env] export CLAUDE_CODE_ENABLE_AWAY_SUMMARY=$CLAUDE_CODE_ENABLE_AWAY_SUMMARY"
+log "[env] export CLAUDE_CODE_ENABLE_BACKGROUND_PLUGIN_REFRESH=$CLAUDE_CODE_ENABLE_BACKGROUND_PLUGIN_REFRESH"
+log "[env] export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=$CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS"
+# CLAUDE_CODE_OAUTH_TOKEN is injected by op-exec from op://Agent-$AGENT_NAME/ENVIRONMENT
+# earlier in the launch. Confirm it landed without printing the value.
+if [[ -n "${CLAUDE_CODE_OAUTH_TOKEN:-}" ]]; then
+  log "[env] CLAUDE_CODE_OAUTH_TOKEN is set (${#CLAUDE_CODE_OAUTH_TOKEN} chars)"
+else
+  warn "[env] CLAUDE_CODE_OAUTH_TOKEN is not set — claude may prompt for login"
+fi
+
+# Seed $CLAUDE_CONFIG_DIR/.claude.json from the checked-in seed at
+# $REPO_DIR/.claude/.claude.json so a fresh agent home dir doesn't strand
+# claude on the theme picker / trust dialog / login picker. Empirically
+# verified: setting hasCompletedOnboarding=true and the per-project
+# hasTrustDialogAccepted=true makes claude skip those gates and use
+# CLAUDE_CODE_OAUTH_TOKEN directly.
+#
+# Merge semantics: jq -s '.[0] * .[1]' (seed * target) — target wins on
+# overlapping keys so seed updates are additive and never destroy runtime
+# state (firstStartTime, userID, migration flags, cached growthbook
+# features, etc.). This MUST run before the interactive launch since
+# claude reads .claude.json on startup.
+#
+# See docs/research/claude-code-oauth-token-bootstrap-investigation.md in
+# the ai-agent-jack repo for the empirical verification and rationale.
+# shellcheck source=lib/seed-claude-json.sh
+source "$LIB_DIR/seed-claude-json.sh"
+seed_claude_json
+
+# --- Pre-marketplace auth setup ---
+# `claude plugin marketplace add` may need to clone PRIVATE GitHub repos
+# (e.g. nsheaps/agents). Without prior auth, claude falls back to HTTPS
+# anonymous and 404s silently ("Marketplace file not found"). Two prep
+# steps mitigate this:
+#
+# 1) Pin global git config (per-agent via GIT_CONFIG_GLOBAL set in agent-env.sh)
+#    to rewrite git@github.com: → https://github.com/ so private repos go
+#    through HTTPS-with-creds rather than SSH (no agent SSH keys configured).
+# 2) Ensure GH_TOKEN is set in env. Prefer the existing token at
+#    $AGENT_HOME_DIR/.config/github-token if its meta file shows >10min
+#    remaining. Otherwise regenerate via github-app's generate-token.sh.
+# The credential helper in the per-agent git config reads from
+# $AGENT_HOME_DIR/.config/github-token, so just having the file fresh on
+# disk is sufficient — GH_TOKEN export is belt-and-suspenders.
+
+# Step 1: git config insteadOf (idempotent — git config writes the agent's
+# GIT_CONFIG_GLOBAL, not the handler's ~/.gitconfig).
+if command -v git &>/dev/null; then
+  # Idempotent: clear any prior values, then --add both SSH URL forms.
+  # `git config --insteadOf` is single-valued without --add; calling it twice
+  # only keeps the last one. We need BOTH the scp-like (`git@github.com:`) and
+  # the explicit-ssh (`ssh://git@github.com/`) forms covered.
+  git config --global --unset-all url."https://github.com/".insteadOf >>"$LOG_FILE" 2>&1 || true
+  git config --global --add url."https://github.com/".insteadOf "git@github.com:" \
+    >>"$LOG_FILE" 2>&1 || warn "[git] url.insteadOf set failed (non-fatal)"
+  git config --global --add url."https://github.com/".insteadOf "ssh://git@github.com/" \
+    >>"$LOG_FILE" 2>&1 || true
+  log "[git] global insteadOf: git@github.com: → https://github.com/"
+  # Credential helper for HTTPS clones of private repos (e.g. claude plugin
+  # marketplace add nsheaps/agents). Per Claude Code docs:
+  # https://code.claude.com/docs/en/plugin-marketplaces#private-repository-authentication-fails
+  # `gh auth git-credential` reads GH_TOKEN/GITHUB_TOKEN from env, so this
+  # works with the exported token below without needing a stored credential.
+  if command -v gh &>/dev/null; then
+    git config --global --unset-all credential.https://github.com.helper >>"$LOG_FILE" 2>&1 || true
+    git config --global credential.https://github.com.helper "" >>"$LOG_FILE" 2>&1 || true
+    git config --global --add credential.https://github.com.helper '!gh auth git-credential' \
+      >>"$LOG_FILE" 2>&1 || warn "[git] credential.helper set failed (non-fatal)"
+    log "[git] credential.helper: !gh auth git-credential"
+  fi
+fi
+
+# Step 2: GH token state report + ALWAYS refresh.
+# Per Nate (Discord 2026-05-16 03:22Z): bin/agent should print the state of
+# the current token but always generate a new one anyway at startup.
+gh_token_file="$AGENT_HOME_DIR/.config/github-token"
+gh_token_meta="${gh_token_file}.meta"
+# "Who is this token for" — exposed in every gh-auth log so it's obvious
+# which github-app installation issued the token in flight.
+gh_install_id_for_log="${GITHUB_APP_INSTALLATION_ID:-${GITHUB_INSTALLATION_ID:-unset}}"
+gh_who="app=${GITHUB_APP_ID:-unset} install=${gh_install_id_for_log}"
+if [[ -r "$gh_token_file" && -r "$gh_token_meta" ]] && command -v jq &>/dev/null && command -v date &>/dev/null; then
+  expires_iso="$(jq -r '.expires_at // empty' "$gh_token_meta" 2>/dev/null)"
+  meta_app="$(jq -r '.app_id // empty' "$gh_token_meta" 2>/dev/null)"
+  meta_install="$(jq -r '.installation_id // empty' "$gh_token_meta" 2>/dev/null)"
+  [[ -n "$meta_app$meta_install" ]] && gh_who="app=${meta_app:-${GITHUB_APP_ID:-unset}} install=${meta_install:-$gh_install_id_for_log}"
+  if [[ -n "$expires_iso" ]]; then
+    expires_epoch="$(date -d "$expires_iso" +%s 2>/dev/null || echo 0)"
+    now_epoch="$(date +%s)"
+    remaining=$(( expires_epoch - now_epoch ))
+    if (( remaining > 0 )); then
+      log "[gh-auth] current token state: valid until $expires_iso ($(( remaining / 60 ))min remaining, $gh_who)"
+    else
+      log "[gh-auth] current token state: EXPIRED $(( -remaining / 60 ))min ago ($gh_who)"
+    fi
+  else
+    log "[gh-auth] current token state: meta file present but no expires_at ($gh_who)"
+  fi
+else
+  log "[gh-auth] current token state: no token on disk ($gh_who)"
+fi
+# Always regenerate at startup so plugin/marketplace work gets a fresh
+# token; cheap and avoids edge cases with stale/expired/missing tokens.
+need_regen=true
+refresh_succeeded=false
+if [[ "$need_regen" == "true" ]]; then
+  # Accept either GITHUB_APP_INSTALLATION_ID (new name, #561) or
+  # GITHUB_INSTALLATION_ID (legacy) — env-file plugins still emit the old name
+  # in some agents, and we shouldn't fail regen just because of the rename.
+  gh_install_id="${GITHUB_APP_INSTALLATION_ID:-${GITHUB_INSTALLATION_ID:-}}"
+  # Materialize GITHUB_APP_PRIVATE_KEY content → file if GITHUB_APP_PRIVATE_KEY_PATH
+  # is unset or points at a missing file. op-inject injects the PEM as content;
+  # generate-token.sh needs a file path. This covers the first-boot case where
+  # .env.local hasn't been written yet by the 1pass Setup hook.
+  if [[ -z "${GITHUB_APP_PRIVATE_KEY_PATH:-}" || ! -r "${GITHUB_APP_PRIVATE_KEY_PATH:-/nonexistent}" ]]; then
+    if [[ -n "${GITHUB_APP_PRIVATE_KEY:-}" ]]; then
+      _pem_path="$AGENT_HOME_DIR/.config/github-app.pem"
+      mkdir -p "$(dirname "$_pem_path")"
+      printf '%s' "$GITHUB_APP_PRIVATE_KEY" > "$_pem_path"
+      chmod 600 "$_pem_path"
+      export GITHUB_APP_PRIVATE_KEY_PATH="$_pem_path"
+      log "[gh-auth] materialized GITHUB_APP_PRIVATE_KEY content → $_pem_path"
+    fi
+  fi
+  # Diagnostic log (names + lengths only, never values) — helps trace whether
+  # op-inject populated the vars or not.
+  log "[gh-auth pre-check] GITHUB_APP_ID=${#GITHUB_APP_ID} INSTALLATION_ID=${#gh_install_id} PRIVATE_KEY_PATH=${GITHUB_APP_PRIVATE_KEY_PATH:-MISSING} PEM_readable=$([[ -r "${GITHUB_APP_PRIVATE_KEY_PATH:-/nonexistent}" ]] && echo yes || echo no)"
+  if [[ -n "${GITHUB_APP_ID:-}" && -n "$gh_install_id" && -n "${GITHUB_APP_PRIVATE_KEY_PATH:-}" && -r "${GITHUB_APP_PRIVATE_KEY_PATH}" ]]; then
+    # Resolve the plugin's generate-token.sh from the cached marketplace.
+    gen_token=""
+    for p in "$HOME/.claude/plugins/cache/ai-mktpl/github-app"/*/bin/generate-token.sh; do
+      [[ -x "$p" ]] && gen_token="$p"
+    done
+    if [[ -n "$gen_token" ]]; then
+      mkdir -p "$(dirname "$gh_token_file")"
+      if "$gen_token" "$GITHUB_APP_ID" "$GITHUB_APP_PRIVATE_KEY_PATH" "$gh_install_id" "$gh_token_file" >>"$LOG_FILE" 2>&1; then
+        # Re-read meta so we can report the new expiry. generate-token.sh writes
+        # ${gh_token_file}.meta alongside the token.
+        new_expires=""
+        if [[ -r "$gh_token_meta" ]] && command -v jq &>/dev/null; then
+          new_expires="$(jq -r '.expires_at // empty' "$gh_token_meta" 2>/dev/null)"
+        fi
+        log "[gh-auth] new token state: valid until ${new_expires:-unknown} (app=$GITHUB_APP_ID install=$gh_install_id) — REFRESHED"
+        refresh_succeeded=true
+      else
+        warn "[gh-auth] token refresh FAILED (app=$GITHUB_APP_ID install=$gh_install_id) — non-fatal, marketplace add may fail for private repos"
+      fi
+    else
+      warn "[gh-auth] generate-token.sh not found in plugin cache; skipping token regen"
+    fi
+  else
+    warn "[gh-auth] GITHUB_APP_* env vars not set or PEM missing; skipping token regen (private marketplace adds may fail)"
+  fi
+fi
+# Export GH_TOKEN from the token file so child `claude` invocations + git
+# credential helpers see it directly. NOT logged — value is secret.
+#
+# Identity-gated export (Nate Discord 2026-05-17 — fix for henry-as-jack
+# contamination): refuse to export when the on-disk token's meta.app_id
+# disagrees with the launcher's current GITHUB_APP_ID (cross-agent
+# contamination), AND require either a successful refresh this iteration or
+# a present meta file (so we know the token's provenance). The previous gate
+# (-r file alone) exported jack's stale token in henry's launcher run.
+# See docs/research/bin-agent-ordering-bug-2026-05-17.md §"Fix 4".
+if [[ -r "$gh_token_file" ]]; then
+  meta_app=""
+  if [[ -r "$gh_token_meta" ]] && command -v jq &>/dev/null; then
+    meta_app="$(jq -r '.app_id // empty' "$gh_token_meta" 2>/dev/null)"
+  fi
+  if [[ -n "$meta_app" && -n "${GITHUB_APP_ID:-}" && "$meta_app" != "$GITHUB_APP_ID" ]]; then
+    warn "[gh-auth] on-disk token belongs to app=$meta_app but launcher GITHUB_APP_ID=$GITHUB_APP_ID — REFUSING to export GH_TOKEN (cross-agent contamination guard)"
+  elif [[ "$refresh_succeeded" == "true" || -n "$meta_app" ]]; then
+    GH_TOKEN="$(<"$gh_token_file")"
+    export GH_TOKEN
+    export GITHUB_TOKEN="$GH_TOKEN"
+    log "[gh-auth] GH_TOKEN exported (${#GH_TOKEN} chars, $gh_who) for marketplace add"
+  else
+    warn "[gh-auth] no meta file AND refresh did not succeed — REFUSING to export GH_TOKEN (cannot verify token provenance)"
+  fi
+fi
+
+# Step 7.5: Ensure a patched claude binary exists before marketplace_bootstrap.
+# bin/claude wrapper no longer auto-patches (Nate, Discord 2026-05-15 02:47Z) —
+# it only patches when called with --force. Decide whether to force a patch:
+#   FORCE_PATCH=true       → drop current symlink, then patch.
+#   PATCH_IF_UNTESTED=true → patch only if no valid patched symlink exists.
+# Once patched, the symlink is valid and any further `claude` calls in this
+# iteration re-use it (no sentinel needed — the symlink IS the state).
+launcher_should_patch_once() {
+  local link_path="$REPO_DIR/bin/claude-patched"
+  # FORCE_PATCH=true: invalidate the current symlink so the next check
+  # forces a fresh patch (catches the "patcher itself was updated" case).
+  if [[ "$FORCE_PATCH" == true && -L "$link_path" ]]; then
+    rm -f "$link_path"
+  fi
+  # No valid patched symlink? Patch if either flag is on.
+  if [[ ! -L "$link_path" || ! -e "$link_path" || ! -x "$link_path" ]]; then
+    [[ "$FORCE_PATCH" == true || "$PATCH_IF_UNTESTED" == true ]] && return 0
+  fi
+  return 1
+}
+if launcher_should_patch_once; then
+  log "[patch] forcing one patch this iteration (FORCE_PATCH=$FORCE_PATCH PATCH_IF_UNTESTED=$PATCH_IF_UNTESTED)"
+  # Cheap noop that drives bin/claude through its --force path.
+  if command -v direnv &>/dev/null; then
+    direnv exec "$REPO_DIR" claude --force --version >>"$LOG_FILE" 2>&1 \
+      || warn "[patch] forced patch invocation exited non-zero ($?), continuing"
+  else
+    claude --force --version >>"$LOG_FILE" 2>&1 \
+      || warn "[patch] forced patch invocation exited non-zero ($?), continuing"
+  fi
+else
+  log "[patch] no patch this iteration (FORCE_PATCH=$FORCE_PATCH PATCH_IF_UNTESTED=$PATCH_IF_UNTESTED, symlink valid)"
+fi
+
+# Bootstrap marketplaces + ensure enabled plugins are installed (L14).
+marketplace_bootstrap || true
+
+# Prune orphan auto-installed plugin deps after marketplace bootstrap.
+# Must run AFTER LOG_FILE assignment so log/warn output reaches the real log.
+marketplace_prune_orphans || true
+
+# Step 8.0: Pre-pass — fire Setup{trigger:init} + SessionStart{source:startup}
+# hooks, then exit 0. This lets shared-lib (and any future Setup-using plugin,
+# e.g. 1pass op-exec ENVIRONMENT writes via PR #507) install its libs / write
+# .env.local BEFORE dependent plugins' SessionStart hooks fire in the
+# interactive session.
+#
+# Runs immediately after plugin prune, before the interactive launch.
+#
+# This block was REMOVED on 2026-05-06 (commit a9c7e53), then RESTORED on
+# 2026-05-16 per Nate's Discord directive (msg 1505031929031032883: "go back
+# to what it was before") because Setup hooks can only fire here — `--init`
+# forces `--print` mode and cannot sit on the interactive call.
+#
+# Do NOT pass `--continue` here — empirically validated 2026-05-16: with
+# --continue, the prepass exited cleanly but Setup hooks did NOT fire
+# (empty plugin data dir, no .env.local). `--init-only` returns before
+# session resolution, and adding --continue appears to short-circuit
+# the init flow before Setup is dispatched. (Nate's msg 1505032209373859972
+# proposed defensive --continue; the test refuted that hypothesis.)
+#
+# Tolerant of failure: if the prepass fails, log it and continue.
+PRE_PASS_CLI="claude"
+PRE_PASS_ARGS=(--init-only --dangerously-skip-permissions)
+log "[pre-pass] Running claude ${PRE_PASS_ARGS[*]} to fire Setup hooks..."
+if command -v direnv &>/dev/null; then
+  direnv exec "$REPO_DIR" "$PRE_PASS_CLI" "${PRE_PASS_ARGS[@]}" >>"$LOG_FILE" 2>&1 \
+    || warn "[pre-pass] init-only exited non-zero ($?), continuing to interactive launch"
+else
+  "$PRE_PASS_CLI" "${PRE_PASS_ARGS[@]}" >>"$LOG_FILE" 2>&1 \
+    || warn "[pre-pass] init-only exited non-zero ($?), continuing to interactive launch"
+fi
+
+# --- Build claude args ---
+
+build_args() {
+  local args=()
+
+  # Session name for identification
+  args+=(--name "[Agent $AGENT_NAME]")
+
+  # Always run in debug mode for diagnostics
+  args+=(--debug)
+
+  # Model is set via settings.json — do NOT hardcode --model here
+  # as the CLI flag overrides settings.json
+
+  # System prompt addendum — appends iterative-task / skill-first directive
+  # (per Nate Discord 2026-05-16, msg 1505285588692242555).
+  # IMPORTANT: must use --append-system-prompt-file (path) NOT --append-system-prompt
+  # (value). build_args returns args via stdout joined by `\n` and main() reads
+  # line-by-line — multi-line arg values (file contents w/ newlines) get split
+  # into multiple args, breaking the entire arg list (including --debug + Discord
+  # channel flags). Symptom: claude launches with EMPTY args, agent looks broken.
+  local sysprompt_file="$REPO_DIR/.claude/SYSTEM-PROMPT-ADDENDUM.md"
+  if [[ -f "$sysprompt_file" ]]; then
+    args+=(--append-system-prompt-file "$sysprompt_file")
+  fi
+
+  # Auto-compact at 500k tokens to preserve context longer
+  # export CLAUDE_CODE_AUTO_COMPACT_WINDOW=500000
+
+  # Continue or fresh start.
+  # Per Nate's directive (Discord 2026-05-06 00:11Z, msg 1501375706158862527),
+  # the session probe / pre-pass / --bare path was removed. Use --continue
+  # directly. If there's no existing session, claude exits with "No
+  # conversation found to continue" — the launcher captures stderr and
+  # surfaces the 5 most-recent top-level transcripts (see main loop).
+  local fresh_start_file="$TMP_DIR/fresh-start"
+  if [[ -f "$fresh_start_file" ]]; then
+    log "Fresh start requested — skipping --continue"
+    # Warn if CONTINUATION.md is missing or empty — agent should have written it before
+    # triggering fresh-start. Missing/empty means new session gets only the default prompt.
+    if [[ ! -f "$CONTINUATION_FILE" ]]; then
+      warn "[fresh-start] CONTINUATION.md is missing — new session will receive no prior-session context"
+    elif [[ ! -s "$CONTINUATION_FILE" ]]; then
+      warn "[fresh-start] CONTINUATION.md is empty — new session will receive no prior-session context"
+    else
+      log "[fresh-start] CONTINUATION.md exists ($(wc -c < "$CONTINUATION_FILE" | tr -d ' ') bytes) — will be injected as first-turn prompt"
+    fi
+    rm "$fresh_start_file"
+  else
+    args+=(--continue)
+  fi
+
+  # Channel plugins — use --dangerously-load-development-channels for ai-mktpl plugins.
+  # --channels loads the plugin (tools work) but does NOT deliver live inbound messages.
+  # --dangerously-load-development-channels enables live message push.
+  # The patchers (patch-channel-allowlist.ts + patch-dev-channels.ts) handle the
+  # DevChannelsDialog prompt that this flag triggers.
+  # if [[ -d "$CLAUDE_CONFIG_DIR/plugins/marketplaces/ai-mktpl/plugins/telegram" ]]; then
+  #   args+=(--dangerously-load-development-channels plugin:telegram@ai-mktpl)
+  # else
+    # args+=(--channels plugin:telegram@ai-mktpl)
+  # fi
+
+  # if [[ -d "$CLAUDE_CONFIG_DIR/plugins/marketplaces/ai-mktpl/plugins/discord" ]]; then
+    args+=(--dangerously-load-development-channels plugin:discord@ai-mktpl)
+  # fi
+
+  # Permission mode (default: bypassPermissions).
+  # Per Nate's directive (Discord 2026-05-15 02:41Z, msg 1504675169464225855):
+  # ALSO pass --dangerously-skip-permissions on top of the permission mode.
+  # Per https://code.claude.com/docs/en/hooks-guide#hooks-and-permission-modes,
+  # hooks still dispatch under --dangerously-skip-permissions.
+  if [[ -f "$PERMISSION_MODE_FILE" ]]; then
+    local mode
+    mode="$(cat "$PERMISSION_MODE_FILE")"
+    args+=(--permission-mode "$mode")
+  else
+    args+=(--permission-mode bypassPermissions)
+  fi
+  args+=(--dangerously-skip-permissions)
+
+  # One-time flags from file (deleted after reading)
+  if [[ -f "$FLAGS_FILE" ]]; then
+    log "Loading one-time flags from $FLAGS_FILE"
+    while IFS= read -r flag; do
+      [[ -z "$flag" || "$flag" == \#* ]] && continue
+      # shellcheck disable=SC2086
+      args+=("$flag")
+    done < "$FLAGS_FILE"
+    rm "$FLAGS_FILE"
+  fi
+
+  # Pass through any CLI args from the command line
+  args+=("$@")
+
+  printf '%s\n' "${args[@]}"
+}
+
+# --- Build continuation prompt ---
+
+build_prompt() {
+  # Assembled prompt structure (Nate, Discord 2026-05-19 16:36Z):
+  #   1. ## Launcher Logs (since last start) — if any
+  #   2. CONTINUATION.md content + ## Restored Tasks from Previous Session — if present
+  #   3. System "you've been started" footer — ALWAYS appended
+  #
+  # File-ops (cat CONTINUATION.md, tee to log, archive; cat TODO_FILE) MUST run
+  # BEFORE we cat $LOG_FILE for section 1 — otherwise their log lines won't
+  # appear in the embedded launcher logs the agent receives.
+  local cont_body=""        # accumulates CONTINUATION + Restored Tasks
+  local consumed_dir="$TMP_DIR/consumed-continuations"
+
+  # --- file ops (write to LOG_FILE, populate cont_body) ---
+
+  # Continuation file (agent writes this before requesting restart)
+  if [[ -f "$CONTINUATION_FILE" ]]; then
+    local cont_content cont_size
+    cont_content="$(cat "$CONTINUATION_FILE")"
+    cont_size="${#cont_content}"
+
+    if [[ "$cont_size" -eq 0 ]]; then
+      warn "CONTINUATION.md is empty — new session will start with no prior-session context"
+    fi
+    log "Loading continuation prompt ($cont_size chars)"
+
+    # Tee content to LOG_FILE for handler visibility and forensic reference.
+    # Written as a raw block (not via log()) so content formatting is preserved.
+    {
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] --- CONTINUATION.md content ($cont_size chars) ---"
+      printf '%s\n' "$cont_content"
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] --- end CONTINUATION.md ---"
+    } >> "$LOG_FILE"
+
+    cont_body="$cont_content"
+
+    # Archive (move-on-consume) — never rm blindly. Preserves forensic record if
+    # the launcher crashes before the new claude process starts.
+    # .claude/tmp is gitignored so consumed-continuations/ won't be tracked.
+    mkdir -p "$consumed_dir"
+    local archive_ts
+    archive_ts="$(date +%s)"
+    mv "$CONTINUATION_FILE" "$consumed_dir/${archive_ts}-CONTINUATION.md"
+    log "Archived CONTINUATION.md → $consumed_dir/${archive_ts}-CONTINUATION.md"
+
+    # Rotate consumed-continuations: keep only the 15 most recent archives,
+    # matching the L12 launcher-log rotation pattern (ls -t | tail -n +16 | xargs rm).
+    # shellcheck disable=SC2012
+    ls -t "$consumed_dir"/*-CONTINUATION.md 2>/dev/null | tail -n +16 | xargs -r rm -f || true
+  fi
+
+  # Todo state from previous session
+  if [[ -f "$TODO_FILE" ]]; then
+    log "Loading preserved todos"
+    local todos
+    todos="$(cat "$TODO_FILE")"
+    if [[ -n "$cont_body" ]]; then
+      cont_body="$cont_body"$'\n\n'
+    fi
+    cont_body="${cont_body}## Restored Tasks from Previous Session"$'\n'"Re-create these tasks using TaskCreate, then continue working on them:"$'\n'"$todos"
+    rm "$TODO_FILE"
+  fi
+
+  # --- read LOG_FILE (now contains all file-op events above) ---
+  local logs_section=""
+  if [[ -f "$LOG_FILE" ]]; then
+    local logs
+    logs="$(cat "$LOG_FILE")"
+    # Strip the embedded CONTINUATION.md block from the launcher logs the agent
+    # receives — cont_body is already appended separately below, so leaving it
+    # in `logs` would cause the continuation to appear twice in the prompt.
+    # (The framing lines `--- CONTINUATION.md content (N chars) ---` and
+    # `--- end CONTINUATION.md ---` are written at line ~860.)
+    if [[ -n "$logs" ]]; then
+      logs="$(printf '%s\n' "$logs" | awk '
+        /^\[.*\] --- CONTINUATION\.md content \([0-9]+ chars\) ---$/ { skip=1; next }
+        skip && /^\[.*\] --- end CONTINUATION\.md ---$/ { skip=0; next }
+        !skip
+      ')"
+    fi
+    if [[ -n "$logs" ]]; then
+      logs_section="## Launcher Logs (since last start)"$'\n'"\`\`\`"$'\n'"$logs"$'\n'"\`\`\`"
+    fi
+  fi
+
+  # --- assemble in Nate's order: logs → continuation/todos → system footer ---
+  local sys_footer="You have just been started. FIRST: Read .claude/scheduled-tasks.yaml and recreate all enabled crons via CronCreate (per rules/scheduled-tasks.md), deduping against CronList first. THEN: Continue any work you were doing before (if you are supposed to), otherwise stay idle and wait for instructions."
+
+  local prompt=""
+  if [[ -n "$logs_section" ]]; then
+    prompt="$logs_section"
+  fi
+  if [[ -n "$cont_body" ]]; then
+    [[ -n "$prompt" ]] && prompt="$prompt"$'\n\n'
+    prompt="${prompt}${cont_body}"
+  fi
+  [[ -n "$prompt" ]] && prompt="$prompt"$'\n\n'
+  prompt="${prompt}${sys_footer}"
+
+  echo "$prompt"
+}
+
+# --- tmux support ---
+
+ensure_tmux() {
+  if [[ "$USE_TMUX" != "true" ]]; then
+    return
+  fi
+
+  if [[ -n "${TMUX:-}" ]]; then
+    local current_session
+    current_session="$(tmux display-message -p '#S' 2>/dev/null || true)"
+    if [[ "$current_session" == "$TMUX_SESSION" ]]; then
+      return
+    fi
+  fi
+
+  if tmux has-session -t "$TMUX_SESSION" 2>/dev/null; then
+    log "Attaching to existing tmux session '$TMUX_SESSION'"
+    exec tmux attach-session -t "$TMUX_SESSION"
+  else
+    log "Creating tmux session '$TMUX_SESSION'"
+    exec tmux new-session -s "$TMUX_SESSION" -c "$REPO_DIR" "$0" "$AGENT_NAME" "$REPO_DIR" --tmux "$@"
+  fi
+}
+
+# --- Main loop ---
+
+main() {
+  ensure_tmux "$@"
+  log "$AGENT_NAME launcher starting in $REPO_DIR"
+  log_restart_history
+
+  while true; do
+    # Build args (re-read each iteration since agent can modify files)
+    local args=()
+    while IFS= read -r arg; do
+      args+=("$arg")
+    done < <(build_args "$@")
+
+    # Multi-line launch log — each arg on its own line with \ continuations (copy-pasteable).
+    # ORDERING INVARIANT: this block MUST appear before build_prompt below. build_prompt
+    # snapshots $LOG_FILE at call time to embed recent launcher logs in the startup prompt;
+    # any log lines written after build_prompt is called are excluded from that snapshot.
+    # Logging "Running claude:" here ensures the agent sees it in the embedded launcher logs.
+    if command -v direnv &>/dev/null; then
+      log "Running claude:"
+      log "  direnv exec -- \\"
+      log "    claude \\"
+    else
+      log "Running claude (direnv unavailable):"
+      log "    claude \\"
+    fi
+    local last_idx=$(( ${#args[@]} - 1 ))
+    local _log_i
+    for _log_i in "${!args[@]}"; do
+      local _log_arg="${args[$_log_i]}"
+      local _log_quoted
+      if [[ "$_log_arg" == *" "* || "$_log_arg" == *'"'* || "$_log_arg" == *"'"* ]]; then
+        _log_quoted="\"${_log_arg//\"/\\\"}\""
+      else
+        _log_quoted="$_log_arg"
+      fi
+      if [[ "$_log_i" -eq "$last_idx" ]]; then
+        log "    $_log_quoted"
+      else
+        log "    $_log_quoted \\"
+      fi
+    done
+    echo ""
+
+    local prompt
+    prompt="$(build_prompt)"
+
+    # Record state before starting
+    LAUNCH_TIME=$(date +%s)
+
+    # Always have a prompt (continuation, todos, or default startup message)
+    # Pass it as positional arg (first user message)
+    # cli_cmd is always "claude" — direnv-prepended <repo>/bin makes it
+    # resolve to bin/claude (the wrapper that owns patching).
+    local cli_cmd="claude"
+    log "Sending startup prompt as first message (${#prompt} chars)"
+
+    # Log the startup prompt for cold-start / restart debugging, with the
+    # embedded "## Launcher Logs (since last start)" section stripped to avoid
+    # recursion (the log already contains those lines verbatim above this block).
+    # TODO(#596 followup): obfuscate secrets in startup prompt before logging.
+    # The prompt is assembled from launcher logs + CONTINUATION.md + preserved
+    # todos + system footer; none of those SHOULD carry credentials, but launcher
+    # logs in particular can echo env-related lines, and an agent-authored
+    # CONTINUATION.md could in principle inline a token by mistake. Once a
+    # scrubber is in place, drop this TODO.
+    {
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] === STARTUP PROMPT (full, ${#prompt} chars; ## Launcher Logs section stripped to avoid recursion) ==="
+      printf '%s\n' "$prompt" | awk '
+        BEGIN { skip=0; fences=0 }
+        /^## Launcher Logs \(since last start\)$/ { skip=1; next }
+        skip && /^```$/ {
+          fences++
+          if (fences == 2) { skip=0; fences=0 }
+          next
+        }
+        !skip
+      '
+      echo "[$(date '+%Y-%m-%d %H:%M:%S')] === /STARTUP PROMPT ==="
+    } >> "$LOG_FILE"
+
+    # DevChannelsDialog fallback: opt-in via --with-dialog-accept-fallback flag.
+    # Disabled by default — the patcher's Patch 3 handles dialog bypass.
+    # Enable this only as a safety net if the patcher fails to bypass the dialog.
+    # See: https://github.com/nsheaps/claude-utils/pull/28
+    if [[ "$DIALOG_ACCEPT_FALLBACK" == true && -n "${TMUX:-}" ]]; then
+      (
+        for i in $(seq 1 30); do
+          sleep 1
+          pane_text="$(tmux capture-pane -p 2>/dev/null)" || break
+          if echo "$pane_text" | grep -q "I am using this for local development"; then
+            log "WARN: DevChannelsDialog appeared despite patcher — auto-accepting via tmux fallback"
+            tmux send-keys Enter
+            break
+          fi
+          if echo "$pane_text" | grep -q "^❯"; then
+            break
+          fi
+        done
+      ) &
+      DIALOG_WATCHER_PID=$!
+    fi
+
+    # Step 8.1: wrap claude in direnv exec for clean env state.
+    local cli_rc=0
+    if command -v direnv &>/dev/null; then
+      direnv exec "$REPO_DIR" $cli_cmd "${args[@]}" "$prompt" || cli_rc=$?
+    else
+      $cli_cmd "${args[@]}" "$prompt" || cli_rc=$?
+    fi
+
+    # Clean up dialog watcher if still running
+    [[ -n "${DIALOG_WATCHER_PID:-}" ]] && kill "$DIALOG_WATCHER_PID" 2>/dev/null || true
+
+    # Cold-start retry: rc=1 with --continue most likely means no session in
+    # the projects dir — claude prints "No conversation found to continue"
+    # to STDOUT (not stderr) in TTY mode, so rc-based detection is the
+    # cheapest reliable signal. Strip --continue and re-run once.
+    #
+    # TODO: persist session_id in agent state (e.g. $AGENT_HOME_DIR/state/last-session-id)
+    # after each successful run, then pass --resume <id> here instead of
+    # --continue. Removes the retry and avoids burning a startup attempt on
+    # genuine cold start.
+    if (( cli_rc == 1 )); then
+      local has_continue=false
+      local arg
+      for arg in "${args[@]}"; do
+        [[ "$arg" == "--continue" ]] && { has_continue=true; break; }
+      done
+      if [[ "$has_continue" == true ]]; then
+        log "[no-session-retry] --continue exited rc=1, retrying without --continue"
+        local args_no_continue=()
+        for arg in "${args[@]}"; do
+          [[ "$arg" == "--continue" ]] && continue
+          args_no_continue+=("$arg")
+        done
+        cli_rc=0
+        if command -v direnv &>/dev/null; then
+          direnv exec "$REPO_DIR" $cli_cmd "${args_no_continue[@]}" "$prompt" || cli_rc=$?
+        else
+          $cli_cmd "${args_no_continue[@]}" "$prompt" || cli_rc=$?
+        fi
+      fi
+    fi
+
+    # --- Post-exit health checks ---
+    EXIT_TIME=$(date +%s)
+    RUNTIME=$((EXIT_TIME - LAUNCH_TIME))
+
+    # Check for fast crash
+    if (( RUNTIME < 10 )); then
+      warn "Claude exited in ${RUNTIME}s — possible startup failure"
+    fi
+
+    # Claude has exited. Restart.
+    echo ""
+    log "$AGENT_NAME has stopped."
+    log "Restarting..."
+    log_restart_history
+
+    # Re-exec this script to pick up any changes the agent made to it
+    # Preserve shim-supplied positional args across restart-loop re-exec.
+    # The shim only supplies them on the initial invocation; we must re-prepend
+    # them so the next iteration's arg-parsing gate sees them.
+    exec "$0" "$AGENT_NAME" "$REPO_DIR" "$@"
+  done
+}
+
+main "$@"
