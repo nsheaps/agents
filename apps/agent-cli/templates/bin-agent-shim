@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# bin/agent — thin shim. Resolves agentName from agent.yaml and delegates to
+# the canonical launcher at apps/agent-cli/bin/deprecated-agent in nsheaps/agents.
+#
+# This file is intentionally byte-identical across alex/henry/jack. Edit the
+# canonical script (apps/agent-cli/bin/deprecated-agent), not this shim.
+#
+# Source of truth: docs/specs/deprecated-agent.md §Shim contract in
+# nsheaps/agents. Per-agent rollout PRs should `cp` this template verbatim into
+# <agent-repo>/bin/agent and chmod +x.
+
+set -euo pipefail
+
+REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+AGENT_NAME="$(yq -r '.name' "$REPO_DIR/agent.yaml")"
+
+# TODO(portability, spec open question §5): hardcoded path to the nsheaps/agents
+# checkout. Nate confirmed (2026-05-20 02:42:10Z) "for now assume yes" on the
+# dev layout; production / CI / peer-machine support deferred. Resolution
+# options (pick one when needed):
+#   (a) env var: ${AGENTS_REPO_DIR:?set in .envrc}/apps/agent-cli/bin/deprecated-agent
+#   (b) sibling-checkout convention: "$REPO_DIR/../agents/apps/agent-cli/bin/deprecated-agent"
+#   (c) mise tool: "$(mise where agents-cli)/bin/deprecated-agent"
+DEPRECATED_AGENT="/home/nsheaps/src/nsheaps/agents/apps/agent-cli/bin/deprecated-agent"
+
+exec "$DEPRECATED_AGENT" "$AGENT_NAME" "$REPO_DIR" "$@"
