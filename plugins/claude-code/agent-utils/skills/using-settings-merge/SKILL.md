@@ -1,6 +1,6 @@
 ---
 name: using-settings-merge
-description: Use when the handler asks to fold user-scope settings into the canonical repo-scope file, when an agent restart wiped out plugin enablement / marketplace registrations that need to be recovered, or when audit shows drift between `$CLAUDE_CONFIG_DIR/.claude/settings*.json` and `$AGENT_REPO/.claude/settings.json`. Trigger phrases — "merge my settings", "fold user-scope into repo-scope", "settings-merge", "recover the settings drift", "what plugins are enabled in my user-scope but not committed?". Requires `$AGENT_REPO/.claude/settings.json` to already exist as the target.
+description: Use when the handler asks to fold user-scope settings into the canonical repo-scope file, when an agent restart wiped out plugin enablement / marketplace registrations that need to be recovered, or when audit shows drift between `$CLAUDE_CONFIG_DIR/settings*.json` and `$AGENT_REPO/.claude/settings.json`. Trigger phrases — "merge my settings", "fold user-scope into repo-scope", "settings-merge", "recover the settings drift", "what plugins are enabled in my user-scope but not committed?". Requires `$AGENT_REPO/.claude/settings.json` to already exist as the target.
 ---
 
 # using-settings-merge
