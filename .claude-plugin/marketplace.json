@@ -6,13 +6,13 @@
   },
   "plugins": [
     {
-      "name": "agent-team-skills",
+      "name": "agent-utils",
       "description": "Skills for multi-agent team orchestration, tmux usage, and agent development",
       "version": "0.1.0",
       "author": {
         "name": "Nathan Heaps"
       },
-      "source": "./plugins/claude-code/agent-team-skills",
+      "source": "./plugins/claude-code/agent-utils",
       "category": "utility",
       "tags": [
         "utility",
@@ -29,13 +29,13 @@
       ]
     },
     {
-      "name": "sched-utils",
+      "name": "cron-utils",
       "description": "Skills for managing scheduled tasks (crons) and idle-conversation follow-up. Provides idle-5-min (cron-tick delegate) and active-convo-goes-idle (single-reminder decision).",
       "version": "0.1.0",
       "author": {
         "name": "Nathan Heaps"
       },
-      "source": "./plugins/claude-code/sched-utils",
+      "source": "./plugins/claude-code/cron-utils",
       "category": "utility",
       "tags": [
         "utility",
