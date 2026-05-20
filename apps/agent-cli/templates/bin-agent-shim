@@ -12,7 +12,19 @@
 set -euo pipefail
 
 REPO_DIR="$(cd "$(dirname "$0")/.." && pwd)"
-AGENT_NAME="$(yq -r '.name' "$REPO_DIR/agent.yaml")"
+
+# Read agentName via grep+sed (NOT yq). At shim execution time, start-agent has
+# reset PATH to CLEAN_PATH (`$HOME/.local/bin:/usr/local/bin:/usr/bin:/bin`) —
+# mise install dirs are NOT on PATH yet, so yq won't resolve. The canonical
+# script does `mise activate` later, but we have to read agent.yaml BEFORE
+# then to know which agent we are. Same constraint as apps/agent-cli/lib/
+# agent-name.sh; we use the same minimal parser here. yq dependency removed
+# 2026-05-20 after henry-shim-restart failure (Henry's PR #151 review note).
+AGENT_NAME="$(grep -E '^[[:space:]]*name:[[:space:]]*' "$REPO_DIR/agent.yaml" 2>/dev/null | head -1 | sed -E 's/^[[:space:]]*name:[[:space:]]*//; s/[[:space:]]*$//; s/^"(.*)"$/\1/; s/^'"'"'(.*)'"'"'$/\1/')"
+if [[ -z "$AGENT_NAME" ]]; then
+  echo "fatal: could not read 'name:' from $REPO_DIR/agent.yaml" >&2
+  exit 1
+fi
 
 # TODO(portability, spec open question §5): hardcoded path to the nsheaps/agents
 # checkout. Nate confirmed (2026-05-20 02:42:10Z) "for now assume yes" on the
