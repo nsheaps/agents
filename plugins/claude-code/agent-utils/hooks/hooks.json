@@ -1,0 +1,13 @@
+{
+  "PostToolUse": [
+    {
+      "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|SlashCommand",
+      "hooks": [
+        {
+          "type": "command",
+          "command": "bun run ${CLAUDE_PLUGIN_ROOT}/dist/settings-write-guard.js"
+        }
+      ]
+    }
+  ]
+}

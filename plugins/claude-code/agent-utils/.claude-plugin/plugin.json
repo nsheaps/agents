@@ -1,7 +1,7 @@
 {
   "name": "agent-utils",
-  "version": "0.1.1",
-  "description": "Skills for multi-agent team orchestration, tmux usage, and agent development",
+  "version": "0.2.0",
+  "description": "Agent infrastructure: skills for multi-agent orchestration + tools for settings drift detection and 2-stage settings merge.",
   "author": {
     "name": "Nathan Heaps",
     "email": "nsheaps@gmail.com",
@@ -16,6 +16,9 @@
     "multi-agent",
     "claude-code",
     "skills",
-    "agent-development"
+    "agent-development",
+    "settings",
+    "config-merge",
+    "hook"
   ]
 }

@@ -4,6 +4,8 @@ yarn.lock
 
 # Build outputs
 dist/
+# Exception: agent-utils plugin ships pre-built bun bundles for hook invocation
+!plugins/claude-code/agent-utils/dist/
 *.tar.gz
 
 # IDE
