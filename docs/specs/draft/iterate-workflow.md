@@ -24,7 +24,7 @@ Open a markdown file in the relevant repo (`docs/specs/draft/<name>.md` for cros
 - The **observable signal** (how do we know it fired correctly?)
 - Open questions
 
-This forces design-before-code. The spec doc is also the artifact you point peer agents + the handler at when you want input. Don't skip this phase even when the change feels obvious — the *act of writing it down* surfaces holes.
+This forces design-before-code. The spec doc is also the artifact you point peer agents + the handler at when you want input. Don't skip this phase even when the change feels obvious — the _act of writing it down_ surfaces holes.
 
 ### 2. Make local changes in the agent repo
 
@@ -73,7 +73,7 @@ This is the moment of truth: the plugin must work end-to-end without the local f
 
 ### 7. Revalidate end-to-end via the plugin
 
-Run the same observable-signal tests from Phase 3 against the plugin install. If they pass: extraction succeeded. If they fail: the plugin extraction is missing something the local copy had (often a hidden path, an env var, or a sibling file). Go back to Phase 4, but iterate *on the plugin branch* this time — you've left the safe-to-iterate-locally zone.
+Run the same observable-signal tests from Phase 3 against the plugin install. If they pass: extraction succeeded. If they fail: the plugin extraction is missing something the local copy had (often a hidden path, an env var, or a sibling file). Go back to Phase 4, but iterate _on the plugin branch_ this time — you've left the safe-to-iterate-locally zone.
 
 ### 8. Iterate until the plugin matches the desired functionality
 
@@ -83,16 +83,16 @@ Same as Phase 4, just inside the plugin. New cycle time is back to "minutes per 
 
 The `task-utils` plugin in [nsheaps/agents PR #142](https://github.com/nsheaps/agents/pull/142) followed this workflow:
 
-| Phase | Artifact |
-| --- | --- |
-| 1. Spec | `docs/specs/task-discipline-plugin.md` in `.ai-agent-alex` (then in nsheaps/agents) |
-| 2. Local | `bin/hooks/task-invariant.sh`, `bin/hooks/require-task-in-progress.sh`, `.claude/skills/manage-tasks/SKILL.md` in `.ai-agent-alex` |
-| 3. Observe | Ran for ~3 weeks in alex with frequent rule additions as edge cases surfaced (background-agent prefix conventions, validation-steps parser, MONITORING(monitor-id) format) |
-| 4. Iterate | All edits committed to `alex/main` directly; coach text refined inline; SKILL.md rewrote multiple times |
-| 5. Extract | Copied to `plugins/task-utils/{hooks,skills}/` in nsheaps/agents; adjusted `plugin.json` to declare the hook + skill |
-| 6. Replace | Once `task-utils@0.1.0` published, alex switched its `.claude/plugins.json` to reference the plugin and removed the local copies |
-| 7. Revalidate | The same TaskCreate / TaskUpdate flow exercised continuously in this session — including this very task — uses the plugin, not the local code |
-| 8. Iterate-on-plugin | Subsequent fixes (e.g., validation-steps parser tightening per [PR #143](https://github.com/nsheaps/agents/pull/143)) landed as plugin PRs in the regular review cycle |
+| Phase                | Artifact                                                                                                                                                                   |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Spec              | `docs/specs/task-discipline-plugin.md` in `.ai-agent-alex` (then in nsheaps/agents)                                                                                        |
+| 2. Local             | `bin/hooks/task-invariant.sh`, `bin/hooks/require-task-in-progress.sh`, `.claude/skills/manage-tasks/SKILL.md` in `.ai-agent-alex`                                         |
+| 3. Observe           | Ran for ~3 weeks in alex with frequent rule additions as edge cases surfaced (background-agent prefix conventions, validation-steps parser, MONITORING(monitor-id) format) |
+| 4. Iterate           | All edits committed to `alex/main` directly; coach text refined inline; SKILL.md rewrote multiple times                                                                    |
+| 5. Extract           | Copied to `plugins/task-utils/{hooks,skills}/` in nsheaps/agents; adjusted `plugin.json` to declare the hook + skill                                                       |
+| 6. Replace           | Once `task-utils@0.1.0` published, alex switched its `.claude/plugins.json` to reference the plugin and removed the local copies                                           |
+| 7. Revalidate        | The same TaskCreate / TaskUpdate flow exercised continuously in this session — including this very task — uses the plugin, not the local code                              |
+| 8. Iterate-on-plugin | Subsequent fixes (e.g., validation-steps parser tightening per [PR #143](https://github.com/nsheaps/agents/pull/143)) landed as plugin PRs in the regular review cycle     |
 
 Total local iteration time: ~weeks. Total plugin-extraction PR cycle: ~1 day. Ratio of insight-per-hour during local vs. plugin phases: roughly 10:1 in favor of local.
 
@@ -120,11 +120,11 @@ The spec, the local change, the observation, the extraction, and the revalidatio
 - **Where do local files live?** Some teams prefer `bin/hooks/` (where this draft assumes), some prefer `.claude/hooks/`. Need a convention.
 - **Plugin-extraction PR descriptions**: should they always link to the local files they're extracting from, or is the spec-doc link sufficient?
 - **How long is "stable" in Phase 4?** Days? Weeks? Number of edit-free interactions? Probably some per-plugin judgement, but a heuristic would help (e.g., "no edits in 5 consecutive agent sessions").
-- **Iteration-on-plugin (Phase 8) cost recovery**: if iteration cost is 10× higher post-extraction, when is it worth going *back* to local? Currently no rule — needs experience to codify.
+- **Iteration-on-plugin (Phase 8) cost recovery**: if iteration cost is 10× higher post-extraction, when is it worth going _back_ to local? Currently no rule — needs experience to codify.
 
 ## Definitions
 
-- **agent repo** — One of `~/src/nsheaps/.ai-agent-{alex,henry,jack}/`. Each has its own `bin/`, `.claude/`, `mise.toml`. Files here load *only* for that agent.
-- **plugin** — A directory under `~/src/nsheaps/ai-mktpl/plugins/<name>/` with `plugin.json`, `skills/`, `hooks/`, etc. Published as a versioned tag and installed via `nsheaps/ai-mktpl`. Files here load for *any* agent that declares the plugin in its `.claude/plugins.json`.
+- **agent repo** — One of `~/src/nsheaps/.ai-agent-{alex,henry,jack}/`. Each has its own `bin/`, `.claude/`, `mise.toml`. Files here load _only_ for that agent.
+- **plugin** — A directory under `~/src/nsheaps/ai-mktpl/plugins/<name>/` with `plugin.json`, `skills/`, `hooks/`, etc. Published as a versioned tag and installed via `nsheaps/ai-mktpl`. Files here load for _any_ agent that declares the plugin in its `.claude/plugins.json`.
 - **observable signal** — A concrete, automatically-checkable indicator that the behavior fired correctly. Hook firing, file modified, task lifecycle transition, Discord message format, etc.
 - **dream cycle** — Future capability in `agentic-behavior`: agent autonomously runs this 8-phase workflow on itself when it detects a behavior gap.
