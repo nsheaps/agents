@@ -41,7 +41,7 @@ Hot-load wherever possible:
 - `bin/hooks/*.sh` — read fresh on each hook event
 - `bin/agent` and `bin/lib/*` — require full session restart (see [deprecated-agent spec](../deprecated-agent.md))
 
-If your change requires a restart and you cannot reasonably restart this session, validate on a peer agent first (see `feedback_launcher_changes_validate_on_nonself_first.md` in alex's memory).
+If your change requires a restart and you cannot reasonably restart this session, validate on a peer agent first. Restarting yourself mid-session risks losing context if the change is bad; a peer-agent restart is reversible, gives you a real round-trip signal (e.g. via Discord), and keeps your live session available to diagnose the failure.
 
 ### 4. Iterate on the process based on observed behavior
 
@@ -67,7 +67,7 @@ Once the plugin PR is merged and tagged (`@x.y.z`):
 
 - In your agent repo's `.claude/plugins.json` (or equivalent), add the plugin at the new version
 - Restart the agent — the plugin's hooks/skills/settings now load from the marketplace install dir
-- Delete the local files that the plugin now supersedes — they would otherwise win per the local-overrides-plugin resolution order (see `.claude/rules/skill-resolution-order.md`)
+- Delete the local files that the plugin now supersedes. **Local-wins resolution order** is the convention some agents adopt during the iterate phase: when a skill or hook exists both as a local file in the agent repo and as a plugin install, the local copy takes precedence. This is intentional during Phase 2-4 (fast iteration), but it means Phase 6 _must_ delete the local copy — otherwise the plugin install is shadowed silently and revalidation in Phase 7 measures the local copy, not the plugin.
 
 This is the moment of truth: the plugin must work end-to-end without the local files to lean on.
 
