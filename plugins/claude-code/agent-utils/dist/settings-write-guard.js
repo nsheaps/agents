@@ -66,7 +66,7 @@ function shouldFire(payload, agentRepo) {
     const cmd = payload.tool_input?.command;
     if (typeof cmd !== "string")
       return { fire: false };
-    if (/(^|[\s;&|`])claude\s+plugin(\s|$)/.test(cmd)) {
+    if (/(^|[\s;&|`(])claude\s+plugin(\s|$)/.test(cmd)) {
       return { fire: true };
     }
     return { fire: false };

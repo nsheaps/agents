@@ -3,7 +3,7 @@
   "hooks": {
     "PostToolUse": [
       {
-        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|SlashCommand",
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Update|Bash|SlashCommand",
         "hooks": [
           {
             "type": "command",

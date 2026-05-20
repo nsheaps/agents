@@ -219,12 +219,19 @@ function settingsMerge(opts) {
 // packages/settings-merge/src/cli.ts
 import { basename } from "path";
 function parseArgs(argv) {
-  const out = { dryRun: false, noBackup: false, help: false };
+  const out = {
+    dryRun: false,
+    noBackup: false,
+    quiet: false,
+    help: false
+  };
   for (const a of argv) {
     if (a === "--dry-run")
       out.dryRun = true;
     else if (a === "--no-backup")
       out.noBackup = true;
+    else if (a === "--quiet" || a === "-q")
+      out.quiet = true;
     else if (a === "--help" || a === "-h")
       out.help = true;
   }
@@ -243,6 +250,7 @@ Env:
 Options:
   --dry-run     show what would change; skip the write + backup
   --no-backup   skip writing settings.bak (testing aid)
+  -q, --quiet   suppress info-level stderr output (warnings + errors still print)
   -h, --help    show this help
 `;
 async function main(argv) {
@@ -251,6 +259,7 @@ async function main(argv) {
     process.stdout.write(HELP);
     return 0;
   }
+  const info = args.quiet ? () => {} : stderr.info;
   const ar = resolveAgentRepo();
   if (!ar.fromEnv) {
     stderr.warn(`AGENT_REPO not set \u2014 falling back to cwd: ${ar.path}`);
@@ -274,19 +283,19 @@ async function main(argv) {
   for (const p of result.passes) {
     const tag = basename(p.sourcePath);
     if (p.skipped) {
-      stderr.info(`${tag}: skipped (file does not exist)`);
+      info(`${tag}: skipped (file does not exist)`);
       continue;
     }
     for (const c of p.conflicts) {
       stderr.warn(`${tag}: ${c.path}: target=${JSON.stringify(c.targetValue)} source=${JSON.stringify(c.sourceValue)} \u2014 keeping target`);
     }
     for (const promo of p.promotions) {
-      stderr.info(`${tag}: promoted ${promo.path}`);
+      info(`${tag}: promoted ${promo.path}`);
     }
   }
   const totalPromos = result.passes.reduce((n, p) => n + p.promotions.length, 0);
   const totalConflicts = result.passes.reduce((n, p) => n + p.conflicts.length, 0);
-  stderr.info(`${args.dryRun ? "[dry-run] " : ""}target=${result.target} backup=${result.backupPath ?? "(none)"} promotions=${totalPromos} conflicts=${totalConflicts}`);
+  info(`${args.dryRun ? "[dry-run] " : ""}target=${result.target} backup=${result.backupPath ?? "(none)"} promotions=${totalPromos} conflicts=${totalConflicts}`);
   return 0;
 }
 
