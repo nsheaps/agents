@@ -1,6 +1,6 @@
 {
   "name": "cron-utils",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Skills for managing scheduled tasks (crons) and idle-conversation follow-up. Provides idle-5-min (cron-tick delegate) and active-convo-goes-idle (single-reminder decision).",
   "author": {
     "name": "Nathan Heaps",
@@ -9,5 +9,12 @@
   },
   "homepage": "https://github.com/nsheaps/agents/tree/main/plugins/claude-code/cron-utils",
   "repository": "https://github.com/nsheaps/agents",
-  "keywords": ["scheduling", "cron", "idle", "claude-code", "agent-discipline", "self-poll"]
+  "keywords": [
+    "scheduling",
+    "cron",
+    "idle",
+    "claude-code",
+    "agent-discipline",
+    "self-poll"
+  ]
 }

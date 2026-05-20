@@ -8,7 +8,7 @@
     {
       "name": "agent-utils",
       "description": "Skills for multi-agent team orchestration, tmux usage, and agent development",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "Nathan Heaps"
       },
@@ -31,7 +31,7 @@
     {
       "name": "cron-utils",
       "description": "Skills for managing scheduled tasks (crons) and idle-conversation follow-up. Provides idle-5-min (cron-tick delegate) and active-convo-goes-idle (single-reminder decision).",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "Nathan Heaps"
       },
