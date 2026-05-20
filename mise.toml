@@ -18,13 +18,38 @@ description = "Check markdown formatting with prettier"
 run = "bun run prettier --check '**/*.md'"
 
 [tasks.lint]
-description = "Run all linting checks"
-depends = ["format-check"]
+description = "Auto-fix lint issues (prettier --write) + shell syntax check"
+depends = ["format"]
 run = """
-# Shell script syntax check
+# Shell script syntax check (skip non-shell files: .ts, .js, .py, .rb, .go)
 for script in bin/*; do
   [ -d "$script" ] && continue
   [ -f "$script" ] || continue
+  case "$script" in
+    *.ts|*.js|*.py|*.rb|*.go) continue ;;
+  esac
+  echo "Checking $script..."
+  bash -n "$script"
+done
+for lib in bin/lib/*.sh; do
+  [ -f "$lib" ] || continue
+  echo "Checking $lib..."
+  bash -n "$lib"
+done
+echo "All lint checks passed."
+"""
+
+[tasks.lint-check]
+description = "Check-only linting (no auto-fix) — for read-only CI gates"
+depends = ["format-check"]
+run = """
+# Shell script syntax check (skip non-shell files: .ts, .js, .py, .rb, .go)
+for script in bin/*; do
+  [ -d "$script" ] && continue
+  [ -f "$script" ] || continue
+  case "$script" in
+    *.ts|*.js|*.py|*.rb|*.go) continue ;;
+  esac
   echo "Checking $script..."
   bash -n "$script"
 done
