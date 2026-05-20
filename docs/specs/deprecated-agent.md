@@ -155,100 +155,100 @@ The script must support every feature currently present in alex/henry/jack's `bi
 
 ### Startup safety
 
-| # | Feature | Validation |
-|---|---|---|
-| 1 | Self-launch guard prevents recursion (`AGENT_LAUNCHER_PID`) | Run `bin/agent`; from inside the resulting claude session, attempt to run `bin/agent` again — should exit 1 with "Cannot launch agent from inside a running agent session." |
-| 2 | Env-var wipe on each launch: `AGENT_NAME`, `AGENT_HOME_DIR`, `XDG_*`, `GH_TOKEN`, `GITHUB_TOKEN`, `GITHUB_APP_*`, `GIT_AUTHOR_*`, `GIT_COMMITTER_*`, `CLIENT_*` | Set `AGENT_NAME=wrong` in parent shell, run `bin/agent`; canonical script's `$1` is the shim-resolved name (from agent.yaml), so `AGENT_NAME=wrong` is overridden |
+| #   | Feature                                                                                                                                                         | Validation                                                                                                                                                                  |
+| --- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | Self-launch guard prevents recursion (`AGENT_LAUNCHER_PID`)                                                                                                     | Run `bin/agent`; from inside the resulting claude session, attempt to run `bin/agent` again — should exit 1 with "Cannot launch agent from inside a running agent session." |
+| 2   | Env-var wipe on each launch: `AGENT_NAME`, `AGENT_HOME_DIR`, `XDG_*`, `GH_TOKEN`, `GITHUB_TOKEN`, `GITHUB_APP_*`, `GIT_AUTHOR_*`, `GIT_COMMITTER_*`, `CLIENT_*` | Set `AGENT_NAME=wrong` in parent shell, run `bin/agent`; canonical script's `$1` is the shim-resolved name (from agent.yaml), so `AGENT_NAME=wrong` is overridden           |
 
 ### Shim correctness
 
-| # | Feature | Validation |
-|---|---|---|
-| 3 | Shim resolves `REPO_DIR` from `$(dirname "$0")/..` regardless of caller's cwd | `cd /tmp && /path/to/.ai-agent-alex/bin/agent --version` resolves REPO_DIR to `.ai-agent-alex`, not `/tmp` |
-| 4 | Shim resolves `AGENT_NAME` from `$REPO_DIR/agent.yaml` (key: `name`) via `yq -r '.name'` | Each of alex/henry/jack's shim resolves to its OWN name; a missing or malformed agent.yaml aborts with a yq error (or shim's own clear error if we wrap it) |
-| 5 | Shim execs the canonical script with `<agentName> <repoDir> [forwarded args]` | Add a temporary `set -x` at the top of the canonical script; running any agent's `bin/agent --foo` shows `+ AGENT_NAME=<name>` and `+ REPO_DIR=<absolute>` |
-| 6 | Canonical script aborts cleanly if invoked WITHOUT the shim (e.g. directly with `<2 args`) | `apps/agent-cli/bin/deprecated-agent` (no args) prints the usage error to stderr and exits 1 |
-| 7 | Shim files are byte-identical across all three agent repos | `sha256sum` of each repo's `bin/agent` produces the same hash |
+| #   | Feature                                                                                    | Validation                                                                                                                                                  |
+| --- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 3   | Shim resolves `REPO_DIR` from `$(dirname "$0")/..` regardless of caller's cwd              | `cd /tmp && /path/to/.ai-agent-alex/bin/agent --version` resolves REPO_DIR to `.ai-agent-alex`, not `/tmp`                                                  |
+| 4   | Shim resolves `AGENT_NAME` from `$REPO_DIR/agent.yaml` (key: `name`) via `yq -r '.name'`   | Each of alex/henry/jack's shim resolves to its OWN name; a missing or malformed agent.yaml aborts with a yq error (or shim's own clear error if we wrap it) |
+| 5   | Shim execs the canonical script with `<agentName> <repoDir> [forwarded args]`              | Add a temporary `set -x` at the top of the canonical script; running any agent's `bin/agent --foo` shows `+ AGENT_NAME=<name>` and `+ REPO_DIR=<absolute>`  |
+| 6   | Canonical script aborts cleanly if invoked WITHOUT the shim (e.g. directly with `<2 args`) | `apps/agent-cli/bin/deprecated-agent` (no args) prints the usage error to stderr and exits 1                                                                |
+| 7   | Shim files are byte-identical across all three agent repos                                 | `sha256sum` of each repo's `bin/agent` produces the same hash                                                                                               |
 
 ### Agent identity & env derivation
 
-| # | Feature | Validation |
-|---|---|---|
-| 8 | Canonical script accepts `$AGENT_NAME` from arg, exports it as env var | After launch, `env \| grep ^AGENT_NAME=` matches the value passed by the shim |
-| 9 | `AGENT_HOME_DIR = $HOME/.agents/$AGENT_NAME` | After launch, env shows the correct per-agent path |
-| 10 | XDG vars (`XDG_CONFIG_HOME`, `XDG_DATA_HOME`, etc.) export BEFORE mise/direnv runs | `ls $AGENT_HOME_DIR/.local/share/mise/installs` populated after first launch (not `~/.local/share/mise/installs`) |
-| 11 | `AGENT_DEBUG=*` default; never `DEBUG=*` (would leak auth headers via axios) | `env \| grep ^DEBUG=` post-launch shows nothing |
+| #   | Feature                                                                            | Validation                                                                                                        |
+| --- | ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| 8   | Canonical script accepts `$AGENT_NAME` from arg, exports it as env var             | After launch, `env \| grep ^AGENT_NAME=` matches the value passed by the shim                                     |
+| 9   | `AGENT_HOME_DIR = $HOME/.agents/$AGENT_NAME`                                       | After launch, env shows the correct per-agent path                                                                |
+| 10  | XDG vars (`XDG_CONFIG_HOME`, `XDG_DATA_HOME`, etc.) export BEFORE mise/direnv runs | `ls $AGENT_HOME_DIR/.local/share/mise/installs` populated after first launch (not `~/.local/share/mise/installs`) |
+| 11  | `AGENT_DEBUG=*` default; never `DEBUG=*` (would leak auth headers via axios)       | `env \| grep ^DEBUG=` post-launch shows nothing                                                                   |
 
 ### Flag parsing
 
-| # | Feature | Validation |
-|---|---|---|
-| 12 | `--tmux` / `--no-tmux` toggles tmux session creation | `bin/agent --no-tmux` does not create a tmux session |
-| 13 | `--force-patch` / `--no-force-patch` overrides patch policy | With `--force-patch`, first iteration patches even if symlink is valid |
-| 14 | `--patch-if-untested` / `--no-patch-if-untested` (default true) | With `--no-patch-if-untested`, an untested claude version is NOT patched |
-| 15 | `--with-dialog-accept-fallback` enables tmux DevChannelsDialog auto-accept | When dialog appears mid-launch, the watcher sends Enter |
-| 16 | Other args are forwarded to claude (via the shim → canonical → build_args chain) | `bin/agent --debug` passes `--debug` through to claude |
+| #   | Feature                                                                          | Validation                                                               |
+| --- | -------------------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| 12  | `--tmux` / `--no-tmux` toggles tmux session creation                             | `bin/agent --no-tmux` does not create a tmux session                     |
+| 13  | `--force-patch` / `--no-force-patch` overrides patch policy                      | With `--force-patch`, first iteration patches even if symlink is valid   |
+| 14  | `--patch-if-untested` / `--no-patch-if-untested` (default true)                  | With `--no-patch-if-untested`, an untested claude version is NOT patched |
+| 15  | `--with-dialog-accept-fallback` enables tmux DevChannelsDialog auto-accept       | When dialog appears mid-launch, the watcher sends Enter                  |
+| 16  | Other args are forwarded to claude (via the shim → canonical → build_args chain) | `bin/agent --debug` passes `--debug` through to claude                   |
 
 ### Logging
 
-| # | Feature | Validation |
-|---|---|---|
-| 17 | `LOG_FILE = $REPO_DIR/.claude/logs/launcher.<epoch>.log` per iteration | After launch, `launcher.<epoch>.log` exists in the agent repo with iteration-specific content |
-| 18 | `restart-history.log` records every restart with timestamp | Re-exec via signal; `restart-history.log` gains an entry |
-| 19 | `log()` writes to stderr AND `$LOG_FILE` so `build_args` stdout stays clean | Stderr has timestamped lines; `build_args` output (stdout) is bare args |
-| 20 | Bullet-1 ordering: "Running claude:" log lands BEFORE `build_prompt()` so the prompt-snapshot includes it | First message of a fresh restart contains the `Running claude:` line within the launcher-logs block |
+| #   | Feature                                                                                                   | Validation                                                                                          |
+| --- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| 17  | `LOG_FILE = $REPO_DIR/.claude/logs/launcher.<epoch>.log` per iteration                                    | After launch, `launcher.<epoch>.log` exists in the agent repo with iteration-specific content       |
+| 18  | `restart-history.log` records every restart with timestamp                                                | Re-exec via signal; `restart-history.log` gains an entry                                            |
+| 19  | `log()` writes to stderr AND `$LOG_FILE` so `build_args` stdout stays clean                               | Stderr has timestamped lines; `build_args` output (stdout) is bare args                             |
+| 20  | Bullet-1 ordering: "Running claude:" log lands BEFORE `build_prompt()` so the prompt-snapshot includes it | First message of a fresh restart contains the `Running claude:` line within the launcher-logs block |
 
 ### Env injection
 
-| # | Feature | Validation |
-|---|---|---|
-| 21 | Bootstrap: read `.env` from `$REPO_DIR/.claude/settings.local.json`, export keys (incl. `OP_SERVICE_ACCOUNT_TOKEN`) | `op whoami` succeeds inside a Bash tool call in the resulting session |
-| 22 | `mise activate bash` + `mise env -s bash`, stderr → `$LOG_FILE` | `mise ls` works inside the resulting session; trust errors visible in launcher log |
-| 23 | claude-utils lib sourced from `mise where github:nsheaps/claude-utils`/lib | After launch, `claude_resolve_binary` (or another claude-utils function) available |
-| 24 | `.envrc.template` → `$AGENT_HOME_DIR/.envrc` (idempotent), then `source` it | First launch: file materialized; per-agent `.env.local` values appear in env |
-| 25 | `op_inject_env` runs AFTER `.envrc`/`.env.local` sourcing so fresh op-exec values override stale (#177) | After launch, `CLAUDE_CODE_OAUTH_TOKEN` matches the current 1Password vault value (post-rotation), not the previous .env.local value |
-| 26 | PEM materialization: when `GITHUB_APP_PRIVATE_KEY` is in env but `_PATH` isn't, write the key to `$AGENT_HOME_DIR/.config/github-app-<id>.pem` (0600) | `gh-auth` next step finds and reads the PEM |
+| #   | Feature                                                                                                                                               | Validation                                                                                                                           |
+| --- | ----------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| 21  | Bootstrap: read `.env` from `$REPO_DIR/.claude/settings.local.json`, export keys (incl. `OP_SERVICE_ACCOUNT_TOKEN`)                                   | `op whoami` succeeds inside a Bash tool call in the resulting session                                                                |
+| 22  | `mise activate bash` + `mise env -s bash`, stderr → `$LOG_FILE`                                                                                       | `mise ls` works inside the resulting session; trust errors visible in launcher log                                                   |
+| 23  | claude-utils lib sourced from `mise where github:nsheaps/claude-utils`/lib                                                                            | After launch, `claude_resolve_binary` (or another claude-utils function) available                                                   |
+| 24  | `.envrc.template` → `$AGENT_HOME_DIR/.envrc` (idempotent), then `source` it                                                                           | First launch: file materialized; per-agent `.env.local` values appear in env                                                         |
+| 25  | `op_inject_env` runs AFTER `.envrc`/`.env.local` sourcing so fresh op-exec values override stale (#177)                                               | After launch, `CLAUDE_CODE_OAUTH_TOKEN` matches the current 1Password vault value (post-rotation), not the previous .env.local value |
+| 26  | PEM materialization: when `GITHUB_APP_PRIVATE_KEY` is in env but `_PATH` isn't, write the key to `$AGENT_HOME_DIR/.config/github-app-<id>.pem` (0600) | `gh-auth` next step finds and reads the PEM                                                                                          |
 
 ### Marketplace + plugins
 
-| # | Feature | Validation |
-|---|---|---|
-| 27 | `marketplace_bootstrap` adds declared marketplaces if missing | First launch: marketplace clone appears under `$AGENT_HOME_DIR/.claude/plugins/marketplaces/` |
-| 28 | `marketplace_prune_orphans` removes auto-installed plugins not declared in settings | Run with an orphaned plugin present; subsequent launch removes it |
-| 29 | Claude CLI patching is delegated to `$REPO_DIR/bin/claude` (the per-agent wrapper) | `bin/claude-patched` symlink points at a per-version output; broken state surfaces in launcher log |
+| #   | Feature                                                                             | Validation                                                                                         |
+| --- | ----------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 27  | `marketplace_bootstrap` adds declared marketplaces if missing                       | First launch: marketplace clone appears under `$AGENT_HOME_DIR/.claude/plugins/marketplaces/`      |
+| 28  | `marketplace_prune_orphans` removes auto-installed plugins not declared in settings | Run with an orphaned plugin present; subsequent launch removes it                                  |
+| 29  | Claude CLI patching is delegated to `$REPO_DIR/bin/claude` (the per-agent wrapper)  | `bin/claude-patched` symlink points at a per-version output; broken state surfaces in launcher log |
 
 ### Auth refresh
 
-| # | Feature | Validation |
-|---|---|---|
-| 30 | Pre-marketplace `gh-auth` token refresh from GitHub App credentials (#104) | Launcher log shows refresh timestamps; `gh auth status` post-launch reports the App identity |
-| 31 | `GH_TOKEN` exported ONLY when app/installation identity matches AND refresh succeeded (#102, #104) | On identity mismatch (e.g. wrong vault env), `GH_TOKEN` is NOT exported; launcher logs the gate decision |
+| #   | Feature                                                                                            | Validation                                                                                               |
+| --- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| 30  | Pre-marketplace `gh-auth` token refresh from GitHub App credentials (#104)                         | Launcher log shows refresh timestamps; `gh auth status` post-launch reports the App identity             |
+| 31  | `GH_TOKEN` exported ONLY when app/installation identity matches AND refresh succeeded (#102, #104) | On identity mismatch (e.g. wrong vault env), `GH_TOKEN` is NOT exported; launcher logs the gate decision |
 
 ### direnv
 
-| # | Feature | Validation |
-|---|---|---|
-| 32 | `direnv allow .` + `direnv export bash` with stderr → `$LOG_FILE`, 30s timeout | `direnv: error` line in output aborts the launcher iteration (exit 1) |
-| 33 | `which -a claude` + `mise which claude` divergence surfaced in log | When a globally-installed claude shadows the mise version, the launcher log makes it obvious |
+| #   | Feature                                                                        | Validation                                                                                   |
+| --- | ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------- |
+| 32  | `direnv allow .` + `direnv export bash` with stderr → `$LOG_FILE`, 30s timeout | `direnv: error` line in output aborts the launcher iteration (exit 1)                        |
+| 33  | `which -a claude` + `mise which claude` divergence surfaced in log             | When a globally-installed claude shadows the mise version, the launcher log makes it obvious |
 
 ### Args & prompt
 
-| # | Feature | Validation |
-|---|---|---|
-| 34 | `build_args`: `--name "[Agent <name>]"`, `--debug`, `--append-system-prompt-file`, `--continue`, `--dangerously-load-development-channels`, `--permission-mode`, `--dangerously-skip-permissions` | `ps -ef \| grep claude` shows the expected set |
-| 35 | One-time CLI flags: read `.claude/tmp/restart-flags`, consume (rm) after read | After a launch that consumed it, the file is gone |
-| 36 | `build_prompt`: launcher-log snippet + CONTINUATION.md + preserved todos + system footer | First message in the new session contains all four parts |
-| 37 | CONTINUATION.md is archived after consumption (per #169) — not embedded twice | After consumption, `.claude/prompts/CONTINUATION.md` is moved to a consumed-continuations archive |
-| 38 | Startup-prompt log: `## Launcher Logs (since last start)` block stripped from the in-file log to avoid recursion | `tail launcher.<epoch>.log` shows the prompt without the embedded launcher-log section |
+| #   | Feature                                                                                                                                                                                           | Validation                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| 34  | `build_args`: `--name "[Agent <name>]"`, `--debug`, `--append-system-prompt-file`, `--continue`, `--dangerously-load-development-channels`, `--permission-mode`, `--dangerously-skip-permissions` | `ps -ef \| grep claude` shows the expected set                                                    |
+| 35  | One-time CLI flags: read `.claude/tmp/restart-flags`, consume (rm) after read                                                                                                                     | After a launch that consumed it, the file is gone                                                 |
+| 36  | `build_prompt`: launcher-log snippet + CONTINUATION.md + preserved todos + system footer                                                                                                          | First message in the new session contains all four parts                                          |
+| 37  | CONTINUATION.md is archived after consumption (per #169) — not embedded twice                                                                                                                     | After consumption, `.claude/prompts/CONTINUATION.md` is moved to a consumed-continuations archive |
+| 38  | Startup-prompt log: `## Launcher Logs (since last start)` block stripped from the in-file log to avoid recursion                                                                                  | `tail launcher.<epoch>.log` shows the prompt without the embedded launcher-log section            |
 
 ### Restart loop
 
-| # | Feature | Validation |
-|---|---|---|
-| 39 | `ensure_tmux`: drop into / attach a tmux session named `$AGENT_NAME` | First launch outside tmux: `tmux ls` shows `<AGENT_NAME>` |
-| 40 | Cold-start retry: claude rc=1 with `--continue` → strip `--continue`, re-run once | First-ever launch on a fresh state succeeds on the retry |
-| 41 | Fast-crash warn: runtime < 10s → log a warning | A bin/agent that fails immediately produces a "possible startup failure" line |
-| 42 | Re-exec `$0 "$@"` after every iteration so script edits take effect on next launch | Edit `bin/agent` (the shim) OR `apps/agent-cli/bin/deprecated-agent` (the canonical script) mid-session, exit; next iteration runs the new version of WHICHEVER you edited |
+| #   | Feature                                                                            | Validation                                                                                                                                                                 |
+| --- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 39  | `ensure_tmux`: drop into / attach a tmux session named `$AGENT_NAME`               | First launch outside tmux: `tmux ls` shows `<AGENT_NAME>`                                                                                                                  |
+| 40  | Cold-start retry: claude rc=1 with `--continue` → strip `--continue`, re-run once  | First-ever launch on a fresh state succeeds on the retry                                                                                                                   |
+| 41  | Fast-crash warn: runtime < 10s → log a warning                                     | A bin/agent that fails immediately produces a "possible startup failure" line                                                                                              |
+| 42  | Re-exec `$0 "$@"` after every iteration so script edits take effect on next launch | Edit `bin/agent` (the shim) OR `apps/agent-cli/bin/deprecated-agent` (the canonical script) mid-session, exit; next iteration runs the new version of WHICHEVER you edited |
 
 ## Open questions
 
@@ -260,7 +260,7 @@ The script must support every feature currently present in alex/henry/jack's `bi
    - **(a)** Env var: shim does `exec "${AGENTS_REPO_DIR:?set in .envrc}/apps/agent-cli/bin/deprecated-agent" …`. Requires `AGENTS_REPO_DIR` be set during shim execution — possibly via a per-agent `.envrc` line.
    - **(b)** Sibling-checkout convention: hardcode a relative path like `"$REPO_DIR/../agents/apps/agent-cli/bin/deprecated-agent"` (assumes all agent repos are siblings of an `agents` checkout). Brittle but no env needed.
    - **(c)** Mise tool: publish `apps/agent-cli` as a mise-installable tool, then the shim becomes `exec "$(mise where agents-cli)/bin/deprecated-agent" …`. Stable across machines, requires mise to be activated.
-   This question MUST be resolved before any production rollout. Spec-PR review can defer it; implementation-PR review must address it.
+     This question MUST be resolved before any production rollout. Spec-PR review can defer it; implementation-PR review must address it.
 6. **Versioning**: does `apps/agent-cli` get a semver of its own? Mise-installable? Or just lives as a path in nsheaps/agents that's hardcoded in the shim during dev? (Tightly coupled with §5.)
 
 ## Migration plan (for the implementation PR — NOT this spec PR)
