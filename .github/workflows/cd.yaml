@@ -84,7 +84,7 @@ jobs:
 
       - name: Setup mise
         if: steps.check-skip.outputs.skip != 'true'
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
 
       - name: Install dependencies
         if: steps.check-skip.outputs.skip != 'true'
@@ -184,7 +184,7 @@ jobs:
           fi
 
       - name: Setup mise
-        uses: jdx/mise-action@v2
+        uses: jdx/mise-action@v4
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
