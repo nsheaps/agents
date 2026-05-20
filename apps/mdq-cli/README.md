@@ -4,4 +4,4 @@ Headings become keys
 Content becomes bodies
 URLs are autoextracted into metadata
 
-Query frontmatter too! frontmatter automatically becomes _metadata on the returned object
+Query frontmatter too! frontmatter automatically becomes \_metadata on the returned object
