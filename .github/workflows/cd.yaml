@@ -123,7 +123,7 @@ jobs:
 
       - name: Commit and push all changes at once
         if: steps.check-skip.outputs.skip != 'true' && steps.bump.outputs.has-changes == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: ${{ env.AUTO_BUMP_COMMIT_MSG }}
           commit_user_name: ${{ steps.auth.outputs.user-name }}
@@ -205,7 +205,7 @@ jobs:
 
       - name: Commit version bumps
         if: steps.bump.outputs.has-bumps == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'chore: bump plugin versions [skip ci]'
           commit_user_name: ${{ steps.auth.outputs.user-name }}
@@ -221,7 +221,7 @@ jobs:
         run: mise run format 2>/dev/null || true
 
       - name: Commit marketplace changes
-        uses: stefanzweifel/git-auto-commit-action@v5
+        uses: stefanzweifel/git-auto-commit-action@v7
         with:
           commit_message: 'chore: update marketplace metadata [skip ci]'
           commit_user_name: ${{ steps.auth.outputs.user-name }}
