@@ -7,8 +7,8 @@
   "plugins": [
     {
       "name": "agent-utils",
-      "description": "Agent infrastructure: skills for multi-agent orchestration + tools for settings drift detection and 2-stage settings merge.",
-      "version": "0.2.0",
+      "description": "Agent infrastructure: skills for multi-agent orchestration + tools for settings drift detection and 2-stage settings merge + skills guiding tool usage post-install.",
+      "version": "0.3.0",
       "author": {
         "name": "Nathan Heaps"
       },
