@@ -1,5 +1,6 @@
 {
   "name": "sched-utils",
+  "version": "0.1.0",
   "description": "Skills for managing scheduled tasks (crons) and idle-conversation follow-up. Provides idle-5-min (cron-tick delegate) and active-convo-goes-idle (single-reminder decision).",
   "author": {
     "name": "Nathan Heaps",
