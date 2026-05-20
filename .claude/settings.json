@@ -15,7 +15,7 @@
     }
   },
   "enabledPlugins": {
-    "agent-team-skills@nsheaps-agent-team": true,
+    "agent-utils@nsheaps-agent-team": true,
     "agent-tab-titles@nsheaps-claude-plugins": true
   }
 }

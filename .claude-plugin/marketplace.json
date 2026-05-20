@@ -6,6 +6,51 @@
   },
   "plugins": [
     {
+      "name": "agent-utils",
+      "description": "Skills for multi-agent team orchestration, tmux usage, and agent development",
+      "version": "0.1.1",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/agent-utils",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "agent-team",
+        "orchestration",
+        "tmux",
+        "multi-agent",
+        "claude-code",
+        "skills",
+        "agent-development"
+      ]
+    },
+    {
+      "name": "cron-utils",
+      "description": "Skills for managing scheduled tasks (crons) and idle-conversation follow-up. Provides idle-5-min (cron-tick delegate) and active-convo-goes-idle (single-reminder decision).",
+      "version": "0.1.1",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/cron-utils",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "scheduling",
+        "cron",
+        "idle",
+        "claude-code",
+        "agent-discipline",
+        "self-poll"
+      ]
+    },
+    {
       "name": "task-utils",
       "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + manage-tasks skill for atomic-task workflow",
       "version": "0.1.0",
@@ -14,7 +59,10 @@
       },
       "source": "./plugins/claude-code/task-utils",
       "category": "utility",
-      "tags": ["utility"],
+      "tags": [
+        "utility",
+        "skill"
+      ],
       "keywords": [
         "task-management",
         "hooks",
