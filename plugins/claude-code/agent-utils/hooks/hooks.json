@@ -1,13 +1,17 @@
 {
-  "PostToolUse": [
-    {
-      "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|SlashCommand",
-      "hooks": [
-        {
-          "type": "command",
-          "command": "bun run ${CLAUDE_PLUGIN_ROOT}/dist/settings-write-guard.js"
-        }
-      ]
-    }
-  ]
+  "description": "settings-write-guard: warn when an agent writes ~/.claude/settings*.json OUTSIDE $AGENT_REPO/.claude/settings.json (the only settings file that survives an agent restart). Also fires on Bash(claude plugin …) and /plugin SlashCommand.",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit|NotebookEdit|Bash|SlashCommand",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run ${CLAUDE_PLUGIN_ROOT}/dist/settings-write-guard.js",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  }
 }
