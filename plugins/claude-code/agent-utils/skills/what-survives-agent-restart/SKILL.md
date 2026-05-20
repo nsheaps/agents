@@ -11,10 +11,10 @@ description: Use when deciding WHERE to put persistent configuration in a Claude
 
 Only files under `$AGENT_REPO` survive an agent restart. Files under `$CLAUDE_CONFIG_DIR` (typically `~/.agents/<name>/.claude/`) are wiped on every restart of the launcher's onboarding flow.
 
-| Location                              | Survives restart? | Use for                                                                                                |
-| ------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| `$AGENT_REPO/.claude/settings.json`                      | ✅ yes            | **Source of truth** for plugin enablement, marketplace registration, hook wiring, and persistent state                            |
-| `$AGENT_REPO/.claude/*` (other files)                    | ✅ yes            | Skills, agents, commands, rules — anything the agent should re-acquire on every restart                                           |
+| Location                                                  | Survives restart? | Use for                                                                                                                           |
+| --------------------------------------------------------- | ----------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `$AGENT_REPO/.claude/settings.json`                       | ✅ yes            | **Source of truth** for plugin enablement, marketplace registration, hook wiring, and persistent state                            |
+| `$AGENT_REPO/.claude/*` (other files)                     | ✅ yes            | Skills, agents, commands, rules — anything the agent should re-acquire on every restart                                           |
 | `$CLAUDE_CONFIG_DIR/*` (e.g. `~/.agents/<name>/.claude/`) | ❌ no             | Ephemeral working state — Claude Code's own session bookkeeping, slash-command history, settings.json + settings.local.json, etc. |
 
 ## What this means in practice
