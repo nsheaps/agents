@@ -4,6 +4,7 @@
 [tools]
 jq = "latest"
 bun = "1.3.13"
+"npm:@anthropic-ai/claude-code" = "latest"
 "pipx:litellm" = { version = "1.83.14", extras = "proxy" }
 tilt = "0.37.3"
 
