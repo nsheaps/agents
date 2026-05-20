@@ -14,7 +14,10 @@
       },
       "source": "./plugins/claude-code/agent-team-skills",
       "category": "utility",
-      "tags": ["utility", "skill"],
+      "tags": [
+        "utility",
+        "skill"
+      ],
       "keywords": [
         "agent-team",
         "orchestration",
@@ -34,8 +37,18 @@
       },
       "source": "./plugins/claude-code/sched-utils",
       "category": "utility",
-      "tags": ["utility", "skill"],
-      "keywords": ["scheduling", "cron", "idle", "claude-code", "agent-discipline", "self-poll"]
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "scheduling",
+        "cron",
+        "idle",
+        "claude-code",
+        "agent-discipline",
+        "self-poll"
+      ]
     },
     {
       "name": "task-utils",
@@ -46,7 +59,10 @@
       },
       "source": "./plugins/claude-code/task-utils",
       "category": "utility",
-      "tags": ["utility"],
+      "tags": [
+        "utility",
+        "skill"
+      ],
       "keywords": [
         "task-management",
         "hooks",
