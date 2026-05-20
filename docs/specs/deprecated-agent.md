@@ -72,13 +72,14 @@ nsheaps/agents/
 Each agent repo's `bin/agent` becomes:
 
 ```bash
-bin/agent → /path/to/nsheaps/agents/apps/agent-cli/bin/deprecated-agent
+bin/agent → /absolute/path/to/nsheaps/agents/apps/agent-cli/bin/deprecated-agent
 ```
 
-The symlink target MAY be:
-- an absolute path during local development (as above), OR
-- a relative path through a sibling checkout (e.g. `../../agents/apps/agent-cli/bin/deprecated-agent`), OR
-- a mise-resolved path (if `apps/agent-cli` is published as a mise tool — TBD).
+**Pinned form (initial implementation)**: ABSOLUTE PATH pointing at the `nsheaps/agents` checkout's `apps/agent-cli/bin/deprecated-agent`. Rationale: absolute paths work regardless of where agent repos live on disk relative to each other (relative paths would break across machines where the dev checkouts are at different depths). The script self-locates via `realpath`, so the symlink itself only needs to be resolvable — its form doesn't change script behavior.
+
+**Future forms** (deferred until open question §5 is resolved):
+- Mise-resolved path (if `apps/agent-cli` is published as a mise tool — e.g. `mise install github:nsheaps/agents/apps/agent-cli@<ver>` then symlink to `~/.local/share/mise/installs/.../bin/deprecated-agent`).
+- Relative path through a sibling checkout — NOT recommended; fragile across machines.
 
 The script MUST NOT care which form the symlink takes — it only looks at `realpath "$0"` to find ITSELF and `dirname "$0"` (pre-realpath) to find the AGENT REPO that invoked it.
 
@@ -98,7 +99,22 @@ INVOCATION_DIR="$(dirname "$INVOCATION_PATH")"  # e.g. .ai-agent-alex/bin
 REPO_DIR="$(_find_repo_root_via_agent_yaml "$INVOCATION_DIR")"
 ```
 
-The walk-up failure mode (no `agent.yaml` anywhere up to `/`) MUST abort the launcher with a clear error pointing at the missing file (current behavior: relies on `cd $(dirname $0)/..` and assumes that's the repo root — this spec makes the contract explicit).
+**Walk-up algorithm** (explicit):
+
+```
+dir = INVOCATION_DIR
+while true:
+  if test -f "$dir/agent.yaml":
+    return "$dir"
+  parent = dirname("$dir")
+  if parent == dir:                   # reached "/" — no agent.yaml ancestor
+    fatal "agent.yaml not found in any ancestor of $INVOCATION_DIR"
+  dir = parent
+```
+
+No max-depth cap is needed — bash's `dirname` reaches `/` in O(path-depth) iterations, and the inode-stable parent==self check terminates cleanly. Symbolic-link cycles in ancestor paths are not a concern because we use `dirname` (lexical) not `realpath` (filesystem-traversing) for the walk.
+
+The failure mode MUST abort the launcher with the error above (current behavior relies on `cd $(dirname $0)/..` and assumes that's the repo root — this spec makes the contract explicit).
 
 ### Per-agent config
 
@@ -128,7 +144,7 @@ The script must support every feature currently present in alex/henry/jack's `bi
 
 | # | Feature | Validation |
 |---|---|---|
-| 3 | `realpath "$0"` resolves the symlink to the canonical script | Symlink `.ai-agent-alex/bin/agent` → `apps/agent-cli/bin/deprecated-agent`; running the symlink logs the canonical path on a `[debug] script=` line |
+| 3 | `realpath "$0"` resolves the symlink to the canonical script | **NEW behavior** (not in current bin/agent — implementation PR must add it): symlink `.ai-agent-alex/bin/agent` → `apps/agent-cli/bin/deprecated-agent`; running the symlink logs the canonical path on a `[debug] script=` line so the launcher log makes it obvious which script is actually running |
 | 4 | `REPO_DIR` walk-up finds the AGENT repo's `agent.yaml`, NOT the script's nearest ancestor | When invoked via the alex symlink, `REPO_DIR` resolves to `.ai-agent-alex`, NOT `nsheaps/agents` |
 | 5 | Walk-up failure (no `agent.yaml` found up to `/`) aborts with a clear error | Move agent.yaml out of the way, run the symlink → exit 1 with "agent.yaml not found in any ancestor of \<dir\>" |
 
@@ -226,11 +242,12 @@ The script must support every feature currently present in alex/henry/jack's `bi
 2. Copy henry/jack's `bin/agent` byte-for-byte to `apps/agent-cli/bin/deprecated-agent` + copy `bin/lib/*` to `apps/agent-cli/lib/`.
 3. Update the canonical script's `source` paths to use `LIB_DIR` (see §Self-location).
 4. Add `_find_repo_root_via_agent_yaml` (walk-up) and update REPO_DIR derivation.
-5. Sync alex's bin/agent to the henry/jack version first (task #207) — pre-consolidation drift fix.
-6. On henry's repo: replace `bin/agent` regular file with the symlink. Restart henry. Validate every row in the feature table.
-7. Repeat for jack.
-8. Repeat for alex (last per modify-self-last).
-9. Remove `bin/lib/` directories from each agent repo (now unused).
+5. **Resolve open question §5 (versioning/distribution)** before step 9. The agent-repo `bin/lib/` deletion is GATED on a stable `LIB_DIR` path — if the canonical script sources from a path that later moves (e.g. mise install dir changes versions, or the nsheaps/agents checkout is removed), the symlinks break silently. Either (a) commit to absolute-path-into-the-nsheaps-agents-checkout (and keep that checkout stable), OR (b) publish `apps/agent-cli` as a mise tool with a versioned install dir, then update symlinks. Either way: deletion of agent-repo `bin/lib/` must come AFTER LIB_DIR stability is confirmed.
+6. Sync alex's bin/agent to the henry/jack version first (task #207) — pre-consolidation drift fix.
+7. On henry's repo: replace `bin/agent` regular file with the symlink. Restart henry. Validate every row in the feature table.
+8. Repeat for jack.
+9. Repeat for alex (last per modify-self-last).
+10. (Gated on step 5 resolution) Remove `bin/lib/` directories from each agent repo.
 
 ## Rollback
 
