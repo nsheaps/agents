@@ -13,9 +13,9 @@ Only files under `$AGENT_REPO` survive an agent restart. Files under `$CLAUDE_CO
 
 | Location                              | Survives restart? | Use for                                                                                                |
 | ------------------------------------- | ----------------- | ------------------------------------------------------------------------------------------------------ |
-| `$AGENT_REPO/.claude/settings.json`   | ✅ yes             | **Source of truth** for plugin enablement, marketplace registration, hook wiring, and persistent state |
-| `$AGENT_REPO/.claude/*` (other files) | ✅ yes             | Skills, agents, commands, rules — anything the agent should re-acquire on every restart                |
-| `$CLAUDE_CONFIG_DIR/.claude/*`        | ❌ no              | Ephemeral working state — Claude Code's own session bookkeeping, slash-command history, etc.           |
+| `$AGENT_REPO/.claude/settings.json`   | ✅ yes            | **Source of truth** for plugin enablement, marketplace registration, hook wiring, and persistent state |
+| `$AGENT_REPO/.claude/*` (other files) | ✅ yes            | Skills, agents, commands, rules — anything the agent should re-acquire on every restart                |
+| `$CLAUDE_CONFIG_DIR/.claude/*`        | ❌ no             | Ephemeral working state — Claude Code's own session bookkeeping, slash-command history, etc.           |
 
 ## What this means in practice
 
