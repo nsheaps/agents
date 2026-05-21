@@ -19,6 +19,11 @@
 # Sidecar log: every fire appended to
 # .claude/logs/require-task-in-progress.log so the audit trail
 # survives even when the transcript stays clean.
+#
+# Opt-out: set TASK_UTILS_REQUIRE_TASK=0 to disable this gate in
+# environments where the Task tools (TaskCreate/TaskUpdate) are not
+# enabled — notably Claude Code on the web — so the gate is not left
+# permanently unsatisfiable. Unset (the default) enforces the gate.
 
 set -euo pipefail
 
@@ -42,6 +47,17 @@ case "$TOOL_NAME" in
   Write|Edit|MultiEdit|NotebookEdit) : ;;
   *) exit 0 ;;
 esac
+
+# Environment opt-out. The Task tools (TaskCreate/TaskUpdate) are not enabled in
+# every Claude Code context — notably Claude Code on the web — and without them
+# no task can ever reach in_progress, making this gate permanently
+# unsatisfiable. TASK_UTILS_REQUIRE_TASK=0 disables the gate: the hook exits 0
+# with no decision, so normal permission handling still applies. Unset or any
+# other value keeps the gate enforced — no behavior change for existing setups.
+if [[ "${TASK_UTILS_REQUIRE_TASK:-1}" == "0" ]]; then
+  log_fire "allow" "tool=${TOOL_NAME} reason=gate-disabled-via-env"
+  exit 0
+fi
 
 CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 TASKS_DIR="$CLAUDE_DIR/tasks/$SESSION_ID"

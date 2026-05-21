@@ -15,6 +15,7 @@ Task discipline hooks and the `manage-tasks` skill — packages the workflow ori
 
 - **`require-task-in-progress.sh`** — gates `Write` / `Edit` / `MultiEdit` / `NotebookEdit`:
   - Denies the write tool if no task is currently `in_progress`. Keeps file edits attached to a tracked unit of work.
+  - **Opt-out:** set `TASK_UTILS_REQUIRE_TASK=0` (e.g. in `.claude/settings.json` `env`) to disable this gate where the Task tools are unavailable — notably Claude Code on the web, where `TaskCreate` / `TaskUpdate` are not enabled and the gate would otherwise be permanently unsatisfiable. Unset (the default) enforces the gate.
   - **Known soft spot:** the `Bash` tool is NOT in the PreToolUse write-tool set (Claude Code limitation — Bash isn't in the matched set). So `bash -c 'cat > foo.txt'`, `sed -i`, `tee`, etc. bypass this gate. The invariant is "edits via Claude's native write tools require an in_progress task"; file writes via shell commands are not gated and rely on agent discipline alone.
 
 **Skill**:
