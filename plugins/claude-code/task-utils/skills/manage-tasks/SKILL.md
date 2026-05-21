@@ -128,7 +128,7 @@ Key transitions:
 | `* → completed` requires follow-up capture                                       | COMPLETED coach in `task-invariant.sh`                                                        |
 | Status transitions logged via dated event-log line in description                | Convention; reminded by coach text                                                            |
 
-**MCP fallback.** Where the built-in `TaskCreate`/`TaskUpdate` tools are unavailable (notably Claude Code on the web), use the `task-utils` plugin's bundled `task-mcp` MCP server instead — tools `task_create`, `task_update`, `task_list`, `task_get`. They mirror the built-ins and enforce the SAME invariants in-process (this skill's doctrine applies unchanged — atomicity, breakdown, validation-steps, 0-or-1). The MCP server writes flat task files at `<repo>/.claude/tasks/<id>.json` and the `require-task-in-progress.sh` write-gate is satisfied by an MCP `in_progress` task. See `Skill(mcp-task-tools)` for tool-call details.
+**MCP fallback.** Where the built-in `TaskCreate`/`TaskUpdate` tools are unavailable (notably Claude Code on the web), use the `task-utils` plugin's bundled `task-mcp` MCP server instead — tools `task_create`, `task_update`, `task_list`, `task_get`. They mirror the built-ins and enforce the SAME invariants in-process (this skill's doctrine applies unchanged — atomicity, breakdown, validation-steps, 0-or-1). The MCP server writes flat task files at `<repo>/.claude/tasks/<id>.yaml` and the `require-task-in-progress.sh` write-gate is satisfied by an MCP `in_progress` task. See `Skill(mcp-task-tools)` for tool-call details.
 
 ---
 

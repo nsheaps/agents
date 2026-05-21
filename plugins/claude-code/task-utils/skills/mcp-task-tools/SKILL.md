@@ -82,7 +82,7 @@ unknown.
 
 ## Storage and git
 
-- Tasks are stored FLAT at `<store-root>/<id>.json`. `<store-root>` is
+- Tasks are stored FLAT at `<store-root>/<id>.yaml`. `<store-root>` is
   `TASK_UTILS_TASK_DIR` if set, else `<git-repo-root>/.claude/tasks`, else
   `<cwd>/.claude/tasks`.
 - Every create / update / delete triggers a **best-effort** templated git

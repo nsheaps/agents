@@ -35,7 +35,7 @@ Both the hooks and the MCP server resolve task storage identically:
 
 | Layout               | Location                                                                | Written by                |
 | -------------------- | ----------------------------------------------------------------------- | ------------------------- |
-| Flat (MCP)           | `<store-root>/<task-id>.json`                                           | the `task-mcp` MCP server |
+| Flat (MCP)           | `<store-root>/<task-id>.yaml`                                           | the `task-mcp` MCP server |
 | Legacy (per-session) | `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/tasks/<session_id>/<task-id>.json` | the built-in Task tools   |
 
 `<store-root>` resolves in this order:
