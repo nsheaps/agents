@@ -6,6 +6,8 @@ yarn.lock
 dist/
 # Exception: agent-utils plugin ships pre-built bun bundles for hook invocation
 !plugins/claude-code/agent-utils/dist/
+# Exception: task-utils plugin ships the pre-built MCP server bundle
+!plugins/claude-code/task-utils/mcp/dist/
 *.tar.gz
 
 # IDE

@@ -1,0 +1,19 @@
+{
+  "name": "task-utils-mcp",
+  "version": "0.1.2",
+  "private": true,
+  "description": "MCP task server for the task-utils Claude Code plugin — fallback task-management tools where the built-in Task tools are unavailable",
+  "type": "module",
+  "main": "dist/server.js",
+  "scripts": {
+    "build": "bun build src/server.ts --target=node --outfile dist/server.js",
+    "test": "bun test"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14"
+  }
+}

@@ -1,0 +1,5 @@
+# node_modules is only needed to build/test the server. The committed
+# dist/server.js bundle inlines all dependencies, so the runtime needs neither.
+node_modules/
+
+# dist/server.js IS committed (the bundled runtime artifact) — do not ignore it.
