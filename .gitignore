@@ -38,5 +38,8 @@ test/tmp/
 # Team scratch/temp files
 .claude/tmp/
 
+# Sub-agent git worktrees (local working areas, never committed)
+.claude/worktrees/
+
 # Logs
 *.log
