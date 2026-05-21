@@ -1,0 +1,95 @@
+name: Review Dispatch (reusable)
+
+# Reusable workflow that dispatches PR review requests to a review agent
+# (default target: nsheaps/.ai-agent-henry). Called from consumer repos via
+# a tiny template workflow that hooks pull_request events to this file.
+#
+# Auth: GitHub App. Consumer repos must have REVIEW_GITHUB_APP_ID and
+# REVIEW_GITHUB_APP_PRIVATE_KEY available as secrets (provisioned via
+# nsheaps/.github/secret-sync.yaml or equivalent). The App must be
+# installed on BOTH the consumer repo (for label removal) AND the
+# target agent repo (for the repository_dispatch send).
+
+on:
+  workflow_call:
+    inputs:
+      target-repo:
+        description: 'Agent repo to dispatch review requests into.'
+        required: false
+        default: 'nsheaps/.ai-agent-henry'
+        type: string
+      event-type:
+        description: 'repository_dispatch event-type to fire.'
+        required: false
+        default: 'pull_request/review'
+        type: string
+      request-label:
+        description: 'Label name that opts draft PRs into review and is removed after dispatch.'
+        required: false
+        default: 'request-review'
+        type: string
+      dispatch-on-draft:
+        description: 'If true, dispatch on non-labeled draft PRs too. Default: only non-draft + labeled-draft.'
+        required: false
+        default: false
+        type: boolean
+    secrets:
+      REVIEW_GITHUB_APP_ID:
+        required: true
+      REVIEW_GITHUB_APP_PRIVATE_KEY:
+        required: true
+
+jobs:
+  dispatch:
+    if: |
+      inputs.dispatch-on-draft == true ||
+      github.event.pull_request.draft != true ||
+      (github.event.action == 'labeled' && github.event.label.name == inputs.request-label)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+    concurrency:
+      group: review-dispatch-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Generate review bot token
+        id: auth
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Remove request-review label
+        if: github.event.action == 'labeled' && github.event.label.name == inputs.request-label
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} \
+            --remove-label "${{ inputs.request-label }}" \
+            --repo "${{ github.repository }}"
+
+      - name: Dispatch review
+        uses: peter-evans/repository-dispatch@v4
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repository: ${{ inputs.target-repo }}
+          event-type: ${{ inputs.event-type }}
+          client-payload: |
+            {
+              "referer": "${{ github.repository }}/${{ github.workflow_ref }}",
+              "source": {
+                "repo": "${{ github.repository }}",
+                "pr_number": ${{ github.event.pull_request.number }},
+                "head_sha": "${{ github.event.pull_request.head.sha }}",
+                "head_ref": "${{ github.event.pull_request.head.ref }}",
+                "base_ref": "${{ github.event.pull_request.base.ref }}"
+              },
+              "trigger": {
+                "event": "pull_request",
+                "action": "${{ github.event.action }}",
+                "label": ${{ toJson(github.event.label.name || '') }}
+              }
+            }
