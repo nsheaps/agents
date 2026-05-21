@@ -9,6 +9,7 @@
 The key insight: **the hooks already support session-agnostic reads.** The `require-task-in-progress.sh` hook (line 67–74) scans the directory for ALL `*.json` files with `status: "in_progress"` — it does NOT filter by session id. It returns allow if ANY in_progress task exists, from any session.
 
 Therefore:
+
 - Store tasks in `$TASK_UTILS_TASK_DIR/<session_id>[-mcp]/` as specified
 - When `TASK_UTILS_TASK_DIR` points into a git repo, each session creates its own subdirectory
 - The hooks' read logic is unchanged: scan the entire root for in_progress tasks
@@ -28,6 +29,7 @@ Therefore:
 ## Alternative Considered (Rejected)
 
 **Flat storage with session-agnostic ids** (e.g., task "1" committed, no session scoping):
+
 - Pro: No per-session directory clutter in git
 - Con: Conflicting task ids across sessions (user runs session A, creates task "1"; later runs session B, tries to create task "1" — collision)
 - Con: Hook logic to handle collisions (scan for id match across all sessions, enforce uniqueness — complex)
@@ -38,6 +40,7 @@ Therefore:
 ## Resulting Hook Behavior
 
 The hooks are modified to:
+
 1. Resolve `TASK_UTILS_TASK_DIR` (new env var) instead of hard-coding `~/.claude/tasks`
 2. Scan **both** `<resolved-root>/<session_id>/` and `<resolved-root>/<session_id>-mcp/` for in_progress tasks
 3. Return allow if any in_progress exists in either directory
@@ -51,7 +54,7 @@ User sets: TASK_UTILS_TASK_DIR=/home/user/farish/.claude/tasks
 
 Session 1 (abc-def-123):
   MCP creates task 1 → /home/user/farish/.claude/tasks/abc-def-123-mcp/1.json
-  
+
   Hook scans /home/user/farish/.claude/tasks/ for in_progress
   → finds abc-def-123-mcp/1.json with status=in_progress
   → allows write
@@ -61,7 +64,7 @@ User runs: git add .claude/tasks && git commit -m "chore: session snapshots"
 
 Session 2 (xyz-ghi-456):
   New task created → /home/user/farish/.claude/tasks/xyz-ghi-456-mcp/2.json
-  
+
   Hook scans again
   → finds xyz-ghi-456-mcp/2.json in_progress
   → allows write
@@ -72,6 +75,7 @@ Session 2 (xyz-ghi-456):
 ## Implication for Git Auto-Commit (Requirement 2)
 
 When the MCP server auto-commits task files, it commits them within the session directory. Over time:
+
 ```
 .claude/tasks/
   ├── session-A/

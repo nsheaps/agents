@@ -33,12 +33,14 @@ git -C "$STORE_ROOT" push origin 2>/dev/null || return
 ## Error Handling
 
 Each step wraps stderr to a log file. If ANY step fails:
+
 - Log the error with context (which file, which step, error message)
 - Continue (do not re-throw)
 - The tool still returns success to the caller
 - The task file was written; git just didn't persist it
 
 Example logging structure:
+
 ```
 [2026-05-21T14:23:45.678Z] mcp-task-server git auto-commit
   file: /path/to/tasks/abcd-mcp/123.json

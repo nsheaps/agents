@@ -8,7 +8,8 @@
 
 **Test code:** `/tmp/test-mcp-env.js` — a minimal Node script that outputs `process.env` values.
 
-**Result:** 
+**Result:**
+
 ```json
 {
   "CLAUDE_CODE_SESSION_ID": "d9a421da-f690-4f53-b939-a4bf63e025ec",

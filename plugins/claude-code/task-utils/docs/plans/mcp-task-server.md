@@ -126,8 +126,8 @@ plus the dependency/metadata fields the `manage-tasks` doctrine uses:
 ## 3. The MCP server's tools
 
 Four tools, mirroring the built-ins[^3], named with a `task_` prefix and
-snake_case (MCP tool-name convention). Server key: `task-mcp` (final tool names
-become `mcp__task-mcp__task_*` — exact prefix confirmed via `/mcp` after install).
+snake*case (MCP tool-name convention). Server key: `task-mcp` (final tool names
+become `mcp**task-mcp**task*\*`— exact prefix confirmed via`/mcp` after install).
 
 ### 3.1 `task_create`
 
@@ -266,6 +266,7 @@ See design note §1[^6] for detailed analysis. Summary:
 - Hook behavior is unchanged; only the store root becomes configurable
 
 Example:
+
 ```
 .claude/tasks/
   ├── abc-def-123/       (built-in task dir, session A)
@@ -329,7 +330,7 @@ The repo's JS toolchain is **bun** (`mise.toml` pins `bun = "1.3.13"`).[^8]
 
 **Strategy A — committed bundled artifact (recommended).** Build
 `mcp/src/server.ts` into a single self-contained `mcp/dist/server.js` with
-`bun build --target=node` (deps inlined). Commit `dist/server.js`. 
+`bun build --target=node` (deps inlined). Commit `dist/server.js`.
 
 - **Runtime dependencies**: `node` (verify on Claude Code web; otherwise `bun`).
   [**Unverified** — confirm `node` is on PATH in Claude Code web.]
