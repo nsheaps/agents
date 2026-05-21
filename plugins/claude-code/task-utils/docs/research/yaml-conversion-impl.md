@@ -9,6 +9,7 @@
 **Commit:** `f169221`
 
 Changes made:
+
 - `mcp/package.json`: Added `yaml@2.9.0` dependency; bumped version `0.1.3 → 0.1.4`
 - `mcp/bun.lock`: Updated with yaml package
 - `mcp/src/store.ts`: Added `import { parse as yamlParse, stringify as yamlStringify } from "yaml"`;
@@ -26,6 +27,7 @@ Changes made:
 **Commit:** `a3a15e4`
 
 Changes made:
+
 - `hooks/task-store-lib.sh`: Updated `count_in_progress_flat` comment (`<task-id>.yaml`);
   changed `*.json` glob → `*.yaml`; replaced `jq -r '.status // empty'` with
   `grep -m1 '^status: ' | awk '{print $2}'`
@@ -46,6 +48,7 @@ Changes were applied via Python scripting through the Bash tool.
 **Commit:** `376f0eb`
 
 Changes made:
+
 - `skills/mcp-task-tools/SKILL.md`: Updated Storage section from `<id>.json` → `<id>.yaml`
 - `skills/manage-tasks/SKILL.md`: Updated MCP fallback note from `<id>.json` → `<id>.yaml`
 - `README.md`: Updated Flat (MCP) storage table row from `<task-id>.json` → `<task-id>.yaml`
@@ -58,12 +61,14 @@ user-facing docs/skills (confirmed by `grep -rn '<task-id>\.json\|<id>\.json'`).
 **Commit:** `8087dbc`
 
 Changes made:
+
 - `.claude-plugin/plugin.json`: Bumped version `0.1.3 → 0.1.4`
 - `.claude-plugin/marketplace.json`: Regenerated via `mise run update-marketplace`
   (task-utils entry shows `0.1.4`)
 - `docs/plans/yaml-conversion.md`: Committed the previously-untracked plan file
 
 **Phase 4 validation:**
+
 - `mise run check`: PASSED (build + 66 TS tests + 7 hook-integration tests + lint)
 - `mise run validate`: PASSED (marketplace.json ✅, all plugin.json ✅)
 
@@ -73,9 +78,9 @@ Pushed successfully to `origin/claude/ai-3d-model-generator-XjoUi` (c523c63..808
 
 ## Summary of all commits
 
-| Phase | Commit | Files |
-|-------|--------|-------|
-| 1 | `f169221` | store.ts, server.ts, package.json, bun.lock, store.test.ts, integration.test.ts |
-| 2 | `a3a15e4` | task-store-lib.sh, task-invariant.sh, hook-integration.test.sh |
-| 3 | `376f0eb` | mcp-task-tools/SKILL.md, manage-tasks/SKILL.md, README.md |
-| 4 | `8087dbc` | .claude-plugin/plugin.json, .claude-plugin/marketplace.json, docs/plans/yaml-conversion.md |
+| Phase | Commit    | Files                                                                                      |
+| ----- | --------- | ------------------------------------------------------------------------------------------ |
+| 1     | `f169221` | store.ts, server.ts, package.json, bun.lock, store.test.ts, integration.test.ts            |
+| 2     | `a3a15e4` | task-store-lib.sh, task-invariant.sh, hook-integration.test.sh                             |
+| 3     | `376f0eb` | mcp-task-tools/SKILL.md, manage-tasks/SKILL.md, README.md                                  |
+| 4     | `8087dbc` | .claude-plugin/plugin.json, .claude-plugin/marketplace.json, docs/plans/yaml-conversion.md |
