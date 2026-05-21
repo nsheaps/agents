@@ -41,12 +41,9 @@ on:
 
 jobs:
   dispatch:
-    # Broad pre-filter without inputs.* (inputs context is not available in job-level if
-    # for workflow_call; evaluating inputs here causes startup_failure).
-    # Fine-grained checks (dispatch-on-draft, request-label name) happen in the gate step.
-    if: |
-      github.event.pull_request.draft != true ||
-      github.event.action == 'labeled'
+    # No job-level if: — inputs context is not available at job scheduling time for
+    # workflow_call, which caused startup_failure. All dispatch logic (including
+    # inputs.dispatch-on-draft and inputs.request-label) is evaluated in the gate step.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -84,7 +81,7 @@ jobs:
           owner: ${{ github.repository_owner }}
 
       - name: Remove request-review label
-        if: steps.gate.outputs.should_dispatch == 'true' && github.event.action == 'labeled'
+        if: steps.gate.outputs.should_dispatch == 'true' && github.event.action == 'labeled' && github.event.label.name == inputs.request-label
         env:
           GH_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
