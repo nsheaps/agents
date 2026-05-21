@@ -15,12 +15,36 @@ Task discipline hooks and the `manage-tasks` skill — packages the workflow ori
 
 - **`require-task-in-progress.sh`** — gates `Write` / `Edit` / `MultiEdit` / `NotebookEdit`:
   - Denies the write tool if no task is currently `in_progress`. Keeps file edits attached to a tracked unit of work.
-  - **Opt-out:** set `TASK_UTILS_REQUIRE_TASK=0` (e.g. in `.claude/settings.json` `env`) to disable this gate where the Task tools are unavailable — notably Claude Code on the web, where `TaskCreate` / `TaskUpdate` are not enabled and the gate would otherwise be permanently unsatisfiable. Unset (the default) enforces the gate.
+  - **Fallback for no-built-in-tools contexts:** where `TaskCreate` / `TaskUpdate` are not enabled (notably Claude Code on the web), use the bundled `task-mcp` MCP server (see below) — a `task_update`-promoted `in_progress` task satisfies this gate. The `TASK_UTILS_REQUIRE_TASK=0` opt-out remains as a belt-and-suspenders escape that disables the gate entirely; the MCP server is the preferred fix because it keeps the discipline.
   - **Known soft spot:** the `Bash` tool is NOT in the PreToolUse write-tool set (Claude Code limitation — Bash isn't in the matched set). So `bash -c 'cat > foo.txt'`, `sed -i`, `tee`, etc. bypass this gate. The invariant is "edits via Claude's native write tools require an in_progress task"; file writes via shell commands are not gated and rely on agent discipline alone.
+
+**MCP server** (`task-mcp`):
+
+- A bundled stdio MCP server exposing four tools — `task_create`, `task_update`, `task_list`, `task_get` — that mirror the built-in Claude Code Task tools. It is the **fallback** for contexts where the built-in Task tools are unavailable (notably Claude Code on the web), so the `require-task-in-progress.sh` write-gate stays satisfiable without resorting to `TASK_UTILS_REQUIRE_TASK=0`.
+- The server re-implements the `task-invariant.sh` lifecycle invariants in-process (no born-`in_progress`, 0-or-1 `in_progress`, validation-steps required for `pending→in_progress`, `RESULT` lines required for `in_progress→completed`) — the PreToolUse hook does not match MCP tool names, so the server polices itself.
+- See the `mcp-task-tools` skill for correct usage.
 
 **Skill**:
 
 - **`manage-tasks`** — doctrine for the atomicity check, breakdown pattern, status-transition table, validation-steps mechanism, background-subagent (`AGENT(<n>)`) prefix, MONITORING(<monitor-id>) prefix, and behavior-changing-jumps-the-queue rule. Forks into an isolated context via `context: fork` so the parent's window stays lean and returns a ≤5-sentence imperative instruction.
+- **`mcp-task-tools`** — guides correct use of the `task-mcp` MCP tools when the built-in Task tools are unavailable.
+
+## Task storage
+
+Both the hooks and the MCP server resolve task storage identically:
+
+| Layout               | Location                                                                | Written by                |
+| -------------------- | ----------------------------------------------------------------------- | ------------------------- |
+| Flat (MCP)           | `<store-root>/<task-id>.json`                                           | the `task-mcp` MCP server |
+| Legacy (per-session) | `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/tasks/<session_id>/<task-id>.json` | the built-in Task tools   |
+
+`<store-root>` resolves in this order:
+
+1. `TASK_UTILS_TASK_DIR` — an absolute path, used verbatim when set.
+2. `<git-repo-root>/.claude/tasks` — the CWD git repo's tasks directory (default).
+3. `<cwd>/.claude/tasks` — fallback when not in a git repo.
+
+`require-task-in-progress.sh` is satisfied by an `in_progress` task in **either** store, so built-in-Task-tool users and MCP-fallback users both keep working. On every task create / update / delete the MCP server makes a **best-effort** templated git commit (`chore(tasks): …`) + push of the task file when the store is inside a git working tree — any git failure is logged and swallowed; the task write always succeeds.
 
 ## Installation
 
@@ -45,7 +69,7 @@ Then in a fresh session:
 claude plugin install task-utils@agents
 ```
 
-The two PreToolUse hooks register automatically; the skill is available as `Skill(manage-tasks)`.
+The two PreToolUse hooks register automatically; the skills are available as `Skill(manage-tasks)` and `Skill(mcp-task-tools)`. The `task-mcp` MCP server connects automatically when the plugin is enabled — verify with `/mcp`, and run `/reload-plugins` if you enabled the plugin mid-session. The server is built from `mcp/src/` into the committed `mcp/dist/server.js` bundle; rebuild it with `mise run build-task-mcp`. The server runs on **bun** (`bun ${CLAUDE_PLUGIN_ROOT}/mcp/dist/server.js`).
 
 ## Design
 

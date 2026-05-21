@@ -61,9 +61,27 @@ done
 echo "All lint checks passed."
 """
 
+[tasks.build-task-mcp]
+description = "Build the task-utils MCP server bundle (mcp/dist/server.js)"
+dir = "plugins/claude-code/task-utils/mcp"
+run = """
+bun install
+bun build src/server.ts --target=node --outfile dist/server.js
+echo "Built plugins/claude-code/task-utils/mcp/dist/server.js"
+"""
+
+[tasks.test-task-mcp]
+description = "Run the task-utils MCP server unit + integration tests + hook write-gate test"
+depends = ["build-task-mcp"]
+run = """
+cd plugins/claude-code/task-utils/mcp && bun test
+cd "$MISE_PROJECT_ROOT" && bash plugins/claude-code/task-utils/mcp/test/hook-integration.test.sh
+"""
+
 [tasks.test]
 description = "Run tests"
-run = "bun test"
+depends = ["test-task-mcp"]
+run = "echo 'All tests passed'"
 
 [tasks.check]
 description = "Run all checks (format + lint + test)"
