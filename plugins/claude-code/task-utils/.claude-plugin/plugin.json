@@ -15,6 +15,7 @@
     "claude-code",
     "agent-discipline",
     "validation-steps",
-    "in-progress-invariant"
+    "in-progress-invariant",
+    "mcp"
   ]
 }
