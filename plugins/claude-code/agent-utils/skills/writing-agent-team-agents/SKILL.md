@@ -1,3 +1,7 @@
+---
+name: writing-agent-team-agents
+description: Use when creating or updating agent files for the agent-team project. Covers agent file structure, frontmatter schema, persona files, and how to write system prompts. Trigger phrases — "create an agent", "add a new teammate", "write an agent file", "what goes in an agent file", "agent file structure".
+---
 # Writing Agent Team Agents
 
 How to create and maintain agent files for the agent-team project.
