@@ -1,6 +1,17 @@
 {
-  "description": "Task discipline: 0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites",
+  "description": "Task discipline: 0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites. SessionStart pre-warms the on-device MCP server build.",
   "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/mcp/prewarm.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
     "PreToolUse": [
       {
         "matcher": "TaskCreate|TaskUpdate",

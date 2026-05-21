@@ -62,12 +62,12 @@ echo "All lint checks passed."
 """
 
 [tasks.build-task-mcp]
-description = "Build the task-utils MCP server bundle (mcp/dist/server.js)"
+description = "Compile the task-utils MCP server native binary (mcp/dist/task-mcp) — local-dev/CI check; end users build on-device via mcp/build.sh"
 dir = "plugins/claude-code/task-utils/mcp"
 run = """
 bun install
-bun build src/server.ts --target=node --outfile dist/server.js
-echo "Built plugins/claude-code/task-utils/mcp/dist/server.js"
+bun build --compile --outfile dist/task-mcp src/server.ts
+echo "Built plugins/claude-code/task-utils/mcp/dist/task-mcp"
 """
 
 [tasks.test-task-mcp]

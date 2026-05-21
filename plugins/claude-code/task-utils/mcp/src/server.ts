@@ -22,7 +22,7 @@ import { TaskStore } from "./store.js";
 import { TaskError, TaskManager } from "./tasks.js";
 
 const SERVER_NAME = "task-mcp";
-const SERVER_VERSION = "0.1.2";
+const SERVER_VERSION = "0.1.3";
 
 const STATUS_ENUM = z.enum(["pending", "in_progress", "completed"]);
 const UPDATE_STATUS_ENUM = z.enum([
@@ -233,13 +233,16 @@ async function main(): Promise<void> {
 }
 
 // Run only when executed directly (not when imported by tests).
+//
+// `import.meta.main` is the reliable signal across every way this module runs:
+//   - `bun build --compile` native binary  → true when the binary is run
+//   - `bun run src/server.ts`              → true
+//   - imported by a test file              → false (the test file is main)
+// It is preferred over `process.argv[1]` path checks, which do not match a
+// compiled binary (whose entrypoint path is the binary, not "server.js").
 const isMain = (() => {
   try {
-    const invoked = process.argv[1];
-    if (!invoked) {
-      return false;
-    }
-    return import.meta.url === `file://${invoked}` || invoked.endsWith("server.js");
+    return import.meta.main === true;
   } catch {
     return false;
   }

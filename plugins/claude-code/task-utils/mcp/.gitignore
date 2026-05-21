@@ -1,5 +1,11 @@
-# node_modules is only needed to build/test the server. The committed
-# dist/server.js bundle inlines all dependencies, so the runtime needs neither.
+# Build scratch — neither is committed.
+#
+# The MCP server is shipped as SOURCE only. The runnable artifact is a native
+# executable produced on the end user's machine by `bun build --compile`
+# (see build.sh). A compiled binary is platform-specific, so it CANNOT be
+# committed; it is built on-device, lazily, on first use.
 node_modules/
 
-# dist/server.js IS committed (the bundled runtime artifact) — do not ignore it.
+# dist/ holds the local-dev / CI compile output (`mise run build-task-mcp`).
+# The on-device build writes to ${CLAUDE_PLUGIN_DATA}/bin instead.
+dist/

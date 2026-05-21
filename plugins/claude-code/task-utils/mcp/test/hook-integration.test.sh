@@ -12,7 +12,14 @@ set -euo pipefail
 PLUGIN_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 HOOK="$PLUGIN_ROOT/hooks/require-task-in-progress.sh"
 INVARIANT_HOOK="$PLUGIN_ROOT/hooks/task-invariant.sh"
-SERVER="$PLUGIN_ROOT/mcp/dist/server.js"
+# The MCP server is shipped as source and compiled to a native binary by
+# `bun build --compile` (run via `mise run build-task-mcp`, a dependency of
+# `mise run test-task-mcp`). The binary is run directly — not via `bun`.
+SERVER="$PLUGIN_ROOT/mcp/dist/task-mcp"
+if [[ ! -x "$SERVER" ]]; then
+  echo "FAIL — compiled MCP server binary not found at $SERVER (run: mise run build-task-mcp)" >&2
+  exit 1
+fi
 
 FAIL=0
 pass() { printf 'PASS — %s\n' "$1"; }
@@ -52,7 +59,7 @@ echo "== Test 2: create + promote a task via the MCP server =="
 CREATE_REQ='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2024-11-05","capabilities":{},"clientInfo":{"name":"t","version":"0"}}}
 {"jsonrpc":"2.0","method":"notifications/initialized"}
 {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"task_create","arguments":{"subject":"hook-integration task"}}}'
-printf '%s\n' "$CREATE_REQ" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 bun "$SERVER" >/dev/null 2>&1
+printf '%s\n' "$CREATE_REQ" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
 if [[ -f "$TASKDIR/1.json" ]]; then
   pass "task_create wrote flat $TASKDIR/1.json"
 else
@@ -67,7 +74,7 @@ INIT='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 {"jsonrpc":"2.0","method":"notifications/initialized"}'
 UPDATE_CALL="$(jq -nc --arg vs "$VS" \
   '{jsonrpc:"2.0",id:2,method:"tools/call",params:{name:"task_update",arguments:{taskId:"1",status:"in_progress",description:$vs}}}')"
-printf '%s\n%s\n' "$INIT" "$UPDATE_CALL" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 bun "$SERVER" >/dev/null 2>&1
+printf '%s\n%s\n' "$INIT" "$UPDATE_CALL" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
 STATUS="$(jq -r '.status' "$TASKDIR/1.json")"
 if [[ "$STATUS" == "in_progress" ]]; then
   pass "task_update promoted task 1 to in_progress"
@@ -87,7 +94,7 @@ echo "== Test 4: write-gate DENIES again after the task completes =="
 VS_DONE="$(printf '<validation-steps>\n - [x] verify the gate\n       RESULT(2026-05-21 04:00Z): gate verified\n</validation-steps>')"
 COMPLETE_CALL="$(jq -nc --arg vs "$VS_DONE" \
   '{jsonrpc:"2.0",id:2,method:"tools/call",params:{name:"task_update",arguments:{taskId:"1",status:"completed",description:$vs}}}')"
-printf '%s\n%s\n' "$INIT" "$COMPLETE_CALL" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 bun "$SERVER" >/dev/null 2>&1
+printf '%s\n%s\n' "$INIT" "$COMPLETE_CALL" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
 OUT="$(write_payload Write | TASK_UTILS_TASK_DIR="$TASKDIR" CLAUDE_PROJECT_DIR="$WORK" bash "$HOOK")"
 if [[ "$(decision "$OUT")" == "deny" ]]; then
   pass "completed task no longer satisfies the gate -> deny"
@@ -114,11 +121,11 @@ fi
 echo "== Test 7: task-invariant.sh sees MCP in_progress for the 0-or-1 invariant =="
 # Re-create an MCP task and promote it to in_progress, then a built-in
 # TaskUpdate->in_progress on a legacy task must be denied (0-or-1 across stores).
-printf '%s\n' "$CREATE_REQ" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 bun "$SERVER" >/dev/null 2>&1
+printf '%s\n' "$CREATE_REQ" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
 NEWID="$(jq -rs 'map(.id) | sort_by(tonumber) | last' "$TASKDIR"/*.json)"
 UPDATE2="$(jq -nc --arg vs "$VS" --arg id "$NEWID" \
   '{jsonrpc:"2.0",id:2,method:"tools/call",params:{name:"task_update",arguments:{taskId:$id,status:"in_progress",description:$vs}}}')"
-printf '%s\n%s\n' "$INIT" "$UPDATE2" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 bun "$SERVER" >/dev/null 2>&1
+printf '%s\n%s\n' "$INIT" "$UPDATE2" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
 
 # A legacy built-in task in its own session dir trying to go in_progress.
 LEGACY_DIR="$WORK/claude-config/tasks/test-session"

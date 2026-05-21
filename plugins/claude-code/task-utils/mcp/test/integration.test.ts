@@ -1,9 +1,12 @@
 /**
- * Integration test — drives the BUILT server (`dist/server.js`) over stdio
- * with the official MCP SDK client, exercising all four tools end-to-end.
+ * Integration test — drives the BUILT server over stdio with the official MCP
+ * SDK client, exercising all four tools end-to-end.
  *
- * This validates the committed artifact, not just the source. A temp git repo
- * is used as TASK_UTILS_TASK_DIR so real repos are never polluted.
+ * The server is shipped as source and compiled to a native binary
+ * (`dist/task-mcp`) by `bun build --compile`. `mise run test-task-mcp` runs
+ * `build-task-mcp` first, so the compiled binary exists when this test runs.
+ * A temp git repo is used as TASK_UTILS_TASK_DIR so real repos are never
+ * polluted.
  */
 
 import { afterAll, beforeAll, describe, expect, test } from "bun:test";
@@ -17,7 +20,7 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SERVER_JS = join(HERE, "..", "dist", "server.js");
+const SERVER_BIN = join(HERE, "..", "dist", "task-mcp");
 
 let storeDir: string;
 let client: Client;
@@ -39,8 +42,8 @@ beforeAll(async () => {
   execFileSync("git", ["config", "commit.gpgsign", "false"], { cwd: storeDir });
 
   const transport = new StdioClientTransport({
-    command: "bun",
-    args: [SERVER_JS],
+    command: SERVER_BIN,
+    args: [],
     env: {
       ...process.env,
       TASK_UTILS_TASK_DIR: storeDir,
@@ -56,8 +59,8 @@ afterAll(async () => {
 });
 
 describe("MCP server over stdio", () => {
-  test("the built artifact exists", () => {
-    expect(existsSync(SERVER_JS)).toBe(true);
+  test("the compiled binary exists", () => {
+    expect(existsSync(SERVER_BIN)).toBe(true);
   });
 
   test("lists exactly the four task tools", async () => {

@@ -1,9 +1,11 @@
 {
   "mcpServers": {
     "task-mcp": {
-      "command": "bun",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/dist/server.js"],
+      "command": "bash",
+      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/launch.sh"],
       "env": {
+        "CLAUDE_PLUGIN_ROOT": "${CLAUDE_PLUGIN_ROOT}",
+        "CLAUDE_PLUGIN_DATA": "${CLAUDE_PLUGIN_DATA}",
         "TASK_UTILS_TASK_DIR": "${TASK_UTILS_TASK_DIR}",
         "CLAUDE_PROJECT_DIR": "${CLAUDE_PROJECT_DIR}",
         "CLAUDE_CODE_SESSION_ID": "${CLAUDE_CODE_SESSION_ID}"
