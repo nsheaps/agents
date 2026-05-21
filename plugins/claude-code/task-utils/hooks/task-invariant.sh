@@ -217,14 +217,14 @@ if [[ "$NEW_STATUS" == "in_progress" ]]; then
   for scan_dir in "$TASKS_DIR" "$FLAT_STORE"; do
     [[ -d "$scan_dir" ]] || continue
     while IFS= read -r -d '' f; do
-      f_id="$(jq -r '.id // empty' "$f" 2>/dev/null)"
+      f_id="$(grep -m1 '^id: ' "$f" 2>/dev/null | sed 's/^id: //; s/^"//; s/"$//')"
       [[ "$f_id" == "$TASK_ID" ]] && continue
-      f_status="$(jq -r '.status // empty' "$f" 2>/dev/null)"
+      f_status="$(grep -m1 '^status: ' "$f" 2>/dev/null | awk '{print $2}')"
       if [[ "$f_status" == "in_progress" ]]; then
-        f_subj="$(jq -r '.subject // empty' "$f" 2>/dev/null)"
+        f_subj="$(grep -m1 '^subject: ' "$f" 2>/dev/null | sed 's/^subject: //; s/^"//; s/"$//')"
         OTHERS+="#${f_id} (${f_subj}); "
       fi
-    done < <(find "$scan_dir" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
+    done < <(find "$scan_dir" -maxdepth 1 -name '*.yaml' -print0 2>/dev/null)
   done
   if [[ -n "$OTHERS" ]]; then
     REASON="Cannot move task #${TASK_ID} to in_progress — already in_progress: ${OTHERS%; }. Project rule: exactly 0 or 1 task may be in_progress. Pick one: (a) complete current via TaskUpdate status=completed, (b) move it back to pending via TaskUpdate status=pending, (c) create a sub-task via TaskCreate to capture the new direction (the in-progress task may itself be a planning/break-down task — see worked example at https://github.com/nsheaps/agents/blob/main/docs/journal/2026/05/16/managing-tasks-example.md). Use sequential-thinking; append a dated event-log line to the in-progress task's description noting the pivot before changing state."

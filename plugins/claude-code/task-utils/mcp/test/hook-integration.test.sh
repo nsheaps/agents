@@ -60,10 +60,10 @@ CREATE_REQ='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVer
 {"jsonrpc":"2.0","method":"notifications/initialized"}
 {"jsonrpc":"2.0","id":2,"method":"tools/call","params":{"name":"task_create","arguments":{"subject":"hook-integration task"}}}'
 printf '%s\n' "$CREATE_REQ" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
-if [[ -f "$TASKDIR/1.json" ]]; then
-  pass "task_create wrote flat $TASKDIR/1.json"
+if [[ -f "$TASKDIR/1.yaml" ]]; then
+  pass "task_create wrote flat $TASKDIR/1.yaml"
 else
-  fail "task_create did not write 1.json"
+  fail "task_create did not write 1.yaml"
 fi
 
 # task_update -> in_progress (with validation-steps).
@@ -75,7 +75,7 @@ INIT='{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":
 UPDATE_CALL="$(jq -nc --arg vs "$VS" \
   '{jsonrpc:"2.0",id:2,method:"tools/call",params:{name:"task_update",arguments:{taskId:"1",status:"in_progress",description:$vs}}}')"
 printf '%s\n%s\n' "$INIT" "$UPDATE_CALL" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
-STATUS="$(jq -r '.status' "$TASKDIR/1.json")"
+STATUS="$(grep -m1 '^status: ' "$TASKDIR/1.yaml" 2>/dev/null | awk '{print $2}')"
 if [[ "$STATUS" == "in_progress" ]]; then
   pass "task_update promoted task 1 to in_progress"
 else
@@ -122,7 +122,7 @@ echo "== Test 7: task-invariant.sh sees MCP in_progress for the 0-or-1 invariant
 # Re-create an MCP task and promote it to in_progress, then a built-in
 # TaskUpdate->in_progress on a legacy task must be denied (0-or-1 across stores).
 printf '%s\n' "$CREATE_REQ" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
-NEWID="$(jq -rs 'map(.id) | sort_by(tonumber) | last' "$TASKDIR"/*.json)"
+NEWID="$(for f in "$TASKDIR"/*.yaml; do grep -m1 '^id: ' "$f"; done | sed 's/^id: //; s/^\"//; s/\"$//' | sort -n | tail -1)"
 UPDATE2="$(jq -nc --arg vs "$VS" --arg id "$NEWID" \
   '{jsonrpc:"2.0",id:2,method:"tools/call",params:{name:"task_update",arguments:{taskId:$id,status:"in_progress",description:$vs}}}')"
 printf '%s\n%s\n' "$INIT" "$UPDATE2" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1

@@ -6,7 +6,7 @@
 # MCP task server (mcp/src/store.ts).
 #
 # Storage model (matches mcp/src/store.ts):
-#   - MCP / flat store: tasks live FLAT at `<store-root>/<task-id>.json`.
+#   - MCP / flat store: tasks live FLAT at `<store-root>/<task-id>.yaml`.
 #       store-root = $TASK_UTILS_TASK_DIR            (if set, used verbatim)
 #                  | <git-repo-root>/.claude/tasks   (repo root of CWD)
 #                  | <CWD>/.claude/tasks             (fallback, not in a repo)
@@ -43,15 +43,15 @@ resolve_legacy_store_dir() {
 }
 
 # count_in_progress_flat <store_root>
-#   Echoes the number of *.json files directly under <store_root> whose
-#   .status is "in_progress" (flat layout, maxdepth 1).
+#   Echoes the number of *.yaml files directly under <store_root> whose
+#   status is "in_progress" (flat layout, maxdepth 1).
 count_in_progress_flat() {
   local store_root="$1"
   local count=0 f f_status
   [[ -d "$store_root" ]] || { printf '0\n'; return 0; }
   while IFS= read -r -d '' f; do
-    f_status="$(jq -r '.status // empty' "$f" 2>/dev/null)"
+    f_status="$(grep -m1 '^status: ' "$f" 2>/dev/null | awk '{print $2}')"
     [[ "$f_status" == "in_progress" ]] && count=$((count + 1))
-  done < <(find "$store_root" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
+  done < <(find "$store_root" -maxdepth 1 -name '*.yaml' -print0 2>/dev/null)
   printf '%s\n' "$count"
 }
