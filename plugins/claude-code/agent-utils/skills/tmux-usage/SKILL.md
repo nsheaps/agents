@@ -2,6 +2,7 @@
 name: tmux-usage
 description: Use when working with tmux in Claude Code agent team sessions. Covers core tmux concepts, pane/window management, session attachment, and agent-team-specific tmux patterns. Trigger phrases — "tmux", "terminal multiplexer", "attach to session", "split panes", "switch windows", "tmux shortcuts".
 ---
+
 # tmux Usage for Agent Teams
 
 How to use tmux effectively when working with Claude Code agent teams.

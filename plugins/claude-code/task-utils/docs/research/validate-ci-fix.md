@@ -56,15 +56,15 @@ CI run 26240378240 may have been triggered against a commit that was in a partia
 
 All tests run at HEAD `6709aef`:
 
-| Test | Result |
-|------|--------|
-| `mise run validate` (all plugins) | exit 0, "All plugins validated successfully!" |
-| `mise run validate` (no dist/ dir) | exit 0 (dist/ is irrelevant to validate) |
-| `claude plugin validate marketplace.json` | exit 0 |
-| `claude plugin validate agent-utils/plugin.json` | exit 0 (after frontmatter fix) |
-| `claude plugin validate cron-utils/plugin.json` | exit 0 |
-| `claude plugin validate task-utils/plugin.json` | exit 0 |
-| `mise run test` (66 unit + 7 hook-integration) | all pass |
+| Test                                             | Result                                        |
+| ------------------------------------------------ | --------------------------------------------- |
+| `mise run validate` (all plugins)                | exit 0, "All plugins validated successfully!" |
+| `mise run validate` (no dist/ dir)               | exit 0 (dist/ is irrelevant to validate)      |
+| `claude plugin validate marketplace.json`        | exit 0                                        |
+| `claude plugin validate agent-utils/plugin.json` | exit 0 (after frontmatter fix)                |
+| `claude plugin validate cron-utils/plugin.json`  | exit 0                                        |
+| `claude plugin validate task-utils/plugin.json`  | exit 0                                        |
+| `mise run test` (66 unit + 7 hook-integration)   | all pass                                      |
 
 ---
 
@@ -94,6 +94,7 @@ Effect: `claude plugin validate plugins/claude-code/agent-utils/.claude-plugin/p
 ## 5. Conclusion
 
 `mise run validate` passes cleanly at the current HEAD. The validate CI failure was either:
+
 1. Run against an intermediate commit state before the native-build design was complete, or
 2. Triggered by the agent-utils skill frontmatter warnings in a CI environment where a newer claude binary applies stricter rules
 
