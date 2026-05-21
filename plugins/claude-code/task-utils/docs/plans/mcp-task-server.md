@@ -289,12 +289,16 @@ plugins/claude-code/task-utils/
 │   └── git-helper.ts               # NEW (§3.5.1) — git auto-commit logic
 ├── mcp/                            # NEW — the MCP server
 │   ├── package.json                # deps: @modelcontextprotocol/sdk, zod
+│   ├── bun.lock                    # shipped — `bun install --frozen-lockfile`
+│   ├── build.sh                    # on-device build-if-missing (§7)
+│   ├── launch.sh                   # MCP launch command — builds then execs (§7)
+│   ├── prewarm.sh                  # SessionStart pre-warm of the build (§7)
 │   ├── src/
 │   │   ├── server.ts               # McpServer + registerTool calls + stdio
 │   │   ├── store.ts                # store-root resolution, file read/write
 │   │   ├── validation-steps.ts     # <validation-steps> parser (mirrors awk)
 │   │   └── git-helper.ts           # git auto-commit helper
-│   └── dist/server.js              # built artifact (committed — see §7)
+│   └── dist/task-mcp               # local-dev/CI compile output (gitignored)
 ├── skills/manage-tasks/SKILL.md    # may need a note about the MCP fallback
 ├── docs/                           # this research + plan + design notes
 └── README.md                       # updated to document the fallback + env vars
@@ -326,19 +330,46 @@ plugins/claude-code/task-utils/
 
 ## 7. Build and packaging
 
-The repo's JS toolchain is **bun** (`mise.toml` pins `bun = "1.3.13"`).[^8]
+The repo's JS toolchain is **bun** (`mise.toml` pins `bun`).[^8]
 
-**Strategy A — committed bundled artifact (recommended).** Build
-`mcp/src/server.ts` into a single self-contained `mcp/dist/server.js` with
-`bun build --target=node` (deps inlined). Commit `dist/server.js`.
+> **Strategy changed (2026-05-21, handler directive).** The original plan chose
+> **Strategy A — committed `bun build --target=node` bundle**. That has been
+> superseded by **Strategy C — on-device native compile**. See
+> [`docs/research/native-build-strategy.md`](../research/native-build-strategy.md)
+> for the full rationale; summary below.
 
-- **Runtime dependencies**: `node` (verify on Claude Code web; otherwise `bun`).
-  [**Unverified** — confirm `node` is on PATH in Claude Code web.]
-- **No network**, `node_modules`, or install step at session start.
-- **Simplest for distributed plugins and web contexts.**
+**Strategy C — on-device native binary (current).** The plugin ships the
+TypeScript **source only** (`mcp/src/`, `package.json`, `bun.lock`). The
+runnable artifact is a native executable produced by `bun build --compile`,
+**built on the end user's machine on first use** — never committed.
 
-Add a `mise` task (e.g. `[tasks.build-task-mcp]`) that runs `bun build` so the
-artifact is reproducible. CI checks that committed `dist/` matches a fresh build.
+- **Why not a committed bundle:** the handler directed that the build artifact
+  not be committed. A `bun build --compile` binary is platform-specific anyway,
+  so a single committed binary could not work cross-platform; on-device
+  compilation is the correct fit.
+- **Where the binary lives:** `${CLAUDE_PLUGIN_DATA}/bin/task-mcp` — the
+  per-plugin persistent data dir, which **survives plugin updates** (unlike the
+  ephemeral `${CLAUDE_PLUGIN_ROOT}`). The binary is keyed by plugin version
+  (a `task-mcp.version` marker); a version bump triggers a one-time rebuild.
+- **How the build is triggered:**
+  - **Load-bearing:** `mcp/launch.sh` is the MCP server's launch `command`.
+    It calls `mcp/build.sh` (build-if-missing) then `exec`s the binary — so the
+    server can never launch without a binary.
+  - **Optimisation:** a `SessionStart` hook (`mcp/prewarm.sh`) starts the same
+    build in the background at session start, so the binary is usually ready
+    before the MCP server connects.
+- **Dependencies:** `mcp/build.sh` runs `bun install --frozen-lockfile` (from
+  the shipped `bun.lock`) before `bun build --compile`. `--compile` inlines all
+  deps + the runtime into the binary; no `node_modules` is needed afterwards.
+- **Idempotency / loop-safety:** `build.sh` skips the build when an up-to-date
+  binary exists, serialises concurrent invocations with an atomic `mkdir`
+  directory lock, and writes the binary via temp-path + atomic `mv` so a killed
+  build never leaves a half-written artifact.
+- **Runtime requirement:** `bun` on `PATH` (to build). If absent, the build
+  fails loudly with an actionable message.
+
+`mise run build-task-mcp` runs the same `bun build --compile` for local-dev /
+CI verification, emitting `mcp/dist/task-mcp` (gitignored — not shipped).
 
 ---
 
@@ -406,7 +437,9 @@ real `~/.claude`.
 - [x] **Q3** — MCP server learns session id via `CLAUDE_CODE_SESSION_ID` environment variable? **CONFIRMED via empirical verification**[^5]
 - [x] **NEW requirement 1** — When `TASK_UTILS_TASK_DIR` points into a git repo, keep storage session-scoped. **DECIDED & DOCUMENTED**[^6]
 - [x] **NEW requirement 2** — Git auto-commit + push on task write. **DESIGNED & DOCUMENTED**[^7]
-- [ ] Runtime `node` vs `bun` on Claude Code web (verify `node` is on PATH).
+- [x] Runtime `node` vs `bun`: **RESOLVED** — the server is now an on-device
+      `bun build --compile` native binary (Strategy C, §7). No `node`/`bun`
+      runtime is needed to _run_ the binary; `bun` is needed once to _build_ it.
 - [ ] `.mcp.json` file vs inline `mcpServers` in `plugin.json`. **Recommendation: separate `.mcp.json`**
 - [ ] Should built-in `task-invariant.sh` count MCP tasks toward 0-or-1, or stay isolated? **Recommendation: isolated**
 

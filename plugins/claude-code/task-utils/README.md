@@ -69,7 +69,20 @@ Then in a fresh session:
 claude plugin install task-utils@agents
 ```
 
-The two PreToolUse hooks register automatically; the skills are available as `Skill(manage-tasks)` and `Skill(mcp-task-tools)`. The `task-mcp` MCP server connects automatically when the plugin is enabled — verify with `/mcp`, and run `/reload-plugins` if you enabled the plugin mid-session. The server is built from `mcp/src/` into the committed `mcp/dist/server.js` bundle; rebuild it with `mise run build-task-mcp`. The server runs on **bun** (`bun ${CLAUDE_PLUGIN_ROOT}/mcp/dist/server.js`).
+The two PreToolUse hooks register automatically; the skills are available as `Skill(manage-tasks)` and `Skill(mcp-task-tools)`. The `task-mcp` MCP server connects automatically when the plugin is enabled — verify with `/mcp`, and run `/reload-plugins` if you enabled the plugin mid-session.
+
+### How the MCP server is built (on-device, on first use)
+
+The MCP server is shipped as TypeScript **source only** (`mcp/src/`). The runnable artifact is a **native executable** produced by `bun build --compile`. Because a compiled binary is platform-specific, it cannot be committed — instead it is built **on the end user's machine, lazily, on first use**:
+
+- The MCP server's launch command is `mcp/launch.sh`. On first run it invokes `mcp/build.sh`, which runs `bun install` then `bun build --compile`; subsequent runs `exec` the binary directly with no rebuild.
+- A `SessionStart` hook (`mcp/prewarm.sh`) kicks the same build off in the background at session start, so the binary is usually ready before the MCP server connects.
+- The compiled binary lives in the plugin's **persistent data dir** — `${CLAUDE_PLUGIN_DATA}/bin/task-mcp` — so it survives plugin updates. It is keyed by plugin version: a version bump triggers a one-time rebuild. `build.sh` is idempotent and lock-guarded, so concurrent sessions are safe.
+- **Requirement:** `bun` must be on `PATH` (install from <https://bun.sh>). If it is missing, the build fails with an actionable message and the MCP server does not start.
+
+For local development / CI, `mise run build-task-mcp` compiles the binary to `mcp/dist/task-mcp` (gitignored — not shipped); `mise run test-task-mcp` builds it and runs the full test suite against it.
+
+See [`docs/research/native-build-strategy.md`](docs/research/native-build-strategy.md) for the rationale and design.
 
 ## Design
 
