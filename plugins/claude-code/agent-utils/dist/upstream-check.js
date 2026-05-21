@@ -59,7 +59,7 @@ async function runCheck(env) {
     "refs/remotes/origin/HEAD"
   ]);
   const defaultBranch = defRef.code === 0 ? defRef.stdout.trim().replace(/^refs\/remotes\/origin\//, "") : "main";
-  const messages = [];
+  const plainMessages = [];
   const behindCur = await env.runGit([
     "rev-list",
     "--count",
@@ -67,7 +67,7 @@ async function runCheck(env) {
   ]);
   const behindCurrent = behindCur.code === 0 ? parseInt(behindCur.stdout.trim(), 10) || 0 : 0;
   if (behindCurrent > 0) {
-    messages.push(`<system-message>Upstream agent repo has ${behindCurrent} new commit${behindCurrent === 1 ? "" : "s"} on \`${currentBranch}\`. Fetch and pull changes in ${env.repoDir} to get the latest.</system-message>`);
+    plainMessages.push(`Upstream agent repo has ${behindCurrent} new commit${behindCurrent === 1 ? "" : "s"} on \`${currentBranch}\`. Fetch and pull changes in ${env.repoDir} to get the latest.`);
   }
   if (defaultBranch !== currentBranch) {
     const verify = await env.runGit(["rev-parse", "--verify", defaultBranch]);
@@ -79,23 +79,25 @@ async function runCheck(env) {
       ]);
       const behindDefault = behindDef.code === 0 ? parseInt(behindDef.stdout.trim(), 10) || 0 : 0;
       if (behindDefault > 0) {
-        messages.push(`<system-message>Upstream agent repo has ${behindDefault} new commit${behindDefault === 1 ? "" : "s"} on default branch \`${defaultBranch}\`. Fetch and pull changes in ${env.repoDir} to get the latest.</system-message>`);
+        plainMessages.push(`Upstream agent repo has ${behindDefault} new commit${behindDefault === 1 ? "" : "s"} on default branch \`${defaultBranch}\`. Fetch and pull changes in ${env.repoDir} to get the latest.`);
       }
     }
   }
   const status = await env.runGit(["status", "--porcelain"]);
   if (status.code === 0 && status.stdout.trim() !== "") {
-    messages.push(`<system-message>Agent repo ${env.repoDir} has uncommitted changes. Consider running \`/scm-utils:commit\` to commit them.</system-message>`);
+    plainMessages.push(`Agent repo ${env.repoDir} has uncommitted changes. Consider running \`/scm-utils:commit\` to commit them.`);
   }
-  if (messages.length === 0) {
+  if (plainMessages.length === 0) {
     return { shouldEmit: false };
   }
-  const combined = messages.join(`
+  const plain = plainMessages.join(`
+`);
+  const wrapped = plainMessages.map((m) => `<system-message>${m}</system-message>`).join(`
 `);
   return {
     shouldEmit: true,
-    systemMessage: combined,
-    additionalContext: combined
+    systemMessage: plain,
+    additionalContext: wrapped
   };
 }
 
