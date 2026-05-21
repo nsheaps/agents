@@ -1,5 +1,5 @@
 {
-  "description": "settings-write-guard: warn when an agent writes ~/.claude/settings*.json OUTSIDE $AGENT_REPO/.claude/settings.json (the only settings file that survives an agent restart). Also fires on Bash(claude plugin …) and /plugin SlashCommand.",
+  "description": "agent-utils plugin hooks: PostToolUse settings-write-guard (warns on writes to ephemeral settings.json paths), SessionStart sync-rules (symlinks plugin rules into the project), UserPromptSubmit upstream-check (throttled fetch + dirty-state nag).",
   "hooks": {
     "PostToolUse": [
       {
@@ -9,6 +9,30 @@
             "type": "command",
             "command": "bun run ${CLAUDE_PLUGIN_ROOT}/dist/settings-write-guard.js",
             "timeout": 5
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/scripts/sync-rules.sh",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run ${CLAUDE_PLUGIN_ROOT}/dist/upstream-check.js",
+            "timeout": 10
           }
         ]
       }
