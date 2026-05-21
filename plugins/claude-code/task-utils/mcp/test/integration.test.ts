@@ -18,6 +18,7 @@ import { fileURLToPath } from "node:url";
 
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StdioClientTransport } from "@modelcontextprotocol/sdk/client/stdio.js";
+import { parse as yamlParse } from "yaml";
 
 const HERE = dirname(fileURLToPath(import.meta.url));
 const SERVER_BIN = join(HERE, "..", "dist", "task-mcp");
@@ -69,7 +70,7 @@ describe("MCP server over stdio", () => {
     expect(names).toEqual(["task_create", "task_get", "task_list", "task_update"]);
   });
 
-  test("task_create writes a flat <id>.json file", async () => {
+  test("task_create writes a flat <id>.yaml file", async () => {
     const res = await client.callTool({
       name: "task_create",
       arguments: { subject: "integration task one" },
@@ -80,9 +81,9 @@ describe("MCP server over stdio", () => {
     expect(task.subject).toBe("integration task one");
 
     // Flat storage — directly under storeDir, no session subdir.
-    const file = join(storeDir, "1.json");
+    const file = join(storeDir, "1.yaml");
     expect(existsSync(file)).toBe(true);
-    const onDisk = JSON.parse(readFileSync(file, "utf8"));
+    const onDisk = yamlParse(readFileSync(file, "utf8"));
     expect(onDisk.id).toBe("1");
     expect(onDisk.status).toBe("pending");
     expect(onDisk.source).toBe("task-utils-mcp");
@@ -202,6 +203,6 @@ describe("MCP server over stdio", () => {
       name: "task_update",
       arguments: { taskId: "2", status: "deleted" },
     });
-    expect(existsSync(join(storeDir, "2.json"))).toBe(false);
+    expect(existsSync(join(storeDir, "2.yaml"))).toBe(false);
   });
 });

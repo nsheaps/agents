@@ -7,7 +7,7 @@
  * (notably Claude Code on the web), so the `task-utils` write-gate hook stays
  * satisfiable.
  *
- * Storage is FLAT in the CWD git repo: `<repo-root>/.claude/tasks/<id>.json`
+ * Storage is FLAT in the CWD git repo: `<repo-root>/.claude/tasks/<id>.yaml`
  * (overridable with `TASK_UTILS_TASK_DIR`). Every mutation triggers a
  * best-effort templated git auto-commit + push.
  *
@@ -22,7 +22,7 @@ import { TaskStore } from "./store.js";
 import { TaskError, TaskManager } from "./tasks.js";
 
 const SERVER_NAME = "task-mcp";
-const SERVER_VERSION = "0.1.3";
+const SERVER_VERSION = "0.1.4";
 
 const STATUS_ENUM = z.enum(["pending", "in_progress", "completed"]);
 const UPDATE_STATUS_ENUM = z.enum([

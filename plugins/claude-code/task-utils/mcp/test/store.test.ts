@@ -75,10 +75,10 @@ describe("TaskStore", () => {
     expect(store.read("1")).toEqual(task);
   });
 
-  test("write creates a flat <id>.json file", () => {
+  test("write creates a flat <id>.yaml file", () => {
     const store = new TaskStore(join(tmp, "tasks"));
     store.write(sampleTask("7"));
-    expect(store.filePath("7")).toBe(join(tmp, "tasks", "7.json"));
+    expect(store.filePath("7")).toBe(join(tmp, "tasks", "7.yaml"));
     expect(store.listIds()).toEqual(["7"]);
   });
 

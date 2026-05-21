@@ -5,7 +5,7 @@
  * per-session-directory plan):
  *
  *   - DEFAULT: tasks are stored FLAT in the CWD git repo at
- *     `<repo-root>/.claude/tasks/<task-id>.json`. No `<session_id>`
+ *     `<repo-root>/.claude/tasks/<task-id>.yaml`. No `<session_id>`
  *     subdirectory, no `-mcp` suffix dir. The repo root is resolved with
  *     `git rev-parse --show-toplevel`.
  *   - OVERRIDE: when `TASK_UTILS_TASK_DIR` is set and non-empty, that absolute
@@ -18,6 +18,7 @@
  */
 
 import { execFileSync } from "node:child_process";
+import { parse as yamlParse, stringify as yamlStringify } from "yaml";
 import {
   existsSync,
   mkdirSync,
@@ -32,7 +33,7 @@ export type TaskStatus = "pending" | "in_progress" | "completed";
 
 /** The on-disk task record. Superset of the four fields the hooks read. */
 export interface TaskRecord {
-  /** stable id — MUST equal the filename stem (`<id>.json`) */
+  /** stable id — MUST equal the filename stem (`<id>.yaml`) */
   id: string;
   /** required by the hooks */
   subject: string;
@@ -119,7 +120,7 @@ export class TaskStore {
   }
 
   filePath(id: string): string {
-    return join(this.root, `${id}.json`);
+    return join(this.root, `${id}.yaml`);
   }
 
   /** List all task ids present in the store. */
@@ -128,7 +129,7 @@ export class TaskStore {
       return [];
     }
     return readdirSync(this.root)
-      .filter((f) => f.endsWith(".json"))
+      .filter((f) => f.endsWith(".yaml"))
       .map((f) => f.slice(0, -5));
   }
 
@@ -139,7 +140,7 @@ export class TaskStore {
       return null;
     }
     try {
-      return JSON.parse(readFileSync(path, "utf8")) as TaskRecord;
+      return yamlParse(readFileSync(path, "utf8")) as TaskRecord;
     } catch {
       return null;
     }
@@ -163,7 +164,7 @@ export class TaskStore {
   write(task: TaskRecord): string {
     this.ensureDir();
     const path = this.filePath(task.id);
-    writeFileSync(path, `${JSON.stringify(task, null, 2)}\n`, "utf8");
+    writeFileSync(path, yamlStringify(task), "utf8");
     return path;
   }
 
