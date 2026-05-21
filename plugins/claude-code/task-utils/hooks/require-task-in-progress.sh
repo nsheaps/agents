@@ -20,12 +20,26 @@
 # .claude/logs/require-task-in-progress.log so the audit trail
 # survives even when the transcript stays clean.
 #
+# Task storage: the gate is satisfied by an in_progress task in EITHER
+#   (a) the flat MCP store — <store-root>/<task-id>.json, where store-root
+#       is $TASK_UTILS_TASK_DIR, else the CWD git repo's .claude/tasks, else
+#       <CWD>/.claude/tasks (see hooks/task-store-lib.sh); the task-utils MCP
+#       server writes here, or
+#   (b) the legacy per-session store the built-in Task tools write to,
+#       ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/tasks/<session_id>/.
+# Reading both keeps built-in-Task-tool users working alongside the MCP
+# fallback.
+#
 # Opt-out: set TASK_UTILS_REQUIRE_TASK=0 to disable this gate in
-# environments where the Task tools (TaskCreate/TaskUpdate) are not
-# enabled — notably Claude Code on the web — so the gate is not left
-# permanently unsatisfiable. Unset (the default) enforces the gate.
+# environments where neither task system is available, so the gate is not
+# left permanently unsatisfiable. Unset (the default) enforces the gate.
 
 set -euo pipefail
+
+# Resolve this script's directory so the shared lib is found regardless of CWD.
+HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# shellcheck source=task-store-lib.sh
+. "$HOOK_DIR/task-store-lib.sh"
 
 INPUT="$(cat)"
 TOOL_NAME="$(jq -r '.tool_name // empty' <<<"$INPUT")"
@@ -59,19 +73,15 @@ if [[ "${TASK_UTILS_REQUIRE_TASK:-1}" == "0" ]]; then
   exit 0
 fi
 
-CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-TASKS_DIR="$CLAUDE_DIR/tasks/$SESSION_ID"
+# Resolve both task stores. The gate is satisfied by an in_progress task in
+# either: the flat MCP store, or the legacy per-session built-in-tool store.
+BASE_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
+FLAT_STORE="$(resolve_flat_store_root "$BASE_DIR")"
+LEGACY_STORE="$(resolve_legacy_store_dir "$SESSION_ID")"
 
-# Count in_progress tasks
-IN_PROGRESS_COUNT=0
-if [[ -d "$TASKS_DIR" ]]; then
-  while IFS= read -r -d '' f; do
-    f_status="$(jq -r '.status // empty' "$f" 2>/dev/null)"
-    if [[ "$f_status" == "in_progress" ]]; then
-      IN_PROGRESS_COUNT=$((IN_PROGRESS_COUNT + 1))
-    fi
-  done < <(find "$TASKS_DIR" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
-fi
+FLAT_COUNT="$(count_in_progress_flat "$FLAT_STORE")"
+LEGACY_COUNT="$(count_in_progress_flat "$LEGACY_STORE")"
+IN_PROGRESS_COUNT=$((FLAT_COUNT + LEGACY_COUNT))
 
 emit_decision() {
   local decision="$1" reason="$2"
@@ -96,6 +106,6 @@ if (( IN_PROGRESS_COUNT == 0 )); then
   exit 0
 fi
 
-log_fire "allow" "tool=${TOOL_NAME} in_progress=${IN_PROGRESS_COUNT}"
+log_fire "allow" "tool=${TOOL_NAME} in_progress=${IN_PROGRESS_COUNT} flat=${FLAT_COUNT} legacy=${LEGACY_COUNT}"
 emit_decision "allow" ""
 exit 0
