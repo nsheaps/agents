@@ -1,42 +1,54 @@
-# Runs an AI code review against this repo's PRs via the review-utils plugin
-# in nsheaps/agents.
+# Runs the dispatch GATE for AI code reviews on this repo's PRs.
+# Forwards to the shared decider workflow in nsheaps/agents, which evaluates
+# whether to dispatch a review and (if yes) fires a repository_dispatch to the
+# target agent repo's dispatch-receiver-review.yaml.
 #
 # This file is a template — copy into your repo at
-# `.github/workflows/dispatch-review.yaml`. Synced via nsheaps/.github when
-# that is in place; until then, copy-paste.
+# `.github/workflows/dispatch-review.yaml`. Synced via `nsheaps/.github` CI
+# automation when configured; until then, copy-paste.
+#
+# Spec: https://github.com/nsheaps/agents/blob/main/plugins/claude-code/review-utils/specs/review-dispatch.md
 #
 # Requirements (provisioned via nsheaps/.github/secret-sync.yaml):
 #   - REVIEW_GITHUB_APP_ID
 #   - REVIEW_GITHUB_APP_PRIVATE_KEY  (App installed on this repo for label
-#                                     editing + check run + review comment)
-#   - REVIEW_ANTHROPIC_API_KEY       (optional — Anthropic API key)
-#   - CLAUDE_CODE_OAUTH_TOKEN        (optional — Claude OAuth, alternative to API key)
-# Exactly ONE of REVIEW_ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN must be set.
+#                                     editing + check_run posting; also
+#                                     installed on the target agent repo so
+#                                     it can post the dispatch event there)
+#
+# LLM-auth secrets (REVIEW_ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN) are
+# NOT needed here — they're owned by the target agent's
+# `dispatch-receiver-review.yaml` because the review executes in the target's
+# repo under its identity.
 
 name: Dispatch PR Review
 
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, labeled]
+    types: [opened, reopened, synchronize, ready_for_review, labeled]
+  # workflow_run lets the dispatch re-evaluate the gate when CI settles —
+  # spec §"Trigger events"  bullet 3. Replace `CI` with whichever workflow
+  # in this repo produces the required-check results.
+  workflow_run:
+    workflows: ['CI']
+    types: [completed]
 
 jobs:
   review:
-    # Explicit permissions needed: default_workflow_permissions is "read" in many repos,
-    # but the called workflow requests pull-requests: write + checks: write. Without
-    # this block, GitHub refuses to create the job (startup_failure).
+    # Explicit permissions: default_workflow_permissions is "read" in many
+    # repos but the called workflow needs pull-requests + checks write.
     permissions:
       contents: read
       pull-requests: write
       checks: write
     uses: nsheaps/agents/.github/workflows/review-dispatch.yaml@main
-    # secrets: inherit does not pass required secrets cross-repo (GitHub limitation).
-    # Explicitly pass required secrets.
+    # secrets: inherit doesn't pass cross-repo (GitHub limitation).
     secrets:
       REVIEW_GITHUB_APP_ID: ${{ secrets.REVIEW_GITHUB_APP_ID }}
       REVIEW_GITHUB_APP_PRIVATE_KEY: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
-      REVIEW_ANTHROPIC_API_KEY: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
-      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
     # Optional overrides (uncomment to use):
     # with:
-    #   request-label: request-review
-    #   plugin-ref: main
+    #   target-repo: nsheaps/.ai-agent-henry  # default
+    #   request-label: request-review         # default
+    #   dispatch-on-draft: false              # default
+    #   event-type: pr-review                 # default repository_dispatch event_type
