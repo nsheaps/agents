@@ -192,6 +192,14 @@ runs:
         echo "HEAD_SHA=$(echo "$TRIGGER" | jq -r '.source.head_sha // empty')" >> $GITHUB_ENV
         echo "CHECK_RUN_ID=${{ steps.check-id.outputs.id }}" >> $GITHUB_ENV
         echo "WORKFLOW_RUN_URL=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_ENV
+        # REVIEW_METRICS_PATH: where the skill MUST emit verdict+follow-ups
+        # for the receiver workflow to read. Empty signals direct-invocation
+        # mode (skill self-finalizes the check).
+        if [ -n "${{ inputs.check-run-id }}" ]; then
+          echo "REVIEW_METRICS_PATH=$RUNNER_TEMP/review-metrics.yaml" >> $GITHUB_ENV
+        else
+          echo "REVIEW_METRICS_PATH=" >> $GITHUB_ENV
+        fi
         # JOB_CONTEXT is JSON, use heredoc to handle multiline safely
         DELIMITER="DELIM_$(date +%s%N)"
         {

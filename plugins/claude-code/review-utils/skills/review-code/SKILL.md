@@ -7,6 +7,7 @@ REPO: ${REPO}
 PR_NUMBER: ${PR_NUMBER}
 CHECK_RUN_ID: ${CHECK_RUN_ID}
 WORKFLOW_RUN_URL: ${WORKFLOW_RUN_URL}
+REVIEW_METRICS_PATH: ${REVIEW_METRICS_PATH}
 
 Review this PR providing inline feedback via the GitHub review system.
 
@@ -46,17 +47,43 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
     - **APPROVE**: no outstanding issues, PR is ready to merge (barring CI)
     - **COMMENT**: only P2 follow-ups remain; prefer over APPROVE when improvements are wanted but won't break anything
 
-11. **Update the check run**:
-    - APPROVE -> `success`, COMMENT -> `neutral`, REQUEST_CHANGES -> `action_required`
+11. **Emit review metrics** (REQUIRED; receiver gates final check on this file's presence).
+    Write a yaml file at `${REVIEW_METRICS_PATH}` (the receiver workflow exports this env var). Schema v1:
+
+    ```yaml
+    version: 1
+    verdict: APPROVE # one of: APPROVE | REQUEST_CHANGES | COMMENT
+    follow_ups: 3 # integer count of P0/P1/P2 follow-ups raised in the review
+    review_url: https://github.com/${REPO}/pull/${PR_NUMBER}#pullrequestreview-XXXX
+    ```
+
+    Use `Bash` with a heredoc (do NOT use a code-execution tool that escapes the value). Example:
 
     ```bash
-    gh api "repos/${REPO}/check-runs/${CHECK_RUN_ID}" \
-      --method PATCH --input - <<EOF
-    {"status":"completed","conclusion":"<conclusion>","output":{"title":"<verdict>","summary":"<one-line>"}}
+    cat > "${REVIEW_METRICS_PATH}" <<EOF
+    version: 1
+    verdict: COMMENT
+    follow_ups: 5
+    review_url: ${REVIEW_URL}
     EOF
     ```
 
-12. **Post-review verification**: Verify your latest review is visible, previous reviews minimized, thread states are correct, other users' threads untouched, and check run updated.
+    If `${REVIEW_METRICS_PATH}` is empty (legacy direct-invocation path with no receiver), skip this step.
+
+12. **Update the check run** (only when NOT invoked via the receiver — i.e. `${REVIEW_METRICS_PATH}` is empty).
+    When the receiver workflow owns the check_run lifecycle, it reads the metrics file emitted in step 11 and updates the check itself; don't write to it from here.
+    - APPROVE -> `success`, COMMENT -> `neutral`, REQUEST_CHANGES -> `action_required`
+
+    ```bash
+    if [ -z "${REVIEW_METRICS_PATH}" ]; then
+      gh api "repos/${REPO}/check-runs/${CHECK_RUN_ID}" \
+        --method PATCH --input - <<EOF
+    {"status":"completed","conclusion":"<conclusion>","output":{"title":"<verdict>","summary":"<one-line>"}}
+    EOF
+    fi
+    ```
+
+13. **Post-review verification**: Verify your latest review is visible, previous reviews minimized, thread states are correct, other users' threads untouched, the metrics file written (step 11), and the check run updated (either by you in step 12 OR by the receiver workflow that invoked you).
 
 ## Design Principles
 
