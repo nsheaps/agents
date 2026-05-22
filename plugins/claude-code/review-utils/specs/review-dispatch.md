@@ -25,9 +25,29 @@ source: https://discord.com/channels/1490863845252665415/1497431286661517353/150
 
 ## Status
 
-DRAFT — not yet implemented. This document is the contract we'll validate the implementation against. Implementation is a follow-up after spec review.
+DRAFT — landing alongside implementation in PR #165 per [Nate 17:01Z](https://discord.com/channels/1490863845252665415/1497431286661517353/1507428091616694393). Cross-links to the implementation files appear inline below; consult the `Implementation:` lines under each section.
 
 **Supersedes:** the post-#164 in-process executor (where the review ran on `nsheaps/agents` runners under a generic bot identity). [Nate ruled](https://discord.com/channels/1490863845252665415/1497431286661517353/1507407855471563026) the reviewer-as-henry framing should be authoritative: the review is henry's work product, executed in henry's repo, under henry's identity.
+
+### Implementation map
+
+| Section                                         | File(s)                                                                                                                  |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Topology — decider                              | [`.github/workflows/review-dispatch.yaml`](../../../../.github/workflows/review-dispatch.yaml)                           |
+| Topology — receiver                             | [`.github/workflows/review-receiver.yaml`](../../../../.github/workflows/review-receiver.yaml)                           |
+| Topology — consumer template                    | [`templates/dispatch-review.yaml`](../../../../templates/dispatch-review.yaml)                                           |
+| Topology — receiver template                    | [`templates/dispatch-receiver-review.yaml`](../../../../templates/dispatch-receiver-review.yaml)                         |
+| Topology — plugin composite                     | [`../actions/run-agent/action.yaml`](../actions/run-agent/action.yaml)                                                   |
+| Topology — review-code skill                    | [`../skills/review-code/SKILL.md`](../skills/review-code/SKILL.md)                                                       |
+| Trigger events                                  | `templates/dispatch-review.yaml` `on:` block                                                                             |
+| Dispatch gate                                   | `review-dispatch.yaml` step "Evaluate dispatch gate"                                                                     |
+| Check-run lifecycle (queued/dispatched/failure) | `review-dispatch.yaml` steps "Post queued check" → "Update check (dispatched\|dispatch failed)"                          |
+| Check-run lifecycle (in_progress/terminal)      | `review-receiver.yaml` steps "Update check (in_progress\|terminal\|agent failed)"                                        |
+| Approval dismissal                              | `review-receiver.yaml` step "Dismiss prior approval reviews"                                                             |
+| Metrics emission (agent side)                   | `../skills/review-code/SKILL.md` step 11                                                                                 |
+| Metrics path export                             | `../actions/run-agent/action.yaml` step "Export trigger fields for prompt interpolation"                                 |
+| Metrics gate (receiver side)                    | `review-receiver.yaml` steps "Read agent metrics" + "Compute check conclusion"                                           |
+| `if: failure()` safety net                      | `review-receiver.yaml` step "Update check (agent failed)" + `review-dispatch.yaml` step "Update check (dispatch failed)" |
 
 ## Problem
 
@@ -265,23 +285,49 @@ Each agent owns its own LLM auth. This is the lever that lets us run multiple re
 ## Open questions
 
 1. **Approval-dismissal timing.** Should we dismiss the prior `APPROVED` review at decider-time (right when the dispatch fires) instead of at receiver-time (when the agent starts running)? Decider-time dismissal closes the "PR is APPROVED, ready to merge" UI affordance ~30s earlier, but if the dispatch then fails downstream we've dismissed an approval we couldn't replace. Receiver-time dismissal is safer but leaves a brief window where the PR shows green-approved while the agent is queued.
+   **Current implementation:** receiver-time (`review-receiver.yaml` step "Dismiss prior approval reviews"). Resolved if no objection; the safety argument outweighs the ~30s UI lag.
 2. **Bot mention as trigger.** Is `issue_comment` containing `@<bot-handle>` a valid trigger event? Use cases: contributor wants the bot to re-review after manually pushing fixes that don't change CI. Open issues: spam-resistance (only allow trigger from PR author + maintainers?), comment-only-on-PRs (issues without an associated PR should be a no-op).
+   **Current implementation:** not wired. Templates only declare `pull_request` + `workflow_run`. Adding `issue_comment` is a small consumer-template edit + a decider gate-step extension; deferred until we have a clear use-case.
 3. **Distinguishing "no CI configured" from "CI hasn't started yet."** With zero checks present, current spec says "no-op + wait for `workflow_run`." But a repo with NO CI at all will never fire `workflow_run` — and so the review never runs. Options: (a) add a fallback timer that fires the gate after N minutes regardless; (b) require the consumer to set an input `requires-ci: false` to opt out of the CI gate; (c) call GH API to enumerate workflows, and if the repo has zero workflow files, fall through. (c) is cleanest but adds an API call.
+   **Current implementation:** option (none) — gate returns `decision=wait` and the workflow exits silently. A consumer with NO CI relies on the `pull_request: opened` trigger to fire the dispatch when the gate's "0 checks" case is hit... but the current gate treats 0 checks as "wait" and exits. This is a known gap; suggested follow-up: implement (b) as an `inputs.dispatch-without-ci` boolean defaulting to false.
 4. **Mention triggers on issues.** If we accept bot-mention as a trigger event (Q2), does it apply to plain issues (no PR) or only PR-bound issue comments? Plain-issue mentions are probably a "future skills" feature, not in scope here.
+   **Current implementation:** out of scope until Q2 is resolved.
 5. **Metrics schema versioning.** When the metrics file schema changes, how do consumer/receiver workflows know which version they're reading? Embed a `$schema` field? Or version-bump the plugin and lockstep the receiver?
+   **RESOLVED:** schema v1 embedded as the first key (`version: 1`) in the metrics file. Receiver currently ignores the version field but a future receiver MUST `version: 1`-check before parsing. Schema:
+   ```yaml
+   version: 1
+   verdict: APPROVE # APPROVE | REQUEST_CHANGES | COMMENT
+   follow_ups: 3 # integer
+   review_url: <github-url> # link to the posted review
+   ```
+   See `plugins/claude-code/review-utils/skills/review-code/SKILL.md` step 11.
 6. **Multi-reviewer dispatch.** The decider sends to ONE target agent (`inputs.target-repo`). If we eventually want N reviewers (henry + a security-focused reviewer agent + …), do we (a) fan out N `repository_dispatch` events from one decider run, or (b) chain N separate consumer-side workflows each dispatching to one target? (a) keeps the dispatch atomic; (b) keeps consumers in control of which reviewers they invite.
+   **Current implementation:** single-target. Multi-reviewer is deferred until a second reviewer-agent exists in practice.
 
-## Phases (implementation, after spec review)
+## Phases
 
-1. **Spec doc** — this file. (current PR)
-2. **Revert in-process executor.** Restore `review-dispatch.yaml` to forwarder mode (drop the embedded `run-agent` step, restore `repository_dispatch`). Add the gate logic.
-3. **Add `review-receiver.yaml`** to `nsheaps/agents`. Mirrors today's run-agent flow but driven by `repository_dispatch` payload + does the check-update + dismissal + metrics gate.
-4. **Add `dispatch-receiver-review.yaml`** template + sync target list update. Land it on henry/main first, then via `nsheaps/.github` to ai-mktpl/alex/etc. (sync target list).
-5. **Install `review-utils@nsheaps-agents`** in henry's `.claude/settings.json`.
-6. **Wire the metrics emission** into the `review-code` skill (plugin update).
-7. **Retire henry's local composites** (`./.github/actions/agent-setup`, `./.github/actions/run-agent`, `.claude/prompts/pr-review.md`). Folds in former task #347.
-8. **End-to-end smoke test** on an open PR in a consumer repo.
+Bundled into PR #165 (this PR) unless noted otherwise.
 
-## Footnote
+1. **Spec doc** — this file. ✅ (commits `ac301bf` + `15562d2`)
+2. **Revert in-process executor.** Restore `review-dispatch.yaml` to forwarder mode (drop the embedded `run-agent` step, restore `repository_dispatch`). Add the gate logic. ✅ (commit `260eef5`)
+3. **Add `review-receiver.yaml`** to `nsheaps/agents`. Mirrors today's run-agent flow but driven by `repository_dispatch` payload + does the check-update + dismissal + metrics gate. ✅ (commit `4c1696b`)
+4. **Add `check-run-id` input to `run-agent` action.** Skip internal check creation when caller owns lifecycle. ✅ (commit `70296b4`)
+5. **Update consumer templates.** `templates/dispatch-review.yaml` drops anthropic/oauth + adds workflow_run trigger; NEW `templates/dispatch-receiver-review.yaml`. ✅ (commit `0a2ede7`)
+6. **Wire metrics emission** into the `review-code` skill + `run-agent` action. ✅ (commit `15562d2`)
+7. **Install `review-utils@nsheaps-agents`** in henry's `.claude/settings.json` + drop `templates/dispatch-receiver-review.yaml` into henry's `.github/workflows/`. ⏳ companion PR on `nsheaps/.ai-agent-henry`.
+8. **Retire henry's local composites** (`./.github/actions/agent-setup`, `./.github/actions/run-agent`, `.claude/prompts/pr-review.md`). ⏳ same henry-companion PR.
+9. **End-to-end smoke test** on an open PR in a consumer repo. ⏳ after henry-companion PR merges.
 
-The original handler dictation lives at Discord [1507422997261062214](https://discord.com/channels/1490863845252665415/1497431286661517353/1507422997261062214) → [1507423082040787106](https://discord.com/channels/1490863845252665415/1497431286661517353/1507423082040787106) → [1507423084699713829](https://discord.com/channels/1490863845252665415/1497431286661517353/1507423084699713829) (2026-05-22). This spec consolidates those three messages plus the [framing message](https://discord.com/channels/1490863845252665415/1497431286661517353/1507407855471563026) that triggered the rewrite.
+## Sources / research links
+
+- Handler dictation that drove this spec (2026-05-22):
+  - Architecture framing — Discord [1507407855471563026](https://discord.com/channels/1490863845252665415/1497431286661517353/1507407855471563026)
+  - Topology messages — Discord [1507422997261062214](https://discord.com/channels/1490863845252665415/1497431286661517353/1507422997261062214) → [1507423082040787106](https://discord.com/channels/1490863845252665415/1497431286661517353/1507423082040787106) → [1507423084699713829](https://discord.com/channels/1490863845252665415/1497431286661517353/1507423084699713829)
+  - Plugin-specs-stay-in-plugin correction — Discord [1507427367700926506](https://discord.com/channels/1490863845252665415/1497431286661517353/1507427367700926506)
+  - ASCII → mermaid correction — Discord [1507427456334954659](https://discord.com/channels/1490863845252665415/1497431286661517353/1507427456334954659)
+  - Implementation-in-same-PR directive — Discord [1507428091616694393](https://discord.com/channels/1490863845252665415/1497431286661517353/1507428091616694393)
+- Prior-art and context:
+  - [PR #164](https://github.com/nsheaps/agents/pull/164) — first review-utils plugin landing (in-process executor; superseded by this PR's revert to forwarder).
+  - [PR #160](https://github.com/nsheaps/agents/pull/160) — original reusable `review-dispatch.yaml`. This PR rewrites it to the forwarder/gate shape.
+  - henry's pre-PR-164 `repo-dispatch.yaml` + local composites — captured in alex's `docs/research/` (now retired by phase 8).
+  - [Spec deprecated-agent](../../../../docs/specs/deprecated-agent.md) — adjacent consolidation pattern (canonical script + thin shims), same shape as consumer-side workflow templates here.
