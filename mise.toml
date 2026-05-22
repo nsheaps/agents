@@ -2,9 +2,12 @@
 # postgres = "https://github.com/mise-plugins/vfox-postgres.git"
 
 [tools]
-jq = "latest"
+jq = "1.8.1"
 bun = "1.3.13"
-"npm:@anthropic-ai/claude-code" = "latest"
+# Pinned: claude-code 2.1.146 ships a broken native-binary install that fails
+# `claude plugin validate` in CI ("claude native binary not installed").
+# 2.1.143 is the last known-good release. Do not float to "latest".
+"npm:@anthropic-ai/claude-code" = "2.1.143"
 "pipx:litellm" = { version = "1.83.14", extras = "proxy" }
 tilt = "0.37.3"
 
