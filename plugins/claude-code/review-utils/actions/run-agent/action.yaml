@@ -1,0 +1,246 @@
+name: Run agent
+description: |
+  Runs the review agent. Handles auth, checkout, check runs, and Claude Code execution.
+  The prompt and review methodology live in this repo; source repos just dispatch here.
+
+inputs:
+  trigger:
+    description: Structured trigger data (JSON). Passed to the prompt via interpolation.
+    required: true
+  trigger-repo:
+    description: Full repo name (owner/repo) where the trigger originated.
+    required: true
+  trigger-ref:
+    description: Git ref to checkout for the trigger repository.
+    required: true
+  event-name:
+    description: |
+      Event type that triggered the workflow.
+      Supported: pull_request/synchronize, pull_request/review
+    required: true
+  github-token:
+    description: GitHub token. If unset, app-id and private-key are required.
+    required: false
+    default: ""
+  app-id:
+    description: GitHub App ID for authentication.
+    required: false
+    default: ""
+  private-key:
+    description: GitHub App private key for authentication.
+    required: false
+    default: ""
+  anthropic-api-key:
+    description: Anthropic API key for Claude Code. Mutually exclusive with claude-code-oauth-token.
+    required: false
+    default: ""
+  claude-code-oauth-token:
+    description: Claude Code OAuth token. Alternative to anthropic-api-key.
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get additional job context
+      uses: qoomon/actions--context@v5
+      if: ${{ !cancelled() }}
+      id: additional-context
+      continue-on-error: true
+
+    - name: Parse repo owner and name
+      id: repo
+      shell: bash
+      run: |
+        echo "owner=$(echo "${{ inputs.trigger-repo }}" | cut -d'/' -f1)" >> $GITHUB_OUTPUT
+        echo "name=$(echo "${{ inputs.trigger-repo }}" | cut -d'/' -f2)" >> $GITHUB_OUTPUT
+
+    - name: Generate GitHub App token
+      id: app-token
+      if: ${{ inputs.github-token == '' }}
+      uses: actions/create-github-app-token@f8d387b68d61c58ab83c6c016672934102569859 # v3
+      with:
+        app-id: ${{ inputs.app-id }}
+        private-key: ${{ inputs.private-key }}
+        owner: ${{ steps.repo.outputs.owner }}
+
+    - name: Resolve GitHub token
+      id: github-token
+      shell: bash
+      run: |
+        if [ "${{ inputs.github-token }}" != "" ]; then
+          echo "token=${{ inputs.github-token }}" >> $GITHUB_OUTPUT
+        else
+          echo "token=${{ steps.app-token.outputs.token }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Extract checkout ref from trigger
+      id: checkout-ref
+      shell: bash
+      env:
+        TRIGGER: ${{ inputs.trigger }}
+      run: |
+        sha=$(echo "$TRIGGER" | jq -r '.source.head_sha // empty')
+        if [ -n "$sha" ]; then
+          echo "ref=$sha" >> $GITHUB_OUTPUT
+        else
+          echo "ref=${{ inputs.trigger-ref }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Checkout trigger repository
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+      with:
+        repository: ${{ inputs.trigger-repo }}
+        ref: ${{ steps.checkout-ref.outputs.ref }}
+        token: ${{ steps.github-token.outputs.token }}
+        path: trigger-repo
+        fetch-depth: 50
+
+    # --- Check Run: create on source repo, finalize at end of job ---
+    # Uses LouisBrunner/checks-action to create and update check runs via
+    # the GitHub Checks API. Two steps: create (in_progress) and finalize
+    # (completed with conclusion) using the returned check_id.
+
+    - name: Extract head SHA from trigger
+      id: trigger-meta
+      shell: bash
+      env:
+        TRIGGER: ${{ inputs.trigger }}
+      run: |
+        echo "head_sha=$(echo "$TRIGGER" | jq -r '.source.head_sha // empty')" >> $GITHUB_OUTPUT
+
+    - name: Create check run
+      id: check
+      if: ${{ steps.trigger-meta.outputs.head_sha != '' }}
+      uses: LouisBrunner/checks-action@v3.1.0
+      with:
+        token: ${{ steps.github-token.outputs.token }}
+        repo: ${{ inputs.trigger-repo }}
+        sha: ${{ steps.trigger-meta.outputs.head_sha }}
+        name: AI Code Review
+        status: in_progress
+        details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        output: |
+          {"summary":"Henry is reviewing this PR..."}
+
+    # --- Environment setup ---
+    # Installs gh extensions. Marketplace plugins are loaded via claude-code-action's
+    # native plugins/plugin_marketplaces inputs (not installed here).
+
+    - name: Agent setup
+      # Resolves relative to this action's own location (works regardless of
+      # how the caller checked out the plugin). Previously hard-coded to
+      # `./agent-repo/.github/actions/agent-setup`, which broke whenever the
+      # plugin checkout path differed from `agent-repo/`.
+      uses: ./plugins/claude-code/review-utils/actions/agent-setup
+      with:
+        github-token: ${{ steps.github-token.outputs.token }}
+
+    # --- Prompt construction ---
+    # Exports trigger fields as env vars, then uses the shared interpolate-prompt
+    # action from ai-mktpl to run envsubst on the prompt template.
+
+    - name: Export trigger fields for prompt interpolation
+      id: trigger-env
+      shell: bash
+      env:
+        TRIGGER: ${{ inputs.trigger }}
+      run: |
+        echo "REPO=$(echo "$TRIGGER" | jq -r '.source.repo // empty')" >> $GITHUB_ENV
+        echo "PR_NUMBER=$(echo "$TRIGGER" | jq -r '.source.pr_number // empty')" >> $GITHUB_ENV
+        echo "HEAD_SHA=$(echo "$TRIGGER" | jq -r '.source.head_sha // empty')" >> $GITHUB_ENV
+        echo "CHECK_RUN_ID=${{ steps.check.outputs.check_id }}" >> $GITHUB_ENV
+        echo "WORKFLOW_RUN_URL=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_ENV
+        # JOB_CONTEXT is JSON, use heredoc to handle multiline safely
+        DELIMITER="DELIM_$(date +%s%N)"
+        {
+          echo "JOB_CONTEXT<<$DELIMITER"
+          echo '${{ toJson(steps.additional-context.outputs) }}'
+          echo "$DELIMITER"
+        } >> $GITHUB_ENV
+
+    # Strip YAML frontmatter from the skill body so envsubst only operates on
+    # the prompt text. The skill defines `name` + `description` for skill
+    # tooling — the action only needs the methodology that follows the second
+    # `---` delimiter.
+    - name: Extract prompt body from skill
+      shell: bash
+      run: |
+        awk 'BEGIN{p=0} /^---$/{p++; next} p>=2' \
+          "${{ github.workspace }}/plugins/claude-code/review-utils/skills/review-code/SKILL.md" \
+          > "$RUNNER_TEMP/review-prompt-template.md"
+        echo "PROMPT_TEMPLATE=$RUNNER_TEMP/review-prompt-template.md" >> $GITHUB_ENV
+
+    # TODO: investigate a Claude Code plugin hook for internal prompt interpolation
+    # so we can drop the external `interpolate-prompt` step. See:
+    #   https://docs.claude.com/en/docs/claude-code/hooks
+    - name: Build prompt
+      id: prompt
+      uses: nsheaps/ai-mktpl/.github/actions/interpolate-prompt@main
+      with:
+        template-file: ${{ env.PROMPT_TEMPLATE }}
+
+    # --- Run Claude Code ---
+    # Marketplace plugins provide review tools (github, review-changes).
+    # The settings input configures agent-specific permissions and environment.
+    # The trigger repo is added as an additional directory for review access.
+
+    - name: Run Claude Code
+      id: claude
+      uses: anthropics/claude-code-action@v1
+      env:
+        GH_TOKEN: ${{ steps.github-token.outputs.token }}
+        GITHUB_TOKEN: ${{ steps.github-token.outputs.token }}
+      with:
+        anthropic_api_key: ${{ inputs.anthropic-api-key }}
+        claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
+        show_full_output: false
+        github_token: ${{ steps.github-token.outputs.token }}
+        additional_permissions: |
+          actions: read
+          checks: write
+        prompt: ${{ steps.prompt.outputs.prompt }}
+        plugin_marketplaces: |
+          https://github.com/nsheaps/ai-mktpl.git
+        plugins: |
+          github@nsheaps-ai-mktpl
+          review-changes@nsheaps-ai-mktpl
+        settings: |
+          {
+            "permissions": {
+              "additionalDirectories": [
+                "${{ github.workspace }}/trigger-repo/",
+                ".claude/tmp/",
+                "~/.claude/tmp/"
+              ],
+              "deny": [
+                "mcp__github_ci__get_ci_status",
+                "mcp__github_ci__get_workflow_run_details",
+                "mcp__github_ci__download_job_log",
+                "Bash(gh pr checks:*)",
+                "Bash(git push:*)"
+              ]
+            },
+            "model": "opus",
+            "env": {
+              "GH_TOKEN": "${{ steps.github-token.outputs.token }}",
+              "GITHUB_TOKEN": "${{ steps.github-token.outputs.token }}",
+              "GH_PAGER": "cat",
+              "GH_PROMPT_DISABLED": "true",
+              "GH_BROWSER": "curl",
+              "CLAUDE_CODE_REMOTE": "true"
+            }
+          }
+
+    # --- Finalize check run on source repo ---
+
+    - name: Finalize check run
+      if: ${{ always() && steps.check.outputs.check_id != '' }}
+      uses: LouisBrunner/checks-action@v3.1.0
+      with:
+        token: ${{ steps.github-token.outputs.token }}
+        repo: ${{ inputs.trigger-repo }}
+        check_id: ${{ steps.check.outputs.check_id }}
+        conclusion: ${{ steps.claude.outcome == 'success' && 'success' || steps.claude.outcome == 'cancelled' && 'cancelled' || 'failure' }}
+        output: |
+          {"summary":"${{ steps.claude.outcome == 'success' && 'AI code review completed successfully.' || steps.claude.outcome == 'cancelled' && 'The review was cancelled before completion.' || 'The review agent encountered an error. See the workflow run for details.' }}"}
