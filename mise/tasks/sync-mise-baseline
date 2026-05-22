@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Wrapper — delegates to the agent-tools-baseline package script.
+# The package script self-detects: in the agents repo it copies locally;
+# in consumer repos it fetches from the pinned raw-GitHub URL.
+exec "${MISE_PROJECT_ROOT}/packages/agent-tools-baseline/tasks/sync-mise-baseline" "$@"
