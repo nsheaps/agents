@@ -49,6 +49,14 @@ inputs:
       Default covers the nsheaps org automation bots.
     required: false
     default: 'github-actions[bot],renovate[bot],claude[bot],automation-nsheaps[bot],jack-nsheaps[bot],henry-nsheaps[bot],alex-nsheaps[bot]'
+  check-run-id:
+    description: |
+      Existing check_run id to update instead of creating a new one. Used by
+      the review-receiver workflow which owns the check_run lifecycle from
+      the decider's queued post through the receiver's terminal update. When
+      empty (default), the action creates and finalizes its own check_run.
+    required: false
+    default: ''
 
 runs:
   using: 'composite'
@@ -120,9 +128,12 @@ runs:
       run: |
         echo "head_sha=$(echo "$TRIGGER" | jq -r '.source.head_sha // empty')" >> $GITHUB_OUTPUT
 
+    # Create a new check_run only when the caller didn't pass one in.
+    # When invoked from the review-receiver workflow, `check-run-id` is
+    # provided and the receiver owns the lifecycle — skip creation.
     - name: Create check run
       id: check
-      if: ${{ steps.trigger-meta.outputs.head_sha != '' }}
+      if: ${{ inputs.check-run-id == '' && steps.trigger-meta.outputs.head_sha != '' }}
       uses: LouisBrunner/checks-action@v3.1.0
       with:
         # Use runner's GITHUB_TOKEN (has checks:write via the reusable
@@ -140,6 +151,18 @@ runs:
         details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         output: |
           {"summary":"AI code reviewer is reviewing this PR..."}
+
+    # Resolve the effective check_run_id used by downstream steps:
+    # prefer the caller-supplied id, else the one we just created.
+    - name: Resolve check_run_id
+      id: check-id
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.check-run-id }}" ]; then
+          echo "id=${{ inputs.check-run-id }}" >> $GITHUB_OUTPUT
+        else
+          echo "id=${{ steps.check.outputs.check_id }}" >> $GITHUB_OUTPUT
+        fi
 
     # --- Environment setup ---
     # Installs gh extensions. Marketplace plugins are loaded via claude-code-action's
@@ -167,7 +190,7 @@ runs:
         echo "REPO=$(echo "$TRIGGER" | jq -r '.source.repo // empty')" >> $GITHUB_ENV
         echo "PR_NUMBER=$(echo "$TRIGGER" | jq -r '.source.pr_number // empty')" >> $GITHUB_ENV
         echo "HEAD_SHA=$(echo "$TRIGGER" | jq -r '.source.head_sha // empty')" >> $GITHUB_ENV
-        echo "CHECK_RUN_ID=${{ steps.check.outputs.check_id }}" >> $GITHUB_ENV
+        echo "CHECK_RUN_ID=${{ steps.check-id.outputs.id }}" >> $GITHUB_ENV
         echo "WORKFLOW_RUN_URL=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> $GITHUB_ENV
         # JOB_CONTEXT is JSON, use heredoc to handle multiline safely
         DELIMITER="DELIM_$(date +%s%N)"
@@ -252,9 +275,13 @@ runs:
           }
 
     # --- Finalize check run on source repo ---
+    # Only finalize when this action created the check. If the caller passed
+    # in a check-run-id, the caller (review-receiver) owns the terminal
+    # update — it has richer info (verdict, follow-ups count) to write into
+    # the conclusion title.
 
     - name: Finalize check run
-      if: ${{ always() && steps.check.outputs.check_id != '' }}
+      if: ${{ always() && inputs.check-run-id == '' && steps.check.outputs.check_id != '' }}
       uses: LouisBrunner/checks-action@v3.1.0
       with:
         # Same reasoning as the Create check run step above — use runner's
