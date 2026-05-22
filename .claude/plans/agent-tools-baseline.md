@@ -15,19 +15,19 @@ Status: **Phase 1 IN PROGRESS** — Working branch: `claude/ai-3d-model-generato
 
 Five repos each carry their own `mise.toml` `[tools]` section and have drifted:
 
-| Tool                            | alex      | jack      | henry     | agents    |
-| ------------------------------- | --------- | --------- | --------- | --------- |
-| `npm:@anthropic-ai/claude-code` | 2.1.128   | 2.1.128   | 2.1.128   | 2.1.143   |
-| `node`                          | 24.15.0   | 24.15.0   | 24.15.0   | 24.15.0   |
-| `bun`                           | 1.3.14    | 1.3.14    | 1.3.14    | **1.3.13**|
-| `jq`                            | 1.8.1     | 1.8.1     | 1.8.1     | 1.8.1     |
-| `gh`                            | 2.92.0    | 2.92.0    | 2.92.0    | —         |
-| `yq`                            | 4.53.2    | 4.53.2    | 4.53.2    | —         |
-| `npm:prettier`                  | latest    | latest    | latest    | —         |
-| `npm:eslint`                    | latest    | latest    | latest    | —         |
-| `github:nsheaps/op-exec`        | 0.1.0     | 0.1.0     | 0.1.0     | —         |
-| `github:nsheaps/claude-utils`   | 0.12.13   | 0.12.13   | **0.12.14**| —        |
-| repo-specific                   | —         | —         | —         | litellm, tilt |
+| Tool                            | alex    | jack    | henry       | agents        |
+| ------------------------------- | ------- | ------- | ----------- | ------------- |
+| `npm:@anthropic-ai/claude-code` | 2.1.128 | 2.1.128 | 2.1.128     | 2.1.143       |
+| `node`                          | 24.15.0 | 24.15.0 | 24.15.0     | 24.15.0       |
+| `bun`                           | 1.3.14  | 1.3.14  | 1.3.14      | **1.3.13**    |
+| `jq`                            | 1.8.1   | 1.8.1   | 1.8.1       | 1.8.1         |
+| `gh`                            | 2.92.0  | 2.92.0  | 2.92.0      | —             |
+| `yq`                            | 4.53.2  | 4.53.2  | 4.53.2      | —             |
+| `npm:prettier`                  | latest  | latest  | latest      | —             |
+| `npm:eslint`                    | latest  | latest  | latest      | —             |
+| `github:nsheaps/op-exec`        | 0.1.0   | 0.1.0   | 0.1.0       | —             |
+| `github:nsheaps/claude-utils`   | 0.12.13 | 0.12.13 | **0.12.14** | —             |
+| repo-specific                   | —       | —       | —           | litellm, tilt |
 
 Goal: one centrally-managed source of the default `[tools]` baseline that every agent repo consumes, while each repo can still override any tool version locally. Plus: standardize `claude-code` to one known-good version (`2.1.146` is a broken npm release; `2.1.143` is last known-good).
 
@@ -122,12 +122,12 @@ Repeat Phase 2 per repo. alex / henry are identical to jack.
 
 ## 5. Concrete per-repo changes (summary)
 
-| Repo | `mise.toml` `[tools]` after | New file |
-| --- | --- | --- |
-| agents | `pipx:litellm`, `tilt` only | `.config/mise/conf.d/00-agent-baseline.toml` + `packages/agent-tools-baseline/` |
-| jack | (empty `[tools]`; keeps tasks/settings) | `.config/mise/conf.d/00-agent-baseline.toml` |
-| alex | (empty `[tools]`) | `.config/mise/conf.d/00-agent-baseline.toml` |
-| henry | (empty `[tools]`) | `.config/mise/conf.d/00-agent-baseline.toml` |
+| Repo   | `mise.toml` `[tools]` after             | New file                                                                        |
+| ------ | --------------------------------------- | ------------------------------------------------------------------------------- |
+| agents | `pipx:litellm`, `tilt` only             | `.config/mise/conf.d/00-agent-baseline.toml` + `packages/agent-tools-baseline/` |
+| jack   | (empty `[tools]`; keeps tasks/settings) | `.config/mise/conf.d/00-agent-baseline.toml`                                    |
+| alex   | (empty `[tools]`)                       | `.config/mise/conf.d/00-agent-baseline.toml`                                    |
+| henry  | (empty `[tools]`)                       | `.config/mise/conf.d/00-agent-baseline.toml`                                    |
 
 ## References
 
