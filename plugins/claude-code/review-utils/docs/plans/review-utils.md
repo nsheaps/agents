@@ -69,7 +69,6 @@ The `partials/review-thread-management.md` referenced in step 4 of the methodolo
   - Today: `uses: ./agent-repo/.github/actions/agent-setup`
   - After: `uses: ${{ github.action_path }}/../agent-setup` (resolves relative to `run-agent`'s own location, regardless of where the action was checked out)
   - Same fix for the prompt-template path: point at `${{ github.action_path }}/../../skills/review-code/SKILL.md` (with the methodology body extracted as the prompt).
-- **`with-post-step`** — port verbatim (third-party Apache-2.0 dep used by the review pipeline; keep upstream attribution intact).
 
 ### Reusable workflow
 
@@ -106,7 +105,7 @@ Each step ships as its own PR (or grouped into 2: plugin-add + henry-cleanup).
 
 - **Skill discoverability for the action.** `claude-code-action` runs claude with `plugins: github@nsheaps-ai-mktpl, review-changes@nsheaps-ai-mktpl`. Do we add `review-utils@agents` to that list so the skill is loadable? Currently the prompt is interpolated and passed as a literal string — the skill isn't "invoked", it's the source of the prompt body. So step-1 plugin doesn't need self-loading. We can add a SKILL-mode later (let claude `Skill(review-code, args=…)`) as a follow-up.
 
-- **`with-post-step` necessity.** Today it's referenced but I don't see it used in `run-agent`'s steps. Keep it for now because henry's workflow includes it; flag for removal if confirmed unused.
+- ~~**`with-post-step` necessity.**~~ Resolved 2026-05-22 (Henry P2 nit on PR #164): confirmed unused; dropped from the plugin.
 
 ## Validation
 

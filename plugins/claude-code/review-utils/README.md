@@ -15,7 +15,6 @@ skills/
 actions/
   agent-setup/action.yaml    # mise trust + gh-pr-review extension install
   run-agent/action.yaml      # auth, check-run create/finalize, claude-code-action runner
-  with-post-step/action.yaml # third-party Apache-2.0 helper
 docs/
   build-report-review-utils.md
   plans/review-utils.md
