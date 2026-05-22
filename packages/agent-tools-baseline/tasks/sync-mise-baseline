@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# sync-mise-baseline — copies the canonical agent-tools baseline fragment into
+# this repo's .config/mise/conf.d/00-agent-baseline.toml.
+#
+# In the agents repo (where the canonical file lives), this is a direct local copy.
+# In consumer repos (jack, alex, henry — Phase 2+), this fetches from a pinned
+# raw-GitHub URL using the VERSION file.
+#
+# Note: the fetch-from-URL branch is exercised in Phase 2 (no published tag yet
+# in Phase 1 — the agents repo only copies locally).
+
+CANONICAL="${MISE_PROJECT_ROOT}/packages/agent-tools-baseline/agent-baseline.mise.toml"
+DEST="${MISE_PROJECT_ROOT}/.config/mise/conf.d/00-agent-baseline.toml"
+
+mkdir -p "$(dirname "${DEST}")"
+
+if [ -f "${CANONICAL}" ]; then
+  # agents repo: canonical source lives locally — copy directly
+  cp "${CANONICAL}" "${DEST}"
+  echo "Copied canonical baseline → ${DEST}"
+else
+  # consumer repo: fetch from pinned raw-GitHub URL using VERSION
+  # (exercised in Phase 2 when a git tag is published for the agents repo)
+  SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+  VERSION_FILE="${SCRIPT_DIR}/../VERSION"
+  if [ ! -f "${VERSION_FILE}" ]; then
+    echo "ERROR: VERSION file not found at ${VERSION_FILE}" >&2
+    exit 1
+  fi
+  VERSION=$(cat "${VERSION_FILE}")
+  URL="https://raw.githubusercontent.com/nsheaps/agents/v${VERSION}/packages/agent-tools-baseline/agent-baseline.mise.toml"
+  echo "Fetching baseline v${VERSION} from GitHub..."
+  curl -fsSL "${URL}" -o "${DEST}"
+  echo "Fetched → ${DEST}"
+fi
