@@ -35,6 +35,7 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
 8. **Draft review summary** in your local doc with high-level assessment, strengths, improvements, critical issues, recommendation, and follow-ups.
 
 9. **Hide your previous reviews** just before submitting. Only hide YOUR OWN reviews:
+
    ```bash
    gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | select(.author.login == "<BOT_USERNAME>") | {id, state}'
    # Minimize each with GraphQL minimizeComment mutation, classifier: OUTDATED
@@ -47,6 +48,7 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
 
 11. **Update the check run**:
     - APPROVE -> `success`, COMMENT -> `neutral`, REQUEST_CHANGES -> `action_required`
+
     ```bash
     gh api "repos/${REPO}/check-runs/${CHECK_RUN_ID}" \
       --method PATCH --input - <<EOF

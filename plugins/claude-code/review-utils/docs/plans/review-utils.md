@@ -88,7 +88,7 @@ No more `repository_dispatch` round-trip through henry — the review happens in
 
 ### Consumer template
 
-`nsheaps/agents/templates/dispatch-review.yaml` shrinks: it just calls `review-dispatch.yaml` with the agent's secrets (REVIEW_GITHUB_APP_*, REVIEW_ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN). No `target-repo` input anymore — the workflow itself does the work.
+`nsheaps/agents/templates/dispatch-review.yaml` shrinks: it just calls `review-dispatch.yaml` with the agent's secrets (REVIEW*GITHUB_APP*\*, REVIEW_ANTHROPIC_API_KEY, CLAUDE_CODE_OAUTH_TOKEN). No `target-repo` input anymore — the workflow itself does the work.
 
 ## Migration
 
