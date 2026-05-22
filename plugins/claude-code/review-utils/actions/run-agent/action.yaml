@@ -121,7 +121,7 @@ runs:
         status: in_progress
         details_url: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
         output: |
-          {"summary":"Henry is reviewing this PR..."}
+          {"summary":"AI code reviewer is reviewing this PR..."}
 
     # --- Environment setup ---
     # Installs gh extensions. Marketplace plugins are loaded via claude-code-action's
