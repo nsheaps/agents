@@ -16,7 +16,6 @@ tags:
   - github-actions
   - check-runs
   - review-utils
-source: https://discord.com/channels/1490863845252665415/1497431286661517353/1507422997261062214
 ---
 
 # review-dispatch
@@ -25,9 +24,9 @@ source: https://discord.com/channels/1490863845252665415/1497431286661517353/150
 
 ## Status
 
-DRAFT — landing alongside implementation in PR #165 per [Nate 17:01Z](https://discord.com/channels/1490863845252665415/1497431286661517353/1507428091616694393). Cross-links to the implementation files appear inline below; consult the `Implementation:` lines under each section.
+DRAFT — landing alongside implementation in PR #165 per the spec-with-impl directive[^impldirective]. Cross-links to the implementation files appear inline below; consult the `Implementation:` lines under each section.
 
-**Supersedes:** the post-#164 in-process executor (where the review ran on `nsheaps/agents` runners under a generic bot identity). [Nate ruled](https://discord.com/channels/1490863845252665415/1497431286661517353/1507407855471563026) the reviewer-as-henry framing should be authoritative: the review is henry's work product, executed in henry's repo, under henry's identity.
+**Supersedes:** the post-[PR #164][^pr164] in-process executor (where the review ran on `nsheaps/agents` runners under a generic bot identity). The framing message[^framing] established that the reviewer-as-henry framing is authoritative: the review is henry's work product, executed in henry's repo, under henry's identity.
 
 ### Implementation map
 
@@ -51,7 +50,7 @@ DRAFT — landing alongside implementation in PR #165 per [Nate 17:01Z](https://
 
 ## Problem
 
-The pre-#164 flow (`peter-evans/repository-dispatch` forwarder) had henry's repo running its own local composite actions + prompt, with full review logic copy-pasted across `nsheaps/.ai-agent-henry/.github/actions/`. PR #164 pulled the review logic into a marketplace plugin (`review-utils@nsheaps-agents`), but mistakenly ran the plugin in-process on the `nsheaps/agents` runners — losing the per-agent-identity property.
+The pre-[PR #164][^pr164] flow (`peter-evans/repository-dispatch` forwarder) had henry's repo running its own local composite actions + prompt, with full review logic copy-pasted across `nsheaps/.ai-agent-henry/.github/actions/`. [PR #164][^pr164] pulled the review logic into a marketplace plugin (`review-utils@nsheaps-agents`), but mistakenly ran the plugin in-process on the `nsheaps/agents` runners — losing the per-agent-identity property.
 
 The pipeline needs:
 
@@ -303,6 +302,8 @@ Each agent owns its own LLM auth. This is the lever that lets us run multiple re
    See `plugins/claude-code/review-utils/skills/review-code/SKILL.md` step 11.
 6. **Multi-reviewer dispatch.** The decider sends to ONE target agent (`inputs.target-repo`). If we eventually want N reviewers (henry + a security-focused reviewer agent + …), do we (a) fan out N `repository_dispatch` events from one decider run, or (b) chain N separate consumer-side workflows each dispatching to one target? (a) keeps the dispatch atomic; (b) keeps consumers in control of which reviewers they invite.
    **Current implementation:** single-target. Multi-reviewer is deferred until a second reviewer-agent exists in practice.
+7. **Approving over other reviewers' open feedback.**[^q7] If a human reviewer or another bot has left a request-changes review or open blocking comment that hasn't been resolved, should the agent still be allowed to `APPROVE`? Sub-questions: (a) does the agent have to **agree** with the other reviewer's feedback before approving, (b) what if the agent is confident the other reviewer is wrong — can it approve and explain why, (c) does the agent dismiss/respond to the other thread before approving, or just leave it open?
+   **Current implementation:** the skill (`review-code/SKILL.md` step 4 "Manage previous comments and threads") only addresses the agent's OWN prior comments. There's no rule for other reviewers' open threads. Suggested resolution direction: agent MUST scan other reviewers' threads; if any unresolved REQUEST_CHANGES exists from a human, downgrade verdict to COMMENT (cannot approve over a human's open block); for another-bot disagreement, agent may approve only with an inline comment explaining the disagreement on the conflicting thread.
 
 ## Phases
 
@@ -318,16 +319,30 @@ Bundled into PR #165 (this PR) unless noted otherwise.
 8. **Retire henry's local composites** (`./.github/actions/agent-setup`, `./.github/actions/run-agent`, `.claude/prompts/pr-review.md`). ⏳ same henry-companion PR.
 9. **End-to-end smoke test** on an open PR in a consumer repo. ⏳ after henry-companion PR merges.
 
-## Sources / research links
+<!-- Footnote references — keep alphabetical/numeric, do not delete unused (a section may add a ref later). -->
 
-- Handler dictation that drove this spec (2026-05-22):
-  - Architecture framing — Discord [1507407855471563026](https://discord.com/channels/1490863845252665415/1497431286661517353/1507407855471563026)
-  - Topology messages — Discord [1507422997261062214](https://discord.com/channels/1490863845252665415/1497431286661517353/1507422997261062214) → [1507423082040787106](https://discord.com/channels/1490863845252665415/1497431286661517353/1507423082040787106) → [1507423084699713829](https://discord.com/channels/1490863845252665415/1497431286661517353/1507423084699713829)
-  - Plugin-specs-stay-in-plugin correction — Discord [1507427367700926506](https://discord.com/channels/1490863845252665415/1497431286661517353/1507427367700926506)
-  - ASCII → mermaid correction — Discord [1507427456334954659](https://discord.com/channels/1490863845252665415/1497431286661517353/1507427456334954659)
-  - Implementation-in-same-PR directive — Discord [1507428091616694393](https://discord.com/channels/1490863845252665415/1497431286661517353/1507428091616694393)
-- Prior-art and context:
-  - [PR #164](https://github.com/nsheaps/agents/pull/164) — first review-utils plugin landing (in-process executor; superseded by this PR's revert to forwarder).
-  - [PR #160](https://github.com/nsheaps/agents/pull/160) — original reusable `review-dispatch.yaml`. This PR rewrites it to the forwarder/gate shape.
-  - henry's pre-PR-164 `repo-dispatch.yaml` + local composites — captured in alex's `docs/research/` (now retired by phase 8).
-  - [Spec deprecated-agent](../../../../docs/specs/deprecated-agent.md) — adjacent consolidation pattern (canonical script + thin shims), same shape as consumer-side workflow templates here.
+[^framing]: Discord [msg 1507407855471563026](https://discord.com/channels/1490863845252665415/1497431286661517353/1507407855471563026) (Nate, 2026-05-22 15:40Z) — _"if henry is running the review, why doesn't that go into henry's repo? nsheaps/agents contains the plugin and all the logic and shared github workflow, but the plugin should be installed in henry's config, and the triggered review workflow should trigger henry."_ — this is the framing that established per-agent-identity as the central invariant.
+
+[^dictation1]: Discord [msg 1507422997261062214](https://discord.com/channels/1490863845252665415/1497431286661517353/1507422997261062214) (Nate, 2026-05-22 16:40Z) — topology dictation: _"consumer repos have a tiny dispatch-review.yaml workflow / dispatch-review.yaml workflow is copied to repos using nsheaps/.github ci automation / the dispatch-review workflow fires often, but may not actually dispatch a review depending on the conditions..."_ — describes the consumer + decider half of the pipeline.
+
+[^dictation2]: Discord [msg 1507423082040787106](https://discord.com/channels/1490863845252665415/1497431286661517353/1507423082040787106) (Nate, 2026-05-22 16:41Z) — trigger-events + receiver dictation: _"Reviews are dispatched when: any of these events happen: The PR moves to an open state; The appropriate review label was just applied; The review bot was mentioned on a PR (or issue?) / the following are all true after the event: The PR is in open state... All CI has settled..."_ — defines the gate conditions + introduces the receiver-side `dispatch-receiver-review.yaml` shape.
+
+[^dictation3]: Discord [msg 1507423084699713829](https://discord.com/channels/1490863845252665415/1497431286661517353/1507423084699713829) (Nate, 2026-05-22 16:41Z) — final-check-update dictation: _"CI posts check to original PR (with updated link to review workflow): if comment only: set check to completed/neutral; if PR rejected: set to failed; if PR accepted: set to success; step at the end, if: failure() forces a check posted to the PR: failed"_ — defines the terminal-check mapping + the `if: failure()` safety net.
+
+[^plugindir]: Discord [msg 1507427367700926506](https://discord.com/channels/1490863845252665415/1497431286661517353/1507427367700926506) (Nate, 2026-05-22 16:58Z) — placement correction: _"alex put it in nsheaps/agents/plugins/review-utils/specs/.... not in the repo root docs folder. Plugin specs stay in plugins"_ — established the per-plugin spec-dir convention this file lives by.
+
+[^asciimermaid]: Discord [msg 1507427456334954659](https://discord.com/channels/1490863845252665415/1497431286661517353/1507427456334954659) (Nate, 2026-05-22 16:58Z) — _"alex I also see some ascii flow diagrams, use mermaid diagrams for that"_ — drove the ASCII-→-mermaid topology rewrite.
+
+[^impldirective]: Discord [msg 1507428091616694393](https://discord.com/channels/1490863845252665415/1497431286661517353/1507428091616694393) (Nate, 2026-05-22 17:01Z) — _"Alex once you move it, please keep going, write the spec (and keep it up to date with references to where things are implemented and sources used for research (and links to research docs), in the right place, then add the functionality defined in the spec in the same PR."_ — scoped this PR to include implementation alongside the spec.
+
+[^q7]: Discord [PR #165 inline comment](https://github.com/nsheaps/agents/pull/165#discussion_r0) (Nate, 2026-05-22 17:09Z) — _"Q: should we avoid approving if other reviewers/commenters left valid feedback that MUST be addressed before merging? Should the review agent have to agree with that other feedback before approving/if it's confident that the other statement is incorrect to approve it anyway?"_ — added as Open Question 7.
+
+[^pr164]: [PR nsheaps/agents#164](https://github.com/nsheaps/agents/pull/164) — first review-utils plugin landing (2026-05-22). Pulled the review logic into a marketplace plugin but ran the plugin in-process on `nsheaps/agents` runners, losing per-agent-identity. This spec's PR (#165) supersedes that in-process executor with a forwarder + per-target-receiver shape.
+
+[^pr160]: [PR nsheaps/agents#160](https://github.com/nsheaps/agents/pull/160) — original reusable `review-dispatch.yaml`. This PR rewrites that workflow into the forwarder/gate shape and adds the companion `review-receiver.yaml`.
+
+[^deprecatedagent]: [`docs/specs/deprecated-agent.md`](../../../../docs/specs/deprecated-agent.md) — adjacent spec for `bin/agent` consolidation (canonical script + thin per-repo shims). Shares the "thin consumer files + shared core + nsheaps/.github sync" shape used here for the workflow templates.
+
+<!-- Removed bullet about henry's pre-PR-164 `repo-dispatch.yaml` (no stable artifact link, captured in commit history of nsheaps/.ai-agent-henry/.github/). -->
+
+See also: [^deprecatedagent] for the adjacent consolidation pattern.
