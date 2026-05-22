@@ -1,0 +1,35 @@
+name: Agent Setup
+# TODO: This action needs to be incorporated into the Dockerfile setup
+#       so that agent environment preparation happens at build time where possible.
+description: |
+  Prepares the environment for the review agent. Handles runtime setup such as
+  auth-dependent extension installs and mise trust for the checked-out repo.
+
+inputs:
+  github-token:
+    description: GitHub token for installing extensions.
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Activate mise for checked-out repo
+      shell: bash
+      working-directory: ${{ github.workspace }}
+      run: |
+        # Trust and install any project-specific mise tools from the
+        # checked-out agent repo (picks up .mise.toml at workspace root).
+        if command -v mise &>/dev/null; then
+          mise trust --yes
+          mise install --yes
+        fi
+
+    - name: Ensure gh-pr-review extension
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        # Install the gh-pr-review extension if not already present.
+        if ! gh extension list 2>/dev/null | grep -q pr-review; then
+          gh extension install agynio/gh-pr-review 2>/dev/null || true
+        fi

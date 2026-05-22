@@ -54,6 +54,28 @@
       ]
     },
     {
+      "name": "review-utils",
+      "description": "Self-contained PR-review pipeline: composite GitHub Actions (agent-setup, run-agent), reusable workflow integration, and the review-code skill that drives the review methodology. Replaces the previous scattered setup across nsheaps/agents + nsheaps/.ai-agent-henry.",
+      "version": "0.1.1",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/review-utils",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "claude-code",
+        "code-review",
+        "github-actions",
+        "pr-review",
+        "skill",
+        "review-dispatch"
+      ]
+    },
+    {
       "name": "task-utils",
       "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + manage-tasks skill for atomic-task workflow",
       "version": "0.1.0",

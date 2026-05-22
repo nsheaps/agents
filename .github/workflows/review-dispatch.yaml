@@ -1,53 +1,55 @@
 name: Review Dispatch (reusable)
 
-# Reusable workflow that dispatches PR review requests to a review agent
-# (default target: nsheaps/.ai-agent-henry). Called from consumer repos via
-# a tiny template workflow that hooks pull_request events to this file.
+# Reusable workflow that performs an AI code review on a consumer-repo PR.
 #
-# Auth: GitHub App. Consumer repos must have REVIEW_GITHUB_APP_ID and
-# REVIEW_GITHUB_APP_PRIVATE_KEY available as secrets (provisioned via
-# nsheaps/.github/secret-sync.yaml or equivalent). The App must be
-# installed on BOTH the consumer repo (for label removal) AND the
-# target agent repo (for the repository_dispatch send).
+# Architecture (after review-utils plugin migration):
+#   1. Consumer repo PR event triggers consumer's tiny `dispatch-review.yaml`.
+#   2. Consumer template calls this reusable workflow with the four secrets.
+#   3. This workflow checks out nsheaps/agents@main, then invokes the
+#      plugin's `run-agent` composite action which does the actual review
+#      (GitHub App auth, check run, claude-code-action, finalize).
+#
+# Previously this workflow forwarded a `repository_dispatch` event to
+# nsheaps/.ai-agent-henry, and henry's own `repo-dispatch.yaml` ran the
+# review. That cross-repo path is retired; the plugin owns the review.
 
 on:
   workflow_call:
     inputs:
-      target-repo:
-        description: 'Agent repo to dispatch review requests into.'
-        required: false
-        default: 'nsheaps/.ai-agent-henry'
-        type: string
-      event-type:
-        description: 'repository_dispatch event-type to fire.'
-        required: false
-        default: 'pull_request/review'
-        type: string
       request-label:
         description: 'Label name that opts draft PRs into review and is removed after dispatch.'
         required: false
         default: 'request-review'
         type: string
       dispatch-on-draft:
-        description: 'If true, dispatch on non-labeled draft PRs too. Default: only non-draft + labeled-draft.'
+        description: 'If true, run review on non-labeled draft PRs too. Default: only non-draft + labeled-draft.'
         required: false
         default: false
         type: boolean
+      plugin-ref:
+        description: 'Git ref of nsheaps/agents to check out for the plugin contents. Default: main.'
+        required: false
+        default: 'main'
+        type: string
     secrets:
       REVIEW_GITHUB_APP_ID:
         required: true
       REVIEW_GITHUB_APP_PRIVATE_KEY:
         required: true
+      REVIEW_ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
 
 jobs:
-  dispatch:
-    # No job-level if: — inputs context is not available at job scheduling time for
-    # workflow_call, which caused startup_failure. All dispatch logic (including
-    # inputs.dispatch-on-draft and inputs.request-label) is evaluated in the gate step.
+  review:
+    # No job-level if: — inputs context is not available at job scheduling time
+    # for workflow_call. All gating runs inside the job.
     runs-on: ubuntu-latest
     permissions:
       contents: read
       pull-requests: write
+      checks: write
     concurrency:
       group: review-dispatch-${{ github.event.pull_request.number }}
       cancel-in-progress: false
@@ -89,14 +91,19 @@ jobs:
             --remove-label "${{ inputs.request-label }}" \
             --repo "${{ github.repository }}"
 
-      - name: Dispatch review
+      - name: Checkout nsheaps/agents (for the plugin)
         if: steps.gate.outputs.should_dispatch == 'true'
-        uses: peter-evans/repository-dispatch@v4
+        uses: actions/checkout@v6
         with:
-          token: ${{ steps.auth.outputs.token }}
-          repository: ${{ inputs.target-repo }}
-          event-type: ${{ inputs.event-type }}
-          client-payload: |
+          repository: nsheaps/agents
+          ref: ${{ inputs.plugin-ref }}
+          path: .
+
+      - name: Run review agent
+        if: steps.gate.outputs.should_dispatch == 'true'
+        uses: ./plugins/claude-code/review-utils/actions/run-agent
+        with:
+          trigger: |
             {
               "referer": "${{ github.repository }}/${{ github.workflow_ref }}",
               "source": {
@@ -112,3 +119,10 @@ jobs:
                 "label": ${{ toJson(github.event.label.name || '') }}
               }
             }
+          trigger-repo: ${{ github.repository }}
+          trigger-ref: ${{ github.event.pull_request.head.sha }}
+          event-name: pull_request/${{ github.event.action }}
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          anthropic-api-key: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
+          claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
