@@ -1,50 +1,55 @@
 name: Review Dispatch (reusable)
 
-# Reusable workflow that performs an AI code review on a consumer-repo PR.
+# Reusable decider workflow that fires a repository_dispatch to a target
+# agent repo (e.g. nsheaps/.ai-agent-henry) which then runs the review.
+# The review itself does NOT execute here — the target agent's own
+# `dispatch-receiver-review.yaml` picks up the dispatch and runs the
+# plugin's run-agent action under the target's GitHub App identity.
 #
-# Architecture (after review-utils plugin migration):
-#   1. Consumer repo PR event triggers consumer's tiny `dispatch-review.yaml`.
-#   2. Consumer template calls this reusable workflow with the four secrets.
-#   3. This workflow checks out nsheaps/agents@main, then invokes the
-#      plugin's `run-agent` composite action which does the actual review
-#      (GitHub App auth, check run, claude-code-action, finalize).
+# Spec: plugins/claude-code/review-utils/specs/review-dispatch.md
 #
-# Previously this workflow forwarded a `repository_dispatch` event to
-# nsheaps/.ai-agent-henry, and henry's own `repo-dispatch.yaml` ran the
-# review. That cross-repo path is retired; the plugin owns the review.
+# Flow:
+#   1. Consumer PR event triggers consumer's `dispatch-review.yaml`.
+#   2. Consumer template calls this reusable workflow with App secrets.
+#   3. This workflow evaluates the dispatch gate (draft, CI settled,
+#      required-checks all success/skipped).
+#   4. On gate pass: post queued check to consumer head SHA, fire
+#      repository_dispatch to target-repo, update check to "dispatched".
+#   5. On gate fail (draft or CI failing): post failure check.
+#   6. On gate undecidable (0 checks): exit silently — workflow_run
+#      re-triggers re-evaluate.
 
 on:
   workflow_call:
     inputs:
+      target-repo:
+        description: 'Target agent repo that runs the review (owner/name).'
+        required: false
+        default: 'nsheaps/.ai-agent-henry'
+        type: string
       request-label:
         description: 'Label name that opts draft PRs into review and is removed after dispatch.'
         required: false
         default: 'request-review'
         type: string
       dispatch-on-draft:
-        description: 'If true, run review on non-labeled draft PRs too. Default: only non-draft + labeled-draft.'
+        description: 'If true, fire on draft PRs even without the request-label. Default: only non-draft + labeled-draft.'
         required: false
         default: false
         type: boolean
-      plugin-ref:
-        description: 'Git ref of nsheaps/agents to check out for the plugin contents. Default: main.'
+      event-type:
+        description: 'repository_dispatch event_type sent to the target repo.'
         required: false
-        default: 'main'
+        default: 'pr-review'
         type: string
     secrets:
       REVIEW_GITHUB_APP_ID:
         required: true
       REVIEW_GITHUB_APP_PRIVATE_KEY:
         required: true
-      REVIEW_ANTHROPIC_API_KEY:
-        required: false
-      CLAUDE_CODE_OAUTH_TOKEN:
-        required: false
 
 jobs:
-  review:
-    # No job-level if: — inputs context is not available at job scheduling time
-    # for workflow_call. All gating runs inside the job.
+  dispatch:
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -55,25 +60,17 @@ jobs:
       cancel-in-progress: false
 
     steps:
-      - name: Evaluate dispatch condition
-        id: gate
+      # Build a workflow-run URL once so check_run details_url always lands
+      # on the run that produced the current check state (spec §"Why details_url
+      # always points at the most recent run"). For richer context (job_url,
+      # etc.), qoomon/actions--context@v5 is also available, but the
+      # server-derived URL below is sufficient for details_url.
+      - name: Build details_url
+        id: ctx
         run: |
-          draft="${{ github.event.pull_request.draft }}"
-          action="${{ github.event.action }}"
-          label="${{ github.event.label.name }}"
-          dispatch_on_draft="${{ inputs.dispatch-on-draft }}"
-          request_label="${{ inputs.request-label }}"
+          echo "details_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
-          if [[ "$draft" != "true" ]] || \
-             [[ "$dispatch_on_draft" == "true" ]] || \
-             ( [[ "$action" == "labeled" ]] && [[ "$label" == "$request_label" ]] ); then
-            echo "should_dispatch=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "should_dispatch=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping: draft PR not labeled with '$request_label' and dispatch-on-draft=false"
-          fi
-
-      - name: Generate review bot token
+      - name: Generate review App token
         id: auth
         if: steps.gate.outputs.should_dispatch == 'true'
         uses: actions/create-github-app-token@v3
@@ -82,8 +79,129 @@ jobs:
           private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
+      # Dispatch gate: draft + CI settled + all required checks success/skipped.
+      # Outputs:
+      #   decision: dispatch | draft | ci-failing | wait
+      #   reason:   human-readable explanation
+      - name: Evaluate dispatch gate
+        id: gate
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+          CONSUMER_REPO: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_DRAFT: ${{ github.event.pull_request.draft }}
+          ACTION: ${{ github.event.action }}
+          LABEL_NAME: ${{ github.event.label.name }}
+          REQUEST_LABEL: ${{ inputs.request-label }}
+          DISPATCH_ON_DRAFT: ${{ inputs.dispatch-on-draft }}
+        run: |
+          set -euo pipefail
+
+          # Draft check: dispatch on non-draft, OR on draft when the trigger
+          # was the request-label being applied, OR when dispatch-on-draft is true.
+          is_label_trigger="false"
+          if [[ "$ACTION" == "labeled" && "$LABEL_NAME" == "$REQUEST_LABEL" ]]; then
+            is_label_trigger="true"
+          fi
+          if [[ "$PR_DRAFT" == "true" && "$is_label_trigger" != "true" && "$DISPATCH_ON_DRAFT" != "true" ]]; then
+            {
+              echo "decision=draft"
+              echo "reason=PR is draft, not reviewing"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Fetch all check-runs for head SHA.
+          checks_json=$(gh api "repos/${CONSUMER_REPO}/commits/${HEAD_SHA}/check-runs?per_page=100")
+          total=$(echo "$checks_json" | jq '.total_count')
+
+          # If branch protection declares required checks, filter to those.
+          # Otherwise consider all checks.
+          required_names=$(gh api "repos/${CONSUMER_REPO}/branches/${BASE_REF}/protection/required_status_checks" 2>/dev/null \
+            | jq -r '.contexts[]?' || true)
+
+          if [[ -n "$required_names" ]]; then
+            relevant=$(echo "$checks_json" | jq --argjson names "$(echo "$required_names" | jq -R . | jq -s .)" \
+              '.check_runs | map(select(.name as $n | $names | index($n)))')
+          else
+            relevant=$(echo "$checks_json" | jq '.check_runs')
+          fi
+
+          rel_count=$(echo "$relevant" | jq 'length')
+          if [[ "$rel_count" -eq 0 ]]; then
+            # No relevant checks present yet — wait for CI to fire and re-evaluate.
+            {
+              echo "decision=wait"
+              echo "reason=No CI runs yet; waiting for workflow_run re-trigger"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Check that all are settled (status=completed) and conclusion ok.
+          unsettled=$(echo "$relevant" | jq '[.[] | select(.status != "completed")] | length')
+          if [[ "$unsettled" -gt 0 ]]; then
+            {
+              echo "decision=wait"
+              echo "reason=Some CI checks still running; waiting"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # OK conclusions: success, skipped, neutral.
+          bad=$(echo "$relevant" | jq '[.[] | select(.conclusion != "success" and .conclusion != "skipped" and .conclusion != "neutral")] | length')
+          if [[ "$bad" -gt 0 ]]; then
+            {
+              echo "decision=ci-failing"
+              echo "reason=CI failing, not reviewing"
+            } >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          {
+            echo "decision=dispatch"
+            echo "reason=Gate passed: PR open, all required checks success/skipped"
+          } >> "$GITHUB_OUTPUT"
+
+      # Wait case: exit silently with no check posted (spec §"Zero-checks case").
+      - name: Wait (no-op)
+        if: steps.gate.outputs.decision == 'wait'
+        run: |
+          echo "Gate: wait — ${{ steps.gate.outputs.reason }}"
+          echo "Workflow will be re-triggered when CI settles via workflow_run."
+
+      # Draft / CI-failing: post failure check (no comment).
+      - name: Post failure check (draft / CI failing)
+        if: steps.gate.outputs.decision == 'draft' || steps.gate.outputs.decision == 'ci-failing'
+        uses: LouisBrunner/checks-action@v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ github.repository }}
+          sha: ${{ github.event.pull_request.head.sha }}
+          name: AI Code Review
+          status: completed
+          conclusion: failure
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"${{ steps.gate.outputs.reason }}","summary":"${{ steps.gate.outputs.reason }}"}
+
+      # Gate passed: post queued check before dispatching.
+      - name: Post queued check (dispatching)
+        id: check-queued
+        if: steps.gate.outputs.decision == 'dispatch'
+        uses: LouisBrunner/checks-action@v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ github.repository }}
+          sha: ${{ github.event.pull_request.head.sha }}
+          name: AI Code Review
+          status: queued
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"Dispatching review agent","summary":"Forwarding to ${{ inputs.target-repo }}..."}
+
       - name: Remove request-review label
-        if: steps.gate.outputs.should_dispatch == 'true' && github.event.action == 'labeled' && github.event.label.name == inputs.request-label
+        if: steps.gate.outputs.decision == 'dispatch' && github.event.action == 'labeled' && github.event.label.name == inputs.request-label
         env:
           GH_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
@@ -91,21 +209,18 @@ jobs:
             --remove-label "${{ inputs.request-label }}" \
             --repo "${{ github.repository }}"
 
-      - name: Checkout nsheaps/agents (for the plugin)
-        if: steps.gate.outputs.should_dispatch == 'true'
-        uses: actions/checkout@v6
+      # Fire repository_dispatch to the target agent repo. The target's
+      # `dispatch-receiver-review.yaml` will pick it up.
+      - name: Fire repository_dispatch to target
+        id: dispatch
+        if: steps.gate.outputs.decision == 'dispatch'
+        uses: peter-evans/repository-dispatch@v4
         with:
-          repository: nsheaps/agents
-          ref: ${{ inputs.plugin-ref }}
-          path: .
-
-      - name: Run review agent
-        if: steps.gate.outputs.should_dispatch == 'true'
-        uses: ./plugins/claude-code/review-utils/actions/run-agent
-        with:
-          trigger: |
+          token: ${{ steps.auth.outputs.token }}
+          repository: ${{ inputs.target-repo }}
+          event-type: ${{ inputs.event-type }}
+          client-payload: |
             {
-              "referer": "${{ github.repository }}/${{ github.workflow_ref }}",
               "source": {
                 "repo": "${{ github.repository }}",
                 "pr_number": ${{ github.event.pull_request.number }},
@@ -113,16 +228,37 @@ jobs:
                 "head_ref": "${{ github.event.pull_request.head.ref }}",
                 "base_ref": "${{ github.event.pull_request.base.ref }}"
               },
+              "check_run_id": "${{ steps.check-queued.outputs.check_id }}",
+              "consumer_workflow_run_url": "${{ steps.ctx.outputs.details_url }}",
               "trigger": {
                 "event": "pull_request",
                 "action": "${{ github.event.action }}",
                 "label": ${{ toJson(github.event.label.name || '') }}
               }
             }
-          trigger-repo: ${{ github.repository }}
-          trigger-ref: ${{ github.event.pull_request.head.sha }}
-          event-name: pull_request/${{ github.event.action }}
-          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
-          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
-          anthropic-api-key: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
-          claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      - name: Update check (dispatched)
+        if: steps.gate.outputs.decision == 'dispatch' && success()
+        uses: LouisBrunner/checks-action@v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.check-queued.outputs.check_id }}
+          status: queued
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"Review agent dispatched","summary":"Waiting for ${{ inputs.target-repo }} to start the review."}
+
+      # if: failure() guard — covers token-gen / api / dispatch fire failures.
+      - name: Update check (dispatch failed)
+        if: failure() && steps.check-queued.outputs.check_id != ''
+        uses: LouisBrunner/checks-action@v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ github.repository }}
+          check_id: ${{ steps.check-queued.outputs.check_id }}
+          status: completed
+          conclusion: failure
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"Failed to dispatch review agent","summary":"See workflow run for details."}
