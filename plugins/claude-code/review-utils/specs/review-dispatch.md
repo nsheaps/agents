@@ -270,16 +270,50 @@ The receiver template is similarly thin: it forwards the `repository_dispatch.cl
 
 ## Secrets
 
-### Consumer-side (passes through to decider)
+The pipeline splits credentials along the routing-vs-reviewing axis. The gate never speaks AS the reviewer (it just routes the dispatch), so it gets automation-nsheaps[bot] creds. The receiver IS the reviewer — its posts, dismissals, and check updates all carry agent identity, so it gets per-agent REVIEW_* creds.
 
-- `REVIEW_GITHUB_APP_ID` + `REVIEW_GITHUB_APP_PRIVATE_KEY` — used by the decider to post check-runs on the consumer PR. Same App is installed on the consumer repo + the target agent repo.
+```mermaid
+flowchart LR
+    subgraph gate["Consumer gate<br/>(routing only)"]
+        A["AUTOMATION_GITHUB_APP_*<br/>automation-nsheaps[bot]"]
+    end
+    subgraph receiver["Target receiver<br/>(reviewer identity)"]
+        B["REVIEW_GITHUB_APP_*<br/>(e.g. henry-bot)"]
+        C["REVIEW_ANTHROPIC_API_KEY<br/>OR CLAUDE_CODE_OAUTH_TOKEN"]
+    end
 
-### Receiver-side (passes through to plugin)
+    A -.->|"edit label<br/>post queued check<br/>fire repository_dispatch"| gate
+    B -.->|"in_progress check<br/>dismiss approvals<br/>post review comment<br/>terminal check"| receiver
+    C -.->|"LLM auth for<br/>claude-code-action"| receiver
+```
 
-- `REVIEW_GITHUB_APP_ID` + `REVIEW_GITHUB_APP_PRIVATE_KEY` — re-used by the receiver to update check-runs back on the consumer repo + post the review comment.
-- ONE of: `REVIEW_ANTHROPIC_API_KEY` OR `CLAUDE_CODE_OAUTH_TOKEN` — auth for `claude-code-action`. Owned by the target agent's repo (since the receiver runs there).
+### Consumer-side gate (passes through to `review-dispatch.yaml`)
 
-Each agent owns its own LLM auth. This is the lever that lets us run multiple reviewer-agents under different identities and even different model billing.
+- `AUTOMATION_GITHUB_APP_ID` + `AUTOMATION_GITHUB_APP_PRIVATE_KEY` — automation-nsheaps[bot]. Used by the decider to:
+  - remove the `request-review` label after dispatch fires
+  - post the initial queued check-run on the consumer PR head SHA
+  - fire `repository_dispatch` to the target agent repo
+
+  This App MUST be installed on both the consumer repo (for label + check perms) AND on the target agent repo (for `Contents: write` to fire `repository_dispatch`). Already provisioned to all `nsheaps/*` repos via `nsheaps/.github` secret-sync (also powers lint-autofix), so adding a new consumer is zero-secret work.
+
+### Receiver-side (passes through to `review-receiver.yaml` and on to the plugin)
+
+- `REVIEW_GITHUB_APP_ID` + `REVIEW_GITHUB_APP_PRIVATE_KEY` — the target agent's GitHub App (e.g. henry-bot). Used by the receiver to:
+  - update the check-run state on the consumer PR (in_progress → terminal)
+  - dismiss prior `APPROVED` reviews on this PR from this bot
+  - post the actual review comment / APPROVE / REQUEST_CHANGES
+  - all `mcp__github__*` and `gh` calls the review-code skill makes
+
+  Per-agent — each reviewer-agent uses its own App. Add a reviewer-agent by provisioning their `REVIEW_GITHUB_APP_*` to that agent's repo via `nsheaps/.github` sync (initially just henry).
+
+- ONE of: `REVIEW_ANTHROPIC_API_KEY` OR `CLAUDE_CODE_OAUTH_TOKEN` — LLM auth for `claude-code-action`. Owned by the target agent's repo so each agent can use its own model billing.
+
+### Why split gate-creds from reviewer-creds?
+
+1. **Semantic clarity.** The check-run author + label-edit actor for the gate is `automation-nsheaps[bot]` — clearly an infrastructure action. The review comment + approve/reject is by `henry-bot` (or whichever agent) — clearly the reviewer. Anyone reading the PR sees who did what.
+2. **Provisioning leverage.** `AUTOMATION_GITHUB_APP_*` is already synced everywhere via `nsheaps/.github` (lint-autofix uses it on every repo). Adopting the gate side requires no new secret distribution. `REVIEW_GITHUB_APP_*` is per-agent — sync only goes to reviewer-agent repos.
+3. **Blast-radius minimisation.** The gate runs on every consumer PR; if those creds leaked, the impact is "the attacker can post checks + remove labels." The receiver runs only on dispatched review jobs; if those creds leaked, the impact includes "the attacker can post bot-authored reviews / approvals." Smaller attack surface for the higher-privilege creds.
+4. **Multi-reviewer scaling.** When we add a second reviewer-agent, its `REVIEW_GITHUB_APP_*` is independent of the gate. No consumer-template change needed; the new agent just provisions its own receiver-side secret.
 
 ## Open questions
 
@@ -318,6 +352,7 @@ Bundled into PR #165 (this PR) unless noted otherwise.
 7. **Install `review-utils@nsheaps-agents`** in henry's `.claude/settings.json` + drop `templates/dispatch-receiver-review.yaml` into henry's `.github/workflows/`. ⏳ companion PR on `nsheaps/.ai-agent-henry`.
 8. **Retire henry's local composites** (`./.github/actions/agent-setup`, `./.github/actions/run-agent`, `.claude/prompts/pr-review.md`). ⏳ same henry-companion PR.
 9. **End-to-end smoke test** on an open PR in a consumer repo. ⏳ after henry-companion PR merges.
+10. **Migrate already-installed consumer gates** from `REVIEW_GITHUB_APP_*` → `AUTOMATION_GITHUB_APP_*` secrets (alex, jack, ai-mktpl). The gate/receiver creds split landed in this PR but pre-existing consumer-side files still pass `REVIEW_*`. ⏳ follow-up PR per consumer (or one bulk sweep via `nsheaps/.github` template re-sync).
 
 <!-- Footnote references — keep alphabetical/numeric, do not delete unused (a section may add a ref later). -->
 

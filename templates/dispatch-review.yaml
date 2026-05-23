@@ -10,16 +10,21 @@
 # Spec: https://github.com/nsheaps/agents/blob/main/plugins/claude-code/review-utils/specs/review-dispatch.md
 #
 # Requirements (provisioned via nsheaps/.github/secret-sync.yaml):
-#   - REVIEW_GITHUB_APP_ID
-#   - REVIEW_GITHUB_APP_PRIVATE_KEY  (App installed on this repo for label
-#                                     editing + check_run posting; also
-#                                     installed on the target agent repo so
-#                                     it can post the dispatch event there)
+#   - AUTOMATION_GITHUB_APP_ID
+#   - AUTOMATION_GITHUB_APP_PRIVATE_KEY  (automation-nsheaps[bot]; installed on
+#                                         THIS repo for label edit + check_run
+#                                         posting, AND on the target agent repo
+#                                         so it can fire repository_dispatch)
+#
+# Why automation creds (not REVIEW_GITHUB_APP_*)? The gate is routing only —
+# it never speaks AS the reviewer. It edits a label, posts a queued check, and
+# fires a repository_dispatch. The reviewer-identity (REVIEW_GITHUB_APP_*) is
+# owned by the target agent's `dispatch-receiver-review.yaml`, where the review
+# actually executes. See plugins/claude-code/review-utils/specs/review-dispatch.md
+# §Secrets for the gate-vs-receiver creds rationale.
 #
 # LLM-auth secrets (REVIEW_ANTHROPIC_API_KEY / CLAUDE_CODE_OAUTH_TOKEN) are
-# NOT needed here — they're owned by the target agent's
-# `dispatch-receiver-review.yaml` because the review executes in the target's
-# repo under its identity.
+# NOT needed here — owned by the target agent's receiver for the same reason.
 
 name: Dispatch PR Review
 
@@ -44,8 +49,8 @@ jobs:
     uses: nsheaps/agents/.github/workflows/review-dispatch.yaml@main
     # secrets: inherit doesn't pass cross-repo (GitHub limitation).
     secrets:
-      REVIEW_GITHUB_APP_ID: ${{ secrets.REVIEW_GITHUB_APP_ID }}
-      REVIEW_GITHUB_APP_PRIVATE_KEY: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+      AUTOMATION_GITHUB_APP_ID: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+      AUTOMATION_GITHUB_APP_PRIVATE_KEY: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
     # Optional overrides (uncomment to use):
     # with:
     #   target-repo: nsheaps/.ai-agent-henry  # default

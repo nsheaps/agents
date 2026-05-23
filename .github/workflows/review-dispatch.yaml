@@ -42,10 +42,15 @@ on:
         required: false
         default: 'pr-review'
         type: string
+    # Gate uses automation-nsheaps[bot] creds — routing only (label edit,
+    # check_run post, repository_dispatch fire). Reviewer identity
+    # (REVIEW_GITHUB_APP_*) lives on the receiver side where the review
+    # actually executes under the target agent's App. See
+    # plugins/claude-code/review-utils/specs/review-dispatch.md §Secrets.
     secrets:
-      REVIEW_GITHUB_APP_ID:
+      AUTOMATION_GITHUB_APP_ID:
         required: true
-      REVIEW_GITHUB_APP_PRIVATE_KEY:
+      AUTOMATION_GITHUB_APP_PRIVATE_KEY:
         required: true
 
 jobs:
@@ -70,13 +75,13 @@ jobs:
         run: |
           echo "details_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
-      - name: Generate review App token
+      - name: Generate automation App token
         id: auth
         if: steps.gate.outputs.should_dispatch == 'true'
         uses: actions/create-github-app-token@v3
         with:
-          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
-          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ github.repository_owner }}
 
       # Dispatch gate: draft + CI settled + all required checks success/skipped.
