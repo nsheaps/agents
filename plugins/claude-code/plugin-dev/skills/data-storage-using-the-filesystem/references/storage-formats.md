@@ -71,6 +71,7 @@ mv task-42.yaml.tmp task-42.yaml
 ### Block style vs flow style
 
 Always use block style in data files. Flow style (`{key: value}`) is compact but:
+
 - Harder to read in diffs
 - Does not support comments
 - Cannot span multiple lines cleanly
@@ -101,14 +102,14 @@ metadata: {created_by: task-utils, version: 1}
 // Plugin configuration
 {
   // Required: MCP server URL
-  "mcpUrl": "http://localhost:3000",
+  mcpUrl: "http://localhost:3000",
 
   // Optional: override default timeout (seconds)
   // "timeout": 30,
 
-  "hooks": {
-    "preToolUse": true
-  }
+  hooks: {
+    preToolUse: true,
+  },
 }
 ```
 
@@ -211,15 +212,15 @@ yq '.' task.yaml      # Pretty JSON
 
 ## Format Decision Matrix
 
-| Need | Format |
-|------|--------|
-| Structured data, human-readable | YAML |
-| Config with comments, JSON-tooling required | JSON5 |
-| Prose + metadata | Markdown-with-frontmatter |
-| Wire protocol / external API | JSON |
-| Streaming with typed values | JSONL / TOON |
-| Querying across many records | SQLite (narrow case) |
-| Tree-structured documents | XML (narrow case) |
+| Need                                        | Format                    |
+| ------------------------------------------- | ------------------------- |
+| Structured data, human-readable             | YAML                      |
+| Config with comments, JSON-tooling required | JSON5                     |
+| Prose + metadata                            | Markdown-with-frontmatter |
+| Wire protocol / external API                | JSON                      |
+| Streaming with typed values                 | JSONL / TOON              |
+| Querying across many records                | SQLite (narrow case)      |
+| Tree-structured documents                   | XML (narrow case)         |
 
 ---
 
@@ -235,10 +236,10 @@ set -euo pipefail
 for json_file in .claude/tasks/*.json; do
   [[ -f "$json_file" ]] || continue
   yaml_file="${json_file%.json}.yaml"
-  
+
   # Convert
   yq -y '.' "$json_file" > "$yaml_file"
-  
+
   # Verify round-trip
   original=$(jq -c '.' "$json_file")
   restored=$(yq -c '.' "$yaml_file")
@@ -247,7 +248,7 @@ for json_file in .claude/tasks/*.json; do
     rm -f "$yaml_file"
     exit 1
   fi
-  
+
   echo "Migrated: $json_file → $yaml_file"
   rm -f "$json_file"
 done

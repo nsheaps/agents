@@ -7,6 +7,7 @@ Patterns for safe concurrent writes and cross-agent synchronization of plugin da
 ## The Core Problem
 
 Multiple agents or processes may write to the same data files simultaneously:
+
 - Two agents both try to update a task's status
 - A hook fires while an agent is also writing
 - A background sync daemon runs while an agent edits
@@ -58,6 +59,7 @@ git -C "$CLAUDE_PROJECT_DIR" push
 ```
 
 **On push failure (non-fast-forward):**
+
 ```bash
 # Pull with rebase, re-apply
 git pull --rebase
@@ -94,12 +96,14 @@ The most robust pattern: a single daemon owns the store directory and serializes
 Agents call the daemon's tool API instead of editing files directly.
 
 **Benefits:**
+
 - No race conditions — writes are serialized by the daemon
 - Transparent git operations — daemon handles add/commit/push
 - Single source of truth for in-memory indexes
 - Agents are decoupled from storage implementation
 
 **Example architecture (task-utils MCP server):**
+
 ```
 Agent A ──┐
 Agent B ──┼──► MCP Tool Call ──► task-utils MCP Server ──► .yaml files ──► git
@@ -107,6 +111,7 @@ Agent C ──┘                                                              �
 ```
 
 **When the daemon is unavailable:**
+
 - Agents fall back to direct file writes (copy-swap + git)
 - Log the fallback so it's auditable
 - On retry exhaustion, emit a detailed error with escalation path
@@ -122,7 +127,7 @@ LOCK_FILE="${CLAUDE_PROJECT_DIR}/.claude/tasks/.write-lock"
 
 (
   flock -w 5 200 || { echo "Could not acquire lock" >&2; exit 1; }
-  
+
   # Critical section: edit the file
   yq -y '. + {"status": "completed"}' task.yaml > task.yaml.tmp
   mv task.yaml.tmp task.yaml
@@ -186,11 +191,11 @@ complexity at the cost of infrastructure setup.
 
 ## Summary: Which Pattern to Use
 
-| Scenario | Pattern |
-|----------|---------|
-| Single agent, single process | Copy-swap |
-| Multiple agents, same session | Daemon/MCP server |
-| Multiple agents, different sessions (same host) | Git coordination + copy-swap |
-| Multiple agents, different hosts | Daemon/MCP server or network filesystem |
-| High-contention, same host | File locking + copy-swap |
-| Conflict detected after pull | Conflict-resolver sub-agent |
+| Scenario                                        | Pattern                                 |
+| ----------------------------------------------- | --------------------------------------- |
+| Single agent, single process                    | Copy-swap                               |
+| Multiple agents, same session                   | Daemon/MCP server                       |
+| Multiple agents, different sessions (same host) | Git coordination + copy-swap            |
+| Multiple agents, different hosts                | Daemon/MCP server or network filesystem |
+| High-contention, same host                      | File locking + copy-swap                |
+| Conflict detected after pull                    | Conflict-resolver sub-agent             |

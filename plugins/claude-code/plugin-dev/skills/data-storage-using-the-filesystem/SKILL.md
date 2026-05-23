@@ -26,14 +26,14 @@ concurrency, sync, and streaming boundaries.
 Only deviate from this order when a specific constraint forces it (e.g., a wire protocol requires
 JSON, or a tool only parses TOML).
 
-| Format | Use When |
-|--------|----------|
-| YAML | Default for structured data: task files, config, plugin state |
-| JSON5 | Config files where comments are needed but tooling only supports JSON-like syntax |
-| Markdown-with-frontmatter | Docs, plans, specs — when prose + queryable metadata both needed |
-| JSON | Wire protocols, MCP stdio, external APIs that require it |
-| TOON/TRON | Streaming tool output where structured types are needed (narrow case) |
-| XML / SQLite | Special cases only — structured queries across many records, or existing schema |
+| Format                    | Use When                                                                          |
+| ------------------------- | --------------------------------------------------------------------------------- |
+| YAML                      | Default for structured data: task files, config, plugin state                     |
+| JSON5                     | Config files where comments are needed but tooling only supports JSON-like syntax |
+| Markdown-with-frontmatter | Docs, plans, specs — when prose + queryable metadata both needed                  |
+| JSON                      | Wire protocols, MCP stdio, external APIs that require it                          |
+| TOON/TRON                 | Streaming tool output where structured types are needed (narrow case)             |
+| XML / SQLite              | Special cases only — structured queries across many records, or existing schema   |
 
 ---
 
@@ -42,6 +42,7 @@ JSON, or a tool only parses TOML).
 Keep files small. Prefer many small files over a few large ones.
 
 **Why:**
+
 - **Grep / embeddings**: Large files produce low-precision hits; small files are O(1) to scan
 - **Context window**: Agents load files into context — large files bloat the window
 - **Write contention**: A single large file is a contention point for concurrent writers
@@ -106,7 +107,7 @@ status: in_progress
 - **Token cost** — YAML is verbose; large YAML files consume more context tokens than compact JSON
 - **No atomic in-place edit** — YAML must be rewritten in full; use copy-swap for safe updates
   (write to `<file>.tmp`, then `mv <file>.tmp <file>`)
-- **JSONL conversion required** for RPC formats** — MCP stdio protocol, HTTP streaming, and other
+- **JSONL conversion required** for RPC formats\*\* — MCP stdio protocol, HTTP streaming, and other
   line-delimited transports need JSONL, not YAML; convert at the boundary
 
 ### YAML style in task/data files
@@ -181,19 +182,20 @@ yq -y '.status' task-42.yaml   # Returns "in_progress"
 
 **Always store data in known paths**, built from well-known environment variables:
 
-| Variable | Use For |
-|----------|---------|
-| `$CLAUDE_PROJECT_DIR/.claude/tasks/` | Task files (flat, one per ID) |
-| `$CLAUDE_PROJECT_DIR/.claude/logs/` | Hook and daemon log files |
-| `$CLAUDE_PROJECT_DIR/.claude/tmp/` | Disposable intermediate files |
-| `$CLAUDE_PLUGIN_ROOT/data/` | Plugin-level persistent state |
-| `$CLAUDE_PLUGIN_DATA/` | Plugin data dir (if supported by runtime) |
-| `$HOME/.claude/tasks/<session_id>/` | Legacy built-in Task tool per-session store |
+| Variable                             | Use For                                     |
+| ------------------------------------ | ------------------------------------------- |
+| `$CLAUDE_PROJECT_DIR/.claude/tasks/` | Task files (flat, one per ID)               |
+| `$CLAUDE_PROJECT_DIR/.claude/logs/`  | Hook and daemon log files                   |
+| `$CLAUDE_PROJECT_DIR/.claude/tmp/`   | Disposable intermediate files               |
+| `$CLAUDE_PLUGIN_ROOT/data/`          | Plugin-level persistent state               |
+| `$CLAUDE_PLUGIN_DATA/`               | Plugin data dir (if supported by runtime)   |
+| `$HOME/.claude/tasks/<session_id>/`  | Legacy built-in Task tool per-session store |
 
 **Never use random temp paths** (`/tmp/<uuid>/`) for persistent data. Temp paths are invisible to
 git, invisible to other agents, and are deleted on reboot.
 
 **Commit persistent data.** Task files, plugin state, and index files belong in git. This enables:
+
 - Cross-agent visibility (other agents can pull and see state)
 - History and auditability
 - Recovery after session restart
@@ -240,6 +242,7 @@ The task-utils MCP server (`plugins/claude-code/task-utils/mcp/`) is an example 
 ### Conflict resolution
 
 When a merge conflict occurs in a task file:
+
 - Do NOT auto-resolve by picking "ours" or "theirs"
 - Emit a structured error with both versions
 - A designated conflict-resolver sub-agent (baked into the plugin) reconciles them
@@ -261,6 +264,7 @@ Agents should rarely touch storage files directly. Prefer:
 3. **Background poller** — daemon watches for changes, writes on interval
 
 If an agent must write directly:
+
 - Only after configurable-retry exhaustion (e.g., daemon unavailable)
 - On failure, emit a detailed error message so the agent knows whether escalation will help
 - Never silently swallow write errors
@@ -271,7 +275,7 @@ If an agent must write directly:
 
 Plugins can expose storage as an API:
 
-- Provide a `jq`-like query interface where possible: `task_query({filter: ".status == 'in_progress'"})` 
+- Provide a `jq`-like query interface where possible: `task_query({filter: ".status == 'in_progress'"})`
 - Storage plugins wrap external APIs (S3, GCS, Notion, etc.) transparently
 - Agents use the same tool interface regardless of backend
 - The plugin handles serialization format differences at the boundary
