@@ -45,13 +45,36 @@ resolve_legacy_store_dir() {
 # count_in_progress_flat <store_root>
 #   Echoes the number of *.yaml files directly under <store_root> whose
 #   status is "in_progress" (flat layout, maxdepth 1).
+#
+#   DEPRECATED: use count_in_progress_store instead, which scans BOTH
+#   *.yaml (MCP-managed) and *.json (built-in Task tool legacy) files.
+#   Kept for backwards compatibility; callers that already pass the flat
+#   MCP store root can use either function.
 count_in_progress_flat() {
+  count_in_progress_store "$1"
+}
+
+# count_in_progress_store <store_root>
+#   Echoes the number of task files directly under <store_root> whose
+#   status is "in_progress". Scans BOTH *.yaml (MCP-managed flat store,
+#   new format) and *.json (built-in Task tools legacy format, backward
+#   compat). Maxdepth 1 — no recursive descent.
+#
+#   YAML status is read with grep (fast, no extra deps).
+#   JSON status is read with jq (required for JSON parsing).
+count_in_progress_store() {
   local store_root="$1"
   local count=0 f f_status
   [[ -d "$store_root" ]] || { printf '0\n'; return 0; }
+  # Scan YAML files (MCP-managed tasks, v0.1.4+ format)
   while IFS= read -r -d '' f; do
     f_status="$(grep -m1 '^status: ' "$f" 2>/dev/null | awk '{print $2}')"
     [[ "$f_status" == "in_progress" ]] && count=$((count + 1))
   done < <(find "$store_root" -maxdepth 1 -name '*.yaml' -print0 2>/dev/null)
+  # Scan JSON files (built-in TaskCreate/TaskUpdate legacy store, backward compat)
+  while IFS= read -r -d '' f; do
+    f_status="$(jq -r '.status // empty' "$f" 2>/dev/null || true)"
+    [[ "$f_status" == "in_progress" ]] && count=$((count + 1))
+  done < <(find "$store_root" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
   printf '%s\n' "$count"
 }

@@ -212,10 +212,12 @@ esac
 
 if [[ "$NEW_STATUS" == "in_progress" ]]; then
   # 0-or-1 invariant first — scanned across BOTH the legacy per-session store
-  # and the flat MCP store so the invariant holds globally.
+  # (*.json, written by built-in TaskCreate/TaskUpdate) and the flat MCP store
+  # (*.yaml, written by the MCP server) so the invariant holds globally.
   OTHERS=""
   for scan_dir in "$TASKS_DIR" "$FLAT_STORE"; do
     [[ -d "$scan_dir" ]] || continue
+    # Scan YAML files (MCP-managed tasks, v0.1.4+ flat store)
     while IFS= read -r -d '' f; do
       f_id="$(grep -m1 '^id: ' "$f" 2>/dev/null | sed 's/^id: //; s/^"//; s/"$//')"
       [[ "$f_id" == "$TASK_ID" ]] && continue
@@ -225,12 +227,68 @@ if [[ "$NEW_STATUS" == "in_progress" ]]; then
         OTHERS+="#${f_id} (${f_subj}); "
       fi
     done < <(find "$scan_dir" -maxdepth 1 -name '*.yaml' -print0 2>/dev/null)
+    # Scan JSON files (built-in TaskCreate/TaskUpdate legacy format, backward compat)
+    while IFS= read -r -d '' f; do
+      f_id="$(jq -r '.id // empty' "$f" 2>/dev/null || true)"
+      [[ "$f_id" == "$TASK_ID" ]] && continue
+      f_status="$(jq -r '.status // empty' "$f" 2>/dev/null || true)"
+      if [[ "$f_status" == "in_progress" ]]; then
+        f_subj="$(jq -r '.subject // empty' "$f" 2>/dev/null || true)"
+        OTHERS+="#${f_id} (${f_subj}); "
+      fi
+    done < <(find "$scan_dir" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
   done
   if [[ -n "$OTHERS" ]]; then
     REASON="Cannot move task #${TASK_ID} to in_progress — already in_progress: ${OTHERS%; }. Project rule: exactly 0 or 1 task may be in_progress. Pick one: (a) complete current via TaskUpdate status=completed, (b) move it back to pending via TaskUpdate status=pending, (c) create a sub-task via TaskCreate to capture the new direction (the in-progress task may itself be a planning/break-down task — see worked example at https://github.com/nsheaps/agents/blob/main/docs/journal/2026/05/16/managing-tasks-example.md). Use sequential-thinking; append a dated event-log line to the in-progress task's description noting the pivot before changing state."
     log_fire "deny" "task=${TASK_ID} reason=in_progress-conflict conflict=${OTHERS%; }"
     emit_decision "deny" "$REASON" ""
     exit 0
+  fi
+
+  # ---- Atomicity veto (RC2) --------------------------------------------------
+  # If the task subject matches non-atomic heuristic keywords, deny the
+  # pending→in_progress transition and ask the agent to break it down first.
+  # Escape hatch: if the effective description contains "<!-- atomic: confirmed -->"
+  # the veto is bypassed — the agent has explicitly declared it's atomic.
+  TASK_SUBJECT="$(jq -r '.tool_input.subject // empty' <<<"$INPUT" 2>/dev/null || true)"
+  if [[ -z "$TASK_SUBJECT" ]]; then
+    # Fallback: read from disk
+    TASK_SUBJECT="$(jq -r '.subject // empty' "$TASK_FILE" 2>/dev/null || true)"
+  fi
+
+  ATOMICITY_BYPASS=0
+  if printf '%s\n' "$EFFECTIVE_DESC" | grep -q '<!-- atomic: confirmed -->'; then
+    ATOMICITY_BYPASS=1
+  fi
+
+  if [[ "$ATOMICITY_BYPASS" -eq 0 && -n "$TASK_SUBJECT" ]]; then
+    # Case-insensitive keyword match against the task subject
+    SUBJECT_LOWER="$(printf '%s\n' "$TASK_SUBJECT" | tr '[:upper:]' '[:lower:]')"
+    NON_ATOMIC_MATCH=0
+    for keyword in \
+      "plan " "planning " " plan" \
+      "investigate" "investigation" \
+      "figure out" \
+      "design " " design" \
+      "audit " " audit" \
+      "improve " " improve" "improvement" \
+      "refactor " " refactor" "refactoring" \
+      "fix everything" "update everything" \
+      "various " "miscellaneous" "misc " \
+      "set up everything" "setup everything" \
+      "clean up" "cleanup"; do
+      if [[ "$SUBJECT_LOWER" == *"${keyword}"* ]]; then
+        NON_ATOMIC_MATCH=1
+        break
+      fi
+    done
+
+    if [[ "$NON_ATOMIC_MATCH" -eq 1 ]]; then
+      REASON="Cannot move task #${TASK_ID} to in_progress — the task subject looks non-atomic (matched heuristic keyword in: \"${TASK_SUBJECT}\"). Non-atomic tasks must be broken down into concrete deliverable sub-tasks first. Steps: (1) Keep this task in_progress as a PLANNING task, (2) use TaskCreate to add atomic sub-tasks each representing a specific deliverable, (3) complete this planning task once the first atomic sub-task is identified and created. If this task is intentionally atomic despite the subject wording, add '<!-- atomic: confirmed -->' anywhere in the description and retry."
+      log_fire "deny" "task=${TASK_ID} reason=non-atomic subject=${TASK_SUBJECT}"
+      emit_decision "deny" "$REASON" ""
+      exit 0
+    fi
   fi
 
   # Validation-steps required (rule 2)
