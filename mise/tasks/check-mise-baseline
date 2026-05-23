@@ -1,6 +1,0 @@
-#!/usr/bin/env bash
-# Wrapper — delegates to the agent-tools-baseline package script.
-# In the agents repo: diffs against the local canonical source.
-# In consumer repos (Phase 2+): fetches from pinned URL and diffs.
-# Exits 0 on match, 1 on drift.
-exec "${MISE_PROJECT_ROOT}/packages/agent-tools-baseline/tasks/check-mise-baseline" "$@"

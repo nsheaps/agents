@@ -2,11 +2,16 @@
 # postgres = "https://github.com/mise-plugins/vfox-postgres.git"
 
 [tools]
-# Shared baseline tools (node, bun, claude-code, jq, gh, yq, prettier, eslint,
-# op-exec, claude-utils) are declared in:
-#   .config/mise/conf.d/00-agent-baseline.toml
-# Managed by packages/agent-tools-baseline — run `mise run sync-mise-baseline`
-# after updating the canonical fragment. Override any baseline tool here if needed.
+jq = "1.8.1"
+bun = "1.3.14"
+node = "24.15.0"
+# `depends` ensures node is fully installed before npm:@anthropic-ai/claude-code
+# tries to use it. depends does NOT control PATH ordering — see
+# https://mise.jdx.dev/dev-tools/#tool-dependencies. PATH conflicts between
+# tools that expose the same binary name (e.g., node and claude-code both
+# expose `claude`) are resolved at runtime by `mise which claude` lookups
+# rather than relying on activation order; bin/agent uses that explicitly.
+"npm:@anthropic-ai/claude-code" = { version = "2.1.128", depends = "node" }
 "pipx:litellm" = { version = "1.83.14", extras = "proxy" }
 tilt = "0.37.3"
 
