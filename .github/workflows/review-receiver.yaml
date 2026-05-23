@@ -101,7 +101,7 @@ jobs:
 
       - name: Generate review App token
         id: auth
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
           app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
           private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
@@ -109,7 +109,7 @@ jobs:
 
       # Update check-run on consumer to in_progress.
       - name: Update check (in_progress)
-        uses: LouisBrunner/checks-action@v3.1.0
+        uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
         with:
           token: ${{ steps.auth.outputs.token }}
           repo: ${{ inputs.source-repo }}
@@ -143,7 +143,7 @@ jobs:
       # Checkout the plugin contents from nsheaps/agents@plugin-ref so we can
       # invoke its composite action.
       - name: Checkout plugin (nsheaps/agents)
-        uses: actions/checkout@v6
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
         with:
           repository: nsheaps/agents
           ref: ${{ inputs.plugin-ref }}
@@ -151,8 +151,8 @@ jobs:
 
       # Invoke the plugin's run-agent composite. It owns the actual review:
       # auth, checkout consumer repo, claude-code-action with plugins, finalize.
-      # The composite's internal check-run creation duplicates ours; TODO
-      # (#356) make run-agent accept a check-run-id and skip internal creation.
+      # The composite accepts a check-run-id and skips its internal check
+      # creation when we pass one — see run-agent/action.yaml.
       - name: Run review agent
         id: agent
         uses: ./agent-repo/plugins/claude-code/review-utils/actions/run-agent
@@ -173,6 +173,9 @@ jobs:
           trigger-repo: ${{ inputs.source-repo }}
           trigger-ref: ${{ inputs.source-head-sha }}
           event-name: pull_request/synchronize
+          # Pass the decider-created check-run-id so run-agent skips its own
+          # check creation/finalization — we own the lifecycle here.
+          check-run-id: ${{ inputs.check-run-id }}
           app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
           private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
           anthropic-api-key: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
@@ -237,7 +240,7 @@ jobs:
 
       - name: Update check (terminal)
         if: success()
-        uses: LouisBrunner/checks-action@v3.1.0
+        uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
         with:
           token: ${{ steps.auth.outputs.token }}
           repo: ${{ inputs.source-repo }}
@@ -252,7 +255,7 @@ jobs:
       # run-agent crash, metrics-read error). Posts the safety-net check.
       - name: Update check (agent failed)
         if: failure()
-        uses: LouisBrunner/checks-action@v3.1.0
+        uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
         with:
           token: ${{ steps.auth.outputs.token }}
           repo: ${{ inputs.source-repo }}

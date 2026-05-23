@@ -62,7 +62,7 @@ runs:
   using: 'composite'
   steps:
     - name: Get additional job context
-      uses: qoomon/actions--context@v5
+      uses: qoomon/actions--context@e12e182be797e3476990faf801dd1b87f107f91c # v5
       if: ${{ !cancelled() }}
       id: additional-context
       continue-on-error: true
@@ -134,7 +134,7 @@ runs:
     - name: Create check run
       id: check
       if: ${{ inputs.check-run-id == '' && steps.trigger-meta.outputs.head_sha != '' }}
-      uses: LouisBrunner/checks-action@v3.1.0
+      uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
       with:
         # Use runner's GITHUB_TOKEN (has checks:write via the reusable
         # workflow's job-level permissions block) instead of the REVIEW App
@@ -225,7 +225,7 @@ runs:
     #   https://docs.claude.com/en/docs/claude-code/hooks
     - name: Build prompt
       id: prompt
-      uses: nsheaps/ai-mktpl/.github/actions/interpolate-prompt@main
+      uses: nsheaps/ai-mktpl/.github/actions/interpolate-prompt@0f61088bc3910ecc375166a7e3dc13a4244e117a # main
       with:
         template-file: ${{ env.PROMPT_TEMPLATE }}
 
@@ -236,7 +236,7 @@ runs:
 
     - name: Run Claude Code
       id: claude
-      uses: anthropics/claude-code-action@v1
+      uses: anthropics/claude-code-action@537ffff2eff706bd7e3e1c3daf2d4b39067a9f85 # v1
       env:
         GH_TOKEN: ${{ steps.github-token.outputs.token }}
         GITHUB_TOKEN: ${{ steps.github-token.outputs.token }}
@@ -290,7 +290,7 @@ runs:
 
     - name: Finalize check run
       if: ${{ always() && inputs.check-run-id == '' && steps.check.outputs.check_id != '' }}
-      uses: LouisBrunner/checks-action@v3.1.0
+      uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
       with:
         # Same reasoning as the Create check run step above — use runner's
         # GITHUB_TOKEN rather than the REVIEW App token.
