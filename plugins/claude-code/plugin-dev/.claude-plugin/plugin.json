@@ -1,0 +1,21 @@
+{
+  "name": "plugin-dev",
+  "version": "0.1.0",
+  "description": "Skills for plugin and tool development: data storage conventions, file format selection, sync patterns, and storage architecture for Claude Code plugins and MCP servers.",
+  "author": {
+    "name": "Nathan Heaps",
+    "email": "nsheaps@gmail.com",
+    "url": "https://github.com/nsheaps"
+  },
+  "homepage": "https://github.com/nsheaps/agents/tree/main/plugins/claude-code/plugin-dev",
+  "repository": "https://github.com/nsheaps/agents",
+  "keywords": [
+    "plugin-development",
+    "data-storage",
+    "yaml",
+    "file-formats",
+    "mcp",
+    "hooks",
+    "claude-code"
+  ]
+}
