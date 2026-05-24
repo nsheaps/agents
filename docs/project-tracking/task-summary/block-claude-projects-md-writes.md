@@ -1,0 +1,45 @@
+# Block markdown writes under `$CLAUDE_CONFIG_DIR/projects/`
+
+**Track-doc item:** [`#intro#10`](../MASTER.md#intro)
+**Status:** ✅ done
+**Owner:** alex
+
+## Deliverable
+
+- A `PreToolUse` hook on `Write|Edit|MultiEdit` blocks any attempt to write a `.md` file under `$CLAUDE_CONFIG_DIR/projects/`.
+- Hook is in alex repo at `.claude/hooks/block-claude-projects-md-writes.sh`, wired via `.claude/settings.json`.
+- Coach message in the block points the agent at the canonical memory location (`/home/nsheaps/src/nsheaps/.ai-agent-alex/memory/`).
+
+## Validation
+
+- `bash .../block-claude-projects-md-writes.sh` self-test:
+  - JSON for `Write` to `$CLAUDE_CONFIG_DIR/projects/foo/bar.md` → exit 2 + coach message.
+  - JSON for `Write` to `/tmp/foo.md` → exit 0.
+  - JSON for `Write` to `$CLAUDE_CONFIG_DIR/projects/foo/bar.txt` → exit 0 (only `.md` is blocked).
+- End-to-end: a real `Write` tool call to `/home/nsheaps/.agents/alex/.claude/projects/test-block/dummy.md` returned `PreToolUse:Write hook error` with the coach text, no file written.
+
+## Implementation
+
+1. Write `.claude/hooks/block-claude-projects-md-writes.sh` reading JSON stdin, matching `tool_name in (Write|Edit|MultiEdit)` + `file_path` prefix `$projects_dir/` + suffix `.md`.
+2. `chmod +x` the script.
+3. Add a `hooks.PreToolUse` block to `.claude/settings.json` referencing the script via `${CLAUDE_PROJECT_DIR}/.claude/hooks/...`.
+4. Self-test all three branches; end-to-end test with a real `Write`.
+
+Alex commits: [`60163ca`](https://github.com/nsheaps/.ai-agent-alex/commit/60163ca) (hook + wiring), [`4efbd3e`](https://github.com/nsheaps/.ai-agent-alex/commit/4efbd3e) (coach message updated after Nate's "repo, not on-machine" clarification).
+
+## Scope guardrails
+
+- Hook only blocks `.md`. Other extensions under `$CLAUDE_CONFIG_DIR/projects/` (jsonl transcripts, env files, shell snapshots) are claude-internal and must remain writable.
+- Hook is `Write|Edit|MultiEdit` only — NOT `Bash` (which can still `mv`/`cp` into the dir if explicitly needed for transcript management, though that's not expected).
+- Existing transcripts (`*.jsonl`) in the dir are not affected — the block is per-write-attempt, not retroactive.
+
+## Open questions
+
+- None.
+
+## Log
+
+- 2026-05-24 03:50Z (Nate correction): asked for the hook.
+- 2026-05-24 03:55Z (alex): hook + settings wiring landed, self-tested + end-to-end verified, commit 60163ca on alex/main.
+- 2026-05-24 03:58Z (alex): coach message updated to point at repo `memory/` location, commit 4efbd3e.
+- 2026-05-24 04:00Z (alex): retroactive tracking entry added in MASTER.md as `#intro#10`.

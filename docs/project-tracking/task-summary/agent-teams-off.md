@@ -1,6 +1,6 @@
 # Turn off agent teams (and restart)
 
-**Track-doc item:** [#intro#1](../../journal/2026/05/23/getting-back-on-track.md#intro) (was #2 before the emoji-key bullet was lifted to the `#key` section)
+**Track-doc item:** [`#intro#1`](../MASTER.md#intro) (was #2 before the emoji-key bullet was lifted to the `#key` section; doc moved from journal path to MASTER.md on 2026-05-24)
 **Status:** ✅ done — no further restart needed (see Log)
 **Owner:** alex
 

@@ -1,0 +1,49 @@
+# MASTER.md migration + numbering + key + rules sections
+
+**Track-doc item:** [`#intro#4`](../MASTER.md#intro)
+**Status:** ✅ done
+**Owner:** alex
+
+## Deliverable
+
+- Track doc lives at `docs/project-tracking/MASTER.md` (was `docs/journal/2026/05/23/getting-back-on-track.md`).
+- All headers have `<a id="..."></a>` anchor IDs (`key`, `rules`, `intro`, `farish-skills`, `ball-rolling`, `cleanup-prs`, `fix-reviews`, `dreaming`, `end-of-tonight`).
+- Status emoji key defined at top of doc as its own H1 section (`#key`).
+- Cross-cutting Rules section defined as its own H1 (`#rules`), above the intro.
+- Each tracked item has a status emoji prefix.
+- Numbering normalized via prettier; nested lists use `1.` repeated (prettier auto-numbers in render).
+- Old journal path preserved as a redirect stub pointing at MASTER.md.
+
+## Validation
+
+- `docs/project-tracking/MASTER.md` exists at HEAD of `main`.
+- `docs/journal/2026/05/23/getting-back-on-track.md` exists as a one-paragraph redirect.
+- Every header in MASTER.md has a unique `<a id="...">` anchor.
+- Every item from `#intro` through `#end-of-tonight` has a status emoji.
+- Per-task docs referenced from MASTER.md exist at `docs/project-tracking/task-summary/`.
+
+## Implementation
+
+1. Format-pass (commit `c6be06a`): prettier, anchor IDs, status emojis, renumbering.
+2. Rules + per-task-doc-first protocol (commit `ac1cffd`): cross-cutting `#rules` section added; first per-task doc (agent-teams-off.md) created.
+3. Lift Key to its own H1 (commit `c7486a8`): emoji key promoted out of intro bullet; "one in-flight" rule (alex extrapolated, not Nate-written) removed; `#intro#1` marked ✅.
+4. Link path fix (commit `93f2ce1`): `../../project-tracking/...` → `../../../../project-tracking/...` (4 levels up from journal location).
+5. Rename to MASTER.md (this commit): `git mv` to new path; redirect stub at old path; agent-teams-off.md back-link updated.
+
+## Scope guardrails
+
+- Do NOT change Nate's wording in tracked items unless explicitly asked.
+- Do NOT renumber items in a way that breaks anchor references — emoji status is the canonical state, not numbers.
+- Did NOT renumber nested lists by hand — prettier handles that.
+
+## Open questions
+
+- The `#intro#5` item ("Take another X number of passes") is still 🆕. Will need its own per-task doc when started.
+
+## Log
+
+- 2026-05-24 03:30Z (alex): commit c6be06a — first format pass with anchor IDs, status emojis, prettier.
+- 2026-05-24 03:38Z (Nate correction): work was done without per-task doc, violated own rule. Doc-first rule added retroactively.
+- 2026-05-24 03:45Z (alex): commit c7486a8 — Key lifted, "one in-flight" rule dropped, agent-teams marked ✅.
+- 2026-05-24 03:53Z (alex): commit 93f2ce1 — fixed broken relative link path.
+- 2026-05-24 04:00Z (alex): this commit — `git mv` to MASTER.md, redirect stub, retroactive item entries for in-flight session work (#intro#9, #intro#10).
