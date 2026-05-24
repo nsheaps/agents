@@ -51,21 +51,21 @@
 
 ## Intro-section ID assignment (creation-order — bootstrap)
 
-| List # now | ID  | Item                                    |
-| ---------- | --- | --------------------------------------- |
-| 1          | I1  | turn off agent teams + restart          |
-| 2          | I2  | fix numbering / MASTER.md migration     |
-| 3          | I3  | migrate alex memory to repo             |
-| 4          | I4  | PreToolUse hook block .md writes        |
-| 5          | I5  | project-tracking-workflow skill         |
-| 6          | I6  | stable IDs (this task)                  |
-| 7          | I7  | spin down jack/henry                    |
-| 8          | I8  | tmux fork/compact                       |
-| 9          | I9  | extract project-tracking into scripts   |
-| 10         | I10 | Take X passes                           |
-| 11         | I11 | INTAKE.md                               |
-| 12         | I12 | do-in-order / golden-child              |
-| 13         | I13 | task-utils maxInProgress config         |
+| List # now | ID  | Item                                  |
+| ---------- | --- | ------------------------------------- |
+| 1          | I1  | turn off agent teams + restart        |
+| 2          | I2  | fix numbering / MASTER.md migration   |
+| 3          | I3  | migrate alex memory to repo           |
+| 4          | I4  | PreToolUse hook block .md writes      |
+| 5          | I5  | project-tracking-workflow skill       |
+| 6          | I6  | stable IDs (this task)                |
+| 7          | I7  | spin down jack/henry                  |
+| 8          | I8  | tmux fork/compact                     |
+| 9          | I9  | extract project-tracking into scripts |
+| 10         | I10 | Take X passes                         |
+| 11         | I11 | INTAKE.md                             |
+| 12         | I12 | do-in-order / golden-child            |
+| 13         | I13 | task-utils maxInProgress config       |
 
 Next free: `I14`.
 

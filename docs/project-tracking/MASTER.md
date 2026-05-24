@@ -68,8 +68,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
        5. when triage is complete, document teh steps taken for triage, confirm all updates are properly linked to it, fix if not
        6. Move the triage task to `docs/project-tracking/triaged/$epochTimestamp-short-description-of-thing.md`
        7. Always try to leave things better than how you found it. If you fear that your change might not be well recieved (creates noise, isn't correct, etc) do some more research to increase your confidence. If you cant be confident enough, reach out to another agent or human for help.
-15. 🆕 `I12`: We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established.
-    16. TODO: move to rules?
+15. 🆕 `I12`: We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. 16. TODO: move to rules?
 16. all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place.
 17. define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
 18. You'll need to use subagents HEAVILY for this (and you're encouraged to). We're gonna work sequentially, one at a time, not moving onto the next
@@ -79,11 +78,11 @@ For now you'll be the golden child. Take note of what the state of the review bo
 
 13. 🆕 `I13`: Update task-utils to have a configuration to block or warn or quiet, something like
 
-  ```yaml
-  tasks:
-    maxInProgress: 3 # block setting another to in-progress if 3 are in progress
-    tooManyTasksLimit: 1 # print "blocK' on post tool use with warning about too many tasks in progress. Remind about delegating to subagent
-  ```
+```yaml
+tasks:
+  maxInProgress: 3 # block setting another to in-progress if 3 are in progress
+  tooManyTasksLimit: 1 # print "blocK' on post tool use with warning about too many tasks in progress. Remind about delegating to subagent
+```
 
 14. make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
 
