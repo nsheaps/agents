@@ -31,14 +31,14 @@ Per I6 — see `I6-stable-ids.md` for the full spec. Summary:
 
 ## Section ID assignments
 
-| Section | Items | IDs | next-id |
-|---------|-------|-----|---------|
-| Intro (new bullets) | 12 existing unlabeled + 1 new I14 | I14..I26 | I27 |
-| farish-skills | 1 | F1 | F2 |
-| cleanup-prs | 8 | C1..C8 | C9 |
-| fix-reviews | 1 | R1 | R2 |
-| dreaming | 2 | D1..D2 | D3 |
-| end-of-tonight | 41 | E1..E41 | E42 |
+| Section             | Items                             | IDs      | next-id |
+| ------------------- | --------------------------------- | -------- | ------- |
+| Intro (new bullets) | 12 existing unlabeled + 1 new I14 | I14..I26 | I27     |
+| farish-skills       | 1                                 | F1       | F2      |
+| cleanup-prs         | 8                                 | C1..C8   | C9      |
+| fix-reviews         | 1                                 | R1       | R2      |
+| dreaming            | 2                                 | D1..D2   | D3      |
+| end-of-tonight      | 41                                | E1..E41  | E42     |
 
 **Note on intro count:** The task spec referenced I14..I25 (12 IDs) for 12 existing unlabeled bullets + 1 new I14 bullet. The actual file has 12 unlabeled bullets + 1 new meta-task bullet = 13 items total, so the range is I14..I26 with next-id I27. This discrepancy is documented in the sweep report for alex to confirm before committing.
 
