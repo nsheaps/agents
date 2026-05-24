@@ -37,12 +37,12 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 <!-- next-id: I27 -->
 
-1. ✅ `I1`: [turn off agent teams and restart.](./task-summary/I1-agent-teams-off.md)
-2. ✅ `I2`: [fix the numbering in here before I go crazy. numbers don't matter, make them all have emoji for status. Define a key at the top level. Don't work on more than one. Move this entire thing to `nsheaps/agents/docs/project-tracking/MASTER.md`. You must start a doc for each one and link it from this list before doing anything, including work. Each of these gets a doc at `nsheaps/agents/docs/project-tracking/task-summary/<ID>-<slug>.md` TO BE CREATED ONLY WHEN YOU LINK IT.](./task-summary/I2-master-md-migration.md)
-3. ✅ `I3`: [Migrate alex memory files to repo `memory/` (was scattered under `$CLAUDE_CONFIG_DIR/projects/`).](./task-summary/I3-memory-migration-to-repo.md)
-4. ✅ `I4`: [Add PreToolUse hook blocking Write/Edit/MultiEdit to `$CLAUDE_CONFIG_DIR/projects/**/*.md`.](./task-summary/I4-block-claude-projects-md-writes.md)
-5. ✅ `I5`: [Capture the iterative-task-on-MASTER.md workflow as a reusable skill (`project-tracking-workflow`) in the alex repo. Bootstraps from Nate Discord 2026-05-24 04:21Z — the skill is itself created using the workflow it documents.](./task-summary/I5-project-tracking-workflow.md)
-6. ✅ `I6`: [Apply stable ticket-style IDs (`I1`, `F1`, …) as bullet-prefixes + filename-prefixes to every tracked item in MASTER.md. Update all per-task doc back-references + Rules section refs to use the new IDs.](./task-summary/I6-stable-ids.md)
+1. ✅ `I1`: [Turn off agent teams + restart](./task-summary/I1-agent-teams-off.md)
+2. ✅ `I2`: [Migrate track-doc to MASTER.md + status-emoji key + per-task doc convention](./task-summary/I2-master-md-migration.md)
+3. ✅ `I3`: [Migrate memory files to alex repo `memory/`](./task-summary/I3-memory-migration-to-repo.md)
+4. ✅ `I4`: [PreToolUse hook blocking writes to `$CLAUDE_CONFIG_DIR/projects/**/*.md`](./task-summary/I4-block-claude-projects-md-writes.md)
+5. ✅ `I5`: [Capture project-tracking 7-step workflow as a reusable skill](./task-summary/I5-project-tracking-workflow.md)
+6. ✅ `I6`: [Stable ticket-style IDs for MASTER.md intro section (+ per-task doc filenames + cross-refs)](./task-summary/I6-stable-ids.md)
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
@@ -88,7 +88,7 @@ tasks:
 ```
 
 14. `I26`: make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
-15. ✅ `I14`: [Apply stable ticket-style IDs to all MASTER.md sections (expanded scope of I6 — all sections, not just intro).](./task-summary/I14-stable-ids-all-sections.md)
+15. ✅ `I14`: [Stable ticket-style IDs across all MASTER.md sections (expanded scope of I6)](./task-summary/I14-stable-ids-all-sections.md)
 
 <a id="farish-skills"></a>
 
