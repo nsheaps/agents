@@ -1,0 +1,35 @@
+# task-utils plugin default settings
+#
+# Override per-project by adding a "task-utils:" block to:
+#   $CLAUDE_PROJECT_DIR/.claude/plugins.settings.yaml
+#
+# Override per-user by adding a "task-utils:" block to:
+#   ~/.claude/plugins.settings.yaml
+#
+# Example project override:
+#   task-utils:
+#     nativeTaskMode: block
+#     requireTaskInProgress: false
+#
+# All keys use camelCase.
+
+# enabled: master on/off switch for task-utils hooks.
+enabled: true
+
+# nativeTaskMode: controls hook behavior when built-in Task tools
+# (TaskCreate, TaskUpdate, etc.) are used while the MCP server is available.
+#   silent — no advisory; allow native tools silently.
+#   warn   — emit additionalContext recommending MCP tools instead; allow.
+#   block  — deny the call and require use of MCP task_create/task_update.
+nativeTaskMode: warn
+
+# syncPullEnabled: enable the throttled pre-write pull sync hook.
+syncPullEnabled: true
+
+# syncPullIntervalSecs: minimum seconds between successive sync-pull runs.
+syncPullIntervalSecs: 60
+
+# requireTaskInProgress: when true, Write/Edit/MultiEdit/NotebookEdit are
+# denied unless an MCP-managed task is in_progress. Set to false to disable
+# the write-gate (e.g. in environments without a task system).
+requireTaskInProgress: true
