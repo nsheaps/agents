@@ -26,9 +26,9 @@
 # hooks/task-store-lib.sh). Only MCP-managed *.yaml files are scanned (R1,
 # 2026-05-24). Legacy per-session JSON files are not consulted.
 #
-# Opt-out: set TASK_UTILS_REQUIRE_TASK=0 to disable this gate in
-# environments where neither task system is available, so the gate is not
-# left permanently unsatisfiable. Unset (the default) enforces the gate.
+# Opt-out (env var): set TASK_UTILS_REQUIRE_TASK=0 to disable this gate.
+# Opt-out (config): set requireTaskInProgress: false in plugins.settings.yaml
+# under a "task-utils:" block. Unset / true (the default) enforces the gate.
 
 set -euo pipefail
 
@@ -36,6 +36,9 @@ set -euo pipefail
 HOOK_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # shellcheck source=task-store-lib.sh
 . "$HOOK_DIR/task-store-lib.sh"
+PLUGIN_NAME="task-utils"
+# shellcheck source=plugin-settings-lib.sh
+. "$HOOK_DIR/plugin-settings-lib.sh"
 
 INPUT="$(cat)"
 TOOL_NAME="$(jq -r '.tool_name // empty' <<<"$INPUT")"
@@ -58,14 +61,16 @@ case "$TOOL_NAME" in
   *) exit 0 ;;
 esac
 
-# Environment opt-out. The Task tools (TaskCreate/TaskUpdate) are not enabled in
-# every Claude Code context — notably Claude Code on the web — and without them
-# no task can ever reach in_progress, making this gate permanently
-# unsatisfiable. TASK_UTILS_REQUIRE_TASK=0 disables the gate: the hook exits 0
-# with no decision, so normal permission handling still applies. Unset or any
-# other value keeps the gate enforced — no behavior change for existing setups.
+# Gate opt-out checks (env var takes priority over config for backward compat).
+# TASK_UTILS_REQUIRE_TASK=0 disables the gate (legacy env var, preserved).
+# requireTaskInProgress: false in plugins.settings.yaml also disables the gate.
 if [[ "${TASK_UTILS_REQUIRE_TASK:-1}" == "0" ]]; then
   log_fire "allow" "tool=${TOOL_NAME} reason=gate-disabled-via-env"
+  exit 0
+fi
+REQUIRE_TASK_SETTING="$(plugin_get_config "requireTaskInProgress" "true")"
+if [[ "$REQUIRE_TASK_SETTING" == "false" ]]; then
+  log_fire "allow" "tool=${TOOL_NAME} reason=gate-disabled-via-settings"
   exit 0
 fi
 

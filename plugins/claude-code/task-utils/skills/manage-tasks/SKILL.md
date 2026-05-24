@@ -128,7 +128,14 @@ Key transitions:
 | `* → completed` requires follow-up capture                                       | COMPLETED coach in `task-invariant.sh`                                                        |
 | Status transitions logged via dated event-log line in description                | Convention; reminded by coach text                                                            |
 
-**MCP fallback.** Where the built-in `TaskCreate`/`TaskUpdate` tools are unavailable (notably Claude Code on the web), use the `task-utils` plugin's bundled `task-mcp` MCP server instead — tools `task_create`, `task_update`, `task_list`, `task_get`. They mirror the built-ins and enforce the SAME invariants in-process (this skill's doctrine applies unchanged — atomicity, breakdown, validation-steps, 0-or-1). The MCP server writes flat task files at `<repo>/.claude/tasks/<id>.yaml` and the `require-task-in-progress.sh` write-gate is satisfied by an MCP `in_progress` task. See `Skill(mcp-task-tools)` for tool-call details.
+**MCP server is the primary task path (R1 redesign, 2026-05-24).** Hooks scan ONLY the flat MCP YAML store (`<repo>/.claude/tasks/<id>.yaml`). They no longer cross-check the legacy per-session JSON store (`~/.claude/tasks/<session_id>/<id>.json`). This means:
+
+- An `in_progress` task in the MCP store satisfies `require-task-in-progress.sh` and `task-invariant.sh`.
+- A native Task tool `in_progress` task does NOT satisfy the write-gate unless it is synced into the flat store by the `task-sync-from-legacy.sh` PostToolUse hook (which fires automatically after each `TaskCreate`/`TaskUpdate` when built-in tasks are enabled).
+
+**MCP fallback (and primary recommendation).** Use the `task-utils` plugin's bundled `task-mcp` MCP server: tools `task_create`, `task_update`, `task_list`, `task_get`. They enforce all the same invariants in-process. The MCP server writes directly to `<repo>/.claude/tasks/<id>.yaml` and the write-gate is satisfied immediately without a PostToolUse sync step. See `Skill(mcp-task-tools)` for tool-call details.
+
+**Native Task tool advisory.** When the built-in `TaskCreate`/`TaskUpdate` tools are used alongside the MCP server, the `task-native-warning.sh` PreToolUse hook fires an advisory (or denial) depending on `nativeTaskMode` in `plugins.settings.yaml` (default: `warn`). Options: `silent` (no advisory), `warn` (advisory in `additionalContext`), `block` (deny with `permissionDecisionReason`). Set at `$CLAUDE_PROJECT_DIR/.claude/plugins.settings.yaml` under `task-utils:` block.
 
 ---
 
@@ -310,6 +317,7 @@ If your insight is too speculative to commit (single observation, might not gene
 - **2026-05-17** — added §10 "Parallelism via background subagents" covering the `Agent(run_in_background)` + `AGENT(<n>): ` prefix + `SendMessage` resume protocol; renumbered self-correction → §11, change log → §12, worked example → §13. Per Nate Discord 2026-05-17 (post-compact directive).
 - **2026-05-17 04:13Z** — added `model: sonnet` to frontmatter (per Nate Discord [`1505422965800439919`](https://discord.com/channels/1490863845252665415/1497431286661517353/1505422965800439919)) so the forked decision-context runs on sonnet rather than inheriting the parent's opus. Inserted new §10 "Doctrine — validation-steps mechanism" describing the `<validation-steps>` block format, lifecycle interactions table, same-call merge semantics, practical guidance + anti-patterns. Added block-graph inheritance bullet to §4 (per Nate Discord [`1505421767760543745`](https://discord.com/channels/1490863845252665415/1497431286661517353/1505421767760543745)). Renumbered: parallelism §10→§11, self-correction §11→§12, change log §12→§13, worked example §13→§14. Updated three cross-refs.
 - **2026-05-21** — added an "MCP fallback" note to §5 pointing at the new `task-mcp` MCP server (`task_create`/`task_update`/`task_list`/`task_get`) for contexts without the built-in Task tools. The doctrine is unchanged — the MCP tools enforce the same invariants. See the companion `mcp-task-tools` skill.
+- **2026-05-24** — updated §5 to reflect R1 redesign: hooks now scan ONLY the flat MCP YAML store (legacy per-session JSON is no longer consulted); native-task advisory (`task-native-warning.sh`) and PostToolUse sync (`task-sync-from-legacy.sh`) added; `nativeTaskMode` setting documented. MCP server is now the primary (not just fallback) task path.
 
 ---
 
