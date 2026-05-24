@@ -4,6 +4,12 @@
 **Status:** ✅ done
 **Owner:** alex
 
+## Original message
+
+> fix the numbering in here before I go crazy. numbers don't matter, make them all have emoji for status. Define a key at the top level. Don't work on more than one. Move this entire thing to `nsheaps/agents/docs/project-tracking/MASTER.md`. You must start a doc for each one and link it from this list before doing anything, including work. Each of these gets a doc at `nsheaps/agents/docs/project-tracking/task-summary/TASK.md` TO BE CREATED ONLY WHEN YOU LINK IT.
+
+— Nate, MASTER.md `#intro` (item 2 in the original track-doc). Original verbatim bullet text recovered from agents commit [`5f69967`](https://github.com/nsheaps/agents/commit/5f69967) before the N2 ticket-style title rewrite.
+
 ## Deliverable
 
 - Track doc lives at `docs/project-tracking/MASTER.md` (was `docs/journal/2026/05/23/getting-back-on-track.md`).
