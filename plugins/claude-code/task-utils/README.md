@@ -43,11 +43,11 @@ Task discipline hooks and the `manage-tasks` skill — packages the workflow ori
 
 ## Task storage
 
-| Layout               | Location                                                                | Written by                                   |
-| -------------------- | ----------------------------------------------------------------------- | -------------------------------------------- |
-| Flat (MCP)           | `<store-root>/<task-id>.yaml`                                           | the `task-mcp` MCP server                    |
-| Legacy (per-session) | `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/tasks/<session_id>/<task-id>.json` | the built-in Task tools                      |
-| Synced from legacy   | `<store-root>/<task-id>.yaml`                                           | `task-sync-from-legacy.sh` PostToolUse hook  |
+| Layout               | Location                                                                | Written by                                  |
+| -------------------- | ----------------------------------------------------------------------- | ------------------------------------------- |
+| Flat (MCP)           | `<store-root>/<task-id>.yaml`                                           | the `task-mcp` MCP server                   |
+| Legacy (per-session) | `${CLAUDE_CONFIG_DIR:-$HOME/.claude}/tasks/<session_id>/<task-id>.json` | the built-in Task tools                     |
+| Synced from legacy   | `<store-root>/<task-id>.yaml`                                           | `task-sync-from-legacy.sh` PostToolUse hook |
 
 **The hooks scan only the flat MCP store** (R1 redesign, 2026-05-24). The legacy per-session store is written by the built-in Task tools; when those tools are used, `task-sync-from-legacy.sh` copies each task into the flat store automatically so the write-gate stays satisfied.
 
@@ -63,28 +63,28 @@ On every task create / update / delete the MCP server makes a **best-effort** te
 
 Settings are resolved from three tiers (project > user > plugin defaults):
 
-| Tier | Location |
-| ---- | -------- |
-| Project | `$CLAUDE_PROJECT_DIR/.claude/plugins.settings.yaml` under `task-utils:` block |
-| User | `~/.claude/plugins.settings.yaml` under `task-utils:` block |
-| Plugin defaults | `task-utils.settings.yaml` in the plugin root |
+| Tier            | Location                                                                      |
+| --------------- | ----------------------------------------------------------------------------- |
+| Project         | `$CLAUDE_PROJECT_DIR/.claude/plugins.settings.yaml` under `task-utils:` block |
+| User            | `~/.claude/plugins.settings.yaml` under `task-utils:` block                   |
+| Plugin defaults | `task-utils.settings.yaml` in the plugin root                                 |
 
 Available settings (all camelCase):
 
-| Key | Default | Description |
-| --- | ------- | ----------- |
-| `enabled` | `true` | Enable/disable the plugin entirely |
-| `nativeTaskMode` | `warn` | What to do when built-in TaskCreate/TaskUpdate are used: `silent` (allow, no advisory), `warn` (allow with advisory), `block` (deny) |
-| `requireTaskInProgress` | `true` | Whether the write-gate (`require-task-in-progress.sh`) is active. Set to `false` to disable entirely (also: `TASK_UTILS_REQUIRE_TASK=0` env var) |
-| `syncPullEnabled` | `true` | Whether `task-sync-pull.sh` runs before write tools |
-| `syncPullIntervalSecs` | `60` | Minimum seconds between pull syncs |
+| Key                     | Default | Description                                                                                                                                      |
+| ----------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `enabled`               | `true`  | Enable/disable the plugin entirely                                                                                                               |
+| `nativeTaskMode`        | `warn`  | What to do when built-in TaskCreate/TaskUpdate are used: `silent` (allow, no advisory), `warn` (allow with advisory), `block` (deny)             |
+| `requireTaskInProgress` | `true`  | Whether the write-gate (`require-task-in-progress.sh`) is active. Set to `false` to disable entirely (also: `TASK_UTILS_REQUIRE_TASK=0` env var) |
+| `syncPullEnabled`       | `true`  | Whether `task-sync-pull.sh` runs before write tools                                                                                              |
+| `syncPullIntervalSecs`  | `60`    | Minimum seconds between pull syncs                                                                                                               |
 
 **Example project-level override** (`.claude/plugins.settings.yaml`):
 
 ```yaml
 task-utils:
-  nativeTaskMode: silent   # suppress advisory when using built-in Task tools
-  requireTaskInProgress: false  # disable write-gate for this project
+  nativeTaskMode: silent # suppress advisory when using built-in Task tools
+  requireTaskInProgress: false # disable write-gate for this project
 ```
 
 ## Installation
