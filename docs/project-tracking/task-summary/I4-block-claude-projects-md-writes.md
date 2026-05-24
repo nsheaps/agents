@@ -4,6 +4,12 @@
 **Status:** ✅ done
 **Owner:** alex
 
+## Original message
+
+> alex you wrote to the project memory bad job. Add a hook that prevents you from writing markdown files in `$CLAUDE_CONFIG_DIR/projects/**/*.md`, I don't wanna see any memory there.
+
+— Nate, Discord 2026-05-24 03:50Z. Task added retroactively to MASTER.md; no pre-N2 MASTER.md bullet exists with verbatim handler text (alex-written tracking entry). Verified from I4 Log.
+
 ## Deliverable
 
 - A `PreToolUse` hook on `Write|Edit|MultiEdit` blocks any attempt to write a `.md` file under `$CLAUDE_CONFIG_DIR/projects/`.
