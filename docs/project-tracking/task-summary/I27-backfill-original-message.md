@@ -9,10 +9,12 @@
 ## Scope
 
 **In:**
+
 - Audit every existing per-task doc for I2 through I14 (I1 is excluded — it already has the section).
 - Backfill an `## Original message` section containing the verbatim handler message + timestamp/source link in any doc that is missing it.
 
 **Out:**
+
 - Items I7–I13, I15–I26: no per-task docs exist yet; not in scope.
 - Rewrites or changes to any other sections of existing docs.
 - Creating missing per-task docs for items that don't have one (separate task if needed).
@@ -20,6 +22,7 @@
 ## Scope review
 
 Original message is clear and bounded. Files in scope:
+
 - I2 (`I2-master-md-migration.md`) — has `## Original message` ✅ skip
 - I3 (`I3-memory-migration-to-repo.md`) — missing ❌
 - I4 (`I4-block-claude-projects-md-writes.md`) — missing ❌
