@@ -4,6 +4,12 @@
 **Status:** ✅ done
 **Owner:** alex
 
+## Original message
+
+> Give all the bullets stable IDs not just the ones we're working on
+
+— Nate, Discord 2026-05-24 ([msg `1507976714448535682`](https://discord.com/channels/1490863845252665415/1497431286661517353/1507976714448535682)). I14 is a meta-task created by alex after I6 scope-deviation: no pre-N2 MASTER.md bullet exists for I14 because it was created as a follow-up to I6's narrowed scope. The open question in the doc ("I14..I25 vs I14..I26") is resolved: `next-id: I27` in MASTER.md confirms I14..I26 / next-id I27 was correct.
+
 ## Deliverable
 
 - Every top-level numbered bullet in EVERY section of MASTER.md carries a stable ticket-style ID as a short prefix (e.g. `F1`, `C1`, `R1`, `D1`, `E1`).
