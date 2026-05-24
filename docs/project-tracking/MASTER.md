@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I14 -->
+<!-- next-id: I27 -->
 
 1. ✅ `I1`: [turn off agent teams and restart.](./task-summary/I1-agent-teams-off.md)
 2. ✅ `I2`: [fix the numbering in here before I go crazy. numbers don't matter, make them all have emoji for status. Define a key at the top level. Don't work on more than one. Move this entire thing to `nsheaps/agents/docs/project-tracking/MASTER.md`. You must start a doc for each one and link it from this list before doing anything, including work. Each of these gets a doc at `nsheaps/agents/docs/project-tracking/task-summary/<ID>-<slug>.md` TO BE CREATED ONLY WHEN YOU LINK IT.](./task-summary/I2-master-md-migration.md)
@@ -43,22 +43,24 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 4. ✅ `I4`: [Add PreToolUse hook blocking Write/Edit/MultiEdit to `$CLAUDE_CONFIG_DIR/projects/**/*.md`.](./task-summary/I4-block-claude-projects-md-writes.md)
 5. ✅ `I5`: [Capture the iterative-task-on-MASTER.md workflow as a reusable skill (`project-tracking-workflow`) in the alex repo. Bootstraps from Nate Discord 2026-05-24 04:21Z — the skill is itself created using the workflow it documents.](./task-summary/I5-project-tracking-workflow.md)
 6. ✅ `I6`: [Apply stable ticket-style IDs (`I1`, `F1`, …) as bullet-prefixes + filename-prefixes to every tracked item in MASTER.md. Update all per-task doc back-references + Rules section refs to use the new IDs.](./task-summary/I6-stable-ids.md)
-7. 🆕 `I7`: spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
-
-8. Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
-9. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.
-10. Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place.
-11. We need to make sure batches of tool calls fail back into the conversation instead of completing the rest of the tool calls, AND/OR make sure any commit tool call is separate from the actual updates
-12. 🆕 `I9`: extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work 10. make the task updating skill use context:fork
-13. 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one. 7. individually check each list item recursively, make sure items that are rules are rules and tasks are tasks
-14. 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md` 12. The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
-15. create a hook in your config for userpromptsubmit post tool use and stop
+7. 🆕 `I7`: spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
+8. `I15`: Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
+8. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.
+9. `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place.
+10. `I17`: We need to make sure batches of tool calls fail back into the conversation instead of completing the rest of the tool calls, AND/OR make sure any commit tool call is separate from the actual updates
+9. 🆕 `I9`: extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work
+   10. make the task updating skill use context:fork
+10. 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one.
+    7. individually check each list item recursively, make sure items that are rules are rules and tasks are tasks
+11. 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md`
+    12. The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
+13. `I18`: create a hook in your config for userpromptsubmit post tool use and stop
     1. hash the intake file and save it somewhere. If it's different than the previous hash, tell the agent to use the 'processing-intake' skill, which you should add to the alex repo.
     2. hash the master file and remind if it has been updated
     3. when master is updated remind to commit and push immediately.
-16. create the processing-intake skill (later this will be part of word-vomit)
+14. `I19`: create the processing-intake skill (later this will be part of word-vomit)
     1. If the user's thought is incomplete, wait for them to finish it by giving them a heredoc style identifier to write at the end. If you see the user writing, add a note to the top of the section with the indentifier that the user will need to write
        1. add another section before theirs for another message to intake
     2. When the user write the ending identifier, extract what they said to `docs/project-tracking/triage/$epochTimestamp-short-description-of-thing.md`
@@ -70,16 +72,16 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
        5. when triage is complete, document teh steps taken for triage, confirm all updates are properly linked to it, fix if not
        6. Move the triage task to `docs/project-tracking/triaged/$epochTimestamp-short-description-of-thing.md`
        7. Always try to leave things better than how you found it. If you fear that your change might not be well recieved (creates noise, isn't correct, etc) do some more research to increase your confidence. If you cant be confident enough, reach out to another agent or human for help.
-17. 🆕 `I12`: We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. 16. TODO: move to rules?
-18. all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place.
-19. define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
-20. You'll need to use subagents HEAVILY for this (and you're encouraged to). We're gonna work sequentially, one at a time, not moving onto the next
-21. Do not let me increase scope, any increase goes in the relevant doc. For now, you'll take notes in open qs in the scratch doc we'll discuss later.
+15. 🆕 `I12`: We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. 16. TODO: move to rules?
+16. `I20`: all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place.
+17. `I21`: define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
+18. `I22`: You'll need to use subagents HEAVILY for this (and you're encouraged to). We're gonna work sequentially, one at a time, not moving onto the next
+19. `I23`: Do not let me increase scope, any increase goes in the relevant doc. For now, you'll take notes in open qs in the scratch doc we'll discuss later.
 
-22. For now you'll (alex) be the golden child example of the working agent. We'll extract it out to a template later.
-23. Take note of what the state of the review bot is in nsheaps/agents and other repos and let me know. Test it if you don't know
+19. `I24`: For now you'll (alex) be the golden child example of the working agent. We'll extract it out to a template later. 
+20. `I25`: Take note of what the state of the review bot is in nsheaps/agents and other repos and let me know. Test it if you don't know
 
-24. 🆕 `I13`: Update task-utils to have a configuration to block or warn or quiet, something like
+13. 🆕 `I13`: Update task-utils to have a configuration to block or warn or quiet, something like
 
 ```yaml
 tasks:
@@ -87,13 +89,16 @@ tasks:
   tooManyTasksLimit: 1 # print "blocK' on post tool use with warning about too many tasks in progress. Remind about delegating to subagent
 ```
 
-14. make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
+14. `I26`: make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
+15. 🚧 `I14`: [Apply stable ticket-style IDs to all MASTER.md sections (expanded scope of I6 — all sections, not just intro).](./task-summary/I14-stable-ids-all-sections.md)
 
 <a id="farish-skills"></a>
 
 ## collecting skills from farish
 
-1. 🆕 review this history.jsonl from another session. It is rich with usable info on making some skills.
+<!-- next-id: F2 -->
+
+1. 🆕 `F1`: review this history.jsonl from another session. It is rich with usable info on making some skills.
    https://github.com/nsheaps/agents/blob/claude%2Fai-3d-model-generator-XjoUi/docs/journal/2026/05/22/farish-history.jsonl
    1. from it, please write skills in the alex repo (add note in this doc later to move to plugins). Skim this file first to get an idea of how simple to make these and what to put in them to encourage the agent to always keep updating them. Make these skills first, then review the jsonl iteratively. Use a sonnet agent to review one line at a time and slowly build these skills and any other you think are relevant. Remember, small, link to others, bullets, examples but somewhere else not in the main doc
       - making-something-from-scratch
@@ -134,10 +139,12 @@ tasks:
 
 ## cleanup easy open PRs
 
-1. 🆕 rename this plugin to `reddit` from reddit-fetcher https://github.com/nsheaps/agents/pull/166 get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
-2. 🆕 let's commit all the other changes to the agents repo to main. we're gonna make some rapid changes make sure it's in a clean state.
-3. 🆕 Lets make sure anything that's easy to close PR wise on agents, agent repos, mktpl, tools, etc in the nsheaps org is closed. Most are not easy, but programatically dump it, then see if anything is relevant and easy.
-4. 🆕 make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
+<!-- next-id: C9 -->
+
+1. 🆕 `C1`: rename this plugin to `reddit` from reddit-fetcher https://github.com/nsheaps/agents/pull/166 get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
+2. 🆕 `C2`: let's commit all the other changes to the agents repo to main. we're gonna make some rapid changes make sure it's in a clean state.
+3. 🆕 `C3`: Lets make sure anything that's easy to close PR wise on agents, agent repos, mktpl, tools, etc in the nsheaps org is closed. Most are not easy, but programatically dump it, then see if anything is relevant and easy.
+4. 🆕 `C4`: make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
 
    ```yaml
    name-of-skill-called:
@@ -163,9 +170,9 @@ tasks:
      errorSessions: ...
    ```
 
-5. 🆕 fork hookify into our agents repo, as well as the sequential thinking mcp server and add the sequential thinking mcp to the agent-utils plugin
-6. 🆕 lets get a diff of all 3 agents, in a research doc. make an agent-drift plugin in nsheaps/agents. Post-tool-use cd into one of the agent repos, remind about the tracking doc, throttled to once every 5 minutes. Post edit tool use in one of the repos, remind about the tracking doc. Post tool use, stop, user prompt submit throttle 5m just pull the repo the tracking doc is in. If a tracked file changes post a reminder to the agent. Give the plugin a config of the repo, where it's checked out, the branch to commit to, and a list of files within to watch for changes after a git pull. If it ever tries to sync and the branch is wrong or a conflict happens, warn the agent
-7. 🆕 alex is now a project-manager, software-eng, agent-eng, quality-eng, researcher, ... lets talk about what we have and what we should have.
+5. 🆕 `C5`: fork hookify into our agents repo, as well as the sequential thinking mcp server and add the sequential thinking mcp to the agent-utils plugin
+6. 🆕 `C6`: lets get a diff of all 3 agents, in a research doc. make an agent-drift plugin in nsheaps/agents. Post-tool-use cd into one of the agent repos, remind about the tracking doc, throttled to once every 5 minutes. Post edit tool use in one of the repos, remind about the tracking doc. Post tool use, stop, user prompt submit throttle 5m just pull the repo the tracking doc is in. If a tracked file changes post a reminder to the agent. Give the plugin a config of the repo, where it's checked out, the branch to commit to, and a list of files within to watch for changes after a git pull. If it ever tries to sync and the branch is wrong or a conflict happens, warn the agent
+7. 🆕 `C7`: alex is now a project-manager, software-eng, agent-eng, quality-eng, researcher, ... lets talk about what we have and what we should have.
    1. lets do an audit of your persona and role config, I want to change it up.
       1. lets move the role definitions into `nsheaps/agents/lib/agent-roles/$roleName/ROLE.md`
       2. review the scratch file and get a rough outline of the plugins, and extract out roles, responsibilities, capabilities, etc from your persona
@@ -237,7 +244,7 @@ tasks:
       2. update skill-utils plugin to account for the idea that it's better to have a structured outline of skills you want without knowing how to do them (with the shell like above) than to have no skill at all
    5. confirm your project-manager role is all set up, and links appropriately
    6. using your new product skills, Lets reformat this file to be a table of contents to links tracking all of this work.
-8. 🆕 Lets look through all those transcripts and items. it's a lot to look through and a lot to waste tokens on, which I don't want to quite yet, so we'll focus on dumping all the data, then targeted extraction of everything related to the henry review workflow
+8. 🆕 `C8`: Lets look through all those transcripts and items. it's a lot to look through and a lot to waste tokens on, which I don't want to quite yet, so we'll focus on dumping all the data, then targeted extraction of everything related to the henry review workflow
    1. We'll do that by writing a script to dump an entire transcript from a discord channel and we'll dump all the channels and all the threads
    2. We'll also write a script to dump files for all the issues and prs in every repo we've been working in
    3. We'll use programatic tools to look for mentions in those transcripts, claude transcripts, issues, etc, to get a comprehensive view of what we actually want to do with henry. For each mention we'll note which file and where, then we'll use sonnet agents to go Read the files and extract any useful info into summary files (with access to more before/after), then more sonnet agents to compile those iteratively into a comprehensive spec for the CI Review bot (both with the scope of henry, but noting that I think long term it's gonna be independent and all logic and review data shared in every agent)
@@ -247,7 +254,9 @@ tasks:
 
 # lets fix reviews...for real, y'all need reviews
 
-1. ⏸️ Lets get this working with henry's repo for now. Once it's working, we can move it to a private repo at a later step
+<!-- next-id: R2 -->
+
+1. ⏸️ `R1`: Lets get this working with henry's repo for now. Once it's working, we can move it to a private repo at a later step
    1. do it based on what we learned from before from learning through transcripts and commit histories and pr comments etc. No leaf unturned for data found on this machine. Use haiku to find things with natural language, sonnet to evaluate them for meaning. NEVER use opus to read through transcripts. ALWAYS use query tools to read transcripts.
       1. add note to archiecture_draft in agents repo root for arch mantras, always try to prevent an agent from directly reading a file that's structured of any sort.
          1. js/ts, use a lang server and ast to query around
@@ -261,8 +270,10 @@ tasks:
 
 needs more definition needs emphasis of learning based on what happened, not continuing any work, including work that might also improve the agent. Don't duplicate that work, but if that work is in progress, it can be updated during dreaming. Don't start new already-scoped work. make sure to scope work before doing it.
 
-1. 🆕 Let's make the dream cycle described in the docs and run it once. read notes `/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/23/dreaming.md`
-2. 🆕 Let's make a dream about XXX thing (one time, recurring R times, indefinitely, frequency)
+<!-- next-id: D3 -->
+
+1. 🆕 `D1`: Let's make the dream cycle described in the docs and run it once. read notes `/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/23/dreaming.md`
+2. 🆕 `D2`: Let's make a dream about XXX thing (one time, recurring R times, indefinitely, frequency)
    1. then force it to dream about cleaning up nate's user configs vs the agents
    2. set up cron for each agent
 
@@ -270,28 +281,30 @@ needs more definition needs emphasis of learning based on what happened, not con
 
 # end of tonight 2026-05-23
 
-1. Lets make a template agent with our golden setup, make sure the review workflow works there
-2. Lets set up repository-settings so you guys can configure the repos appropriately
-3. Lets make the github secret sync workflow happen in iac. I want to deprecate the .github repo
-4. lets set up github notifications for discord <=> github repos through repository-settings github app to make repo webhooks (maybe later using iac or a github app)
-5. [word-vomit plugin] Lets set up a mechanism for me to write random shit into a file that you guys watch and properly categorize and update it (file-utils from scratch[^scratch] to notify)
-6. file-utils sync to s3?
+<!-- next-id: E42 -->
+
+1. `E1`: Lets make a template agent with our golden setup, make sure the review workflow works there
+2. `E2`: Lets set up repository-settings so you guys can configure the repos appropriately
+3. `E3`: Lets make the github secret sync workflow happen in iac. I want to deprecate the .github repo
+4. `E4`: lets set up github notifications for discord <=> github repos through repository-settings github app to make repo webhooks (maybe later using iac or a github app)
+5. `E5`: [word-vomit plugin] Lets set up a mechanism for me to write random shit into a file that you guys watch and properly categorize and update it (file-utils from scratch[^scratch] to notify)
+6. `E6`: file-utils sync to s3?
    1. iac s3 setup?
       1. pulumi? cloudflare?
-7. Lets replace the task tools with one that another session is working on in nsheaps/agents#157
+7. `E7`: Lets replace the task tools with one that another session is working on in nsheaps/agents#157
    1. and make it autosync to agent repo issues (and files) repo issues are just a viewer? maybe make a github pages viewer?
    2. make it autosync tickets to .org repo
    3. pull in agents#157
    4. make tickets assignable to agents, tasks linkable to tickets, etc
-8. lets make the launcher improvements discussed in the scratch doc, especially all the linking
-9. tilt + litellm
+8. `E8`: lets make the launcher improvements discussed in the scratch doc, especially all the linking
+9. `E9`: tilt + litellm
    1. z.ai
    2. claude code
    3. free ai?
    4. open router?
-10. scm-utils auto-sync using `.autosync` file in folder hierarchy
+10. `E10`: scm-utils auto-sync using `.autosync` file in folder hierarchy
     1. hook based? [git-auto-sync](https://github.com/GitJournal/git-auto-sync) based? [Git-sync](https://github.com/simonthum/git-sync) based? mcp server file watch based?
-11. monorepo fixing, make sure nx works, lets get task standardization for nx/bun monorepo and repo standardization for autofix/mise tasks/tools/script location/parallelism/etc
+11. `E11`: monorepo fixing, make sure nx works, lets get task standardization for nx/bun monorepo and repo standardization for autofix/mise tasks/tools/script location/parallelism/etc
     1. homebrew-devsetup
     2. .github
     3. agents
@@ -300,39 +313,39 @@ needs more definition needs emphasis of learning based on what happened, not con
     6. all the nsheaps repos that publish to the homebrew tap
     7. all agent repos
        1. including moving them to `agent-$NAME` from `.ai-agent-$NAME`
-12. agent history standardization - from template repo, merge that remote into agent repos, template repo becomes source of truth, template repo includes github action workflow that on schedule AND on repo dispatch PRs pulling in the remote (and automerge configs).
+12. `E12`: agent history standardization - from template repo, merge that remote into agent repos, template repo becomes source of truth, template repo includes github action workflow that on schedule AND on repo dispatch PRs pulling in the remote (and automerge configs).
     1. This mechanism should be abstract from the agents monorepo
        1. Mechanism for source repo + dispatching event
        2. mechanism for destination repos for recieveing dispatch + PR creation/merge rules.
     2. (maybe consider if there's a way that renovate could help here instead of us creating the mechanism?)
-13. update claude to latest version with patch
-14. lets extract all of the conversations from claude code web, claude.ai (if possible)
+13. `E13`: update claude to latest version with patch
+14. `E14`: lets extract all of the conversations from claude code web, claude.ai (if possible)
     1. playwright, get all transport URLs, transport them all locally to get transcripts?
     2. Do not process them
     3. Extraction might need interactivity for me to log in, but it must be programatic, which basically means don't use the chrome integration, but look for things like agent-browse if llm needed, or how to extract data programattically from the pages if not (eg convert html to yaml, extract part of dataset, filter, transform whatever)
-15. lets extract all discord convos to file by date
+15. `E15`: lets extract all discord convos to file by date
     1. including #private-notes
     2. somehwere there's an idea written down about discord transcripts being per-channel-per-day like log rotate, that should be preserved.
-16. plugin dev
-17. lets make the task-utils have tools to extract the transcripts
+16. `E16`: plugin dev
+17. `E17`: lets make the task-utils have tools to extract the transcripts
     1. extract the transcripts using those tools
     2. part of monorepo ts, no bash
-18. let's clean up where we are in the issue migration and pr consolidation
+18. `E18`: let's clean up where we are in the issue migration and pr consolidation
     1. do the things in scratch.md after pr consolidation/merging so we don't duplicate work. issues may drastically change after this point
     2. Not all things in scratch.md should be done right now, "now we start building" is basically everything in the fuzzy line around the agent-controller move
-19. deep-research
-20. journal-utils
-21. skill-utils
-22. extract all journals (from tmp/docs, randomness) to new location, consolidating where possible
-23. extract skills from transcripts and archive transcripts (s3? nas?)
+19. `E19`: deep-research
+20. `E20`: journal-utils
+21. `E21`: skill-utils
+22. `E22`: extract all journals (from tmp/docs, randomness) to new location, consolidating where possible
+23. `E23`: extract skills from transcripts and archive transcripts (s3? nas?)
     1. make sure from the farish transcript get skills like:
        1. product-creating-new-products - part of product-utils
        2. eng-new-website
        3. eng-monorepos (making and maintaining)
           1. Lets make a template monorepo from the agents repo for re-use
        4. product-design-iteration
-24. all PRs are closed.
-25. validation check
+24. `E24`: all PRs are closed.
+25. `E25`: validation check
     1. security (keys, rotated? obfuscated?)
     2. docs (published? incl specs, how to? dev info?)
     3. github pages site for marketing landing
@@ -342,28 +355,28 @@ needs more definition needs emphasis of learning based on what happened, not con
 
 ==== now we start building ====
 
-26. let's sketch out settings/structure some more for agents monorepo (scratch, arch, private-notes, transcripts, etc)
-27. task out scratch.md major cleanup proper tasks everywhere
+26. `E26`: let's sketch out settings/structure some more for agents monorepo (scratch, arch, private-notes, transcripts, etc)
+27. `E27`: task out scratch.md major cleanup proper tasks everywhere
     1. issues on repos
        1. if agent repo, that's their internal tasks, doubly tracked in files committed to repo. Always updated via task-utils mcp server tool calls to update in sync. Blocked from being updated other ways, but can be read
        2. if not, that's a ticket. Stored locally for Explore, but otherwise the remote issue is the source of truth. Always updated with tools for the same reason, except those tools come from an mcp server on ticket-utils.
           1. default to github issues, but later pluggable for other backends like linear + just file based.
-28. One project plan to rule them all. GIthub issues sucks, is now the time for linear? github projects? Github is becoming more expensive, so maybe not github specific, but generating a whole new static site seems silly, git-as-a-backend with databases is a later project. Probably need to research and build out project-management skills before doing this to know how to have high level and low level views.
-29. vscode plugin for auto-commit honoring the .autosync.yaml file, published (separate repo?)
+28. `E28`: One project plan to rule them all. GIthub issues sucks, is now the time for linear? github projects? Github is becoming more expensive, so maybe not github specific, but generating a whole new static site seems silly, git-as-a-backend with databases is a later project. Probably need to research and build out project-management skills before doing this to know how to have high level and low level views.
+29. `E29`: vscode plugin for auto-commit honoring the .autosync.yaml file, published (separate repo?)
     1. docs on github pages for the file format?
     2. works on web vscode, folders, workspaces, etc, etc. Everywhere. No restriction. Polls for updates, but optionally (if supported)
        1. use github api to create webhook to smee.io proxy, connect js service to websocker using proxy to watch for events. (login with github + create it vs manual? repo-settings for us for now)
-30. lets make the migration to agent-controller, being run by tilt
-31. lets make tilt auto-update and show claude-stream'd logs from sessions (make sure it always follows)
-32. tilt + systemd? user? system? give them their own user?
-33. lets make tilt auto-update and show sub-agents
-34. lets make tilt auto-update and show teammates
-35. agent-cluster-controller and agent-system-controller + systemd services
-36. lets start making the web ui
+30. `E30`: lets make the migration to agent-controller, being run by tilt
+31. `E31`: lets make tilt auto-update and show claude-stream'd logs from sessions (make sure it always follows)
+32. `E32`: tilt + systemd? user? system? give them their own user?
+33. `E33`: lets make tilt auto-update and show sub-agents
+34. `E34`: lets make tilt auto-update and show teammates
+35. `E35`: agent-cluster-controller and agent-system-controller + systemd services
+36. `E36`: lets start making the web ui
     1. agent stream
     2. log stream
-37. abstract out teammates
-38. set up iac/proxmox/cloudflared/(?) proxmox autoconfig lxc?[^auto-agent] - must be done after system service migration
+37. `E37`: abstract out teammates
+38. `E38`: set up iac/proxmox/cloudflared/(?) proxmox autoconfig lxc?[^auto-agent] - must be done after system service migration
     1. proxmox nodes ansible-pull
     2. cloudflared
     3. proxmox api
@@ -375,9 +388,9 @@ needs more definition needs emphasis of learning based on what happened, not con
        1. arcane (+swarm?)
     8. agent lxc?
        1. ansible-pull?
-39. diy email
-40. arcane absorb portainer containers
-41. cept
+39. `E39`: diy email
+40. `E40`: arcane absorb portainer containers
+41. `E41`: cept
 
 [^scratch]: file:///home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/scratch.md
 
