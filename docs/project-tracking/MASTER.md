@@ -46,10 +46,10 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 7. 🆕 `I7`: spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
-
+7. individually check each list item recursively, make sure items that are rules are rules and tasks are tasks
 8. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.
 9. 🆕 `I9`: extract the project-tracking task skill stuff into scripts that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work
-10. 🆕 `I10`: Take another X number of passes at this doucument. Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one.
+10. 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one.
 11. 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md`
 12. The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
 13. create a hook in your config for userpromptsubmit post tool use and stop
