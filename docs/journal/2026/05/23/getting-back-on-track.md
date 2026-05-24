@@ -1,3 +1,16 @@
+<a id="rules"></a>
+
+# Rules (cross-cutting — apply to every section)
+
+These apply to ALL items in this document, regardless of which section they're in. Read these before working on anything.
+
+1. **Doc-first.** Every item needs a linked per-task doc at `docs/project-tracking/task-summary/<slug>.md` BEFORE any work begins. The doc captures deliverable, validation approach, implementation plan, and scope guardrails. No exceptions — including for items that look trivial.
+   - The per-task doc gets created when the item is linked from this list, not before.
+   - This rule is itself bootstrapped: items that establish doc structure (e.g. `#intro#1` defining the emoji key) can't require a doc about themselves — that's "doc bootstrap" and is the one allowed exception.
+   - Source: handler correction 2026-05-24 03:33Z after alex worked `#intro#2` without a per-task doc.
+2. **One in-flight at a time.** Don't work two items in parallel. Use `🚧` for the active one; everything else is `🆕` / `⏸️` / etc per the key.
+3. **Scope guardrails.** Per `#intro#8` sub-bullet "Do not let me increase scope" — any scope increase goes in the relevant per-task doc as an open question, NOT silently absorbed into the active work.
+
 <a id="intro"></a>
 
 # alex goes brrrrrrr
@@ -12,7 +25,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
    - ❌ killed / abandoned / wrong-shape
    - 🔁 retry / revisit (was attempted but needs another pass)
    - ❓ needs scoping (not yet broken down enough to start)
-2. 🚧 turn off agent teams and restart.
+2. 🚧 [turn off agent teams and restart.](../../project-tracking/task-summary/agent-teams-off.md)
 3. 🆕 spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
 4. 🆕 using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself.
 5. 🚧 fix the numbering in here before I go crazy. numbers don't matter, make them all have emoji for status. Define a key at the top level. Don't work on more than one. Move this entire thing to `nsheaps/agents/docs/project-tracking/MASTER.md`. You must start a doc for each one and link it from this list before doing anything, including work. Each of these gets a doc at `nsheaps/agents/docs/project-tracking/task-summary/TASK.md` TO BE CREATED ONLY WHEN YOU LINK IT.
