@@ -26,27 +26,28 @@
 - `<optional-number>` is appended ONLY when an item is broken down into atomic siblings — e.g. `intro-F1`, `intro-F2` are the breakdown of the original `intro-F`.
 
 **Why letters in creation order, not positional:**
+
 - Positional IDs (A=first, B=second) regress to the same problem as `#intro#N` — reorders break them.
 - Letters assigned at creation are stable. The visible list order is whatever it is; the anchor stays put.
 - We can track "next letter to assign per section" in a header comment in MASTER.md (`<!-- next-id: intro-G -->`).
 
 **Examples (creation-order assignment as of this writing):**
 
-| Item (intro section)                                          | List # now | Stable ID  |
-| ------------------------------------------------------------- | ---------- | ---------- |
-| turn off agent teams and restart                              | 1          | `intro-A`  |
-| fix numbering / MASTER.md migration                           | 2          | `intro-B`  |
-| migrate alex memory to repo                                   | 3          | `intro-C`  |
-| PreToolUse hook block .md writes                              | 4          | `intro-D`  |
-| project-tracking-workflow skill                               | 5          | `intro-E`  |
-| stable letter+number IDs (this task)                          | 6          | `intro-F`  |
-| spin down jack/henry                                          | 7          | `intro-G`  |
-| tmux fork/compact                                             | 8          | `intro-H`  |
-| extract project-tracking into scripts                         | 9          | `intro-I`  |
-| Take X passes                                                 | 10         | `intro-J`  |
-| INTAKE.md                                                     | 11         | `intro-K`  |
-| do-in-order / golden-child                                    | 12         | `intro-L`  |
-| task-utils maxInProgress config                               | 13         | `intro-M`  |
+| Item (intro section)                  | List # now | Stable ID |
+| ------------------------------------- | ---------- | --------- |
+| turn off agent teams and restart      | 1          | `intro-A` |
+| fix numbering / MASTER.md migration   | 2          | `intro-B` |
+| migrate alex memory to repo           | 3          | `intro-C` |
+| PreToolUse hook block .md writes      | 4          | `intro-D` |
+| project-tracking-workflow skill       | 5          | `intro-E` |
+| stable letter+number IDs (this task)  | 6          | `intro-F` |
+| spin down jack/henry                  | 7          | `intro-G` |
+| tmux fork/compact                     | 8          | `intro-H` |
+| extract project-tracking into scripts | 9          | `intro-I` |
+| Take X passes                         | 10         | `intro-J` |
+| INTAKE.md                             | 11         | `intro-K` |
+| do-in-order / golden-child            | 12         | `intro-L` |
+| task-utils maxInProgress config       | 13         | `intro-M` |
 
 (Other sections — farish-skills, ball-rolling/cleanup-prs, fix-reviews, dreaming, end-of-tonight — get their own letter spaces. Pre-existing items in each section are assigned A, B, C, … in current list order, since we have no other creation-order signal for them. From now on, new items in any section get the next free letter for that section.)
 
