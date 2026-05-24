@@ -1,5 +1,5 @@
 {
-  "description": "Task discipline: 0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites, PostToolUse auto-commit for built-in TaskCreate/TaskUpdate, throttled pre-write pull sync. SessionStart pre-warms the on-device MCP server build.",
+  "description": "Task discipline: 0-or-1 in_progress invariant (flat YAML store), write-tool gating, validation-steps + RESULT cites, PostToolUse legacy-sync + native-task advisory, throttled pre-write pull sync. SessionStart pre-warms the on-device MCP server build.",
   "hooks": {
     "SessionStart": [
       {
@@ -45,7 +45,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/task-auto-commit.sh",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/hooks/task-sync-from-legacy.sh",
             "timeout": 15
           }
         ]
