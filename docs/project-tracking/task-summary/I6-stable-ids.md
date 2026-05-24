@@ -1,7 +1,7 @@
 # Stable ticket-style IDs for MASTER.md items
 
 **Track-doc item:** `I6` — [`#intro` § I6](../MASTER.md#intro)
-**Status:** 🚧 in_progress
+**Status:** ✅ done
 **Owner:** alex
 
 ## Deliverable

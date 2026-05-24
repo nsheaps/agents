@@ -42,11 +42,12 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 3. ✅ `I3`: [Migrate alex memory files to repo `memory/` (was scattered under `$CLAUDE_CONFIG_DIR/projects/`).](./task-summary/I3-memory-migration-to-repo.md)
 4. ✅ `I4`: [Add PreToolUse hook blocking Write/Edit/MultiEdit to `$CLAUDE_CONFIG_DIR/projects/**/*.md`.](./task-summary/I4-block-claude-projects-md-writes.md)
 5. ✅ `I5`: [Capture the iterative-task-on-MASTER.md workflow as a reusable skill (`project-tracking-workflow`) in the alex repo. Bootstraps from Nate Discord 2026-05-24 04:21Z — the skill is itself created using the workflow it documents.](./task-summary/I5-project-tracking-workflow.md)
-6. 🚧 `I6`: [Apply stable ticket-style IDs (`I1`, `F1`, …) as bullet-prefixes + filename-prefixes to every tracked item in MASTER.md. Update all per-task doc back-references + Rules section refs to use the new IDs.](./task-summary/I6-stable-ids.md)
+6. ✅ `I6`: [Apply stable ticket-style IDs (`I1`, `F1`, …) as bullet-prefixes + filename-prefixes to every tracked item in MASTER.md. Update all per-task doc back-references + Rules section refs to use the new IDs.](./task-summary/I6-stable-ids.md)
 7. 🆕 `I7`: spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 7. individually check each list item recursively, make sure items that are rules are rules and tasks are tasks
+8. Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
 8. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.
 9. 🆕 `I9`: extract the project-tracking task skill stuff into scripts that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work
 10. 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one.
