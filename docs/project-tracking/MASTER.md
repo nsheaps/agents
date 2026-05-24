@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I27 -->
+<!-- next-id: I28 -->
 
 1. ✅ `I1`: [Turn off agent teams + restart](./task-summary/I1-agent-teams-off.md)
 2. ✅ `I2`: [Migrate track-doc to MASTER.md + status-emoji key + per-task doc convention](./task-summary/I2-master-md-migration.md)
@@ -44,11 +44,13 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 5. ✅ `I5`: [Capture project-tracking 7-step workflow as a reusable skill](./task-summary/I5-project-tracking-workflow.md)
 6. ✅ `I6`: [Stable ticket-style IDs for MASTER.md intro section (+ per-task doc filenames + cross-refs)](./task-summary/I6-stable-ids.md)
 7. ✅ `I14`: [Stable ticket-style IDs across all MASTER.md sections (expanded scope of I6)](./task-summary/I14-stable-ids-all-sections.md)
+8. 🆕 `I27`: [Audit I2–I14 per-task docs and backfill Original message sections](./task-summary/I27-backfill-original-message.md)
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
 7. 🆕 `I7`: spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
 8. `I15`: Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
+9. Now that we have a bit more definition to each section, lets also talk about the approach, then split them into actual sections with headers
 9. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.
 10. `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place.
 11. `I17`: We need to make sure batches of tool calls fail back into the conversation instead of completing the rest of the tool calls, AND/OR make sure any commit tool call is separate from the actual updates
