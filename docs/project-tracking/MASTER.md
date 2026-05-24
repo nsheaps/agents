@@ -49,21 +49,35 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
 7. 🚧 `I7`: [Spin down jack + henry, verify minimal 5m cron](./task-summary/I7-spin-down-peers.md)
+
+
+10. 🆕 `I29`: update rules for handling tasks here, if you see edits being made, stop editing and post in discord and wait for my okay
+15. 🆕 `I9`: extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work 10. make the task updating skill use context:fork
+
+
+
+11. define all repos in scope for this project tracking list in ./REPOS.md (needs Nate's eyes)
+12. 🆕 `I30`: commit outstanding work in agents, agent repos, ai-mktpl and other repos in REPOS.md
+
 8. `I15`: Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
 9. 🆕 `I28`: Now that we have a bit more definition to each section, lets also talk about the approach, then split them into actual sections with headers 10. Lets correct the cleanup section items to be in correct sections 11. propose a structure before making it 12. when you make it, update this to be a TOC to link to the other tracking docs per section, so you have smaller things to update
-10. 🆕 `I29`: update rules for handling tasks here, if you see edits being made, stop editing and post in discord and wait for my okay
-11. 🆕 `I30`: hoist committing outstanding stuff in nsheaps/agents up to here before doing other stuff
-12. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.
-13. `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place.
+   20. 🆕 `I12`: We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. 16. TODO: move to rules?
+   21. `I20`: all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place.
+
+
+16. 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one. 
+    7. individually check each list item in MASTER.md and it's subdocs recursively, make sure items that are rules are rules and tasks are tasks
+~~12. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.~~
+13. `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place. in agent-utils
 14. `I17`: We need to make sure batches of tool calls fail back into the conversation instead of completing the rest of the tool calls, AND/OR make sure any commit tool call is separate from the actual updates
-15. 🆕 `I9`: extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work 10. make the task updating skill use context:fork
-16. 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one. 7. individually check each list item recursively, make sure items that are rules are rules and tasks are tasks
-17. 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md` 12. The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
-18. `I18`: create a hook in your config for userpromptsubmit post tool use and stop
+
+17. 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md` 
+    12. The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
+18. `I18`: create a hook in ~~your config~~ ~~project-utils~~ word-vomit for userpromptsubmit post tool use and stop
     1. hash the intake file and save it somewhere. If it's different than the previous hash, tell the agent to use the 'processing-intake' skill, which you should add to the alex repo.
     2. hash the master file and remind if it has been updated
-    3. when master is updated remind to commit and push immediately.
-19. `I19`: create the processing-intake skill (later this will be part of word-vomit)
+    3. when MASTER.md or it's linked files is updated ~~remind to~~ commit and push immediately via a hook.
+19. `I19`: create the processing-intake skill
     1. If the user's thought is incomplete, wait for them to finish it by giving them a heredoc style identifier to write at the end. If you see the user writing, add a note to the top of the section with the indentifier that the user will need to write
        1. add another section before theirs for another message to intake
     2. When the user write the ending identifier, extract what they said to `docs/project-tracking/triage/$epochTimestamp-short-description-of-thing.md`
@@ -75,11 +89,16 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
        5. when triage is complete, document teh steps taken for triage, confirm all updates are properly linked to it, fix if not
        6. Move the triage task to `docs/project-tracking/triaged/$epochTimestamp-short-description-of-thing.md`
        7. Always try to leave things better than how you found it. If you fear that your change might not be well recieved (creates noise, isn't correct, etc) do some more research to increase your confidence. If you cant be confident enough, reach out to another agent or human for help.
-20. 🆕 `I12`: We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. 16. TODO: move to rules?
-21. `I20`: all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place.
-22. `I21`: define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
-23. `I22`: You'll need to use subagents HEAVILY for this (and you're encouraged to). We're gonna work sequentially, one at a time, not moving onto the next
-24. `I23`: Do not let me increase scope, any increase goes in the relevant doc. For now, you'll take notes in open qs in the scratch doc we'll discuss later.
+
+1. is this skill updates?
+   22. `I21`: define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
+       23. This lost context of it's surroundings and needs to be updated based on what it said in the git history around this request
+   23. `I22`: You'll need to use subagents HEAVILY for this (and you're encouraged to). We're gonna work sequentially, one at a time, not moving onto the next
+       24. rule?
+   24. `I23`: Do not let me increase scope, any increase goes in the relevant doc. For now, you'll take notes in open qs in the scratch doc we'll discuss later.
+       25. rule?
+
+1. split up C7 into many items
 
 25. `I24`: For now you'll (alex) be the golden child example of the working agent. We'll extract it out to a template later.
 26. `I25`: Take note of what the state of the review bot is in nsheaps/agents and other repos and let me know. Test it if you don't know
@@ -273,7 +292,7 @@ tasks:
 needs more definition needs emphasis of learning based on what happened, not continuing any work, including work that might also improve the agent. Don't duplicate that work, but if that work is in progress, it can be updated during dreaming. Don't start new already-scoped work. make sure to scope work before doing it.
 
 <!-- next-id: D3 -->
-
+0. pull in dreaming notes from scratch into the dreaming doc mentioned below
 1. 🆕 `D1`: Let's make the dream cycle described in the docs and run it once. read notes `/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/23/dreaming.md`
 2. 🆕 `D2`: Let's make a dream about XXX thing (one time, recurring R times, indefinitely, frequency)
    1. then force it to dream about cleaning up nate's user configs vs the agents
@@ -286,18 +305,13 @@ needs more definition needs emphasis of learning based on what happened, not con
 <!-- next-id: E42 -->
 
 1. `E1`: Lets make a template agent with our golden setup, make sure the review workflow works there
-2. `E2`: Lets set up repository-settings so you guys can configure the repos appropriately
-3. `E3`: Lets make the github secret sync workflow happen in iac. I want to deprecate the .github repo
+2. `E2`: Lets set up repository-settings so you guys can configure the repos appropriately. I'll need to add the app for you to the repos and set up codeowner so I can do it.
+22. `E22`: extract all journals (from tmp/docs, randomness) to new location, consolidating where possible
 4. `E4`: lets set up github notifications for discord <=> github repos through repository-settings github app to make repo webhooks (maybe later using iac or a github app)
 5. `E5`: [word-vomit plugin] Lets set up a mechanism for me to write random shit into a file that you guys watch and properly categorize and update it (file-utils from scratch[^scratch] to notify)
 6. `E6`: file-utils sync to s3?
    1. iac s3 setup?
       1. pulumi? cloudflare?
-7. `E7`: Lets replace the task tools with one that another session is working on in nsheaps/agents#157
-   1. and make it autosync to agent repo issues (and files) repo issues are just a viewer? maybe make a github pages viewer?
-   2. make it autosync tickets to .org repo
-   3. pull in agents#157
-   4. make tickets assignable to agents, tasks linkable to tickets, etc
 8. `E8`: lets make the launcher improvements discussed in the scratch doc, especially all the linking
 9. `E9`: tilt + litellm
    1. z.ai
@@ -315,7 +329,7 @@ needs more definition needs emphasis of learning based on what happened, not con
     6. all the nsheaps repos that publish to the homebrew tap
     7. all agent repos
        1. including moving them to `agent-$NAME` from `.ai-agent-$NAME`
-12. `E12`: agent history standardization - from template repo, merge that remote into agent repos, template repo becomes source of truth, template repo includes github action workflow that on schedule AND on repo dispatch PRs pulling in the remote (and automerge configs).
+12. `E12`: agent git history standardization - from template repo, merge that remote into agent repos, template repo becomes source of truth, template repo includes github action workflow that on schedule AND on repo dispatch PRs pulling in the remote (and automerge configs).
     1. This mechanism should be abstract from the agents monorepo
        1. Mechanism for source repo + dispatching event
        2. mechanism for destination repos for recieveing dispatch + PR creation/merge rules.
@@ -338,8 +352,8 @@ needs more definition needs emphasis of learning based on what happened, not con
 19. `E19`: deep-research
 20. `E20`: journal-utils
 21. `E21`: skill-utils
-22. `E22`: extract all journals (from tmp/docs, randomness) to new location, consolidating where possible
-23. `E23`: extract skills from transcripts and archive transcripts (s3? nas?)
+9. Lets make the statusline changes described in scratch.md
+23. `E23`: extract skills from transcripts and archive transcripts (s3? nas?). Must use sonnet for this task, and use programmatic tools to extract parts of the conversation, reformat for best token use, and then sonnet to orchestrate haiku to read them if necessary
     1. make sure from the farish transcript get skills like:
        1. product-creating-new-products - part of product-utils
        2. eng-new-website
@@ -352,7 +366,14 @@ needs more definition needs emphasis of learning based on what happened, not con
     2. docs (published? incl specs, how to? dev info?)
     3. github pages site for marketing landing
     4. wireframes
+    5. tickets updated, specs match arch docs match scratch match private-notes match issues etc and where they don't match the confusion is resolved and spec treated as source of truth with tickets linking to the spec?
 
+3. `E3`: Lets make the github secret sync workflow happen in iac. I want to deprecate the .github repo
+7. `E7`: Lets replace the task tools with one that another session is working on in nsheaps/agents#157
+   1. and make it autosync to agent repo issues (and files) repo issues are just a viewer? maybe make a github pages viewer?
+   2. make it autosync tickets to .org repo
+   3. pull in agents#157
+   4. make tickets assignable to agents, tasks linkable to tickets, etc
 ---
 
 # ==== now we start building ====
