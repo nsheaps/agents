@@ -48,7 +48,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
-7. 🆕 `I7`: spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
+7. 🚧 `I7`: [Spin down jack + henry, verify minimal 5m cron](./task-summary/I7-spin-down-peers.md)
 8. `I15`: Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
 9. 🆕 `I28`: Now that we have a bit more definition to each section, lets also talk about the approach, then split them into actual sections with headers 10. Lets correct the cleanup section items to be in correct sections 11. propose a structure before making it 12. when you make it, update this to be a TOC to link to the other tracking docs per section, so you have smaller things to update
 10. 🆕 `I29`: update rules for handling tasks here, if you see edits being made, stop editing and post in discord and wait for my okay
@@ -355,7 +355,7 @@ needs more definition needs emphasis of learning based on what happened, not con
 
 ---
 
-==== now we start building ====
+# ==== now we start building ====
 
 26. `E26`: let's sketch out settings/structure some more for agents monorepo (scratch, arch, private-notes, transcripts, etc)
 27. `E27`: task out scratch.md major cleanup proper tasks everywhere
