@@ -30,7 +30,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-1. ✅ [turn off agent teams and restart.](../../project-tracking/task-summary/agent-teams-off.md)
+1. ✅ [turn off agent teams and restart.](../../../../project-tracking/task-summary/agent-teams-off.md)
 2. 🆕 spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
 3. 🆕 using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself.
 4. 🚧 fix the numbering in here before I go crazy. numbers don't matter, make them all have emoji for status. Define a key at the top level. Don't work on more than one. Move this entire thing to `nsheaps/agents/docs/project-tracking/MASTER.md`. You must start a doc for each one and link it from this list before doing anything, including work. Each of these gets a doc at `nsheaps/agents/docs/project-tracking/task-summary/TASK.md` TO BE CREATED ONLY WHEN YOU LINK IT.
