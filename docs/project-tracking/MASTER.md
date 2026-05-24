@@ -96,7 +96,7 @@ tasks:
 
 <!-- next-id: C9 -->
 
-1. 🆕 `C1`: rename this plugin to `reddit` from reddit-fetcher https://github.com/nsheaps/agents/pull/166 get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
+1. 🆕 `C1`: rename this plugin to `reddit` from reddit-fetcher [PR #166](https://github.com/nsheaps/agents/pull/166) (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
 2. 🆕 `C2`: let's commit all the other changes to the agents repo to main. we're gonna make some rapid changes make sure it's in a clean state.
 3. 🆕 `C3`: Lets make sure anything that's easy to close PR wise on agents, agent repos, mktpl, tools, etc in the nsheaps org is closed. Most are not easy, but programatically dump it, then see if anything is relevant and easy.
 4. 🆕 `C4`: make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
@@ -125,9 +125,9 @@ tasks:
      errorSessions: ...
    ```
 
-5. 🆕 `C5`: fork hookify into our agents repo, as well as the sequential thinking mcp server and add the sequential thinking mcp to the agent-utils plugin
+5. 🆕 `C5`: fork hookify into our agents repo, as well as the sequential thinking mcp server and add the sequential thinking mcp to the agent-utils plugin _(partial: [`sequential-thinking`](https://github.com/nsheaps/ai-mktpl/tree/main/plugins/sequential-thinking) plugin exists in ai-mktpl but isn't bundled into agent-utils yet; hookify is upstream, no fork in nsheaps yet)_
 6. 🆕 `C6`: lets get a diff of all 3 agents, in a research doc. make an agent-drift plugin in nsheaps/agents. Post-tool-use cd into one of the agent repos, remind about the tracking doc, throttled to once every 5 minutes. Post edit tool use in one of the repos, remind about the tracking doc. Post tool use, stop, user prompt submit throttle 5m just pull the repo the tracking doc is in. If a tracked file changes post a reminder to the agent. Give the plugin a config of the repo, where it's checked out, the branch to commit to, and a list of files within to watch for changes after a git pull. If it ever tries to sync and the branch is wrong or a conflict happens, warn the agent
-7. 🆕 `C7`: alex is now a project-manager, software-eng, agent-eng, quality-eng, researcher, ... lets talk about what we have and what we should have.
+7. 🆕 `C7`: alex is now a project-manager, software-eng, agent-eng, quality-eng, researcher, ... lets talk about what we have and what we should have. _(related: [agents#115](https://github.com/nsheaps/agents/issues/115) — agent definitions from plugins)_
    1. lets do an audit of your persona and role config, I want to change it up.
       1. lets move the role definitions into `nsheaps/agents/lib/agent-roles/$roleName/ROLE.md`
       2. review the scratch file and get a rough outline of the plugins, and extract out roles, responsibilities, capabilities, etc from your persona
@@ -199,7 +199,7 @@ tasks:
       2. update skill-utils plugin to account for the idea that it's better to have a structured outline of skills you want without knowing how to do them (with the shell like above) than to have no skill at all
    5. confirm your project-manager role is all set up, and links appropriately
    6. using your new product skills, Lets reformat this file to be a table of contents to links tracking all of this work.
-8. 🆕 `C8`: Lets look through all those transcripts and items. it's a lot to look through and a lot to waste tokens on, which I don't want to quite yet, so we'll focus on dumping all the data, then targeted extraction of everything related to the henry review workflow
+8. 🆕 `C8`: Lets look through all those transcripts and items. it's a lot to look through and a lot to waste tokens on, which I don't want to quite yet, so we'll focus on dumping all the data, then targeted extraction of everything related to the henry review workflow _(related: [agents#117](https://github.com/nsheaps/agents/issues/117) — reusable review dispatch; substantial progress via [PR #160](https://github.com/nsheaps/agents/pull/160), [PR #164](https://github.com/nsheaps/agents/pull/164), and in-flight [PR #165](https://github.com/nsheaps/agents/pull/165))_
    1. We'll do that by writing a script to dump an entire transcript from a discord channel and we'll dump all the channels and all the threads
    2. We'll also write a script to dump files for all the issues and prs in every repo we've been working in
    3. We'll use programatic tools to look for mentions in those transcripts, claude transcripts, issues, etc, to get a comprehensive view of what we actually want to do with henry. For each mention we'll note which file and where, then we'll use sonnet agents to go Read the files and extract any useful info into summary files (with access to more before/after), then more sonnet agents to compile those iteratively into a comprehensive spec for the CI Review bot (both with the scope of henry, but noting that I think long term it's gonna be independent and all logic and review data shared in every agent)
