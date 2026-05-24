@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I28 -->
+<!-- next-id: I31 -->
 
 1. ✅ `I1`: [Turn off agent teams + restart](./task-summary/I1-agent-teams-off.md)
 2. ✅ `I2`: [Migrate track-doc to MASTER.md + status-emoji key + per-task doc convention](./task-summary/I2-master-md-migration.md)
@@ -50,18 +50,23 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 7. 🆕 `I7`: spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
 8. `I15`: Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
-9. Now that we have a bit more definition to each section, lets also talk about the approach, then split them into actual sections with headers
-10. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.
-11. `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place.
-12. `I17`: We need to make sure batches of tool calls fail back into the conversation instead of completing the rest of the tool calls, AND/OR make sure any commit tool call is separate from the actual updates
-13. 🆕 `I9`: extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work 10. make the task updating skill use context:fork
-14. 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one. 7. individually check each list item recursively, make sure items that are rules are rules and tasks are tasks
-15. 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md` 12. The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
-16. `I18`: create a hook in your config for userpromptsubmit post tool use and stop
+9. 🆕 `I28`: Now that we have a bit more definition to each section, lets also talk about the approach, then split them into actual sections with headers
+   10. Lets correct the cleanup section items to be in correct sections
+   11. propose a structure before making it
+   12. when you make it, update this to be a TOC to link to the other tracking docs per section, so you have smaller things to update
+13. 🆕 `I29`: update rules for handling tasks here, if you see edits being made, stop editing and post in discord and wait for my okay
+14. 🆕 `I30`: hoist committing outstanding stuff in nsheaps/agents up to here before doing other stuff
+9. 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.
+10. `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place.
+11. `I17`: We need to make sure batches of tool calls fail back into the conversation instead of completing the rest of the tool calls, AND/OR make sure any commit tool call is separate from the actual updates
+12. 🆕 `I9`: extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work 10. make the task updating skill use context:fork
+13. 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one. 7. individually check each list item recursively, make sure items that are rules are rules and tasks are tasks
+14. 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md` 12. The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
+15. `I18`: create a hook in your config for userpromptsubmit post tool use and stop
     1. hash the intake file and save it somewhere. If it's different than the previous hash, tell the agent to use the 'processing-intake' skill, which you should add to the alex repo.
     2. hash the master file and remind if it has been updated
     3. when master is updated remind to commit and push immediately.
-17. `I19`: create the processing-intake skill (later this will be part of word-vomit)
+16. `I19`: create the processing-intake skill (later this will be part of word-vomit)
     1. If the user's thought is incomplete, wait for them to finish it by giving them a heredoc style identifier to write at the end. If you see the user writing, add a note to the top of the section with the indentifier that the user will need to write
        1. add another section before theirs for another message to intake
     2. When the user write the ending identifier, extract what they said to `docs/project-tracking/triage/$epochTimestamp-short-description-of-thing.md`
@@ -73,16 +78,16 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
        5. when triage is complete, document teh steps taken for triage, confirm all updates are properly linked to it, fix if not
        6. Move the triage task to `docs/project-tracking/triaged/$epochTimestamp-short-description-of-thing.md`
        7. Always try to leave things better than how you found it. If you fear that your change might not be well recieved (creates noise, isn't correct, etc) do some more research to increase your confidence. If you cant be confident enough, reach out to another agent or human for help.
-18. 🆕 `I12`: We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. 16. TODO: move to rules?
-19. `I20`: all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place.
-20. `I21`: define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
-21. `I22`: You'll need to use subagents HEAVILY for this (and you're encouraged to). We're gonna work sequentially, one at a time, not moving onto the next
-22. `I23`: Do not let me increase scope, any increase goes in the relevant doc. For now, you'll take notes in open qs in the scratch doc we'll discuss later.
+17. 🆕 `I12`: We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. 16. TODO: move to rules?
+18. `I20`: all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place.
+19. `I21`: define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
+20. `I22`: You'll need to use subagents HEAVILY for this (and you're encouraged to). We're gonna work sequentially, one at a time, not moving onto the next
+21. `I23`: Do not let me increase scope, any increase goes in the relevant doc. For now, you'll take notes in open qs in the scratch doc we'll discuss later.
 
-23. `I24`: For now you'll (alex) be the golden child example of the working agent. We'll extract it out to a template later.
-24. `I25`: Take note of what the state of the review bot is in nsheaps/agents and other repos and let me know. Test it if you don't know
+22. `I24`: For now you'll (alex) be the golden child example of the working agent. We'll extract it out to a template later.
+23. `I25`: Take note of what the state of the review bot is in nsheaps/agents and other repos and let me know. Test it if you don't know
 
-25. 🆕 `I13`: Update task-utils to have a configuration to block or warn or quiet, something like
+24. 🆕 `I13`: Update task-utils to have a configuration to block or warn or quiet, something like
 
 ```yaml
 tasks:
