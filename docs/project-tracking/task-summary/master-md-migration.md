@@ -1,6 +1,6 @@
 # MASTER.md migration + numbering + key + rules sections
 
-**Track-doc item:** [`#intro#4`](../MASTER.md#intro)
+**Track-doc item:** [`#intro#2`](../MASTER.md#intro) (was #intro#4 before completed items were hoisted to actual completion order on 2026-05-24 04:05Z per `#rules#2`)
 **Status:** ✅ done
 **Owner:** alex
 

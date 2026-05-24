@@ -1,6 +1,6 @@
 # Block markdown writes under `$CLAUDE_CONFIG_DIR/projects/`
 
-**Track-doc item:** [`#intro#10`](../MASTER.md#intro)
+**Track-doc item:** [`#intro#4`](../MASTER.md#intro) (was #intro#10 before completed items were hoisted to actual completion order on 2026-05-24 04:05Z per `#rules#2`)
 **Status:** ✅ done
 **Owner:** alex
 

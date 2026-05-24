@@ -22,7 +22,11 @@ These apply to ALL items in this document, regardless of which section they're i
    - The per-task doc gets created when the item is linked from this list, not before.
    - This rule is itself bootstrapped: items that establish doc structure (e.g. the `# Key` section) can't require a doc about themselves — that's "doc bootstrap" and is the one allowed exception.
    - Source: handler correction 2026-05-24 03:33Z after alex worked `#intro#2` without a per-task doc.
-2. **Scope guardrails.** Per `#intro#7` sub-bullet "Do not let me increase scope" — any scope increase goes in the relevant per-task doc as an open question, NOT silently absorbed into the active work.
+2. **Work in document order. Reorder before deviating.** Items in each section are worked in the order they appear. If you need to work an item out of its current position, REORDER it in the doc FIRST (move it to the slot you actually intend to work it from), THEN start. Doc order = completion order.
+   - This applies to ordering between sections too — if a `#ball-rolling` item needs to happen before a `#intro` item, hoist it.
+   - Reordering is a small edit; do it without ceremony. The point is the doc always reflects what was/is happening.
+   - Source: handler correction 2026-05-24 04:03Z after alex worked `#intro#4` before `#intro#2` and `#3` without hoisting it.
+3. **Scope guardrails.** Per `#intro#9` sub-bullet "Do not let me increase scope" — any scope increase goes in the relevant per-task doc as an open question, NOT silently absorbed into the active work.
 
 <a id="intro"></a>
 
@@ -31,11 +35,13 @@ These apply to ALL items in this document, regardless of which section they're i
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
 1. ✅ [turn off agent teams and restart.](./task-summary/agent-teams-off.md)
-2. 🆕 spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
-3. 🆕 using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself.
-4. ✅ [fix the numbering in here before I go crazy. numbers don't matter, make them all have emoji for status. Define a key at the top level. Don't work on more than one. Move this entire thing to `nsheaps/agents/docs/project-tracking/MASTER.md`. You must start a doc for each one and link it from this list before doing anything, including work. Each of these gets a doc at `nsheaps/agents/docs/project-tracking/task-summary/TASK.md` TO BE CREATED ONLY WHEN YOU LINK IT.](./task-summary/master-md-migration.md)
-5. 🆕 Take another X number of passes at this doucument. Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one.
-6. 🆕 Create `nsheaps/agents/docs/project-tracking/INTAKE.md`
+2. ✅ [fix the numbering in here before I go crazy. numbers don't matter, make them all have emoji for status. Define a key at the top level. Don't work on more than one. Move this entire thing to `nsheaps/agents/docs/project-tracking/MASTER.md`. You must start a doc for each one and link it from this list before doing anything, including work. Each of these gets a doc at `nsheaps/agents/docs/project-tracking/task-summary/TASK.md` TO BE CREATED ONLY WHEN YOU LINK IT.](./task-summary/master-md-migration.md)
+3. ✅ [Migrate alex memory files to repo `memory/` (was scattered under `$CLAUDE_CONFIG_DIR/projects/`).](./task-summary/memory-migration-to-repo.md)
+4. ✅ [Add PreToolUse hook blocking Write/Edit/MultiEdit to `$CLAUDE_CONFIG_DIR/projects/**/*.md`.](./task-summary/block-claude-projects-md-writes.md)
+5. 🆕 spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
+6. 🆕 using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself.
+7. 🆕 Take another X number of passes at this doucument. Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one.
+8. 🆕 Create `nsheaps/agents/docs/project-tracking/INTAKE.md`
    1. The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
    2. create a hook in your config for userpromptsubmit post tool use and stop
       1. hash the intake file and save it somewhere. If it's different than the previous hash, tell the agent to use the 'processing-intake' skill, which you should add to the alex repo.
@@ -53,7 +59,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
          5. when triage is complete, document teh steps taken for triage, confirm all updates are properly linked to it, fix if not
          6. Move the triage task to `docs/project-tracking/triaged/$epochTimestamp-short-description-of-thing.md`
          7. Always try to leave things better than how you found it. If you fear that your change might not be well recieved (creates noise, isn't correct, etc) do some more research to increase your confidence. If you cant be confident enough, reach out to another agent or human for help.
-7. 🆕 We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established.
+9. 🆕 We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established.
    1. all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place.
    2. define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
    3. You'll need to use subagents HEAVILY for this (and you're encouraged to). We're gonna work sequentially, one at a time, not moving onto the next
@@ -61,20 +67,15 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
    For now you'll be the golden child. Take note of what the state of the review bot is in nsheaps/agents and let me know.
 
-8. 🆕 Update task-utils to have a configuration to block or warn or quiet, something like
+10. 🆕 Update task-utils to have a configuration to block or warn or quiet, something like
 
-   ```yaml
-   tasks:
-     maxInProgress: 3 # block setting another to in-progress if 3 are in progress
-     tooManyTasksLimit: 1 # print "blocK' on post tool use with warning about too many tasks in progress. Remind about delegating to subagent
-   ```
+```yaml
+tasks:
+  maxInProgress: 3 # block setting another to in-progress if 3 are in progress
+  tooManyTasksLimit: 1 # print "blocK' on post tool use with warning about too many tasks in progress. Remind about delegating to subagent
+```
 
-   make sure it's updated and doesn't block you from doing a few of these things at the same time.
-
-### Retroactive items (added 2026-05-24, work already done this session — tracked per `#rules#1`)
-
-9. ✅ [Migrate alex memory files to repo `memory/` (was scattered under `$CLAUDE_CONFIG_DIR/projects/`).](./task-summary/memory-migration-to-repo.md)
-10. ✅ [Add PreToolUse hook blocking Write/Edit/MultiEdit to `$CLAUDE_CONFIG_DIR/projects/**/*.md`.](./task-summary/block-claude-projects-md-writes.md)
+make sure it's updated and doesn't block you from doing a few of these things at the same time.
 
 <a id="farish-skills"></a>
 

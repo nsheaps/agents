@@ -1,6 +1,6 @@
 # Migrate alex memory files to repo `memory/`
 
-**Track-doc item:** [`#intro#9`](../MASTER.md#intro)
+**Track-doc item:** [`#intro#3`](../MASTER.md#intro) (was #intro#9 before completed items were hoisted to actual completion order on 2026-05-24 04:05Z per `#rules#2`)
 **Status:** ✅ done
 **Owner:** alex
 **Scope-increase note:** This item was added retroactively per Nate Discord 2026-05-24 03:57Z. Allowed because it prevents future drift (memory in claude-internal state isn't shareable as links).
