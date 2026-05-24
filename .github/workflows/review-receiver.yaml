@@ -11,12 +11,21 @@ name: Review Receiver (reusable)
 # Spec: plugins/claude-code/review-utils/specs/review-dispatch.md
 #       §Receiver-side-flow + §Final-CI-side-check-update
 #
-# Flow:
-#   1. Generate review App token (used to call back into consumer repo).
-#   2. Update the consumer-side check-run (created by decider) to in_progress
-#      "Review agent running...".
-#   3. Dismiss prior APPROVED reviews from this bot on the PR.
-#   4. Checkout the plugin contents (nsheaps/agents@plugin-ref).
+# 2026-05-23 redesign (Nate 18:08Z):
+#   - The receiver MUST NOT remove the trigger label. The label stays so
+#     subsequent PR events keep re-firing the dispatch.
+#   - `converted_to_draft` is a first-class event — handled by the `skip`
+#     job below: posts a `neutral` check + early-exits. The `review` job
+#     runs only for non-draft transitions.
+#   - Shell scripts >3 lines extracted to .github/scripts/review-receiver/.
+#
+# Flow (review job):
+#   1. Checkout the plugin contents (nsheaps/agents@plugin-ref) — must happen
+#      early so .github/scripts/review-receiver/ is available.
+#   2. Generate review App token (used to call back into consumer repo).
+#   3. Update the consumer-side check-run to in_progress "Review agent
+#      running...".
+#   4. Dismiss prior APPROVED reviews from this bot on the PR.
 #   5. Invoke the plugin's `run-agent` composite action.
 #   6. Read metrics yaml/json file emitted by the agent; fail if absent.
 #   7. Update the consumer-side check to terminal state (success/neutral/failure)
@@ -60,6 +69,16 @@ on:
         required: false
         default: 'main'
         type: string
+      trigger-event-action:
+        description: |
+          The `action` field from the consumer PR event that triggered the
+          dispatch (e.g. `opened`, `synchronize`, `labeled`,
+          `converted_to_draft`). The receiver short-circuits on
+          `converted_to_draft` — posts a `neutral` check and skips the
+          review. Empty string is treated as "review normally".
+        required: false
+        default: ''
+        type: string
     secrets:
       REVIEW_GITHUB_APP_ID:
         required: true
@@ -71,7 +90,53 @@ on:
         required: false
 
 jobs:
+  # converted_to_draft path — the PR is no longer ready for review.
+  # Post a `neutral` check on the consumer PR and exit early. We DO NOT
+  # touch the trigger label here (or anywhere) — label stays for the next
+  # PR event to re-fire the dispatch.
+  skip:
+    if: inputs.trigger-event-action == 'converted_to_draft'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
+    concurrency:
+      group: review-receiver-${{ inputs.source-repo }}-${{ inputs.source-pr-number }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Build details_url
+        id: ctx
+        run: echo "details_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+
+      - name: Parse consumer owner
+        id: consumer
+        run: echo "owner=$(echo '${{ inputs.source-repo }}' | cut -d/ -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate review App token
+        id: auth
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ steps.consumer.outputs.owner }}
+
+      - name: Update check (neutral — PR converted to draft)
+        uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ inputs.source-repo }}
+          check_id: ${{ inputs.check-run-id }}
+          status: completed
+          conclusion: neutral
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"PR converted to draft — review skipped","summary":"The PR moved back to draft state. The review agent will re-evaluate when the PR is marked ready for review again."}
+
+  # Normal review path. Runs for every dispatch EXCEPT converted_to_draft.
   review:
+    if: inputs.trigger-event-action != 'converted_to_draft'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -84,20 +149,21 @@ jobs:
     steps:
       - name: Build details_url
         id: ctx
-        run: |
-          echo "details_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+        run: echo "details_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
 
-      # Compute consumer-repo owner/name from source-repo input. The App
-      # token needs the consumer owner so checks/reviews can be posted back.
       - name: Parse consumer owner
         id: consumer
-        run: |
-          owner="${{ inputs.source-repo }}"
-          owner="${owner%%/*}"
-          name="${{ inputs.source-repo }}"
-          name="${name#*/}"
-          echo "owner=$owner" >> "$GITHUB_OUTPUT"
-          echo "name=$name" >> "$GITHUB_OUTPUT"
+        run: echo "owner=$(echo '${{ inputs.source-repo }}' | cut -d/ -f1)" >> "$GITHUB_OUTPUT"
+
+      # Checkout the plugin contents from nsheaps/agents@plugin-ref so we
+      # can invoke (a) its composite action and (b) the extracted scripts
+      # under .github/scripts/review-receiver/.
+      - name: Checkout plugin (nsheaps/agents)
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          repository: nsheaps/agents
+          ref: ${{ inputs.plugin-ref }}
+          path: agent-repo
 
       - name: Generate review App token
         id: auth
@@ -119,35 +185,15 @@ jobs:
           output: |
             {"title":"Review agent running...","summary":"Reviewing on ${{ github.repository }} runners."}
 
-      # Dismiss prior APPROVED reviews from this bot so the PR can't merge on
-      # a stale approval. Keep REQUEST_CHANGES + COMMENT reviews intact.
+      # Dismiss prior APPROVED reviews from this bot so the PR can't merge
+      # on a stale approval. Keep REQUEST_CHANGES + COMMENT reviews intact.
+      # Logic in .github/scripts/review-receiver/dismiss-prior-approvals.sh.
       - name: Dismiss prior approval reviews
         env:
           GH_TOKEN: ${{ steps.auth.outputs.token }}
           SOURCE_REPO: ${{ inputs.source-repo }}
           PR_NUMBER: ${{ inputs.source-pr-number }}
-        run: |
-          set -euo pipefail
-          # Find approval reviews by this App's bot account.
-          bot_login=$(gh api user --jq '.login')
-          reviews_json=$(gh api "repos/${SOURCE_REPO}/pulls/${PR_NUMBER}/reviews?per_page=100")
-          approval_ids=$(echo "$reviews_json" | jq -r --arg login "$bot_login" \
-            '.[] | select(.user.login == $login and .state == "APPROVED") | .id')
-          for rid in $approval_ids; do
-            echo "Dismissing approval review $rid"
-            gh api -X PUT "repos/${SOURCE_REPO}/pulls/${PR_NUMBER}/reviews/${rid}/dismissals" \
-              -f message='Dismissed: new commits since last approval require re-review.' \
-              -f event='DISMISS' || true
-          done
-
-      # Checkout the plugin contents from nsheaps/agents@plugin-ref so we can
-      # invoke its composite action.
-      - name: Checkout plugin (nsheaps/agents)
-        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
-        with:
-          repository: nsheaps/agents
-          ref: ${{ inputs.plugin-ref }}
-          path: agent-repo
+        run: bash agent-repo/.github/scripts/review-receiver/dismiss-prior-approvals.sh
 
       # Invoke the plugin's run-agent composite. It owns the actual review:
       # auth, checkout consumer repo, claude-code-action with plugins, finalize.
@@ -181,62 +227,15 @@ jobs:
           anthropic-api-key: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
           claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
-      # Read the metrics file the agent must emit. Spec §Receiver-side-flow
-      # bullet 6: stop is rejected if data not written. We treat absence as a
-      # failure so the check ends in failure rather than silently approving.
-      - name: Read agent metrics
-        id: metrics
-        env:
-          METRICS_PATH: ${{ runner.temp }}/review-metrics.yaml
-        run: |
-          set -euo pipefail
-          if [ ! -f "$METRICS_PATH" ]; then
-            # Look for json variant too.
-            json_path="${METRICS_PATH%.yaml}.json"
-            if [ -f "$json_path" ]; then
-              METRICS_PATH="$json_path"
-            else
-              echo "::warning::No metrics file at $METRICS_PATH or $json_path"
-              echo "verdict=unknown" >> "$GITHUB_OUTPUT"
-              echo "follow_ups=0" >> "$GITHUB_OUTPUT"
-              echo "missing=true" >> "$GITHUB_OUTPUT"
-              exit 0
-            fi
-          fi
-          verdict=$(grep -E '^verdict:' "$METRICS_PATH" | sed 's/^verdict:[[:space:]]*//' | tr -d '"' || echo unknown)
-          follow_ups=$(grep -E '^follow_ups:' "$METRICS_PATH" | sed 's/^follow_ups:[[:space:]]*//' || echo 0)
-          echo "verdict=${verdict:-unknown}" >> "$GITHUB_OUTPUT"
-          echo "follow_ups=${follow_ups:-0}" >> "$GITHUB_OUTPUT"
-          echo "missing=false" >> "$GITHUB_OUTPUT"
-
-      # Map verdict → check_run conclusion.
-      - name: Compute check conclusion
+      # Read the metrics file the agent must emit + compute the check_run
+      # conclusion + title. Spec §Receiver-side-flow bullet 6: stop is
+      # rejected if data not written. Logic in
+      # .github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh.
+      - name: Read metrics + compute conclusion
         id: conclusion
         env:
-          VERDICT: ${{ steps.metrics.outputs.verdict }}
-          FOLLOW_UPS: ${{ steps.metrics.outputs.follow_ups }}
-          MISSING: ${{ steps.metrics.outputs.missing }}
-        run: |
-          set -euo pipefail
-          if [ "$MISSING" = "true" ]; then
-            echo "conclusion=failure" >> "$GITHUB_OUTPUT"
-            echo "title=Review agent finished but metrics missing" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          case "$VERDICT" in
-            APPROVE|approve)
-              echo "conclusion=success" >> "$GITHUB_OUTPUT"
-              echo "title=The agent approved this PR. $FOLLOW_UPS follow-ups found." >> "$GITHUB_OUTPUT"
-              ;;
-            REQUEST_CHANGES|request_changes|reject)
-              echo "conclusion=failure" >> "$GITHUB_OUTPUT"
-              echo "title=The agent rejected this PR. $FOLLOW_UPS follow-ups found." >> "$GITHUB_OUTPUT"
-              ;;
-            COMMENT|comment|*)
-              echo "conclusion=neutral" >> "$GITHUB_OUTPUT"
-              echo "title=The agent finished. $FOLLOW_UPS follow-ups found." >> "$GITHUB_OUTPUT"
-              ;;
-          esac
+          METRICS_PATH: ${{ runner.temp }}/review-metrics.yaml
+        run: bash agent-repo/.github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh
 
       - name: Update check (terminal)
         if: success()

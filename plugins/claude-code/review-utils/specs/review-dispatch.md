@@ -28,6 +28,8 @@ DRAFT — landing alongside implementation in PR #165 per the spec-with-impl dir
 
 **Supersedes:** the post-[PR #164][^pr164] in-process executor (where the review ran on `nsheaps/agents` runners under a generic bot identity). The framing message[^framing] established that the reviewer-as-henry framing is authoritative: the review is henry's work product, executed in henry's repo, under henry's identity.
 
+**2026-05-23 redesign (Nate 18:08Z[^redesign-18-08z]):** dispatch is simplified to "post pending check + fire repo dispatch" — the CI-settled gate evaluation moves out of the decider. Triggering is reframed as "assigned and reviewable" — the dispatch fires on the union of PR-event types listed in [§Trigger events](#trigger-events-consumer-side) provided the PR is open and labelled (label name configurable via `inputs.request-label`). Two important invariants this redesign adds: (1) **the decider DOES NOT remove the trigger label** — the label stays so subsequent PR events keep re-firing the dispatch; the receiver dismisses prior approvals but never touches the label. (2) **`converted_to_draft` is a first-class event** — the receiver short-circuits with a `neutral` check rather than running a review the PR is no longer ready for. The pre-redesign "Dispatch gate" section is preserved below as struck-through historical context until the matching workflow rewrite (PR #165 step 2) lands.
+
 ### Implementation map
 
 | Section                                         | File(s)                                                                                                                  |
@@ -369,6 +371,8 @@ Bundled into PR #165 (this PR) unless noted otherwise.
 [^asciimermaid]: Discord [msg 1507427456334954659](https://discord.com/channels/1490863845252665415/1497431286661517353/1507427456334954659) (Nate, 2026-05-22 16:58Z) — _"alex I also see some ascii flow diagrams, use mermaid diagrams for that"_ — drove the ASCII-→-mermaid topology rewrite.
 
 [^impldirective]: Discord [msg 1507428091616694393](https://discord.com/channels/1490863845252665415/1497431286661517353/1507428091616694393) (Nate, 2026-05-22 17:01Z) — _"Alex once you move it, please keep going, write the spec (and keep it up to date with references to where things are implemented and sources used for research (and links to research docs), in the right place, then add the functionality defined in the spec in the same PR."_ — scoped this PR to include implementation alongside the spec.
+
+[^redesign-18-08z]: Discord [msg 1507807485438726204](https://discord.com/channels/1490863845252665415/1497431286661517353/1507807485438726204) (Nate, 2026-05-23 18:08Z) — direct ping to alex with the redesign brief: drop the gate, simplify dispatch to "post pending check + fire repo dispatch", reframe trigger as "assigned and reviewable" (no longer "request-review label only"), receiver MUST NOT remove the label, `converted_to_draft` short-circuits with neutral check + early exit, scripts >3 lines extracted to proper files, open Q on run-agent harness necessity.
 
 [^q7]: Discord [PR #165 inline comment](https://github.com/nsheaps/agents/pull/165#discussion_r0) (Nate, 2026-05-22 17:09Z) — _"Q: should we avoid approving if other reviewers/commenters left valid feedback that MUST be addressed before merging? Should the review agent have to agree with that other feedback before approving/if it's confident that the other statement is incorrect to approve it anyway?"_ — added as Open Question 7.
 
