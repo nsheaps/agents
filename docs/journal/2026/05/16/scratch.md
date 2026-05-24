@@ -7,15 +7,19 @@
 
 # see also
 
-- [ARCHITECTURE_DRAFT.md](/home/nsheaps/src/nsheaps/agents/ARCHITECTURE_DRAFT.md)
-- [docs/scratch.md](/home/nsheaps/src/nsheaps/agents/docs/scratch.md)
-- [this file](/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/scratch.md)
+- [ARCHITECTURE_DRAFT.md](file:///home/nsheaps/src/nsheaps/agents/ARCHITECTURE_DRAFT.md)
+- [docs/scratch.md](file:////home/nsheaps/src/nsheaps/agents/docs/scratch.md)
+- [this file](file:////home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/scratch.md)
 - [docs/journal/2026/05/16/managing-Tasks.md](/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/managing-Tasks.md)
-- [ai-mktpl/plugins/agentic-behavior/README.md](/home/nsheaps/src/nsheaps/ai-mktpl/plugins/agentic-behavior/README.md)
+- [ai-mktpl/plugins/agentic-behavior/README.md](file:////home/nsheaps/src/nsheaps/ai-mktpl/plugins/agentic-behavior/README.md)
 - ai-mktpl
 - [#private-notes](https://discord.com/channels/1490863845252665415/1497804459496046632)
+- [farish project prompt](file:///home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish-app.md)
 
 # open ?
+- should we have a template submodule in the agents monorepo? or separate repo? (separate repo)
+- Should we have a template repo for setting up the bun/nx monorepo style (YES)
+- should we have a template repo for setting up a new agent (YES, discussed elsewhere too)
 - every bullet with a ? or (?)
 - [PostToolBatch](https://code.claude.com/docs/en/hooks#posttoolbatch)? most hooks should proooobably be this?
 - we probably should split agent-controller and agent-mcp-service and if launched without agent-controller wrapper it launches it anyway (mcp <> agent controller <> cluster controller), but it would be nice if we didn't need to launch another process...
@@ -30,7 +34,29 @@
 - After all these changes, do we actually have iterative instructions, like break down the task, start with an outlike, collect sources, state theories, etc?
 - We need to track mods/divergences better
 - still having token refresh issues
-  - Agents are getting around it rather than fixing it
+  - Agents are getting around it rather than fixing it, and worse, not reporting it
+- It's rare that an agent starts up and _actually_ has no work to do, this is happening too often
+- what if you put yaml in the rules folder?
+- dir pattern based rules? like hookify? (hooks are still better)
+  - markdown docs with frontmatter with glob pattern
+  - on cwd change, if glob match, link rules to rules folder, maybe also post message into convo
+    - would this apply to all running sub-agents then?
+    - Maybe a way to get around, agent repo becomes user config (basically how it is today), but instead, launch the session from a known session dir/temp dir, so things can be installed and uninstalled per-session.
+  - add ability for org to define rules, for instance
+    - When you CD into a folder that contain files matching the target (works best if you force read/write tooling to only accept files in the cwd, never absolute paths, forcing the agent to cd to the directory first)
+      ```markdown
+      target: **/.claude/skills/*/SKILL.md
+      ---
+      - For our org, skill files must contain frontmatter, even if it's not technically required.
+      ```
+  - Why?
+    1. is abstract from the agent harness. Dir based rules require a CLAUDE.md in the dir
+    2. Rule files don't have to live in the repo, an org can share many
+  - Why not?
+    1. constant rule changing changes earlier parts of the transcript and requires a full uncached response
+       possible mitigations:
+       - inject rules into the convo after changing directory instead of into the rules folder 
+- 
 
 # milestones
 
@@ -67,17 +93,37 @@
   - All agents have push permissions to each other
 - ~~discord avatars match github app avatars~~
   - Discord and github have the profile pics from within their repo
-- bin/agent is just a symlink to nsheaps/agents/apps/agent-cli/scripts/deprecated-agent <======== CRITICAL
+  
+- ▶️ bin/agent is just a symlink to nsheaps/agents/apps/agent-cli/scripts/deprecated-agent <======== CRITICAL
 
-- make nsheaps/agents a proper claude marketplace, port marketplace tasks and ci workflows from ai-mktpl to agents
+- ▶️ make nsheaps/agents a proper claude marketplace, port marketplace tasks and ci workflows from ai-mktpl to agents
 
-- Set up $AGENT_DIR env var to ~/.agents/
-- create ~/.agents/.skills to ~/src/nsheaps/.org/skills
-- create $agentRepo/.claude/skills to ~/src/nsheaps/.org/skills
-- create ~/.agents/.org to ~/src/nsheaps/.org
-- create ~/.agents/.research and symlink agentRepo/docs/research to ~/.agents/.research/$agentName?
+- ▶️ the launcher logs and the initial prompt is missing the "running claude --arg1 --arg2... stuff", but appears in the console
+
+- discord webhook + github app webook permissions + make jack set up project-notifs/#repo-name notifications
+  - somehow don't let agents get these? Maybe a quiet-list in the plugin where they never get notifications? From a category? room naming pattern?
+- task-utils
+  - Don't allow task rename with monitoring or agent if that monitor or agent doesn'te xist, don't allow other types.
+- nsheaps/agents nx monorepo setup.
+  - Standardize on:
+    - lint
+    - format
+    - test
+    - build
+    - release
+    - run (production mode)
+    - run-dev
+  - Always try to autofix
+    - Git hooks are helpful, but prefer dev client/agent harness hooks to apply fixes after writes instead. Githooks get in the way of saving things and getting them off computer
+    - Fix in CI
+    - Prefer to not rebase, else the autofixes get a little annoying
+    - autofixes getting overwritten isn't the end of the world, next commit would also be auto-fixed
+- Set up $AGENT_DIR env var to ~/.agents/ tbd agent-controller behavior
+- create ~/.agents/.skills to ~/src/nsheaps/.org/skills tbd agent-controller behavior
+- create $agentRepo/.claude/skills to ~/src/nsheaps/.org/skills tbd agent-controller behavior
+- create ~/.agents/.org to ~/src/nsheaps/.org tbd agent-controller behavior
+- create ~/.agents/.research and symlink agentRepo/docs/research to ~/.agents/.research/$agentName? tbd agent-controller behavior
 - ~~the launcher logs still don't show the startup prompt sent to the agent (obviously without the logs)~~
-- the launcher logs and the initial prompt is missing the "running claude --arg1 --arg2... stuff", but appears in the console
 - We should make bin/agent work better:
   - if a boot loop is detected before claude successfully launches, increment a counter and print a warning in the launcher logs with how many times it's been restarted before the next attempt to start it
   - setup of $AGENT_HOME_DIR should symlink $AGENT_HOME_DIR/.source to the agent repo, and set $AGENT_REPO to be to the symlink
@@ -92,12 +138,11 @@
    - ~~ ~/.agents/.org/tasks, ~/.agents/.tasks,~~ $AGENT_HOME_DIR/.tasks -> $AGENT_HOME_DIR/.claude/tasks/agent-tasks + CLAUDE_CODE_TASK_LIST_ID="agent-tasks" agents have their own Tasks
    - always continue (if possible), but also when session starts, esp if continue, immediately perform a compaction (postcompacthook/sessionstart:compact would remind to setup the crons and stuff again?), then a fork, so a new session starts with a clean history (and perhaps a record of the fork)
      - (?) What does the forked transcript actually look like?
-- all agents have the same plugins
-- It's rare that an agent starts up and _actually_ has no work to do, this is happening too often, update the initial prompt
 - agent consistency audit doc is re-verified.
   - Establish new verification skill (work with, but don't duplicate (extract where necessary) the validation steps in task-utils task management skill) that describes how to add test results to a test plan, including the date and the agent that executed it, so when we re-validate something the agent can doubly verify that the previously validated thing is _still_ true. This is extremely useful for test plans, which should be extracted from tasks where appropriately so they can be re-run. Test plans should be written in skill format and use `context: fork`. Maybe into ~/.agents/.skills?
-
-
+  - all agents have the same plugins
+- don't wait for handler approval
+- each agent repo should be it's own marketplace as well (by directory mapping), so stuff can be written in a quickly hoistable way
 ## single point going forward
 - multiple repos is hurting us. We will consolidate most things into nsheaps/agents, but that will come at a later (but soon) point. For now, we can load plugins using a path relative to a marketplace. Make sure plugin development skills are used frequently, guide the agent to use a worktree to make the changes, add a $marketplaceName-dev marketplace using a local directory path to the git worktree on the agent that is being used for testing and make changes that way so the validation loop is faster and before pushing the plugin and opening a PR.
   - For now, any plugin development happens by ensuring agents have a "dev" version of the marketplaces, which is a directory version, pointed at the worktree that they're doing their changes in. Runtime refreshes allow them to test functionality immediately, without interrupting other agents (if possible). Other agents can also point to that directory and do a runtime update. Sometimes a restart is necessary.
@@ -127,12 +172,22 @@
 >   </agent-harness-settings>
 > </system>
 
+- task-utils
+  - Disallow running Agent or Monitor outside of an active task
+  - track monitors and crons
+  - disallow naming task with monitor or agent on something that doesn't exist
 
 ## henry/CI review workflow clean up work - make reviews happen on all PRs
 - find the in flight PRs for fixing henry and get those merged and properly validated
 - label changes for assignment and requesting review
 - repo dispatch
+  - Autoassign
+  - Label creation triggers the review run
 - move review skill to agents repo/make sure skill works
+  - plugin code-review
+    - uses deep-research (dependency) skills for collecting info
+    - /code-review:generate-report
+  - idea: other kinds of review
 - PR review text should go into nsheaps/.ai-agent-henry/docs/prs/$org/$repo/$prNumber/ and be re-used between reviews
 - review should only run review after all CI completes successfully (or a specified list)
 
@@ -166,7 +221,6 @@
 
 ## better system visibility
 
-
 - for every agent, lets update the statusline by making our own statusline plugin in nsheaps/agents similar to ai-mktpl's statusline plugin and how it sets itself up, I want to see
   - teams is claude's agent-teams
   - $SESSION_STATUS is from $CLAUDE_CONFIG_DIR/.claude/sessions/$pid.json
@@ -176,16 +230,36 @@
     - if cwd is not a git repo, print absolute path, but if /a/b/c/d/e/f/g parts are on the path, truncate with ... c/d (save first 2 and last 3):
     - for context, have a mapping of model names to context size, and honor the env var to overwrite auto-compaction context size for the actual size and %
     - the [SSSTTTCCCCCCCCC] should be different colors (using ansi) and different ascii characters (for different patterns/opacities for when color is insufficient) that shows the breakdown of sections of the context used by different pieces (system prompt, tools, conversation, free space, etc). Use /context for inspiration with colors and symbols, and make it as wide as possible (using tput or COLUMNS or whatever to ensure it's the correct width)
-  > $AGENT_NAME ($AGENT_HOME_DIR) <$GIT_AUTHOR_EMAIL> | Teams: (ON|OFF)
-  > claude($PID, v=$CLAUDE_VERSION)://$SESSION_ID | Status: $SESSION_STATUS | Model: $MODEL (effort: $MODEL_EFFORT)
+    - The emoji before the name indicates the status as indicated by $CLAUDE_CONFIG_DIR/sessions/$CLAUDE_PID.json
+      - 🧑‍💻 Agent status is "working"
+      - ⏸️ Agent status is "idle"
+    - Later we'll add a second emoji:
+      - :brain: thinking
+      - :pencil: using built-in edit tools
+      - :hammer: using mcp tools
+      - :eyes: using built-in read tools
+      - :2 people: using an Agent tool
+    - And when execution is getting wrapped in a skill
+      - :mind-blown: using a skill (+ 1 emoji between status and active work)
+  > ▶️ $AGENT_NAME ($AGENT_HOME_DIR) <$GIT_AUTHOR_EMAIL> | Teams: (ON|OFF)
+  > claude($CLAUDE_PID, v=$CLAUDE_VERSION)://$SESSION_ID | Status: $SESSION_STATUS | Model: $MODEL (effort: $MODEL_EFFORT)
   > Ctx: 248k/500k (49.6%) [SSSTTTCCCCCCCCCFFFFFFFFF]
-  > Last updated: $RFC_3339_DATETIME_LOCAL_TZ
+  > Updated: $RFC_3339_DATETIME_LOCAL_TZ
   > $REPOANDBRANCH_OR_PATH
+  - When a restart is requested, the updated line instead shows as:
+    > Updated: $RFC_3339_DATETIME_LOCAL_TZ | Pending restart (6m 20s ago)
 
 - We need to start a pattern in ai-mktpl and agents, where plugins can provide a 'maintenance' hook, and prior to version bumping in CI each plugin gets it's maintenance hooks run. This lets plugins package stuff into their distribution as part of the release process. In the future, this potentially needs to happen after mono repo build processes, and can potentially bloat the repo.
 
 ## agentic behavior iteration
+- when you get feedback don't just take note, audit all the rules and skills and see what contradicts it and where it should really go.
+  - If you're corrected on it 2+ times your previous attempts weren't a good enough solve, keep trying to make it better
+    - remember what to prefer the most:
+    - plugins > local config
+    - hooks > forked skills > agents with hooks > agents > skills > rules
+- default 5m cron, make sure work continues, make sure to re-read and evaluate your role to make sure you're performing your responsibilities well. If you haven't done anything in 30m and it's during working hours, consider trying to continue working on tasks in your list
 - hooks
+  - stop - no stopping without a monitor or active agents if you have tasks?
   - stop + task -> complete
     - task-is-task-really-done
       - Does it actually work? Have you tested it? Did you document your test plan before you tested it? Did you mark your test results in the appropriate ticket? Is all the code pushed? Is the PR updated? Is there any other feedback on the PR or in chat you should be responding to?
@@ -200,6 +274,8 @@
 - (?) a role might define what you do within an organization, but not what you apply that to. We should have an OrgRole within each agent for each role that the agent can read (not a rule) and update that can add extra color. For instance, you might be a software-eng, but your orgrole states that you work on specific repos, and the tech-lead role orgrole mapping would then say which repos you're an authority on. Or another example would be focusing info, such as a designer role, and adding color that we're targeting specific devices for the designs.
   - Skills described in all of these milestones should support and encourage the use of these
 - (agentic-behavior) (perhaps as an agent-manager role?) When you ask an agent to perform a procedure, you need to be extra specific, so each agent does it exactly the same way. Remove any ambiguity possible, including by nature of providing them a shared script to run and generate the needed data, otherwise you'll end up with different results and it makes result comparison harder.
+- When an agent is asked "you should do x" or "this is yours", or any statement declaring ownership, responsibilities, capabilities, etc, the agent's role definition needs to be updated so that the agent doesn't forget.
+  - If the assignment of the responsibility or capability is temporary it needs to be marked as such with an expiration (required)
 - agentic-behavior needs to encourage:
   1. discovery of a procedure or updates to an existing procedure to help accomplish a task
   2. how to update skills to document that procedure and encourage it's recall
@@ -236,7 +312,7 @@
     - Turning it "on" means setting the env var before launching claude (in 1pass ENVIRONMENT), and including extra skills for guidance on using teammates vs Agent()s
   - it's unclear how channels work in this context
   - it's hard to follow all of them
-
+- when an agent is running a tool/skill to manage another agent's state, it should get a temporary event stream subscription that injects channel messages of the agent's runtime status "shutting down, tmux gone, pending, initalizing, running" etc so it doesn't need to keep querying for what the tmux pane looks like
 
 
 ## renovate config for monorepo and agents
@@ -251,6 +327,8 @@
   - the agent should review it's interactions in it's transcripts, especially failures, or times it needed to go back to fix something it thought was correct the first time.
     - most things will come in via channels, so the transcripts have everything, but sometimes you'll need to query external sources, eg the ci logs for a job that failed but you didn't look at prior, maybe you'll find a better way in hindsight
   - make another plugin that does the same thing but for org-wide behaviors, also performing evaluation of the proposed PRs against other seen behaviors in the org, comaprison against known issues and ongoing incidents, thorough reviews against best practices and org policies, etc. All agents can inspect and understand their own setup, and try to improve themselves internally, and ask for improvements from agent-engineers. Agent-engineers can make the changes to themselves and other agents (when permitted by the agent-manager)
+  - maybe cycle should work like sequential thinking with "more thoughts required" sort of thing, where it can iteratively do it?
+  - should always be a review of tasks done that day, ESPECIALLY changes to agent or harness configuration
 
 ## agent-cli migration - run agents using the ts cli from nsheaps/agents instead of bin/agents within each repo
 
@@ -316,6 +394,36 @@
 - maybe agent system controller or cluster controller spawns a system agent instead of requesting help from other agents
   - that system agent can figure out what the agent was doing before calling for help, and routing to the correct conversation
 
+## define config schemas
+
+- $AGENT_HOME_DIR/.agent.yaml symlink to $agentRepo/agent.yaml - manage the agent definition
+  - agentName
+  - agentHarness (only claude)
+  - working hours
+- $AGENT_HOME_DIR/.agent-state.yaml symlink to $agentRepo/agent-state.yaml - generally managed by agent-controller or agent-mcp-service or hooks
+  - active main session id + path
+  - active subagents + paths
+  - active teammates + paths
+  - recently active ^
+  - active task (+assignments) + metadata
+    - active task PRs
+    - active task branches
+    - active task commits
+    - active task active branch info
+    - active-worded version of task description
+  - recently active tasks (+assignments)
+  - recently closed tasks (+assignments)
+  - tool call counts
+    - Bash gets subcategories (configurable)
+      - calls with &&/||/;
+      - calls with 'git'
+      - calls with 'gh'
+      - calls with 'cat'
+  - skill call counts
+- $AGENTS_DIR/.agents.yaml
+
+- update/push sync those on _every_ change, through automation. If conflicts happen frequently, maybe change to a file based instead of yaml based approach, so each independent session can add and remove stuff for itself without them all editing files at the same time
+
 ## ============= code is now primarily typescript/built bun libraries =============
 
 ## create specs for architecture-draft, iterate on the specs without implementation until no more improvements can be found
@@ -338,7 +446,7 @@
 
 - On hooks, programatic + natural language search using haiku to find relevant research, memory entries, docs, repos, etc.
   - nice to have, embeddings based similarity search on literally everything.
-- make a giant graph
+- make a giant graph, maybe web UI to browse it?
 - personal memory should be personal to the agent
 
 ## tilt setup to manage controllers directly using agent-controller instead of bin/agent (temporarily agent-cli from a prior milestone)
@@ -350,27 +458,21 @@
 - scripts to programatically generate it, including generating graphs
 - markdown files in repo constantly get updated with new collected metrics (collected client side from transcripts, which should not be committed) so metrics can be browsed in repo (linked from root readme).
 
-## ============= plugin updates =============
-## scm-utils
-- $DEFAULT_CHECKOUT_DIR (~/src/) always holds the default branch checkout for every repo
-- hook
-  - pretooluse
-    - write/edit tools
-      - if the repo's branch restrictions enforce PRs (gh api), hooks in claude prevent checkouts on the default branch from having changes made to them
-    - git checkout
-      - force worktrees. If claude-teams mode is enabled, then make sure one teammate per worktree
-        - (?) should we use built in worktree management or our own?
-        - (?) git spice?
-        - (?) can multiple agents use the same worktree at the same time? do we need a lock (symlink to the session.json ?)
-          - What about a review agent and an eng agent, maybe they _SHOULD_ be able to work on the same wokrtree so even un-committed files for the review with details is viewable by eng without querying github?
-    - post tool use on git push, check for PR, print PR state (conflicted, mergeable, ci status, review status, assignee, reviewers, PR body last updated, PR title)
-- make gs-stack-status work with vanilla git by finding the stacks by finding shared history and determining the stack ourselves (or using github api or both)
-- make scm-utils repo like claude-utils for scm-related scripts
-  - github-specific only because that's what I'm doing, but should otherwise be generic if possible
-  - use tools from here (that aren't nsheaps/agents specific) to help with hooks in the plugin, rather than directly adding scripts in the plugin.
-  - maybe...prefer bun/ts over bash scripting? like nsheaps/agents? maybe similar monorepo pattern?
+## categorize stars
+- review https://github.com/nsheaps?tab=stars
+- add a ton of tags to each, make a tag cloud, make a github pages browser, and a way to traverse the graph of topics
+- add skills to use these as inspiration for our tasks.
 
-## skill-utils plugin
+## ============= plugin updates =============
+
+## file-utils
+- either mcp or hook based
+- tools
+  - watch file/dir
+    - allow an agent to watch a file and get a notification when it changes (recurring or onetime)
+
+
+## skill-utils
 - configurable hook, on session start, symlink a dir from a marketplace into the user skills dir to enable sharing?
 - We need a way for agents to discover and dynamically use plugins from the known marketplaces, so they can search for skills they don't have, install them, perform the task, then remove them (or install them in a forked ephemeral context in some way). Lets create a plugin-utils plugin that gives agents tools for finding, inspecting (plugin info from marketplace and local configs/state), adding, removing, updating (from a marketplace) plugins (separate from our plugin-dev plugin fork). All agents should have this plugin. Make it in nsheaps/agents. When agents use these tools, they must specify if the addition of the tool is temporary (eg goes into settings.local.json) or permanent (goes into <agent-repo>/.claude/settings.json and trickles into $AGENT_HOME_DIR/.claude/settings.json). Needs a way to also enable a sub-agent to have a plugin that others do not. Make sure skills appropriately reference sections in claude docs that would help act as supplements, like https://code.claude.com/docs/en/plugin-marketplaces#manage-marketplaces-from-the-cli
   - Note: plugins can be installed and updated at runtime, skills are dynamically loaded, and we should consider running skills in a forked context. Rules are dynamically loaded. Settings files are dynamically reloaded. (according to docs), agent files are not.
@@ -439,6 +541,11 @@
         - skill-select: make skill for selecting the right skill (also used if *-select didn't find relevant skills) before executing a task (use ripgrep + explore agent to quickly scan all tool skills without damaging context?)
         - skill-protocol
           - basic rundown of skill.md, and links to agentskills.io
+        - skill-cant-isnt-an-option - when the agent thinks it can't do something run this skill. Useful for "I can't do that" but triggering a recall "but I have done that before, how did I do that", even though it doesn't "remember" that it did it before.
+          - (?) better to be part of memory?
+        - skill-making-privelidged-skills-and-agents
+        - skill-using-agent-hook-post-tool-use-and-subagentstop-to-verify-outputs-against-examples
+          - maybe not a skill, but since we want to keep examples in their own file(s) outside of the skill, we can easily say PostToolUse launch an agent to verify that the skill outputted what the skills example outputs say it should (or shouldn't) look like
       - tool skills - skills for use before calling a tool to provide info on how to effectively use the tool
         - tool-manage
         - tool-search
@@ -519,7 +626,7 @@
 
   - provide compaction rules to never preserve skill content
     - replace with Skill(skill-name, execution_logs=./path/to/extracted/logs.log)
-      - If compaction output prompt (the one that starts the new conversation in the same session) is a summary, it should include a list of all the skills used since the last compaction (or, configurably, in the session as a whole, both can be queried using a skill(? or tool?))
+      - If compaction output prompt (the one that starts the new conversation in the same sessifon) is a summary, it should include a list of all the skills used since the last compaction (or, configurably, in the session as a whole, both can be queried using a skill(? or tool?))
       - If compaction output prompt is a paraphrased conversation history (eg the output of `claude-stream`, do the replacement inline.
   - add hooks for 
     - pre-compact to generate a summary of how the skills were used and how to query the skill uses
@@ -532,6 +639,280 @@
     - (?) consider dynamic skill loading, both from cwd, and dynamic loading from .claude folders, for the use of "find a skill, load it, execute it, then unload it"
     - the library of skills loaded into an agent is essentially a wiki of skills, maybe the org should have skills too but I think it'd be better for it to be in a plugin unless the skill is org specific and doesn't need the other aspects of a plugin
 - enable in all agents
+
+## Skill format syncing
+
+- define a schema (where needed) for how we want to format skills. ow we generate/update/use the schema should be part of skill-utils, but the schema should be defined in nsheaps/agents:docs/specs/docs/skills.md as something an agent could use during the QA process to validate the skill against the desired state (which could be in another repo).
+- Some suggestions:
+  - skill naming
+  - how to write a disambiguation skill
+  - sizes of skills
+  - what they should contain + what they shouldn't contain
+    - should
+      - References to other skills that could be read
+    - shouldn't
+      - @References to documents that don't need to be directly in the skill
+- this should also be referenced/linked/copied in the plugin-dev plugin, as it strongly affects our development of other plugins and skills
+
+## scm-utils
+- $DEFAULT_CHECKOUT_DIR (~/src/) always holds the default branch checkout for every repo
+- hook
+  - pretooluse
+    - write/edit tools
+      - if the repo's branch restrictions enforce PRs (gh api), hooks in claude prevent checkouts on the default branch from having changes made to them
+    - git checkout
+      - force worktrees. If claude-teams mode is enabled, then make sure one teammate per worktree
+        - (?) should we use built in worktree management or our own?
+        - (?) git spice?
+        - (?) can multiple agents use the same worktree at the same time? do we need a lock (symlink to the session.json ?)
+          - What about a review agent and an eng agent, maybe they _SHOULD_ be able to work on the same wokrtree so even un-committed files for the review with details is viewable by eng without querying github?
+    - post tool use on git push, check for PR, print PR state (conflicted, mergeable, ci status, review status, assignee, reviewers, PR body last updated, PR title)
+- make gs-stack-status work with vanilla git by finding the stacks by finding shared history and determining the stack ourselves (or using github api or both)
+- make scm-utils repo like claude-utils for scm-related scripts
+  - github-specific only because that's what I'm doing, but should otherwise be generic if possible
+  - use tools from here (that aren't nsheaps/agents specific) to help with hooks in the plugin, rather than directly adding scripts in the plugin.
+  - maybe...prefer bun/ts over bash scripting? like nsheaps/agents? maybe similar monorepo pattern?
+  - binaries for git-sync? daemon?
+  - maybe gitplusplus
+    - can be installed globally as a tool but can be enabled per-repo or globally
+    - take .gitplusplus folder, define hooks per folder, rather than in repo, not attached to husky
+    - Can set up auto-sync for a specific folder
+      ```yaml
+      # yaml-language-server: https://nsheaps.github.io/schemas/gitplusplus-config.json
+      # $repoRoot/../nested/dir/.gitplusplus/config.yaml - commited
+      autosync:
+        # disabled by default
+        enabled: true
+        # how often to git pull, pull happens immediately before push
+        # polling is done with a gitlock and debounced across other checkout users
+        # when gitplusplus is installed, git (global?) config gets an alias for smartpull
+        # smartpull notes when the last time the repo was pulled, and skips if too recent
+        # since pull is repo-wide (unless git submodule), the smallest interval across
+        # all configs is used.
+        pollInterval: 1m
+        # maybe we can support pushing stuff to a different branch? maybe it can auto-setup submodules?
+        # upstreamBranch:
+        commit:
+          onePerFile: true
+          # -1 = manual push
+          # 0 = push immediately after all work is done
+          # # = seconds to wait after final commit before pushing, must be less than poll interval
+          #   If more changes are detected after the wait period, those are committed and the wait begins
+          #   again, even if previous changes haven't been pushed yet.
+          pushAfterSec: 0
+          # always push after each commit (default false to save CI)
+          # incompatible with pushAfterSec
+          onePushPerCommit: false
+          # if a file move is detected, it commits the file move without changes before committing any other changes
+          movesAreAtomic: true
+          message: # or a string, if not provided it is "chore(sync): `gitplusplus sync` (from $USER@$HOSTNAME)"
+            # instead of a boring message, would be more like:
+            #   chore(sync): update docs/path/to/file.md (from $USER@$HOSTNAME)
+            #   chore(sync): moved docs/path/to/file.md (from $USER@$HOSTNAME)
+            #   chore(sync): created docs/path/to/file.md (from $USER@$HOSTNAME)
+            # incompatible with onePerFile=false, since add/update/delete might not always be the same action across multiple files
+            generateBasedOnAction: false 
+            generateWithCommand: true # incompatible with generateBasedOnAction for obvious reasons
+      commit:
+        generateCommand: >
+          claude -p --agent=commit-generator --model=haiku
+            "investigate git diff and generate a commit message for these changes"
+            '--allowedTools=Bash(git:*),Read,Grep,Agent,Skill,WebSearch,WebFetch,Bash(gh pr view:*)'
+            '--disallowedTools=Bash(git commit:*)'
+      warnIfGitPlusPlusNotSetupInGlobalGitConfig: false
+      ```
+    - With shell setup, like direnv or mise, auto-commit can happen automatically on commit, and auto pull by a daemon (like auto-git-sync)
+    - maybe define codeowners per folder and not platform specific (and allows codeowners for apps)
+    - PR aware tools, plugin ecosystem, like share PR status after commit
+    - Good to keep divorced from claude hooks
+    - easier to integrate into github plugin
+    - later nsheaps/cept will provide a nice UI for auto-syncing but a CLI will still be handy for the automated environments
+
+## review-utils
+- separate from scm utils, lots of things need reviews
+- review-code is something every agent should be able to do themselves
+- (?) should reviews be shared? If they are should they still be per agent?
+- (?) should the review be handled by an agent persona?
+  - pro:
+    - synced data to that agent (including transcripts?) would allow them to talk about it
+  - con:
+    - if CI does it, and the review content is shared (including transcripts?) does it make sense to focus on a single persona? In theory agents can review their own code, but there's a number of difficulties including approving your own code
+- (?) should the review be run in CI?
+  - Pro:
+    - can scale to as many reviews as needed
+  - Con: cross machine coordination might be hard 
+
+## agent-utils
+- hooks
+  - SessionStart
+    - do all the symlinking the launcher does
+- be tolerant to missing config
+  - Don't run proceesses that rely on the agent being defined until it is defined
+- On session start/prompt submit guide the agent (maybe this should be a different plugin altogether):
+  > You have been started using an agent-management framework but an agent hasn't been defined yet.
+  > This is either a configuration error, or a user is setting up the agent for the very first time.
+  > Details will be provided in Skill(agent-first-time-setup), which you can read after you get the agent's name and repo.
+  > You will prompt the user iteratively for the following questions (example responses provided):
+  > > Hey it looks like you're setting up an agent for the first time (no agent.yaml detected)
+  > > If this is a mistake, exit the agent and fix the configuration before continuing.
+  > > Continuing this process will set up a new agent on your system to run as a service:
+  > >   Ubuntu/Debian -> systemd
+  > >   other linux   -> linuxbrew service/unsupported
+  > >   macOS         -> brew service
+  > >   Windows/WSL   -> Unsupported
+  > > CLI tool use is maintained by mise, which will be installed if not already present on the machine.
+  > > CLI tools will be installed into the agent's home directory.
+  > > Q. Where does your agent's configuration git repo live (local path, git repo URL, or org/repoName (github only))?
+  > >  > nsheaps/.ai-agent-jack
+  > > ...checking repo...
+  > > (discovered origin:https://github.com/nsheaps/.ai-agent-jack)
+  > > agent.yaml found!
+  > > Setting up agent with that configuration...DONE
+  > > Setting up system service to run the agent (your authorization may be required)...DONE
+
+  - if a repo was provided as a path, it might look like:
+    > > Q. Where does your agent's configuration git repo live (local path, git repo URL, or org/repoName (github only))?
+    > >  > .
+    > > ...checking repo...
+    > > (discovered origin:https://github.com/nsheaps/.ai-agent-jack)
+    > > agent.yaml found!
+
+  - if a repo was provided but the agent.yaml couldnt be found:
+    > > (discovered origin:https://github.com/nsheaps/.ai-agent-jack)
+    > > agent.yaml MISSING!
+    > > Q. What is your agent's name?
+    > >  > Jack
+    > > creating an agent.yaml in .ai-agent-jack that looks like this:
+    > > ```yaml
+    > > agent: 
+    > >   name: alex
+    > >   remote: https://github.com/nsheaps/.ai-agent-jack
+    > > ```
+    > > running $ git add 'agent.yaml' && git commit -m 'chore(agent-first-time-setup): add agent.yaml'
+  <!-- later we will support a path within the repo as well -->
+  - if no repo was provided it should fatally error
+
+  - Configure org info
+    - symlink rules
+    - symlink skills
+    - set up plugin marketplace
+
+  - Once the agent.yaml is in place, we need to register this agent on this machine:
+    > > Adding Agent Jack to the machine's agent manifest (/home/nsheaps/.agents/.manifest.yaml)
+
+    It should then create the file looking like:
+    ```yaml
+    agents:
+      jack:
+        # the agent is run from it's repo dir, which is assumed based on cloneInAgentHome and defaultCloneDir
+        # but effectively always runs from ~/.agents/$AGENT_NAME/.source/
+        # TODO: Should it????????? Maybe it should sync everything to the user settings and run from an empty temp dir?
+        agentHome: /home/nsheaps/.agents/jack/
+        agentRemote: https://github.com.com/nsheaps/.ai-agent-jack
+        # true = checks out the repo to $AGENT_HOME_DIR/.source 
+        # false = checks out the repo to the defaultCloneDir and symlinks it there
+        cloneInAgentHome: true
+        enabled: false
+    # TODO BEFORE IMPLEMENTATION: Move this to another file
+    # and make each agent able to overwrite it
+    # and add repo support for agent config (org > repo > agent)
+    # maybe this is part of plugin configs?
+    # maybe these are part of the agent-utils plugin configs?
+    config:
+      orgRemote: https://github.com.com/nsheaps/.org
+      defaultCloneDir: /home/nsheaps/src
+      cloneInOrgFolder: true
+      # disallow checking out other branches and enforce the use of worktrees
+      # the skill is always available, but this forces them to use it
+      # changes are still allowed on the default branch
+      enforceWorktreesForBranches: true
+      # disallow changes on the default branch by agents, even if the remote doesn't disallow it
+      # when combined with worktrees, this enforces all changes to be on a branch in a worktree
+      # this disallows edit tools and commits but can't stop other mechanisms
+      enforceChangesOnBranches: true
+    ```
+      - if an agent.yaml wasn't already found, we should install the default set of plugins from nsheaps/agents
+        - TODO: Define somewhere in nsheaps/agents, but configurable
+        - if the default list changes, the agent (controller?) needs to install those (and prune ones that were removed!)
+          - This means we need to be able to build the desired list of nsheaps/agents + org + agent so we can properly prune others (honoring dependencies)...so agents need to define their plugins in their agentrepo/.claude/settings.json, and they're warned about modifying agenthomedir/.claude/settings.json, but if handled by automation that ends up containing the ones from the org + agent monorepo as well
+  - Then we need to know if the user wants the agent enabled, odds are yes!
+    > > Q. Do you want to enable this agent to run at system start (before login)?
+    > >  > y
+
+    - Setting up the system service may require credentials escalation. If it does, the agent should run a command that pops open a graphical sudo dialog, since that won't work in the agent prompt
+      > > I need extra permissions in order to register the agent as a system service.
+      > > I'll only save it in memory and use it to register the agent to run, which will run
+      > > as your user on this machine, nsheaps
+      > > Popping open a credential escalation prompt...
+      > > Thanks! Making the system service now...
+      > > System service made and enabled!
+      And then update .manifest.yaml to enable the agent if the service was created successfully
+
+    - It's okay to not set up the system service
+  - Then we need to see if they want the agent started. The current session only initializes it
+    > > Q. Do you want to daemonize the agent right now?
+    > >  > y
+
+    - If the system service was set up, start it
+    > > Starting the service...
+    > > System service started successfully!
+    - else use `daemonize` (https://github.com/bmc/daemonize) to launch the foreground process and disown it from claude.
+      - Disowning moves the PID parent to process 0, which is initd or systemd on most linux systems.
+    > > Starting the service...
+    > > Started daemonized process successfully!
+    > > WARNING: Because no system service was set up, this daemon will exit when the system shuts down, or the agent decides to exit.
+    > >   When the system is turned back on, you can start the agent using:
+    > >   > agent start jack
+    > >   or run in the foreground using:
+    > >   > agent run jack
+
+  - Finally we need to tell the user how to interact with the agent
+    > > DONE! Your agent is ready for you to use!
+    > > New agents don't come with any plugin configuration except those needed by the agent management system.
+    > > To talk to your agent, run this command:
+    > >  > agent attach jack
+    > > You will be greeted with a familiar interactive interface running your specific agent.
+    > > Your agent will keep running if you close the window but not if you use Ctrl+C
+    > > You can also detatch from your agent by pressing Ctrl+B , then D
+    > > 
+    > > This agent is running in a shell which:
+    > >  - Shares your $HOME directory
+    > >  - Has it's own directories (and thus configs) for:
+    > >    - CLAUDE_CONFIG_DIR
+    > >    - GH_CONFIG_DIR
+    > >    - GIT_GLOBAL_CONFIG
+    > >    - XDG_HOME
+    > >    - XDG_CACHE
+    > >    - ... whatever the accurate list is ...
+    > >  - It's runtime also generates an app token and refreshes it, differently than how user auth works
+    > > You won't be able to act as the agent in your normal shell. To do something as the agent, run it like so:
+    > >  > agent exec # launch a shell as the agent (with a custom prompt) by sourcing the activate script
+    > >  > agent exec -- ...cmd... # run the command as the agent
+    > >
+    > > Since the agent is running elsewhere, I'm going to exit this session so I don't accidentally use your user configs!
+
+  - Now use /agent-utils:force-exit to exit this claude session before things get wonky
+
+  - when the agent is running in the correct environment, it now has independent claude configs. It can now ask about setting up channels interactively. It should do these in order:
+    1. secrets management (only 1pass supported right now)
+       1. Check which vaults have access and whether ro or rw
+          1. If ro, point user to docs on setting up ENVIRONMENT
+             1. Set agent self-management capability to include agent-using-ro-secrets, which is a skill in agent-utils
+          2. if rw, state that secrets will be managed automatically by the agent. Link to docs for more info
+             1. Set agent self-management capability to include agent-using-rw-secrets, which maps to a skill in agent-utils
+    2. Chat channels (only discord right now, if none, remind how to connect to agent to talk)
+       1. Enter discord credentials
+       2. Discord guided setup (skill provided by chat-utils plugin, and installs discord plugin)
+    3. Org configurations (if provided, add org-utils plugin)
+       1. Guided setup if none exists
+    4. SCM provider configuration (only github-app right now)
+       1. Guided setup if none exists
+    5. Other recommended plugins from the nsheaps/ai-mktpl and nsheaps/agents marketplace which might contain skills and roles
+   
+  - once the basic configuration is done, the agent should restart (and let the user witness) to install those plugins automatically with the correct setup
+  - Once started, assuming github and discord app setup went correctly
+  
+
 
 ## hook-utils
 
@@ -547,7 +928,9 @@
 
 
 ## task-utils
-- stop hook should prevent stop if a task is in progress.
+- stop hook should prevent(?) stop if a task is in progress.
+  - at least remind agent to keep driving tasks to completion?
+  - (?) do this on crons?
 - automatically track using hooks and direct manipulation of task files, and improve the use of tasks in relation to skills:
   - tools used by count in the description of the task when a task is active
   - an event log of work done in the task:
@@ -567,6 +950,8 @@
     - use a cursor to tail the transcript since the last extract via hook so as not to read the whole transcript each time
     - include subagents and teammates transcripts in teh task (each teammate's task-utils writes into the task folder)
     - When task status is changed to completed or pending, ensure all collected transcripts have a plaintext version generated by claude-stream/agent-stream
+    - maybe this should be in `context-utils` or `transcript-utils` plugin instead, since we also want to extract from other sources
+      - and we want it to be reusable?
   - don't allow tasks to be deleted. Instead intercept any tool call that tries to set to deleted and mutate it so it's completed with a [deleted] prefix in the name, and print a warning to the agent with a note about what mutation was done
 - Make it auto-sync up to github issues? work with ticketutils?
   - use gh websocket streaming to get events for label add for assignment/comments to sync down?
@@ -577,6 +962,39 @@
 - (?) tasks should not be allowed to be started unless there's a blocks or blocked by. Since almost all tasks stem from a breakout task, those get the natural ordering (and should be set on creation). For those that truely have no blockers, they can be set to blockedBy #1, a special task we'll manage.
 - Task start/stops should get unique TaskWork UUIDs that map to the convo chunks, and can be used in references on tickets
 - on task update maybe use a haiku agent to summarize the current state of the task in 5 sentences, 4, 3, 2, and 1 sentence.
+
+## contact-utils
+
+- there's been discussion elsewhere about how this should work
+- something something shared contacts folder, org structure, auto-sync
+
+## deep-research
+- See claude managed agents, theres an agent template for deep research
+- Reddit is an increasingly important source for understanding how to do things. I think there was a PR to make a plugin for that, what happened to it? Can we get it installed on all agents?
+
+## github
+- getting notified about updates
+  - using PAT, check notifications endpoint, pipe to channel?
+  - periodically check open PRs and issues for user (author/assign/review), compute hash, if hash changes notify. Don't add too much, but maybe add info about the events?
+    - ci status
+    - comments
+    - reviews
+    - assign events
+    - PR body updated
+  - for reviewers, maybe debounce updates? What about CI review workflow?
+- hooks
+  - pretooluse
+    - posting a github review/comment
+      - block if content is the same as review already on there
+  - 
+## github-app
+
+- Using github app, do webhook event stream?
+
+## plugin-utils + plugin-dev
+- We need to fork the plugin-dev and other claude plugin/mcp/skill/hook/etc plugin into our agents monorepo so we can add our flair to it and use it critically for our plugin validation. Alex and Jack should have the plugin
+  - this should be combined with deep-research and strong use of claude-code-guide agent to consult best practices for plugin development, noting the source's age in relation to the version of claude code
+  - for plugin-dev, skill writing should call out that things like references that are mentioned multiple times in a skill should use the github footnote format to define the reference. For those that are shared between skills, use a yaml file as a structured way of holding the references, and use a footnote to reference it in the file. For instance the shared agent consistency audit doc.
 
 ## ticket-utils
 
@@ -620,44 +1038,20 @@
     - delegate to context:fork skill, reject message if no response needed 
       - trigger a hook with a mini agent that gets the previous messages from the channel
       - if it's not directed at the agent it rejects eg for cron fires that don't need any action to prevent the perpetual "no action to take" response. Instead "no action"s can be removed from the context until action should be taken (with a logged record outside of the conversation context)
+- (later) channel-compat layer that utilizes hooks to inject the messages
+  - known unknown: don't know how to get messages from mcp server without intercepting them/mcp gateway (not sure if channels emit something somewhere, but since we're using all of our own we can force them to (or maybe use a nix file socket to send messages to and the compat layer gets them that way?))
 
-## contact-utils
-
-- there's been discussion elsewhere about how this should work
-- something something shared contacts folder, org structure, auto-sync
-
-## deep-research
-
-- Reddit is an increasingly important source for understanding how to do things. I think there was a PR to make a plugin for that, what happened to it? Can we get it installed on all agents?
-
-## github
-- getting notified about updates
-  - using PAT, check notifications endpoint, pipe to channel?
-  - periodically check open PRs and issues for user (author/assign/review), compute hash, if hash changes notify. Don't add too much, but maybe add info about the events?
-    - ci status
-    - comments
-    - reviews
-    - assign events
-    - PR body updated
-  - for reviewers, maybe debounce updates? What about CI review workflow?
-- hooks
-  - pretooluse
-    - posting a github review/comment
-      - block if content is the same as review already on there
-  - 
-## github-app
-
-- Using github app, do webhook event stream?
-
-## plugin-utils + plugin-dev
-- We need to fork the plugin-dev and other claude plugin/mcp/skill/hook/etc plugin into our agents monorepo so we can add our flair to it and use it critically for our plugin validation. Alex and Jack should have the plugin
-  - this should be combined with deep-research and strong use of claude-code-guide agent to consult best practices for plugin development, noting the source's age in relation to the version of claude code
-  - for plugin-dev, skill writing should call out that things like references that are mentioned multiple times in a skill should use the github footnote format to define the reference. For those that are shared between skills, use a yaml file as a structured way of holding the references, and use a footnote to reference it in the file. For instance the shared agent consistency audit doc.
-
-
-## archiver plugin
+## doc-utils / archiver plugin
 
 - (?) we need a new plugin: archiver. It uses a stop hook to ensure claude transcripts are copied to a known, dated,protected location, where deletion is prevented. This will allow us to clear AGENT_HOME_DIR more frequently without losing the transcripts for later analysis
+- need a compress transcript tool
+  - programatically (+ai) extract to file and replace with references:
+    - Tools: any tool response
+    - Memories: 
+      - Light: compress thoughts longer than 4 sentences by running it through haiku to summerize
+      - Med: summarize all thoughts from light during each task execution to be one thought per task max 15 sentences
+      - Heavy: summarize thoughts from medium to to be 5 sentences (1 per category) or less, utilizing context from surrounding tasks (what I did/what I will do/what went well/what went wrong/my feelings during it)
+      - Full: remove all comments
 
 ## doc syncing part 2
 
@@ -669,9 +1063,6 @@
   - HANDLER info should move to generic how-to-iteract, and differentiate between Operator (in interactive console), vs agent-manager vs agent-director (me, previously handler)
   - $AGENT_HOME_DIR/.contacts, one file per contact, organized hierarchically
   - $CLAUDE_PLUGIN_DATA/roles/ for info about each role in the contacts and persona
-
-## Skill format syncing
-
 
 ## lower llm-costs + add resilience: litellm migration
 
@@ -688,6 +1079,12 @@
 - Set up agent environment to point to litellm gateway
 - tilt runs it? should it? maybe not?
 - Full spec docs to move to proxmox/Docker(vm)/Archane/DockerCompose (but share redis/prometheus/postgres and proper secret setup) set up by iac, but for now manual is fine.
+
+## set up s3-tools for agents to store data in shared private storage not on github
+- make sure nate's computer has tools/autosync for that too
+- sync
+  - transcripts
+- store in cloudflare R2?/aws S3?
 
 ## ============= agents as a service =============
 

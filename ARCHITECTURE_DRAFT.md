@@ -1,6 +1,10 @@
 NOTICE TO AGENTS: KEEP THIS UP TO DATE! AS STUFF GETS BUILT OUT KEEP SPECS IN THE RESPECTIVE SERVICES AND USE THIS AS A TABLE OF CONTENTS/INDEX/GLOSSARY
 
-# naming
+# Open Questions
+
+Q1: should we move the bin/agents script to here then do the ts migration or just directly build the CLI in TS and migrate to that (so we can go back and forth and test till feature parity) — Nate, [Discord 2026-05-17 13:53Z](https://discord.com/channels/1490863845252665415/1497431286661517353/1505568913230921821)
+
+# naming + glossary
 
 **agents** was the first name but maybe that's too generic to be used in casual conversation. Other options:
 
@@ -11,7 +15,11 @@ NOTICE TO AGENTS: KEEP THIS UP TO DATE! AS STUFF GETS BUILT OUT KEEP SPECS IN TH
 
 **ai-mktpl** was the first marketplace for sharing plugins publicly. The agents project quickly spawned other repos and eventually was morphed into this monorepo for simplicity. It may come back later to share public plugins that are usable outside of this agent system.
 
-# suffixes
+**train-of-thought** - the primary use case for using teammates, to self contain a continuous thought as to not disturb the chain of reasoning for other conversations
+
+**thoughts** - the conversation that the AI agent has with itself, where it recieves outside stimulii like channel messages, or occasionally messages directly into the agent's console/conversation.
+
+## suffixes
 
 **-controller**:
 
@@ -28,7 +36,7 @@ NOTICE TO AGENTS: KEEP THIS UP TO DATE! AS STUFF GETS BUILT OUT KEEP SPECS IN TH
 
 - an application (typically distributed) that may perform some work and exit, or provide a tui management interface to running controllers
 - may continue running if acting as a tui tool and streaming output but does not handle stdio like an mcp server
-- eg `agent start --agent=alex` might:
+- eg `agent start --agent=alex` (or `agent alex start` or `agent start alex ...`) might:
   1. If running on a vm
      1. If the default cluster is selected (the host machine)
         1. it might check for (and start if not started) the agent system controller
@@ -64,6 +72,106 @@ NOTICE TO AGENTS: KEEP THIS UP TO DATE! AS STUFF GETS BUILT OUT KEEP SPECS IN TH
         - this should be programatically validateable
 - (?) is this process structure _too_ hierarchical and verbose?
 - crons should launch skills, not contain instructions — the skill is where the logic lives and evolves; the cron line stays a one-liner. (Per handler directive 2026-05-17, after the 45-line inline self-poll prompt was hoisted into [`alex's idle-5-min skill`](https://github.com/nsheaps/.ai-agent-alex/blob/main/.claude/skills/idle-5-min/SKILL.md))
+- never trust the inherited environment, always set to known values
+- make agents running in parallel on different systems aware of each others work
+  - CI may run reviews - may run as one persona or a service persona, review details should be viewable
+  - if CI runs an agent because of an action that can link to the agent run, cross references should always be made
+    - PR/issue actions trigger agent => add check_run to head commit sha
+    - mention on a PR => add check_run to head commit sha
+    - mention in a comment outside of that
+      - (a) update comment to have footnote reference to workflow run
+      - (b) reply comment with link to workflow run
+      - (c) react only - no link
+- always pin versions, never latest
+- develop plugins locally, distribute via git
+- share docs whenever possible, always try to update before creating a new one
+- don't have one service do two things (some places it says use agent-controller as mcp server, we should use agent-mcp-service as the mcp server and have that talk to agent-controller)
+- share base agent config (like base mise tools) in a template
+  - Make the template easy enough to use that an agent can spin up a temporary one to test something, then destroy it
+    - agent-cluster-controller should manage an expiring destroy
+- always propagate setting defaults into settings, even if they're documented as defaults (makes it easier for users to configure)
+- always replace built in tools for best compat between platforms
+  - Tools
+    - TaskCreate/Update/Delete
+    - Teammate\*
+    - EnterPlanMode
+  - Agents
+    - Explore
+    - Plan
+  - Consider intercepting built in tools instead of replacing them
+- Anything that blocks the agent should always have a breakglass mechanism to bypass (even if it needs approval from another agent or human)
+- Never assume the agent is aware of it's surroundings. If it's surroundings are important, force the agent to declare the expected surrounding or programatically enforce
+  - Example: Instead of "do a thing to this file" assuming the cwd is correct, force it to specify the full path to the file so cwd doesn't matter
+  - Example: Instead of allowing `Bash(cd xxx && yyy)`, enforce changing directory happens in an independent tool call to track the directory change appropriately (and avoid the slingshot back to the other directory)
+- Encourage the use of batched tool calls
+- Don't rely on the harness interace to provide visibility
+  - Make your own metrics and export them to a metrics platform
+  - Make your own UI to view and manage agents
+- support tools fully, not just how we use them
+  - bug/example: we support mise.toml but not .mise.toml
+- Docs MUST ALWAYS include charts and pictures and graphs (preferrably mermaid, but others, including programatically generated are fine) in documents that describe any concepts that _could_ have a chart or graph
+  - Humans consume pictures better than text
+  - Graphs can be made interactive
+  - Mermaid charts give easy capability for text based management of something visual
+  -
+- Agents should be explicitly clear that they're supposed to work on something, not just do something because they got a message (esp in a non 1:1 channel)
+  - Agents should _OWN_ the work they're doing. If another agent tries to pick it up, correct the other agent. If the other agent is informed of someone else doing the work, and the other agent things they might be better suited to accomplish the task, they should state their case and both agents should discuss and agree on who is taking point on the work (assignee), even if they're working together.
+  - Agent should stay on similar "thought trains" and try to not jump between works in different areas unless necessary
+    - If requests are made they must be thoroughly documented and referenced in a task before proceeding with previous work
+  - Agents should track and own parts of projects, or entire projects within an organization (not the subject matter expert (SME) but rather the directly responsible individual (DRI)). DRIs are likely SMEs but may not be (aka they inherited a project). If they don't feel like a sme, they should review docs, and ensure the project is properly set up for AI agents to supplement their workflows with things that help
+    - When a task is requested for a project they're a DRI on, even if they weren't directly addressed on the request
+    - one agent A can own an entire project, and an agent B can own a piece of it. If the work is well scoped to the piece, the agent B can work on it directly, else agent A needs to delegate and coordinate. if the scope is too wide, A might do the work directly, working with B
+    - An agent can own a product (like as a product owner, who can make decisions on what a product should look or function like, sometimes also functioning as a project manager for the projects within that product), a project codebase (like a software engineer), or a project (like a project manager who is responsible for making sure work gets done on a project but generally defers to a product owner for direction and complex product decision making)
+- Avoid force-pushing wherever possible, rewritten history is harder to follow, and gets rid of commits that could be valid restore states.
+- Strongly encourage skill use on seen key-phrases rather than just direct skill mentions or assumed use from the description. Tags and key phrases are also in the description.
+  - Key phrases should typically ID things like explicit recognition of a requirements or scope change (regardless of if the following skill was properly used), or headers of expected info used for input/output/procedural execution.
+    Some examples:
+    > Key phrase identifiers are required for the system to accept your response. Phrase identifiers look like:
+    > 🔩 A HEADER-LIKE PHRASE IN ALL CAPS WITH A SECTION BELOW THAT YOU FILL IN - **_blanks for you to fill in_** - ...sometimes in different formats... - or a phrase with part to fill in
+    > When you respond, your response must include those phrase identifiers exactly, including emoji,
+    > capitalization, and punctuation. These phrase identifiers are for you to be able to search for
+    > them later, and to have programatic validation of outputs without token use. Use this pattern generously with
+    > sub-agents.
+    >
+    > 🔩 BEFORE WE GET STARTED, PLEASE NOTE THE FOLLOWING:
+    >
+    > - THE CURRENT DATETIME IS: \_**\_you fill this in\_\_\_**  
+    >   🔩 BEFORE STARTING TO WORK ON THE PROJECT AS A WHOLE, I’M GOING TO START BY:  
+    >    \_**\_you fill this in\_\_**  
+    >   🔩 IN ORDER TO GET TO THIS POINT, I’VE NEEDED TO DO SOME WORK TO ENSURE THE RULES WILL BE FOLLOWED. SO FAR I’VE DONE:
+    >   - **\_you fill this in\_\_**
+    >   - **\_you fill this in\_\_**
+    >   - **\_you fill this in\_\_**
+    >   - **\_you fill this in\_\_**  
+    >     🔩 I HAVE TESTED MY INTERNET SEARCHING AND RESEARCH ABILITY, AND HAVE ANSWERED THE FOLLOWING QUESTION:  
+    >      QUESTION: THE WEATHER FOR **_your location, as determined by basic websites you can find by searching_** FOR THE NEXT 7 DAYS  
+    >      ANSWER:  
+    >      \_\_\_\_you fill this in with a tabular representation of the highs, lows, UV, precip, humidity, wind, weather, etc for each of the next 7 days.
+    >
+    > 🔩 I WILL BUILD THIS PROJECT ITERATIVELY, FOLLOWING THIS ROUGH OUTLINE TO GET TO OUR FINAL GOAL:
+    >
+    > 1.  **_you fill this in_**
+    > 2.  **_you fill this in_**
+    > 3.  **_you fill this in_**
+    >
+    > 🔩 LETS GET STARTED! I’M GOING TO START BY  
+    >  \_**\_what you are about to do\_\_**
+- errors in the conversation (like tool use) should bubble back to agent (outside claude) logs via PostToolUseFailure hook > mcp tool call > agent-mcp-service_log(ERROR, $msg) > agent-controller -> (multiple) logs / event subscribers
+
+# TODO: NEED TO MAKE ADJUSTMENT LOG SINCE I"M LOSING TRACK
+
+- 2026-05-23 01:14p ET - ditch the idea of a "team", all the agents are on "one team". The "cluster" is the team. They have team assignments within the org, and they use "teams" like concepts to launch their trains of thoughts, but no more "team"
+- 4:50pm - it's a nice idea to have a service have the agents as children but that means if the parent service dies, the children die too
+  - that solidifies that agent-cluster-controller controls the agents by coordinating with the agent-system-controller or agent-k8s-controller to launch the agent properly
+    - That also means that agent-cluster-controller is probably the main service powering it all, and controls services on the system by launching them via the system controller and using the system controller to launch other services. The system controller should also be launched as a service, if it is started and detects that it wasn't, it launches the service and exits (since it manages the systemd services, so whatever launched it doesn't share that capability)
+    - The system controller is launched by the cluster-controller if it's detected on a vm/lxc, regardless of if agents run there.
+    - the system controller is always running with the cluster controller even if nothing else is, so the cluster controller has an interface into the host system instead of doing it itself
+    - one cluster controller can work with a control plane (eg proxmox or k8s) to launch an instance that may/maynot have the system controller already running. Not all launched systems/containers are for agents.
+- 9:55pm - allow agents to define expiring configurations. If given a criteria like "for now you don't need to make changes in a branch, push directly to main", allow the agent to write a rule file that has a default, or specified expiration (never indefinite, that's always a permanent rule change). When the time comes round, something should remind them to look at the rule and evaluate if it's still correct. Keep it/update it if so and update expiration, remove it if not. Better to have small expiration and check it than to not. Make this part of the agent-mcp-service with a channel notification, but until then maybe a cron?
+  - expiring can help force them to move skills/agents/rules/hooks to plugins too
+- 10:42pm we should make most tool use (esp skill, see metrics?) and maybe use LLM to decide 'went well' or not. evals are powerful, and great ways to supplement skills with more examples of good and bad. This is especially true with Agent() so it's easier to improve the agent's prompt to specify ins/outs rather than forcing the parent agent to specify it in their prompt
+- 11:20pm started alex on our long journey with an intake triage workflow so we can get these properly categorized along with everything else.
+- 11:24pm we should reject writes that write more than 20 lines. Write in chunks, build things iteratively, use tools to inject changes instead of writing whole files
 
 ## controller/service run modes
 
@@ -144,25 +252,23 @@ agent-system-controller:
 agent-cluster-controller:
 
 - manages the agents themselves, abstract from the system it runs on
-  - if running in k8s, uses k8s to manage controllers
-  - else uses systemd
+  - if running in k8s, uses k8s to manage controllers by communicating with agent-k8s-controller
+  - else uses systemd via agent-system-controller
 - Responsible for running (in the configured environment context):
   - 0.. `agent-web-service`
   - 0.. `agent-api-service`
   - 0.. `agent-controller`
-  - 0.. `agent-team-controller`
     - not agents within a team, thats for the team-controller
       - If an agent moves from system level or between teams, it is spun down first, then spun up in the correct context, with coordination from a system or a cluster controller
 - can be set up to run their controller children as native processes, systemd services, or as containers
   - containerized environments should be treated as ephemeral, setup must be managed through Dockerfiles and persistance managed through volumes and external services
 
-agent-team-controller:
-
-- responsible for running:
-  - 0.. `agent-controller`
-- only 1 on a system, but 1 or more in a containerized environment
-- uses redis to coordinate across controller instances (potentially in other clusters) to achieve HA
-- In rare instances (whether run as a systemd service/native process/container), this controller can launch ephemeral VMs (proxmox, virtualbox, etc), and those vms inside have a system-controller running an agent-controller
+~~agent-team-controller:~~
+~~- responsible for running:~~
+~~ - 0.. `agent-controller`~~
+~~- only 1 on a system, but 1 or more in a containerized environment~~
+~~- uses redis to coordinate across controller instances (potentially in other clusters) to achieve HA~~
+~~- In rare instances (whether run as a systemd service/native process/container), this controller can launch ephemeral VMs (proxmox, virtualbox, etc), and those vms inside have a system-controller running an agent-controller~~
 
 agent-controller:
 
@@ -267,7 +373,3 @@ agent-cli:
   - Just like `bin/attach-agent` right now
 - subcommand `agent add $name $source`
 - subcommand `agent remove $name`
-
-# Open Questions
-
-Q1: should we move the bin/agents script to here then do the ts migration or just directly build the CLI in TS and migrate to that (so we can go back and forth and test till feature parity) — Nate, [Discord 2026-05-17 13:53Z](https://discord.com/channels/1490863845252665415/1497431286661517353/1505568913230921821)
