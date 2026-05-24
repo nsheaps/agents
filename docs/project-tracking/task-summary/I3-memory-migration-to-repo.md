@@ -1,6 +1,6 @@
 # Migrate alex memory files to repo `memory/`
 
-**Track-doc item:** [`#intro#3`](../MASTER.md#intro) (was #intro#9 before completed items were hoisted to actual completion order on 2026-05-24 04:05Z per `#rules#2`)
+**Track-doc item:** `I3` — [`#intro` § I3](../MASTER.md#intro) (was list-position #9 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I3` per `I6` on 2026-05-24)
 **Status:** ✅ done
 **Owner:** alex
 **Scope-increase note:** This item was added retroactively per Nate Discord 2026-05-24 03:57Z. Allowed because it prevents future drift (memory in claude-internal state isn't shareable as links).
@@ -15,7 +15,7 @@
 
 - `ls /home/nsheaps/src/nsheaps/.ai-agent-alex/memory/*.md | wc -l` returns 28.
 - `ls $CLAUDE_CONFIG_DIR/projects/-home-nsheaps-src-nsheaps--ai-agent-alex/` does not contain a `memory/` subdir.
-- The PreToolUse block-hook ([`#intro#10`](../MASTER.md#intro)) prevents accidental regression by blocking any new writes to the old location.
+- The PreToolUse block-hook ([`I4`](../MASTER.md#intro)) prevents accidental regression by blocking any new writes to the old location.
 
 ## Implementation
 

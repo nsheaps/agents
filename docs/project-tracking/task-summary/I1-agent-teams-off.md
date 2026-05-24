@@ -1,6 +1,6 @@
 # Turn off agent teams (and restart)
 
-**Track-doc item:** [`#intro#1`](../MASTER.md#intro) (was #2 before the emoji-key bullet was lifted to the `#key` section; doc moved from journal path to MASTER.md on 2026-05-24)
+**Track-doc item:** `I1` — [`#intro` § I1](../MASTER.md#intro) (was list-position #2 before the emoji-key bullet was lifted to the `#key` section; doc moved from journal path to MASTER.md on 2026-05-24; assigned stable ID `I1` per `I6` on 2026-05-24)
 **Status:** ✅ done — no further restart needed (see Log)
 **Owner:** alex
 
@@ -26,7 +26,7 @@ After restart, both checks pass:
 
 ## Scope guardrails
 
-- Do NOT touch Jack/Henry's agent-teams settings — Nate hasn't asked, and the track doc's "spin down jack/henry" is a separate item (`#intro#3`) with its own doc requirement.
+- Do NOT touch Jack/Henry's agent-teams settings — Nate hasn't asked, and the track doc's "spin down jack/henry" is a separate item (`I7`) with its own doc requirement.
 - Do NOT remove other env vars from settings.local.json (OP_SERVICE_ACCOUNT_TOKEN must remain — agent runtime depends on it).
 - Do NOT commit settings.local.json (it's gitignored, contains secrets at root).
 
