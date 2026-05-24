@@ -90,49 +90,6 @@ tasks:
 
 14. `I26`: make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
 
-<a id="farish-skills"></a>
-
-## collecting skills from farish
-
-<!-- next-id: F2 -->
-
-1. 🆕 `F1`: review this history.jsonl from another session. It is rich with usable info on making some skills.
-   https://github.com/nsheaps/agents/blob/claude%2Fai-3d-model-generator-XjoUi/docs/journal/2026/05/22/farish-history.jsonl
-   1. from it, please write skills in the alex repo (add note in this doc later to move to plugins). Skim this file first to get an idea of how simple to make these and what to put in them to encourage the agent to always keep updating them. Make these skills first, then review the jsonl iteratively. Use a sonnet agent to review one line at a time and slowly build these skills and any other you think are relevant. Remember, small, link to others, bullets, examples but somewhere else not in the main doc
-      - making-something-from-scratch
-      - setting-up-a-repo-for-the-first-time
-      - using-ci-to-take-pictures
-      - hosting-product-documentation-on-github-pages
-      - using-ci-to-automate-doc-updates-with-photos
-      - writing-good-docs-with-diagrams
-      - continuous-agent-improvement
-      - design-a-new-website
-      - design-site-hierarchy-outline-and-pages
-      - design-site-design-and-standardization
-      - design-wireframing
-      - eng-writing-specs-and-using-them
-      - eng-iterative-development
-        - planning
-        - scaffolding
-        - add bdd tests
-        - start with utilities, get those squared away
-        - add comments for whats needed in each func
-        - improve scaffolding if needed
-        - for each comment, iteratively implement and update tests/docs. If the function is complete, tests must pass. Do not remove the comments, they explain the "what" while the code explains the "how"
-        - ...
-      - ...the skills specified in the prompts itself, perhaps pullable from that branch or the farish repo (or branches there)
-      - eng-understanding-deliverables
-        - understanding what's actually being asked, and finding out more if not
-        - how to design how you're going to validate it before designing how you'll implement it
-        - validating it after implementation against the deliverable
-   2. one or two of them are a bit more structured here:
-      - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish project plan.md
-      - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish task-utils correction.md
-
-<a id="ball-rolling"></a>
-
-# lets get the ball rolling
-
 <a id="cleanup-prs"></a>
 
 ## cleanup easy open PRs
@@ -247,6 +204,49 @@ tasks:
    2. We'll also write a script to dump files for all the issues and prs in every repo we've been working in
    3. We'll use programatic tools to look for mentions in those transcripts, claude transcripts, issues, etc, to get a comprehensive view of what we actually want to do with henry. For each mention we'll note which file and where, then we'll use sonnet agents to go Read the files and extract any useful info into summary files (with access to more before/after), then more sonnet agents to compile those iteratively into a comprehensive spec for the CI Review bot (both with the scope of henry, but noting that I think long term it's gonna be independent and all logic and review data shared in every agent)
    4. build a small toolset that takes those structured pieces of data that you extracted and allows you to query for the data, rather than reading the files directly.
+
+<a id="farish-skills"></a>
+
+## collecting skills from farish
+
+<!-- next-id: F2 -->
+
+1. 🆕 `F1`: review this history.jsonl from another session. It is rich with usable info on making some skills.
+   https://github.com/nsheaps/agents/blob/claude%2Fai-3d-model-generator-XjoUi/docs/journal/2026/05/22/farish-history.jsonl
+   1. from it, please write skills in the alex repo (add note in this doc later to move to plugins). Skim this file first to get an idea of how simple to make these and what to put in them to encourage the agent to always keep updating them. Make these skills first, then review the jsonl iteratively. Use a sonnet agent to review one line at a time and slowly build these skills and any other you think are relevant. Remember, small, link to others, bullets, examples but somewhere else not in the main doc
+      - making-something-from-scratch
+      - setting-up-a-repo-for-the-first-time
+      - using-ci-to-take-pictures
+      - hosting-product-documentation-on-github-pages
+      - using-ci-to-automate-doc-updates-with-photos
+      - writing-good-docs-with-diagrams
+      - continuous-agent-improvement
+      - design-a-new-website
+      - design-site-hierarchy-outline-and-pages
+      - design-site-design-and-standardization
+      - design-wireframing
+      - eng-writing-specs-and-using-them
+      - eng-iterative-development
+        - planning
+        - scaffolding
+        - add bdd tests
+        - start with utilities, get those squared away
+        - add comments for whats needed in each func
+        - improve scaffolding if needed
+        - for each comment, iteratively implement and update tests/docs. If the function is complete, tests must pass. Do not remove the comments, they explain the "what" while the code explains the "how"
+        - ...
+      - ...the skills specified in the prompts itself, perhaps pullable from that branch or the farish repo (or branches there)
+      - eng-understanding-deliverables
+        - understanding what's actually being asked, and finding out more if not
+        - how to design how you're going to validate it before designing how you'll implement it
+        - validating it after implementation against the deliverable
+   2. one or two of them are a bit more structured here:
+      - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish project plan.md
+      - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish task-utils correction.md
+
+<a id="ball-rolling"></a>
+
+# lets get the ball rolling
 
 <a id="fix-reviews"></a>
 
