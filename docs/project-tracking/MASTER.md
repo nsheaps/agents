@@ -48,7 +48,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
-- 🚧 `I7`: [Spin down jack + henry, verify minimal 5m cron](./task-summary/I7-spin-down-peers.md)
+- ✅ `I7`: [Spin down jack + henry, verify minimal 5m cron](./task-summary/I7-spin-down-peers.md)
 
 - 🆕 `I29`: update rules for handling tasks here, if you see edits being made, stop editing and post in discord and wait for my okay
 - 🆕 `I9`: extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work 10. make the task updating skill use context:fork

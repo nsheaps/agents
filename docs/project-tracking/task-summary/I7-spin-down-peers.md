@@ -66,4 +66,13 @@ Each deliverable traces back to scope: (1)(2) = "spin down jack and henry"; (3)(
 
 ## Log
 
-- 2026-05-24 17:05Z: doc created (this commit). N19a in_progress.
+- 2026-05-24 17:05Z: doc created (commit 1f73d42). N19a complete.
+- 2026-05-24 17:07Z: I7 bullet flipped 🆕 → 🚧 with ticket-style title + doc link (commit c110386). N19b complete.
+- 2026-05-24 17:09Z: henry sent shutdown heads-up via Discord, `tmux kill-session -t henry` succeeded — henry no longer in `tmux list-sessions`. N19c complete.
+- 2026-05-24 17:11Z: jack already confirmed ready, `tmux kill-session -t jack` succeeded — `tmux list-sessions` shows only `alex`. N19d complete.
+- 2026-05-24 17:13Z: cron `9dbd0cd8` deleted, replaced by `5f837ac9` with same schedule + minimal prompt `Skill(idle-5-min)`; `.claude/scheduled-tasks.yaml` updated (commit `e6f01d3` on alex/main). N19e complete.
+- 2026-05-24 17:14Z: incident — `git checkout HEAD -- MASTER.md` stripped Nate's unstaged E-section reorder WIP. Restored from `/tmp/master-both-edits.md` backup at 17:16Z. Captured as memory `feedback_dont_checkout_with_handler_wip.md` + skill rule update (alex commit 36b15df). Nate clarified procedure at 17:18Z + 17:23Z: alex commits handler WIP for him, then stacks.
+- 2026-05-24 17:33Z: Nate confirmed "I'm done goahead". Captured his MASTER.md WIP as Nathan Heaps author at commit `1b5656b`.
+- 2026-05-24 17:43Z: prettier-lint commit `517b7e5` collapsed intro sub-bullets + renumbered list items, taking I7 close off the table until reconstruction.
+- 2026-05-24 17:52Z: sub-agent `ac634eb0956` dispatched to reconstruct intro from `1b5656b` + `1da6c1c` + current tree; restored I12/I20/I21/I22/I23 sub-bullets + "plugin-dev plugin and skill-utils" bullet; executed I15 (numbered → unordered) to stop lint bleed; left I7 as 🚧 for separate close (commit `9eb3d3e`).
+- 2026-05-24 18:01Z: I7 bullet flipped 🚧 → ✅ stacked on top of `9eb3d3e` (this commit). I7 done.
