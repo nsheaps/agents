@@ -31,14 +31,11 @@
 #
 # Sidecar log: every fire appended to .claude/logs/task-invariant.log.
 #
-# Task storage: this hook gates the BUILT-IN TaskCreate/TaskUpdate tools,
-# which write per-session files at ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/tasks/
-# <session_id>/ (the "legacy" store). The id-addressed task lookup therefore
-# reads the legacy store. The 0-or-1 in_progress invariant, however, is scanned
-# across BOTH the legacy store AND the flat MCP store (see task-store-lib.sh)
-# so a built-in TaskUpdate is correctly denied when an MCP task is already
-# in_progress, and vice versa. The MCP server enforces the same invariants
-# in-process for its own tools (mcp/src/tasks.ts).
+# Task storage: this hook gates the BUILT-IN TaskCreate/TaskUpdate tools.
+# The 0-or-1 in_progress invariant is scanned across the flat MCP store ONLY
+# (see task-store-lib.sh, R1 redesign 2026-05-24). Legacy per-session JSON
+# files are no longer scanned — the MCP store is the authoritative source.
+# The MCP server enforces the same invariants in-process (mcp/src/tasks.ts).
 
 set -euo pipefail
 
@@ -67,10 +64,7 @@ case "$TOOL_NAME" in
   *) exit 0 ;;
 esac
 
-# Legacy per-session store — where the built-in Task tools write task files.
-# The id-addressed TASK_FILE lookup below uses this store.
-TASKS_DIR="$(resolve_legacy_store_dir "$SESSION_ID")"
-# Flat MCP store — scanned together with TASKS_DIR for the 0-or-1 invariant.
+# Flat MCP store — sole source for the 0-or-1 in_progress invariant (R1).
 FLAT_STORE="$(resolve_flat_store_root "${CLAUDE_PROJECT_DIR:-$(pwd)}")"
 
 # ---- Reminder text (verbatim per Nate 2026-05-17 02:53Z + 04:06Z) -----------
@@ -173,13 +167,14 @@ NEW_STATUS="$(jq -r '.tool_input.status // empty' <<<"$INPUT")"
 TASK_ID="$(jq -r '.tool_input.taskId // empty' <<<"$INPUT")"
 NEW_DESC="$(jq -r '.tool_input.description // empty' <<<"$INPUT")"
 
-# Read current task state from disk
-TASK_FILE="$TASKS_DIR/${TASK_ID}.json"
+# Read current task state from flat YAML store.
+TASK_FILE="$FLAT_STORE/${TASK_ID}.yaml"
 CURRENT_STATUS=""
 CURRENT_DESC=""
 if [[ -f "$TASK_FILE" ]]; then
-  CURRENT_STATUS="$(jq -r '.status // empty' "$TASK_FILE" 2>/dev/null || echo '')"
-  CURRENT_DESC="$(jq -r '.description // empty' "$TASK_FILE" 2>/dev/null || echo '')"
+  CURRENT_STATUS="$(grep -m1 '^status: ' "$TASK_FILE" 2>/dev/null | awk '{print $2}' || echo '')"
+  # description may span multiple lines; extract content after 'description: |' or 'description: '
+  CURRENT_DESC="$(awk '/^description:/{found=1; if(/\|$/){next}; sub(/^description:[[:space:]]*/,""); print; next} found && /^[^[:space:]]/{found=0} found{print}' "$TASK_FILE" 2>/dev/null || echo '')"
 fi
 
 # Effective description: tool_input.description if provided, else disk
@@ -211,13 +206,9 @@ esac
 # ---- Deny path: pending→in_progress validation-steps required ---------------
 
 if [[ "$NEW_STATUS" == "in_progress" ]]; then
-  # 0-or-1 invariant first — scanned across BOTH the legacy per-session store
-  # (*.json, written by built-in TaskCreate/TaskUpdate) and the flat MCP store
-  # (*.yaml, written by the MCP server) so the invariant holds globally.
+  # 0-or-1 invariant — scanned across the flat MCP store only (R1, YAML-only).
   OTHERS=""
-  for scan_dir in "$TASKS_DIR" "$FLAT_STORE"; do
-    [[ -d "$scan_dir" ]] || continue
-    # Scan YAML files (MCP-managed tasks, v0.1.4+ flat store)
+  if [[ -d "$FLAT_STORE" ]]; then
     while IFS= read -r -d '' f; do
       f_id="$(grep -m1 '^id: ' "$f" 2>/dev/null | sed 's/^id: //; s/^"//; s/"$//')"
       [[ "$f_id" == "$TASK_ID" ]] && continue
@@ -226,18 +217,8 @@ if [[ "$NEW_STATUS" == "in_progress" ]]; then
         f_subj="$(grep -m1 '^subject: ' "$f" 2>/dev/null | sed 's/^subject: //; s/^"//; s/"$//')"
         OTHERS+="#${f_id} (${f_subj}); "
       fi
-    done < <(find "$scan_dir" -maxdepth 1 -name '*.yaml' -print0 2>/dev/null)
-    # Scan JSON files (built-in TaskCreate/TaskUpdate legacy format, backward compat)
-    while IFS= read -r -d '' f; do
-      f_id="$(jq -r '.id // empty' "$f" 2>/dev/null || true)"
-      [[ "$f_id" == "$TASK_ID" ]] && continue
-      f_status="$(jq -r '.status // empty' "$f" 2>/dev/null || true)"
-      if [[ "$f_status" == "in_progress" ]]; then
-        f_subj="$(jq -r '.subject // empty' "$f" 2>/dev/null || true)"
-        OTHERS+="#${f_id} (${f_subj}); "
-      fi
-    done < <(find "$scan_dir" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
-  done
+    done < <(find "$FLAT_STORE" -maxdepth 1 -name '*.yaml' -print0 2>/dev/null)
+  fi
   if [[ -n "$OTHERS" ]]; then
     REASON="Cannot move task #${TASK_ID} to in_progress — already in_progress: ${OTHERS%; }. Project rule: exactly 0 or 1 task may be in_progress. Pick one: (a) complete current via TaskUpdate status=completed, (b) move it back to pending via TaskUpdate status=pending, (c) create a sub-task via TaskCreate to capture the new direction (the in-progress task may itself be a planning/break-down task — see worked example at https://github.com/nsheaps/agents/blob/main/docs/journal/2026/05/16/managing-tasks-example.md). Use sequential-thinking; append a dated event-log line to the in-progress task's description noting the pivot before changing state."
     log_fire "deny" "task=${TASK_ID} reason=in_progress-conflict conflict=${OTHERS%; }"

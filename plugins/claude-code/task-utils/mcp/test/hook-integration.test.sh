@@ -118,27 +118,24 @@ else
   fail "expected empty output for Read, got: $OUT"
 fi
 
-echo "== Test 7: task-invariant.sh sees MCP in_progress for the 0-or-1 invariant =="
-# Re-create an MCP task and promote it to in_progress, then a built-in
-# TaskUpdate->in_progress on a legacy task must be denied (0-or-1 across stores).
+echo "== Test 7: task-invariant.sh enforces 0-or-1 invariant across flat YAML store =="
+# Create a second MCP task and promote it to in_progress, then a TaskUpdate
+# trying to promote a third task must be denied (0-or-1 in flat store only, R1).
 printf '%s\n' "$CREATE_REQ" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
 NEWID="$(for f in "$TASKDIR"/*.yaml; do grep -m1 '^id: ' "$f"; done | sed 's/^id: //; s/^\"//; s/\"$//' | sort -n | tail -1)"
 UPDATE2="$(jq -nc --arg vs "$VS" --arg id "$NEWID" \
   '{jsonrpc:"2.0",id:2,method:"tools/call",params:{name:"task_update",arguments:{taskId:$id,status:"in_progress",description:$vs}}}')"
 printf '%s\n%s\n' "$INIT" "$UPDATE2" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
 
-# A legacy built-in task in its own session dir trying to go in_progress.
-LEGACY_DIR="$WORK/claude-config/tasks/test-session"
-mkdir -p "$LEGACY_DIR"
-LEGACY_VS="$(printf '<validation-steps>\n - [ ] x\n</validation-steps>')"
-jq -nc --arg vs "$LEGACY_VS" \
-  '{id:"99",subject:"legacy task",status:"pending",description:$vs}' > "$LEGACY_DIR/99.json"
-INV_PAYLOAD="$(jq -nc '{tool_name:"TaskUpdate",session_id:"test-session",tool_input:{taskId:"99",status:"in_progress"}}')"
-OUT="$(printf '%s' "$INV_PAYLOAD" | TASK_UTILS_TASK_DIR="$TASKDIR" CLAUDE_CONFIG_DIR="$WORK/claude-config" CLAUDE_PROJECT_DIR="$WORK" bash "$INVARIANT_HOOK")"
+# Create a third MCP task and attempt to promote it while NEWID is in_progress.
+printf '%s\n' "$CREATE_REQ" | TASK_UTILS_TASK_DIR="$TASKDIR" timeout 10 "$SERVER" >/dev/null 2>&1
+THIRDID="$(for f in "$TASKDIR"/*.yaml; do grep -m1 '^id: ' "$f"; done | sed 's/^id: //; s/^\"//; s/\"$//' | sort -n | tail -1)"
+INV_PAYLOAD="$(jq -nc --arg id "$THIRDID" '{tool_name:"TaskUpdate",session_id:"test-session",tool_input:{taskId:$id,status:"in_progress"}}')"
+OUT="$(printf '%s' "$INV_PAYLOAD" | TASK_UTILS_TASK_DIR="$TASKDIR" CLAUDE_PROJECT_DIR="$WORK" bash "$INVARIANT_HOOK")"
 if [[ "$(decision "$OUT")" == "deny" ]]; then
-  pass "task-invariant.sh denies a 2nd in_progress across flat+legacy stores"
+  pass "task-invariant.sh denies a 2nd in_progress in the flat YAML store"
 else
-  fail "expected deny (0-or-1 across stores), got: $OUT"
+  fail "expected deny (0-or-1 in flat store), got: $OUT"
 fi
 
 echo

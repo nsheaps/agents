@@ -20,15 +20,11 @@
 # .claude/logs/require-task-in-progress.log so the audit trail
 # survives even when the transcript stays clean.
 #
-# Task storage: the gate is satisfied by an in_progress task in EITHER
-#   (a) the flat MCP store — <store-root>/<task-id>.json, where store-root
-#       is $TASK_UTILS_TASK_DIR, else the CWD git repo's .claude/tasks, else
-#       <CWD>/.claude/tasks (see hooks/task-store-lib.sh); the task-utils MCP
-#       server writes here, or
-#   (b) the legacy per-session store the built-in Task tools write to,
-#       ${CLAUDE_CONFIG_DIR:-$HOME/.claude}/tasks/<session_id>/.
-# Reading both keeps built-in-Task-tool users working alongside the MCP
-# fallback.
+# Task storage: the gate is satisfied by an in_progress task in the flat MCP
+# store — <store-root>/<task-id>.yaml, where store-root is $TASK_UTILS_TASK_DIR,
+# else the CWD git repo's .claude/tasks, else <CWD>/.claude/tasks (see
+# hooks/task-store-lib.sh). Only MCP-managed *.yaml files are scanned (R1,
+# 2026-05-24). Legacy per-session JSON files are not consulted.
 #
 # Opt-out: set TASK_UTILS_REQUIRE_TASK=0 to disable this gate in
 # environments where neither task system is available, so the gate is not
@@ -73,15 +69,11 @@ if [[ "${TASK_UTILS_REQUIRE_TASK:-1}" == "0" ]]; then
   exit 0
 fi
 
-# Resolve both task stores. The gate is satisfied by an in_progress task in
-# either: the flat MCP store, or the legacy per-session built-in-tool store.
+# Resolve the flat MCP store. The gate is satisfied by an in_progress *.yaml task.
 BASE_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}"
 FLAT_STORE="$(resolve_flat_store_root "$BASE_DIR")"
-LEGACY_STORE="$(resolve_legacy_store_dir "$SESSION_ID")"
 
-FLAT_COUNT="$(count_in_progress_flat "$FLAT_STORE")"
-LEGACY_COUNT="$(count_in_progress_flat "$LEGACY_STORE")"
-IN_PROGRESS_COUNT=$((FLAT_COUNT + LEGACY_COUNT))
+IN_PROGRESS_COUNT="$(count_in_progress_flat "$FLAT_STORE")"
 
 emit_decision() {
   local decision="$1" reason="$2"
@@ -106,6 +98,6 @@ if (( IN_PROGRESS_COUNT == 0 )); then
   exit 0
 fi
 
-log_fire "allow" "tool=${TOOL_NAME} in_progress=${IN_PROGRESS_COUNT} flat=${FLAT_COUNT} legacy=${LEGACY_COUNT}"
+log_fire "allow" "tool=${TOOL_NAME} in_progress=${IN_PROGRESS_COUNT}"
 emit_decision "allow" ""
 exit 0
