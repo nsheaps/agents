@@ -4,6 +4,12 @@
 **Status:** ✅ done
 **Owner:** alex
 
+## Original message
+
+> that's not what I meant for stable ids. I mean like ticket ids. … Like A-234, LAUNCHER-1, T45.
+
+— Nate, Discord 2026-05-24 04:48Z ([msg `1507968405213286580`](https://discord.com/channels/1490863845252665415/1497431286661517353/1507968405213286580)). Follow-up at 04:49Z: "i'd prefer keeping bullets over making a table, I just want the ID prefixed and in the file name." I6 was originally alex-created from an earlier intent to add stable IDs; the 04:48Z message is the definitive statement of what ticket-style IDs should look like. Full source context in the `## Source` section below.
+
 ## Deliverable
 
 - Every tracked item in MASTER.md carries a **stable, ticket-style ID** as a SHORT prefix in the bullet text (`I1`, `F1`, `C1`, … — jack-style: single-letter section code + monotonic number).
