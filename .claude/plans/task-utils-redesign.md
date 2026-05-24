@@ -12,12 +12,12 @@
 **`CLAUDE_CODE_ENABLE_TASKS`** — controls native Claude Code Task tools
 (`TaskCreate`, `TaskUpdate`, `TaskList`, `TaskGet`).
 
-| Value           | Effect                                                   |
-| --------------- | -------------------------------------------------------- |
-| `0`/`false`/`off`/`no` | Native tasks DISABLED — only MCP path                |
-| unset + TTY     | DEFAULT ON — native tasks active                         |
-| unset + non-TTY | DEFAULT OFF — Claude Code web, headless, piped contexts  |
-| `1`/`true`/`on` | Forced ON (VSCode bug per [GH#23874](https://github.com/anthropics/claude-code/issues/23874) — `=1` may not re-enable in VSCode) |
+| Value                  | Effect                                                                                                                           |
+| ---------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `0`/`false`/`off`/`no` | Native tasks DISABLED — only MCP path                                                                                            |
+| unset + TTY            | DEFAULT ON — native tasks active                                                                                                 |
+| unset + non-TTY        | DEFAULT OFF — Claude Code web, headless, piped contexts                                                                          |
+| `1`/`true`/`on`        | Forced ON (VSCode bug per [GH#23874](https://github.com/anthropics/claude-code/issues/23874) — `=1` may not re-enable in VSCode) |
 
 Source: [Tools Reference v2.1.142+](https://code.claude.com/docs/en/tools-reference.md).
 
@@ -58,13 +58,16 @@ Source: [Tools Reference v2.1.142+](https://code.claude.com/docs/en/tools-refere
 ## Phase plan
 
 ### Phase R1 — Unwind dual-scan (sub-agent's RC3 fix reversal)
+
 Files in `plugins/claude-code/task-utils/`:
+
 - `hooks/task-store-lib.sh`: `count_in_progress_flat` back to YAML-only.
 - `hooks/task-invariant.sh`: 0-or-1 scan back to flat YAML only.
 - `hooks/require-task-in-progress.sh`: drop `LEGACY_STORE` resolution + count.
 - Update affected hook-integration tests.
 
 ### Phase R2 — Env-var detection helper
+
 - New `hooks/builtin-tasks-detect.sh` (sourceable lib):
   ```bash
   # is_builtin_tasks_enabled — returns 0 (true) if native Task tools active
@@ -74,6 +77,7 @@ Files in `plugins/claude-code/task-utils/`:
 - Doc in plugin README: env var semantics + `TASK_UTILS_NATIVE_TASK_MODE`.
 
 ### Phase R3 — PostToolUse sync hook
+
 - New `hooks/task-sync-from-legacy.sh`:
   - Skip if built-in disabled (sourced helper).
   - Resolve legacy file `~/.claude/tasks/<sid>/<id>.{json,yaml}` from tool result.
@@ -84,6 +88,7 @@ Files in `plugins/claude-code/task-utils/`:
 - Delete `hooks/task-auto-commit.sh`.
 
 ### Phase R4 — PreToolUse warning/block
+
 - New `hooks/task-native-warning.sh`:
   - Skip if built-in disabled.
   - Read `TASK_UTILS_NATIVE_TASK_MODE` (default `warn`).
@@ -93,10 +98,12 @@ Files in `plugins/claude-code/task-utils/`:
 - `hooks/hooks.json`: register PreToolUse on `TaskCreate|TaskUpdate` after `task-invariant.sh`.
 
 ### Phase R5 — MCP decoupling audit
+
 - Grep `mcp/src/` for `legacy`, `~/.claude/tasks`, `session_id`-keyed paths.
 - Remove any references to the legacy store from the MCP server (per the step-2 report, server already writes project-local — verify and clean up).
 
 ### Phase R6 — Tests + version + docs
+
 - Update bun test suite to reflect:
   - Single-store scan in hooks (YAML only).
   - Env-var-aware skip in sync + warning hooks.
@@ -105,6 +112,7 @@ Files in `plugins/claude-code/task-utils/`:
 - Bump version `0.1.5` → `0.2.0` (behavior change; minor bump since users who relied on dual-scan need to adjust).
 
 ### Phase R7 — Validate in this session
+
 - Add to `agents/.claude/settings.json` `"env"` block: `"CLAUDE_CODE_ENABLE_TASKS": "0"`.
 - Restart this session.
 - Verify native Task tools absent (no `TaskCreate` in available tools).
