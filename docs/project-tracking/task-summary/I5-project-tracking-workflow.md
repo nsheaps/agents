@@ -4,6 +4,12 @@
 **Status:** ✅ done
 **Owner:** alex
 
+## Original message
+
+> capture this in a skill … keep it up to date as we iterate on the process.
+
+— Nate, Discord 2026-05-24 04:22Z ([msg `1507961632469549076`](https://discord.com/channels/1490863845252665415/1497431286661517353/1507961632469549076)). I5 is alex-created (no pre-N2 MASTER.md bullet with verbatim handler text). The full 7-step workflow content Nate provided is documented in the `## Source` section below.
+
 ## Deliverable
 
 - A skill at `.claude/skills/project-tracking-workflow/SKILL.md` in alex repo that codifies Nate's 7-step workflow for iterating tasks tracked in `docs/project-tracking/MASTER.md`.
