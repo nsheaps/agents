@@ -43,6 +43,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 4. ✅ `I4`: [PreToolUse hook blocking writes to `$CLAUDE_CONFIG_DIR/projects/**/*.md`](./task-summary/I4-block-claude-projects-md-writes.md)
 5. ✅ `I5`: [Capture project-tracking 7-step workflow as a reusable skill](./task-summary/I5-project-tracking-workflow.md)
 6. ✅ `I6`: [Stable ticket-style IDs for MASTER.md intro section (+ per-task doc filenames + cross-refs)](./task-summary/I6-stable-ids.md)
+7. ✅ `I14`: [Stable ticket-style IDs across all MASTER.md sections (expanded scope of I6)](./task-summary/I14-stable-ids-all-sections.md)
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
@@ -88,7 +89,6 @@ tasks:
 ```
 
 14. `I26`: make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
-15. ✅ `I14`: [Stable ticket-style IDs across all MASTER.md sections (expanded scope of I6)](./task-summary/I14-stable-ids-all-sections.md)
 
 <a id="farish-skills"></a>
 
