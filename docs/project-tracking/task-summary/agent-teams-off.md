@@ -1,7 +1,7 @@
 # Turn off agent teams (and restart)
 
-**Track-doc item:** [#intro#2](../../journal/2026/05/23/getting-back-on-track.md#intro)
-**Status:** 🚧 in progress
+**Track-doc item:** [#intro#1](../../journal/2026/05/23/getting-back-on-track.md#intro) (was #2 before the emoji-key bullet was lifted to the `#key` section)
+**Status:** ✅ done — no further restart needed (see Log)
 **Owner:** alex
 
 ## Deliverable
@@ -37,6 +37,7 @@ None.
 ## Log
 
 - 2026-05-24 03:32Z (alex): jq removed the key from settings.local.json; verified remaining `.env | keys` returns only `["OP_SERVICE_ACCOUNT_TOKEN"]`.
-- 2026-05-24 03:33Z (Nate correction): pointed out work was done without a per-task doc (violated `#intro#5`'s precondition). Doc created retroactively now.
-- 2026-05-24 03:38Z (alex): this doc written; track-doc `#intro#2` linked to it; restart pending handler ack.
-- (next) 2026-05-24 ??:??Z: post-restart verification per "Validation" section.
+- 2026-05-24 03:33Z (Nate correction): pointed out work was done without a per-task doc (violated `#intro#5`'s precondition). Doc created retroactively.
+- 2026-05-24 03:38Z (alex): this doc written; track-doc linked to it; assumed restart was still needed.
+- 2026-05-24 03:44Z (Nate correction): the bash-forced restart at ~03:00Z already counted as "and restart" for this item. The current process env still has the stale `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, but that's harmless — nothing in this session is using agent-teams, and the next natural restart will pick up the cleared value. No second restart needed.
+- 2026-05-24 03:45Z (alex): marked item ✅ in track doc. Validation step 1 (persistent source clear) passes; step 2 (process env clear) deferred to next natural restart with no behavioral impact in the meantime.
