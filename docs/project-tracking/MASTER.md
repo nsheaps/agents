@@ -39,7 +39,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 3. ✅ [Migrate alex memory files to repo `memory/` (was scattered under `$CLAUDE_CONFIG_DIR/projects/`).](./task-summary/memory-migration-to-repo.md)
 4. ✅ [Add PreToolUse hook blocking Write/Edit/MultiEdit to `$CLAUDE_CONFIG_DIR/projects/**/*.md`.](./task-summary/block-claude-projects-md-writes.md)
 5. ✅ [Capture the iterative-task-on-MASTER.md workflow as a reusable skill (`project-tracking-workflow`) in the alex repo. Bootstraps from Nate Discord 2026-05-24 04:21Z — the skill is itself created using the workflow it documents.](./task-summary/project-tracking-workflow.md)
-6. 🆕 Add stable letter+number IDs (e.g. `intro-A`, `intro-B`) to every tracked item in MASTER.md so cross-references survive list reorders. Update all per-task doc back-references + Rules section refs to use the new IDs.
+6. 🚧 [Add stable letter+number IDs (e.g. `intro-A`, `intro-B`) to every tracked item in MASTER.md so cross-references survive list reorders. Update all per-task doc back-references + Rules section refs to use the new IDs.](./task-summary/stable-ids.md)
 7. 🆕 spin down jack and henry. Alex, make sure your 5m cron is still set up and the cron is nothing more than telling you to run idle-5m skill (might already be done).
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
