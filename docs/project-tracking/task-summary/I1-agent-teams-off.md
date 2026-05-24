@@ -4,6 +4,12 @@
 **Status:** ✅ done — no further restart needed (see Log)
 **Owner:** alex
 
+## Original message
+
+> turn off agent teams and restart.
+
+— Nate, MASTER.md `#intro` (item 1 in the original track-doc, predates the per-task-doc convention). Original verbatim bullet text recovered from agents commit [`5f69967`](https://github.com/nsheaps/agents/commit/5f69967) before the N2 ticket-style title rewrite.
+
 ## Deliverable
 
 - `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` is NOT set in alex's runtime process env.
