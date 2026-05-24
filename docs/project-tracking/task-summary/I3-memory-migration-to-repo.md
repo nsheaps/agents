@@ -5,6 +5,12 @@
 **Owner:** alex
 **Scope-increase note:** This item was added retroactively per Nate Discord 2026-05-24 03:57Z. Allowed because it prevents future drift (memory in claude-internal state isn't shareable as links).
 
+## Original message
+
+> the repo. You have to be able to send me links to them so on machine is not an option.
+
+— Nate, Discord 2026-05-24 03:56Z (response to alex's 3 proposed memory locations). Full context: 03:50Z Nate: "alex you wrote to the project memory bad job. Add a hook that prevents you from writing markdown files in `$CLAUDE_CONFIG_DIR/projects/**/*.md`, I don't wanna see any memory there." → 03:55Z alex proposed 3 locations → 03:56Z Nate: the repo directive above. Task added retroactively as a tracked item; no pre-N2 MASTER.md bullet exists (alex-written tracking entry).
+
 ## Deliverable
 
 - All 28 alex memory `.md` files live at `https://github.com/nsheaps/.ai-agent-alex/tree/main/memory`.
