@@ -1,7 +1,7 @@
 # Create `project-tracking-workflow` skill
 
 **Track-doc item:** [`#intro#5`](../MASTER.md#intro) (will become stable ID once `#intro#6` lands)
-**Status:** 🚧 in_progress
+**Status:** ✅ done
 **Owner:** alex
 
 ## Deliverable
@@ -60,3 +60,7 @@ The 10-step concrete example (for adding stable IDs) is documented in the skill 
 - 2026-05-24 04:22Z (Nate Discord): handed me the 7-step workflow with directive to "capture this in a skill … keep it up to date as we iterate on the process."
 - 2026-05-24 04:23Z (alex): added items 5 (this skill) + 6 (stable IDs) to MASTER.md, renumbered subsequent items 5–10 → 7–12, updated Rule 3's `#intro#9` ref → `#intro#11`, marked this item 🚧.
 - 2026-05-24 04:23Z (alex): this per-task doc created (step 2 of the workflow).
+- 2026-05-24 04:24Z (alex): commit `d558e55` landed scope-bullet + renumber + per-task doc; pushed to nsheaps/agents main.
+- 2026-05-24 04:25Z (Nate Discord): inserted new `9. extract … into scripts` bullet AND `## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE` header between `#intro#7` and `#intro#8`. Renumbered duplicate 9→10, 10→11, 11→12, 12→13. Bumped Rule 3's ref `#intro#11` → `#intro#12` (We're-gonna-do-this-in-order is now item 12).
+- 2026-05-24 04:25Z (alex): SKILL.md written at `.claude/skills/project-tracking-workflow/SKILL.md` (alex repo). Self-check: 7 steps present + in order, UPSTREAM marker, "keep up to date" note, Rules + Anti-patterns + Worked-example sections. Discoverable via Skill() (confirmed in skill list).
+- 2026-05-24 04:25Z (alex): flipped MASTER.md item 5 🚧 → ✅. Commit + push next.
