@@ -88,7 +88,7 @@ tasks:
 ```
 
 14. `I26`: make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
-15. 🚧 `I14`: [Apply stable ticket-style IDs to all MASTER.md sections (expanded scope of I6 — all sections, not just intro).](./task-summary/I14-stable-ids-all-sections.md)
+15. ✅ `I14`: [Apply stable ticket-style IDs to all MASTER.md sections (expanded scope of I6 — all sections, not just intro).](./task-summary/I14-stable-ids-all-sections.md)
 
 <a id="farish-skills"></a>
 
