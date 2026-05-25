@@ -8,7 +8,11 @@ inputs:
     description: Structured trigger data (JSON). Passed to the prompt via interpolation.
     required: true
   trigger-repo:
-    description: Full repo name (owner/repo) where the trigger originated.
+    description: |
+      Full repo name (owner/repo) where the trigger originated. MUST be the
+      consumer's own repo — the check-run posting steps use `github.token`
+      (the runner's GITHUB_TOKEN), which is only scoped to the repo running
+      the workflow. Cross-repo dispatch is not supported by this action.
     required: true
   trigger-ref:
     description: Git ref to checkout for the trigger repository.
