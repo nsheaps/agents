@@ -38,8 +38,8 @@ jobs:
     # when the PR is open AND carries the request-review label. The
     # `converted_to_draft` event also fires (PR is still in state=open while
     # draft) so the receiver can short-circuit with a `neutral` check rather
-    # than running a review on a drafted PR. If you changed the request label
-    # name, update both this `if:` and the `request-label:` input below.
+    # than running a review on a drafted PR. If you change the request label
+    # name, update the literal in the `contains(...)` expression below.
     if: |
       github.event.pull_request.state == 'open' &&
       contains(github.event.pull_request.labels.*.name, 'request-review')
@@ -57,6 +57,4 @@ jobs:
     # Optional overrides (uncomment to use):
     # with:
     #   target-repo: nsheaps/.ai-agent-henry  # default
-    #   request-label: request-review         # default
-    #   dispatch-on-draft: false              # default
     #   event-type: pr-review                 # default repository_dispatch event_type
