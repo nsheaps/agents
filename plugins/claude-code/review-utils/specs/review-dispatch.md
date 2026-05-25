@@ -289,6 +289,7 @@ flowchart LR
 Shell logic exceeding ~3 lines is extracted from inline YAML `run:` blocks into standalone scripts under `.github/scripts/review-receiver/` in the `nsheaps/agents` repo. The receiver workflow checks out `nsheaps/agents` at the start of each run so these scripts are available on the runner.
 
 Current scripts (introduced in commit `ae5a886`):
+
 - `.github/scripts/review-receiver/dismiss-prior-approvals.sh` — dismisses prior `APPROVED` reviews from this bot on the consumer PR.
 - `.github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh` — reads the metrics yaml emitted by the agent and outputs the `conclusion` + `title` for the terminal check update.
 
@@ -323,7 +324,7 @@ Bundled into PR #165 (this PR) unless noted otherwise.
 
 1. **Spec doc** — this file. ✅ (commits `ac301bf` + `15562d2`)
 2. **Revert in-process executor.** Restore `review-dispatch.yaml` to forwarder mode (drop the embedded `run-agent` step, restore `repository_dispatch`). Add the gate logic. ✅ (commit `260eef5`)
-2.5. **2026-05-23 redesign.** Drop the CI-settled gate; decider always dispatches; receiver handles `converted_to_draft` short-circuit; trigger label never removed. ✅ ([PR #367](https://github.com/nsheaps/agents/pull/367) decider rewrite + [PR #368](https://github.com/nsheaps/agents/pull/368) receiver rewrite)
+   2.5. **2026-05-23 redesign.** Drop the CI-settled gate; decider always dispatches; receiver handles `converted_to_draft` short-circuit; trigger label never removed. ✅ ([PR #367](https://github.com/nsheaps/agents/pull/367) decider rewrite + [PR #368](https://github.com/nsheaps/agents/pull/368) receiver rewrite)
 3. **Add `review-receiver.yaml`** to `nsheaps/agents`. Mirrors today's run-agent flow but driven by `repository_dispatch` payload + does the check-update + dismissal + metrics gate. ✅ (commit `4c1696b`)
 4. **Add `check-run-id` input to `run-agent` action.** Skip internal check creation when caller owns lifecycle. ✅ (commit `70296b4`)
 5. **Update consumer templates.** `templates/dispatch-review.yaml` drops anthropic/oauth + adds workflow_run trigger; NEW `templates/dispatch-receiver-review.yaml`. ✅ (commit `0a2ede7`)
