@@ -16,7 +16,7 @@ The `require-task-in-progress.sh` PreToolUse hook gates Write/Edit/MultiEdit/Not
 - Sub-agent has no TaskCreate/TaskUpdate authority in the doctrine — only the parent does — so it can't simply create a task to satisfy the gate.
 - Workaround so far: parent says "save to <path>" so the sub-agent uses Write-permitted tools or skips the hook by going through Bash. Brittle and bypasses the discipline the hook exists to enforce.
 
-Same problem on the parent side: when alex dispatches 3 sub-agents in parallel and assigns each a task, those 3 in_progress tasks now occupy the 0-or-1 invariant slot meant for alex's _own_ in-progress work.
+Same problem on the parent side: when alex dispatches 3 sub-agents in parallel and assigns each a task, those 3 in*progress tasks now occupy the 0-or-1 invariant slot meant for alex's \_own* in-progress work.
 
 ## 2. Rules (from directive, verbatim)
 
@@ -69,7 +69,7 @@ esac
 
 This satisfies rule 3 — parent can have one alex-in_progress + N sub-agent-in_progress simultaneously.
 
-The new-task-being-promoted is also checked: if I'm trying to move a sub-agent-assigned task to in_progress _from my session_, that's the parent dispatching — allowed regardless of the count (the parent doesn't "occupy" its own slot by assigning).
+The new-task-being-promoted is also checked: if I'm trying to move a sub-agent-assigned task to in*progress \_from my session*, that's the parent dispatching — allowed regardless of the count (the parent doesn't "occupy" its own slot by assigning).
 
 Edge case (rule 4): when a sub-agent finishes and I want to reassign to myself, I must first ensure no other alex-task is in_progress. The existing invariant handles this once I flip `metadata.assignee` from `<n>` → `alex`.
 
