@@ -63,6 +63,17 @@ jobs:
           app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
           private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
 
+      # github-app-auth's internal actions/checkout@v6 (no ref) defaults to
+      # the PR merge commit on pull_request events, which leaves HEAD on a
+      # SHA that isn't an ancestor of head_ref. Restore HEAD here so the
+      # later auto-bump commit lands on the PR branch and pushes fast-forward.
+      - name: Restore HEAD to PR head_ref
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          git fetch origin "$BRANCH"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+
       - name: Check if latest commit is auto-bump (loop prevention)
         id: check-skip
         run: |
