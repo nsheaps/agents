@@ -1,9 +1,10 @@
 ---
 type: feature
 created: 2026-05-25T20:04:18Z
-state: to-triage
+state: triage
 project: GSD
 priority: top-of-queue (epoch 1779737000 explicitly chosen to sort first)
+assignee: contacts://heaps-group/byGithubAppUrl/https://github.com/apps/alex-nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
@@ -14,6 +15,7 @@ references:
     url: ./1779737001-task-utils-assign-on-launch-and-auto-handoff.md
 events:
   - { ts: 2026-05-25T20:04:18Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - { ts: 2026-05-25T21:00:00Z, by: alex, change: "moved to triage; ticket-updater agent file shipped in nsheaps/.ai-agent-alex@7567ab0; this very dispatch is the first real use" }
 ---
 
 # Build ticket-updater agents for parallel triage
@@ -53,6 +55,12 @@ Currently every ticket update is done by the foreground agent (Alex) sequentiall
 
 - Closely related to the existing `AGENT(<name>):` sub-agent pattern (already in use for sonnet dispatch). This ticket is about formalizing it for ticket-CRUD specifically.
 - Should integrate with the future `ticket-utils` plugin's CRUD skills once those exist.
+
+## Triage notes
+
+- **Meta-bootstrap:** The first real use of the ticket-updater agent is this very dispatch — the agent updating this ticket is itself the artifact being triaged. Self-referential but intentional.
+- **Blocking relationship still holds:** The dependency on [`1779737001`][^blocked-by-task-utils-assign] (auto-assign on launch) remains active. Manual assignment is the current friction this ticket exists to remove; the ticket cannot be marked done until auto-assign-on-launch is implemented and removes the race condition class.
+- **Acceptance criteria status:** Only the agent file ships as of `nsheaps/.ai-agent-alex@7567ab0`. The "parallelize" demo (3 concurrent agents, 3 independent commits) and the skill/scaffold for launching ticket-update agents are still TODO.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508561371275722812
 
