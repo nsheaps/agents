@@ -25,6 +25,8 @@ set -euo pipefail
 INPUT="$(cat)"
 TOOL_NAME="$(jq -r '.tool_name // empty' <<<"$INPUT")"
 SESSION_ID="$(jq -r '.session_id // empty' <<<"$INPUT")"
+AGENT_ID="$(jq -r '.agent_id // empty' <<<"$INPUT")"
+AGENT_TYPE="$(jq -r '.agent_type // empty' <<<"$INPUT")"
 
 LOG_DIR="${CLAUDE_PROJECT_DIR:-$(pwd)}/.claude/logs"
 LOG_FILE="$LOG_DIR/require-task-in-progress.log"
@@ -46,11 +48,48 @@ esac
 CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 TASKS_DIR="$CLAUDE_DIR/tasks/$SESSION_ID"
 
-# Count in_progress tasks
+# Sub-agent branch — `agent_id` present in stdin means this hook fires for a
+# parent-dispatched sub-agent. Look for an in_progress task whose
+# metadata.assignee matches the sub-agent's agent_id; allow if found.
+# Degrade-mode: if no assigned task exists, ALLOW with an advisory note
+# (per assignee-design.md §"Probe findings" → degrade-mode C). The Agent()
+# dispatch itself is the parent's authorization; assignment is for accounting,
+# not gating.
+if [[ -n "$AGENT_ID" ]]; then
+  ASSIGNED_TASK=""
+  if [[ -d "$TASKS_DIR" ]]; then
+    while IFS= read -r -d '' f; do
+      f_status="$(jq -r '.status // empty' "$f" 2>/dev/null)"
+      f_assignee="$(jq -r '.metadata.assignee // empty' "$f" 2>/dev/null)"
+      if [[ "$f_status" == "in_progress" && "$f_assignee" == "$AGENT_ID" ]]; then
+        ASSIGNED_TASK="$(jq -r '.id // empty' "$f" 2>/dev/null)"
+        break
+      fi
+    done < <(find "$TASKS_DIR" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
+  fi
+  if [[ -n "$ASSIGNED_TASK" ]]; then
+    log_fire "allow" "tool=${TOOL_NAME} subagent=${AGENT_ID} task=${ASSIGNED_TASK}"
+    emit_decision "allow" ""
+    exit 0
+  fi
+  # Degrade-mode: no assigned task, still allow but warn in advisory
+  log_fire "allow-degrade" "tool=${TOOL_NAME} subagent=${AGENT_ID} type=${AGENT_TYPE} reason=no-assigned-task"
+  emit_decision "allow" ""
+  exit 0
+fi
+
+# Parent branch (no agent_id) — original logic, but the 0-or-1 invariant
+# excludes sub-agent-assigned tasks via the assignee check.
 IN_PROGRESS_COUNT=0
 if [[ -d "$TASKS_DIR" ]]; then
   while IFS= read -r -d '' f; do
     f_status="$(jq -r '.status // empty' "$f" 2>/dev/null)"
+    f_assignee="$(jq -r '.metadata.assignee // empty' "$f" 2>/dev/null)"
+    # Skip sub-agent-assigned in_progress tasks — they don't gate parent writes.
+    case "$f_assignee" in
+      ""|alex) : ;;
+      *) continue ;;
+    esac
     if [[ "$f_status" == "in_progress" ]]; then
       IN_PROGRESS_COUNT=$((IN_PROGRESS_COUNT + 1))
     fi
