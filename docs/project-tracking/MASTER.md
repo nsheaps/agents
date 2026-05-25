@@ -323,7 +323,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 <a id="dreaming"></a>
 
-# dreaming (part of agentic-behavior? move to agents repo?)
+## dreaming (part of agentic-behavior? move to agents repo?)
 
 needs more definition needs emphasis of learning based on what happened, not continuing any work, including work that might also improve the agent. Don't duplicate that work, but if that work is in progress, it can be updated during dreaming. Don't start new already-scoped work. make sure to scope work before doing it.
 
