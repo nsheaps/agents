@@ -47,7 +47,11 @@ local_only_artifacts:
     role: Nate's local OpenClaw config/data (NOT a git repo). Research artifact for I44 incident-utils archaeology.
 events:
   - { ts: 2026-05-25T19:37:00Z, by: alex, change: created (project-setup step 2-sub-3) }
-  - { ts: 2026-05-25T20:05:00Z, by: alex, change: "renamed ai-agents → GSD; default_assignee blanked; reference name field dropped; github-app contacts added for alex/jack/henry per Discord 1508552640861311168 + 1508557514063609997" }
+  - {
+      ts: 2026-05-25T20:05:00Z,
+      by: alex,
+      change: "renamed ai-agents → GSD; default_assignee blanked; reference name field dropped; github-app contacts added for alex/jack/henry per Discord 1508552640861311168 + 1508557514063609997",
+    }
 ---
 
 # GSD

@@ -7,7 +7,11 @@ requester: contacts://heaps-group/byGithubUsername/nsheaps
 source_doc: docs/project-tracking/MASTER.md
 source_header: "## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE"
 events:
-  - { ts: 2026-05-25T19:45:46Z, by: alex, change: "created from MASTER.md milestone-extraction sweep (project-setup step 3, manual write because subagent saw the local file and skipped)" }
+  - {
+      ts: 2026-05-25T19:45:46Z,
+      by: alex,
+      change: "created from MASTER.md milestone-extraction sweep (project-setup step 3, manual write because subagent saw the local file and skipped)",
+    }
 ---
 
 # Milestone request: ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
