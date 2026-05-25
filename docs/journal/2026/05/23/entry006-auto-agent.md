@@ -1,1 +1,0 @@
-proxmox community scripts that auto-detects your cluster and can run a command on nodes one-time or recurring R times. Useful for setting up an agent on many machines, such as quickly setting up an ansible-pull cron.
