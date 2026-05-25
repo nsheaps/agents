@@ -8,7 +8,11 @@ requester: contacts://heaps-group/byGithubUsername/nsheaps
 source_doc: docs/project-tracking/MASTER.md
 source_header: "defining scope and cleaning git state"
 events:
-  - { ts: 2026-05-25T19:47:57Z, by: alex, change: "created from MASTER.md milestone-extraction sweep (project-setup step 3, via sonnet subagent)" }
+  - {
+      ts: 2026-05-25T19:47:57Z,
+      by: alex,
+      change: "created from MASTER.md milestone-extraction sweep (project-setup step 3, via sonnet subagent)",
+    }
 ---
 
 # Milestone request: defining scope and cleaning git state
