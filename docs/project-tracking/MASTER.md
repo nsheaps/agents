@@ -37,43 +37,63 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 <!-- next-id: I44 -->
 
+<a id="I1"></a>
 - ✅ `I1`: [Turn off agent teams + restart](./task-summary/I1-agent-teams-off.md)
+<a id="I2"></a>
 - ✅ `I2`: [Migrate track-doc to MASTER.md + status-emoji key + per-task doc convention](./task-summary/I2-master-md-migration.md)
+<a id="I3"></a>
 - ✅ `I3`: [Migrate memory files to alex repo `memory/`](./task-summary/I3-memory-migration-to-repo.md)
+<a id="I4"></a>
 - ✅ `I4`: [PreToolUse hook blocking writes to `$CLAUDE_CONFIG_DIR/projects/**/*.md`](./task-summary/I4-block-claude-projects-md-writes.md)
+<a id="I5"></a>
 - ✅ `I5`: [Capture project-tracking 7-step workflow as a reusable skill](./task-summary/I5-project-tracking-workflow.md)
+<a id="I6"></a>
 - ✅ `I6`: [Stable ticket-style IDs for MASTER.md intro section (+ per-task doc filenames + cross-refs)](./task-summary/I6-stable-ids.md)
+<a id="I14"></a>
 - ✅ `I14`: [Stable ticket-style IDs across all MASTER.md sections (expanded scope of I6)](./task-summary/I14-stable-ids-all-sections.md)
+<a id="I27"></a>
 - 🆕 `I27`: [Audit I2–I14 per-task docs and backfill Original message sections](./task-summary/I27-backfill-original-message.md)
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
+<a id="I7"></a>
 - ✅ `I7`: [Spin down jack + henry, verify minimal 5m cron](./task-summary/I7-spin-down-peers.md)
+<a id="I15"></a>
 - `I15`: Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
 
+<a id="I29"></a>
 - ✅ `I29`: update rules for handling tasks here, if you see edits being made, ~~stop editing and post in discord and wait for my okay~~ set up a monitor to wait for 2x 2m interval shasum checks for the file that are the same (no changes in 4 minutes) and then make your changes. If there's lots of file contention, consider making stuff smaller.
   - **Log:** Rule landed in [`project-tracking-workflow` skill `0038f35`](https://github.com/nsheaps/.ai-agent-alex/commit/0038f35) with the concrete bash snippet (2× consecutive 2-min shasum match = 4 min stability). 2026-05-25 03:08Z.
 
+<a id="I31"></a>
 - 🚧 `I31`: [per-ticket file structure + milestone drilldown rules](./task-summary/I31-per-ticket-file-structure.md) — update rules for handling tasks to have one file per task, how that ticket file should look, and how we'll drill down from a milestone list (in order of priority; reorder-priority handshake required; each milestone has a list to each ticket + metadata; placeholder-IDs (i?/c?) honored)
   - This is manual for now, but I9 will automate it
 
+<a id="I38"></a>
 - 🚧 `I38`: [agentic-behavior self-rewrite skill with rubric scoring](./task-summary/I38-agentic-behavior-self-rewrite.md) — dispatch sub-agent ASYNC to land PR on ai-mktpl. Skill (context:fork) archives current ruleset (rules + skills + agents + tools) under a versioned archive dir, evaluates the prior version against a documented categorical-numeric rubric (categories adjustable per iteration but always documented + scored), and emits a new ruleset incorporating observed behavior since the last rewrite. Similar in spirit to dreaming. PR must request CI review.
 
 ## defining scope and cleaning git state
 
+<a id="I32"></a>
 - 🆕 `I32`: define all repos in scope for this project tracking list in ./REPOS.md (needs Nate's eyes)
+<a id="I30"></a>
 - 🆕 `I30`: commit outstanding work in agents, agent repos, ai-mktpl and other repos in REPOS.md
   - Read each file thoroughly before committing, taking notes in your journal about anything that will help with the next task, there's a lot of disparate ideasa, but don't go crazy here.
   - 🆕 `C2`: let's commit all the other changes to the agents repo to main. we're gonna make some rapid changes make sure it's in a clean state.
   - 🆕 `C3`: Lets make sure anything that's easy to close PR wise on agents, agent repos, mktpl, tools, etc in the nsheaps org is closed. Most are not easy, but programatically dump it, then see if anything is relevant and easy.
+<a id="I39"></a>
 - 🆕 `I39`: audit nsheaps/agents, nsheaps/ai-mktpl, and all the agent repos — survey state (committed/uncommitted files, open PRs, branches, untracked directories, stray skills/plugins/scripts) before scoping I32 (REPOS.md) and downstream cleanup. Per Nate Discord [1508288275817959524](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288275817959524) + correction [1508288401248489564](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288401248489564) (02:00Z) — position is "after I30 and sub-bullets, not before I32".
 - 🆕 `C1`: rename this plugin to `reddit` from reddit-fetcher [PR #166](https://github.com/nsheaps/agents/pull/166) (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
 
+<a id="I28"></a>
 - 🆕 `I28`: Now that we have a bit more definition to each section, lets also talk about the approach, then split them into actual sections with headers
   - Lets correct the cleanup section items to be in correct sections
+  <a id="I33"></a>
   - 🆕 `I33`: propose a structure before making it
   - when you make it, update this to be a TOC to link to the other tracking docs per section, so you have smaller things to update
+  <a id="I12"></a>
   - 🆕 `I12`: [remove ticket number?] We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. TODO: move to rules?
+  <a id="I20"></a>
   - `I20`: [remove ticket number?] all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place, though we'll still use the tickets for tracking.
 
 ### pause here HEREHERE
