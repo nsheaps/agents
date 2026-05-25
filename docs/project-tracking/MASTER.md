@@ -57,6 +57,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
+→ Milestone: [M1](milestones/M1.md) (legacy: I7, I15, I29, I31, I38)
+
 <a id="I7"></a>
 
 - ✅ `I7`: [Spin down jack + henry, verify minimal 5m cron](./task-summary/I7-spin-down-peers.md)
@@ -78,6 +80,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 - 🚧 `I38`: [agentic-behavior self-rewrite skill with rubric scoring](./task-summary/I38-agentic-behavior-self-rewrite.md) — dispatch sub-agent ASYNC to land PR on ai-mktpl. Skill (context:fork) archives current ruleset (rules + skills + agents + tools) under a versioned archive dir, evaluates the prior version against a documented categorical-numeric rubric (categories adjustable per iteration but always documented + scored), and emits a new ruleset incorporating observed behavior since the last rewrite. Similar in spirit to dreaming. PR must request CI review.
 
 ## defining scope and cleaning git state
+
+→ Milestone: [M5](milestones/M5.md) (legacy: I12, I20, I28, I30, I32, I33, I39, I44, I45)
 
 <a id="I32"></a>
 
@@ -115,6 +119,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## make ticket-utils
 
+→ Milestone: [M13](milestones/M13.md) (legacy: I9, I34)
+
 - 🆕 [`I9`](./task-summary/I9-ticket-utils.md): extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work 10. make the task updating skill use context:fork
   - This is ticket-utils. look this up in other files, we're not starting from scratch. we just need basic scripts that act like task-utils, but for tickets (right now we'll just use a file backend in the repo). Look at agents#157 for an idea of how task-utils does it, right now we just need fast and scrappy, we'll do ts later. Since this is also all encapsulated in a skill ticket-manage, with context:fork, running scripts is okay
     - If you think it's easier, scripts can be ts/bun scripts for later integration
@@ -129,12 +135,16 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## improve the tickets
 
+→ Milestone: [M12](milestones/M12.md) (legacy: I8, I10)
+
 - 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one.
   - individually check each list item in MASTER.md and it's subdocs recursively, make sure items that are rules are rules and tasks are tasks
 
 ~~- 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.~~
 
 ## improve plugin + skill writing + metric tracking
+
+→ Milestone: [M11](milestones/M11.md) (legacy: I36, I41, I42, I43)
 
 - 🆕 `I36`: do the plugin-dev plugin and skill-utils plugin work now
 - 🆕 `C4`: make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
@@ -169,13 +179,19 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## fix compaction
 
+→ Milestone: [M8](milestones/M8.md) (legacy: I16)
+
 - `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place. in agent-utils
 
 ## fix {update+update(fail)+update}=>commit from being able to commit if one fails
 
+→ Milestone: [M9](milestones/M9.md) (legacy: I17)
+
 - `I17`: We need to make sure batches of tool calls fail back into the conversation instead of completing the rest of the tool calls, AND/OR make sure any commit tool call is separate from the actual updates
 
 ## word-vomit plugin
+
+→ Milestone: [M16](milestones/M16.md) (legacy: I11, I18, I19)
 
 - `E5`: [word-vomit plugin] Lets set up a mechanism for me to write random shit into a file that you guys watch and properly categorize and update it (file-utils from scratch[^scratch] to notify). _(Moved from `# end of tonight 2026-05-24` per Nate Discord [`1508331380239634652`](https://discord.com/channels/1490863845252665415/1497431286661517353/1508331380239634652) — this is the prototype vision; I11/I18/I19 are the implementation tickets._
 - 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md`
@@ -199,6 +215,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## dunno what these are.... rules? probably rules ALEX LOOK HERE MAYBE THIS SHOULD BE HOISTED BEFORE WORK
 
+→ Milestone: [M7](milestones/M7.md) (legacy: I21, I22, I23, I35)
+
 - 🆕 `I35`: is this skill updates?
   - `I21`: define deliverables first, then how you'll validate that you have the deliverable correct and working, then how you'll actually create the deliverable
     - This lost context of it's surroundings and needs to be updated based on what it said in the git history around this request
@@ -208,6 +226,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
     - rule?
 
 ## role definition improvement
+
+→ Milestone: [M14](milestones/M14.md) (legacy: I37, I40)
 
 - 🆕 `I40`: define agent roles (currently inlined in C7 sub-bullets) as agents in a new `agent-roles` plugin in nsheaps/agents. Alex doesn't own those definitions — persona gets processed by `agent-roles` and rules/skills are GENERATED so Alex's prompt becomes that role at runtime. Exception: the alex agent's own prompt itself (TBD — might need `claude --agent` flag-style invocation, research needed). **Research-first** before implementation — needs clarity on (a) how agent-roles plugin emits prompts/rules/skills, (b) how Alex's bootstrap picks them up, (c) the alex-prompt-as-exception bootstrap path. Per Nate Discord [1508287003282768045](https://discord.com/channels/1490863845252665415/1497431286661517353/1508287003282768045) (2026-05-25 01:54Z): "Def need to research more before implementation here".
 - 🆕 `I37`: split up C7 into many items if not already
@@ -294,6 +314,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## CI review recon + fixing
 
+→ Milestone: [M3](milestones/M3.md) (legacy: I25)
+
 - `I25`: Take note of what the state of the review bot is in nsheaps/agents and other repos and let me know. Test it if you don't know
 
 10. 🆕 `C8`: Lets look through all those transcripts and items. it's a lot to look through and a lot to waste tokens on, which I don't want to quite yet, so we'll focus on dumping all the data, then targeted extraction of everything related to the henry review workflow _(related: [agents#117](https://github.com/nsheaps/agents/issues/117) — reusable review dispatch; substantial progress via [PR #160](https://github.com/nsheaps/agents/pull/160), [PR #164](https://github.com/nsheaps/agents/pull/164), and in-flight [PR #165](https://github.com/nsheaps/agents/pull/165))_
@@ -311,6 +333,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## validate task-utils sub-agent delegation
 
+→ Milestone: [M15](milestones/M15.md) (legacy: I13, I26)
+
 - `I26`: make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
   - 🆕 `I13`: Update task-utils to have a configuration to block or warn or quiet, something like
     ```yaml
@@ -323,9 +347,13 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## hookify fork
 
+→ Milestone: [M10](milestones/M10.md)
+
 5. 🆕 `C5`: fork hookify into our agents repo, as well as the sequential thinking mcp server and add the sequential thinking mcp to the agent-utils plugin _(partial: [`sequential-thinking`](https://github.com/nsheaps/ai-mktpl/tree/main/plugins/sequential-thinking) plugin exists in ai-mktpl but isn't bundled into agent-utils yet; hookify is upstream, no fork in nsheaps yet)_
 
 ## agent consistency audit update
+
+→ Milestone: [M2](milestones/M2.md)
 
 6. 🆕 `C6`: lets get a diff of all 3 agents, in a research doc. make an agent-drift plugin in nsheaps/agents. Post-tool-use cd into one of the agent repos, remind about the tracking doc, throttled to once every 5 minutes. Post edit tool use in one of the repos, remind about the tracking doc. Post tool use, stop, user prompt submit throttle 5m just pull the repo the tracking doc is in. If a tracked file changes post a reminder to the agent. Give the plugin a config of the repo, where it's checked out, the branch to commit to, and a list of files within to watch for changes after a git pull. If it ever tries to sync and the branch is wrong or a conflict happens, warn the agent
 
@@ -334,6 +362,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 <a id="farish-skills"></a>
 
 ## collecting skills from farish
+
+→ Milestone: [M4](milestones/M4.md)
 
 <!-- next-id: F2 -->
 
@@ -373,6 +403,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 <a id="dreaming"></a>
 
 ## dreaming (own `dreaming` plugin in nsheaps/agents per I45)
+
+→ Milestone: [M6](milestones/M6.md) (legacy: I45)
 
 Decision locked 2026-05-25 04:25Z (Nate Discord [`1508325147449364510`](https://discord.com/channels/1490863845252665415/1497431286661517353/1508325147449364510)): standalone `dreaming` plugin in `nsheaps/agents`, **NOT** folded into agentic-behavior (agentic-behavior still gets migrated rather than discarded). See [`I45`](#I45) for the basic-build scope and 6-step flow.
 
