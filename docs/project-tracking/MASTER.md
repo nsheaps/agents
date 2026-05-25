@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I44 -->
+<!-- next-id: I45 -->
 
 <a id="I1"></a>
 
@@ -102,6 +102,10 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
   - 🆕 `I12`: [remove ticket number?] We're gonna do this stuff in this list in this order. We'll start reading stuff, and have HIGH risk for getting off track. it's very important to keep this document up to date until another source of truth is established. TODO: move to rules?
     <a id="I20"></a>
   - `I20`: [remove ticket number?] all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place, though we'll still use the tickets for tracking.
+
+<a id="I44"></a>
+
+- 🆕 `I44`: build `incident-utils` plugin in `nsheaps/agents` with empty skill scaffolds for `incident-manage`, `incident-search`, `incident-type-behavioral`, `incident-type-infrastructure`, `incident-writing-postmortem`, `incident-type-software`. Multiple backends supported — start file-based, **really abstract out shared stuff** so other backends (Linear, GH issues) slot in cleanly. Skills self-update after each use. Fill `incident-type-behavioral` with 5 bullets covering: (1) track noted bad behavior, (2) research it, (3) experiment + fix, (4) validate, (5) deploy / ensure rollout for others. Install on alex + restart to pick up — going forward EVERY correction Nate gives gets logged as an incident BEFORE fixing. Overlaps with `correct-behavior` (agentic-behavior plugin) — likely supersedes or wraps it. Research inputs: look at `/home/nsheaps/.openclaw`, `nsheaps/aitkit` all branches back 1.5y, `nsheaps/claude-code-sessions` all branches back 1.5y for past incident-\* attempts. Per Nate Discord [1508323366082187407](https://discord.com/channels/1490863845252665415/1497431286661517353/1508323366082187407) (2026-05-25 04:18Z).
 
 ### pause here HEREHERE
 
