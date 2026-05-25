@@ -1,6 +1,6 @@
 # Create `project-tracking-workflow` skill
 
-**Track-doc item:** `I5` — [`#intro` § I5](../MASTER.md#intro) (assigned stable ID `I5` per `I6` on 2026-05-24)
+**Track-doc item:** `I5` — [`#intro` / I5](../MASTER.md#intro) (assigned stable ID `I5` per `I6` on 2026-05-24)
 **Status:** ✅ done
 **Owner:** alex
 

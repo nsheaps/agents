@@ -1,13 +1,15 @@
 ---
 type: bug
 created: 2026-05-25T19:36:06Z
-created_epoch: 1779737766
-requester: contacts://heaps-group/byGithubUsername/nsheaps
 state: to-triage
-project: TBD (likely ai-agents → ticket-utils or task-utils area)
-priority: bug-default
+project: GSD
+requester: contacts://heaps-group/byGithubUsername/nsheaps
+references:
+  - id: discord-ask
+    type: discord-message
+    url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508554062340034831
 events:
-  - { ts: 2026-05-25T19:36:06Z, by: alex, change: created from Discord ask 1508554062340034831 }
+  - { ts: 2026-05-25T19:36:06Z, by: alex, change: "created from Discord ask[^discord-ask]" }
 ---
 
 # task-utils PreToolUse hook: validation error is non-comprehensive — wastes tool calls
@@ -20,7 +22,7 @@ events:
 >
 > Capture that right now so you keep the context of the tool calls you just made, but drop it into to-triage
 
-Source: [Discord msg 1508554062340034831](https://discord.com/channels/1490863845252665415/1497431286661517353/1508554062340034831) (2026-05-25 19:35Z)
+Source: Discord msg[^discord-ask] (2026-05-25 19:35Z)
 
 ## Problem
 
@@ -93,3 +95,5 @@ Format example:
 
 - This is meta-tooling-debt; while not blocking work, it costs 1 wasted tool-call per task completion when boxes/RESULTs are forgotten.
 - Currently no validation-step linter exists for the create/in-progress path either — caller can only discover the requirements at completion time. Worth surfacing in the hook coach text on transition-to-in-progress too (already partially done).
+
+[^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508554062340034831

@@ -1,6 +1,6 @@
 # Stable ticket-style IDs for MASTER.md items
 
-**Track-doc item:** `I6` — [`#intro` § I6](../MASTER.md#intro)
+**Track-doc item:** `I6` — [`#intro` / I6](../MASTER.md#intro)
 **Status:** ✅ done
 **Owner:** alex
 
@@ -82,7 +82,7 @@ Next free: `I14`.
 3. **MASTER.md — Rules section refs**: `#intro#12 → I12`, `#intro#4 → I4`, `#intro#2 → I2`, `#intro#3 → I3`, `#intro#6 → I6`. Drop the parenthetical "(Number will become stable when …)" in Rule 3 — obsolete.
 4. **MASTER.md — `<!-- next-id: I14 -->` hint** under the `#intro` section header (after the existing `<a id="intro"></a>` and the prose intro paragraph).
 5. **git mv 6 per-task docs:** add `IN-` prefix to each filename. Update the MASTER.md link targets in step 2 to match.
-6. **Update each per-task doc's `Track-doc item:` header** to use the new ID form: `**Track-doc item:** \`I1\` — [#intro § I1](../MASTER.md#intro)` (no fragile list-number ref).
+6. **Update each per-task doc's `Track-doc item:` header** to use the new ID form: `**Track-doc item:** \`I1\` — [#intro / I1](../MASTER.md#intro)` (no fragile list-number ref).
 7. **SKILL.md "Worked example"**: swap `#intro#6` → `I6`, mention the new ID convention.
 8. **Other-section IDs deferred**: do NOT mass-apply `F1`, `C1...C7`, etc. now — those don't have task-summary docs, no cross-refs to update. Apply ID-at-creation when those items get task-summary docs (going forward). The `project-tracking-workflow` skill enforces this.
 9. **Validate**:

@@ -1,6 +1,6 @@
 # Turn off agent teams (and restart)
 
-**Track-doc item:** `I1` — [`#intro` § I1](../MASTER.md#intro) (was list-position #2 before the emoji-key bullet was lifted to the `#key` section; doc moved from journal path to MASTER.md on 2026-05-24; assigned stable ID `I1` per `I6` on 2026-05-24)
+**Track-doc item:** `I1` — [`#intro` / I1](../MASTER.md#intro) (was list-position #2 before the emoji-key bullet was lifted to the `#key` section; doc moved from journal path to MASTER.md on 2026-05-24; assigned stable ID `I1` per `I6` on 2026-05-24)
 **Status:** ✅ done — no further restart needed (see Log)
 **Owner:** alex
 

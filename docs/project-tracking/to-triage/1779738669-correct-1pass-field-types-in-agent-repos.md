@@ -4,8 +4,12 @@ created: 2026-05-25T19:51:09Z
 state: to-triage
 project: GSD
 requester: contacts://heaps-group/byGithubUsername/nsheaps
+references:
+  - id: discord-ask
+    type: discord-message
+    url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508557929991766087
 events:
-  - { ts: 2026-05-25T19:51:09Z, by: alex, change: created from Discord ask 1508557929991766087 }
+  - { ts: 2026-05-25T19:51:09Z, by: alex, change: "created from Discord ask[^discord-ask]" }
 ---
 
 # Correct 1pass field types in agent repos
@@ -14,7 +18,7 @@ events:
 
 > add a task in the triage queue for correcting field types in agent repos
 
-Source: [Discord msg 1508557929991766087](https://discord.com/channels/1490863845252665415/1497431286661517353/1508557929991766087) (2026-05-25 19:50Z)
+Source: Discord msg[^discord-ask] (2026-05-25 19:50Z)
 
 ## Context
 
@@ -53,3 +57,5 @@ Items to audit per agent:
 
 - This dovetails with the 1pass plugin's `redact-secrets.sh` hook — that hook uses `type == "CONCEALED"` as the redaction signal (per Nate's prior call: "only CONCEALED fields get redacted, full stop"). If field types are wrong upstream, the redaction layer can't help.
 - Adjacent to but distinct from the task-utils validation-error bug filed earlier today (different repo/plugin scope).
+
+[^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508557929991766087

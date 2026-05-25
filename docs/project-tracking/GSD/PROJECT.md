@@ -1,24 +1,26 @@
 ---
-name: ai-agents
+name: GSD
 short_desc: The team/project building Nate's agentic AI workforce (Alex, Jack, Henry, Kenny + the supporting plugins/infra).
 created: 2026-05-25T19:37:00Z
-created_epoch: 1779737820
-updated: 2026-05-25T19:37:00Z
-default_assignee: contacts://heaps-group/byGithubUsername/alex-nsheaps
+updated: 2026-05-25T20:05:00Z
+default_assignee:
 product_owners:
   - contacts://heaps-group/byGithubUsername/nsheaps
 project_managers:
   - contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - type: doc
-    name: REPOS.md
     url: https://github.com/nsheaps/agents/blob/main/REPOS.md
   - type: doc
-    name: MASTER.md
     url: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md
   - type: doc
-    name: SETUP.md
     url: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/SETUP.md
+  - type: github-app
+    url: https://github.com/apps/alex-nsheaps
+  - type: github-app
+    url: https://github.com/apps/jack-nsheaps
+  - type: github-app
+    url: https://github.com/apps/henry-nsheaps
 repos_in_scope:
   - github: nsheaps/agents
     role: Workspace monorepo (agent binaries, apps, services, plugins).
@@ -31,13 +33,13 @@ repos_in_scope:
   - github: nsheaps/.ai-agent-henry
     role: Henry's personal repo.
   - github: nsheaps/aitkit
-    role: TBD per REPOS.md §7.
+    role: TBD per REPOS.md section 7.
   - github: nsheaps/claude-code-sessions
-    role: TBD per REPOS.md §8.
+    role: TBD per REPOS.md section 8.
   - github: nsheaps/op-exec
     role: 1Password CLI wrapper used by agents for secret injection.
   - github: nsheaps/homebrew-devsetup
-    role: TBD per REPOS.md §10.
+    role: TBD per REPOS.md section 10.
   - github: nsheaps/.github
     role: Org-level workflows + secret-sync source.
 local_only_artifacts:
@@ -45,18 +47,19 @@ local_only_artifacts:
     role: Nate's local OpenClaw config/data (NOT a git repo). Research artifact for I44 incident-utils archaeology.
 events:
   - { ts: 2026-05-25T19:37:00Z, by: alex, change: created (project-setup step 2-sub-3) }
+  - { ts: 2026-05-25T20:05:00Z, by: alex, change: "renamed ai-agents → GSD; default_assignee blanked; reference name field dropped; github-app contacts added for alex/jack/henry per Discord 1508552640861311168 + 1508557514063609997" }
 ---
 
-# ai-agents
+# GSD
 
 The team building Nate's agentic AI workforce and the supporting infrastructure that lets them function — runtime launchers, secret injection, plugin marketplaces, ticket tracking, communication tooling, and observability.
 
 ## Members
 
-- **Nathan "Nate" Heaps** ([`contacts://heaps-group/byGithubUsername/nsheaps`](https://github.com/nsheaps)) — handler, product owner, project manager.
-- **Alex Picard** (`alex-nsheaps[bot]`) — SYSTEM agent, currently active for project-tracking setup + plugin development.
-- **Jack** (`jack-nsheaps[bot]`) — peer agent (spun down 2026-05-24 per I7).
-- **Henry** (`henry-nsheaps[bot]`) — peer agent (spun down 2026-05-24 per I7).
+- **Nathan "Nate" Heaps** ([github](https://github.com/nsheaps)) — handler, product owner, project manager.
+- **Alex Picard** ([app](https://github.com/apps/alex-nsheaps)) — SYSTEM agent, currently active for project-tracking setup + plugin development.
+- **Jack** ([app](https://github.com/apps/jack-nsheaps)) — peer agent (spun down 2026-05-24 per I7).
+- **Henry** ([app](https://github.com/apps/henry-nsheaps)) — peer agent (spun down 2026-05-24 per I7).
 - **Kenny** — referenced in `intake/project-setup.md` but no repo exists at `nsheaps/agent-kenny` per REPOS.md. Add to scope or remove the reference when triaged.
 
 ## Scope

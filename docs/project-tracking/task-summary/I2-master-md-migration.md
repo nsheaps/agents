@@ -1,6 +1,6 @@
 # MASTER.md migration + numbering + key + rules sections
 
-**Track-doc item:** `I2` — [`#intro` § I2](../MASTER.md#intro) (was list-position #4 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I2` per `I6` on 2026-05-24)
+**Track-doc item:** `I2` — [`#intro` / I2](../MASTER.md#intro) (was list-position #4 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I2` per `I6` on 2026-05-24)
 **Status:** ✅ done
 **Owner:** alex
 

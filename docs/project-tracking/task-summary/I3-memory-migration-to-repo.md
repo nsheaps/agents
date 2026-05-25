@@ -1,6 +1,6 @@
 # Migrate alex memory files to repo `memory/`
 
-**Track-doc item:** `I3` — [`#intro` § I3](../MASTER.md#intro) (was list-position #9 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I3` per `I6` on 2026-05-24)
+**Track-doc item:** `I3` — [`#intro` / I3](../MASTER.md#intro) (was list-position #9 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I3` per `I6` on 2026-05-24)
 **Status:** ✅ done
 **Owner:** alex
 **Scope-increase note:** This item was added retroactively per Nate Discord 2026-05-24 03:57Z. Allowed because it prevents future drift (memory in claude-internal state isn't shareable as links).

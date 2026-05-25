@@ -3,7 +3,7 @@ type: milestone-request
 created: 2026-05-25T19:47:57Z
 created_epoch: 1779738477
 state: to-triage
-project: ai-agents
+project: GSD
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 source_doc: docs/project-tracking/MASTER.md
 source_header: "collecting skills from farish"

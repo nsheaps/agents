@@ -1,6 +1,6 @@
 # Block markdown writes under `$CLAUDE_CONFIG_DIR/projects/`
 
-**Track-doc item:** `I4` — [`#intro` § I4](../MASTER.md#intro) (was list-position #10 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I4` per `I6` on 2026-05-24)
+**Track-doc item:** `I4` — [`#intro` / I4](../MASTER.md#intro) (was list-position #10 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I4` per `I6` on 2026-05-24)
 **Status:** ✅ done
 **Owner:** alex
 
