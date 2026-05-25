@@ -153,8 +153,92 @@ Rename happens in this PR alongside the schema/hook changes — single coherent 
 
 ---
 
-## Open questions (route to next sub-task before implementation)
+## Probe findings (2026-05-25 03:44Z)
 
-- **OQ1**: What's the actual sub-agent hook input shape? Is `parent_session_id` present, or do we need env-var injection? Validation step: dispatch a trivial sub-agent that runs a Bash command piping its stdin to a debug file via a temporary PreToolUse hook, inspect the JSON.
-- **OQ2**: Does `Agent({name: "<n>"})` preserve the name in any env-discoverable way to the sub-agent process? If not, the parent may need to write a marker file the sub-agent reads.
-- **OQ3**: Does `claude plugin install` from a local-directory marketplace require a restart to pick up hook changes, or is it dynamic? Affects iteration speed.
+Ran the probe per OQ1/OQ2 plan. Temp PreToolUse hook dumped stdin + env on Write/Edit fires; dispatched one sub-agent via `Agent(subagent_type: "general-purpose")` to trigger a sub-agent Write. Both fires captured under `/home/nsheaps/src/nsheaps/.ai-agent-alex/docs/journal/2026/05/25/subagent-hook-probe/`.
+
+### Parent hook input (sample)
+```json
+{
+  "session_id": "6560d0ff-f5b1-4a9c-b585-d996c6a12250",
+  "transcript_path": "...",
+  "cwd": "/home/nsheaps/src/nsheaps/.ai-agent-alex",
+  "permission_mode": "bypassPermissions",
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Write",
+  "tool_input": {...},
+  "tool_use_id": "toolu_..."
+}
+```
+Notably absent: `agent_id`, `agent_type`, `parent_session_id`.
+
+### Sub-agent hook input (sample)
+```json
+{
+  "session_id": "6560d0ff-f5b1-4a9c-b585-d996c6a12250",   // SAME as parent
+  "transcript_path": "...",                                // SAME path
+  "cwd": "/home/nsheaps/src/nsheaps/.ai-agent-alex",
+  "permission_mode": "bypassPermissions",
+  "agent_id": "a114f63a6b8ebf8d0",                         // ← present
+  "agent_type": "general-purpose",                         // ← present
+  "hook_event_name": "PreToolUse",
+  "tool_name": "Write",
+  "tool_input": {...},
+  "tool_use_id": "toolu_..."
+}
+```
+
+### Env vars
+Identical in both fires — no `CLAUDE_AGENT_ID`, no `CLAUDE_PARENT_SESSION_ID`. `AGENT_NAME=alex` is the launcher-injected human-name only.
+
+### Implications
+
+**OQ1 resolved**: there is NO `parent_session_id` because sub-agents run in the *same session* as the parent. `session_id` is shared. Sub-agent's `TASKS_DIR` at `$CLAUDE_DIR/tasks/$session_id/` IS the parent's task dir — no cross-session lookup needed. Big simplification over the v1 design.
+
+**OQ2 resolved**: the sub-agent's *type* (`agent_type`) and auto-generated *id* (`agent_id`) ARE available in the hook stdin. The `name:` parameter to `Agent()` is NOT exposed to the hook directly — Claude appears to use `agent_id` as the canonical handle. The parent receives `agent_id` back in the Agent() result.
+
+### Revised hook design (replaces v1 §4b)
+
+`require-task-in-progress.sh`:
+```bash
+AGENT_ID="$(jq -r '.agent_id // empty' <<<"$INPUT")"
+
+if [[ -n "$AGENT_ID" ]]; then
+  # Sub-agent fire — look for in_progress task assigned to this agent_id
+  for task in "$TASKS_DIR"/*.json; do
+    [[ -f "$task" ]] || continue
+    t_status="$(jq -r '.status // empty' "$task" 2>/dev/null)"
+    t_assignee="$(jq -r '.metadata.assignee // empty' "$task" 2>/dev/null)"
+    if [[ "$t_status" == "in_progress" && "$t_assignee" == "$AGENT_ID" ]]; then
+      emit_decision allow ""
+      exit 0
+    fi
+  done
+  # Fall-through: no assigned task. DENY with coach text explaining the parent
+  # must call TaskUpdate(taskId, metadata={assignee: "<agent_id>"}, status=in_progress)
+  # BEFORE the sub-agent starts writing.
+  REASON="Sub-agent (agent_id=$AGENT_ID, agent_type=$AGENT_TYPE) has no in_progress task assigned. Parent must call TaskUpdate(taskId, metadata={assignee: \"$AGENT_ID\"}, status=in_progress) before dispatching, OR after the agent_id is known (returned by Agent()) and before the sub-agent's first write."
+  emit_decision deny "$REASON"
+  exit 0
+fi
+
+# (existing parent-side logic)
+```
+
+`task-invariant.sh` change unchanged from v1 §4a (count `assignee in ["", "alex"]` toward the 0-or-1 invariant; ignore `assignee == <agent_id>` tasks).
+
+### Parent dispatch workflow (revised — replaces v1 §5a)
+
+There's a small ordering challenge: the parent gets `agent_id` back from the `Agent()` call, but if the sub-agent fires its hook before the parent can call `TaskUpdate(metadata={assignee: agent_id})`, the hook will deny. Two approaches:
+
+**A. Foreground dispatch (simple)**: parent runs `Agent({...}, run_in_background: false)` and waits. Doesn't help — same window exists between `Agent()` and the sub-agent's first tool call (they're racing on the same thread? Need to test). Most likely: `Agent()` is synchronous in foreground and the sub-agent runs to completion before returning, so the parent CAN'T update mid-flight.
+
+**B. Pre-mark + claim pattern**: parent creates the task with a placeholder assignee (e.g. `assignee: "PENDING:<task-id>"`), runs `Agent()` whose first instruction is to read its own `agent_id` from the hook input via Bash (Bash isn't gated) and write it to a known location, parent's hook reads that and substitutes. Awkward.
+
+**C. Permissive default (recommended)**: hook ALLOWS when `agent_id` is present but no matching task — emits a WARNING in `additionalContext` instead of denying. Treats sub-agent dispatches as implicitly authorized by the parent's `Agent()` call. Parent still SHOULD call `TaskUpdate(metadata={assignee})` after dispatch for clean accounting, but it's not enforced.
+
+**Recommendation: C**. The friction we're solving is "sub-agents can't write"; making sub-agents partially-trusted is the simplest fix that doesn't require dispatch-time coordination. The parent-side invariant (one alex-in_progress) still enforces discipline where it matters.
+
+### OQ3 (deferred to next sub-task)
+
+Whether `claude plugin install` from a local-directory marketplace requires restart for hook changes is still TBD — will validate when implementing hook changes in the next sub-task.
