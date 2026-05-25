@@ -156,8 +156,13 @@ Next free: `I14`.
 - 2026-05-24 15:34Z (Nate Discord [^discord-1508130974091841647]): **retro on scope deviation.** The MASTER.md bullet for `I6` said "every tracked item in MASTER.md" but this per-task doc narrowed scope to intro-only with the explicit guardrail "Do NOT apply IDs to other sections (F, C, R, D, E)." Reasons I narrowed: (a) other sections had no per-task docs yet, so there were no cross-refs needing update; (b) intro-only felt like manageable single-commit scope. Net effect: `I14` had to be created afterward as a separate ticket to cover the all-sections sweep when Nate said "Give all the bullets stable IDs" — duplicating coordination overhead for the same conceptual work. **Lesson:** when MASTER.md bullet text and per-task doc scope diverge, that's a signal to STOP and ask, not to silently narrow. **Behavior fix:** project-tracking-workflow skill step 3.3 "Scope review" now mandates re-reading the original message and explicitly asking the handler if drafted scope is narrower/broader than the message. Skill update landed in [`159058d`][^commit-159058d].
 
 [^discord-1507968405213286580]: https://discord.com/channels/1490863845252665415/1497431286661517353/1507968405213286580
+
 [^discord-1507968726396440678]: https://discord.com/channels/1490863845252665415/1497431286661517353/1507968726396440678
+
 [^commit-04246cd]: https://github.com/nsheaps/agents/commit/04246cd
+
 [^commit-a71de32]: https://github.com/nsheaps/.ai-agent-alex/commit/a71de32
+
 [^commit-159058d]: https://github.com/nsheaps/.ai-agent-alex/commit/159058d
+
 [^discord-1508130974091841647]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508130974091841647
