@@ -253,8 +253,8 @@
       - :2 people: using an Agent tool
     - And when execution is getting wrapped in a skill - :mind-blown: using a skill (+ 1 emoji between status and active work) > ▶️ $AGENT_NAME ($AGENT_HOME_DIR) <$GIT_AUTHOR_EMAIL> | Teams: (ON|OFF)
       > claude($CLAUDE_PID, v=$CLAUDE_VERSION)://$SESSION_ID | Status: $SESSION_STATUS | Model: $MODEL (effort: $MODEL_EFFORT)
-  > Ctx: 248k/500k (49.6%) [SSSTTTCCCCCCCCCFFFFFFFFF]
-  > Updated: $RFC_3339_DATETIME_LOCAL_TZ
+      > Ctx: 248k/500k (49.6%) [SSSTTTCCCCCCCCCFFFFFFFFF]
+      > Updated: $RFC_3339_DATETIME_LOCAL_TZ
   > $REPOANDBRANCH_OR_PATH
   - When a restart is requested, the updated line instead shows as:
     > Updated: $RFC_3339_DATETIME_LOCAL_TZ | Pending restart (6m 20s ago)
