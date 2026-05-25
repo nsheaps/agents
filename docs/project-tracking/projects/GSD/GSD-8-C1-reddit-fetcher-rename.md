@@ -1,22 +1,35 @@
-> The following is the contents of the file as previously lived in docs/project-tracking/task-summary/xxxx.md. To triage this ticket, we'll need to appropriately file this as an actual ticket within the appropriate project.
-> Review the summary, and MASTER.md, and build out the ticket to triage.
-> Then, get the triage request to the actual ticket(s) in triage state and in the correct project(s). This will likely be one ticket per file for now, but you may choose to make more than one if you deem appropriate.
-> The ticket should capture this original summary, and the original messaging as it appears in MASTER.md. It MUST also be linked to the appropriate milestone.
-> When the ticket is ready, in the triage state, and is confirmed to have the needed information, update master.md appropriately to link to the ticket instead of keeping info in master.md. The link should be: `[$emojiState | $ticketShortDescription](relative/link/to/file/that/works/on/github/and/local/instead/of/link/to/github/directly.md)` the ticket short description.
-
+---
+type: feature
+id: GSD-8
+state: done
+created: 2026-05-25T19:39:00Z
+completed: 2026-05-25T20:30:00Z
+project: GSD
+assignee: contacts://heaps-group/byGithubUsername/nsheaps
+requester: contacts://heaps-group/byGithubUsername/nsheaps
+milestone: ../../milestones/M5.md
+references:
+  - id: pr-166
+    type: github-pr
+    url: https://github.com/nsheaps/agents/pull/166
+  - id: master-c1
+    type: doc
+    url: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md
+events:
+  - { ts: 2026-05-25T23:18:00Z, by: alex, change: "promoted from to-triage/C1-reddit-fetcher-rename to GSD-8 (state=done)" }
 ---
 
-# C1 — rename `reddit-fetcher` plugin to `reddit` + merge + install on all agents
+# [old C1] rename reddit-fetcher plugin to reddit + merge + install on all agents
 
 ## Original message
 
-From [MASTER.md `## defining scope and cleaning git state` bullet `C1`](https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md):
+From [MASTER.md `## defining scope and cleaning git state` bullet `C1`][^master-c1]:
 
-> 🆕 `C1`: rename this plugin to `reddit` from reddit-fetcher [PR #166](https://github.com/nsheaps/agents/pull/166) (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
+> `C1`: rename this plugin to `reddit` from reddit-fetcher [PR #166][^pr-166] (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
 
 ## PR state (snapshot 2026-05-25 04:55Z)
 
-- PR: [#166](https://github.com/nsheaps/agents/pull/166) — `feat: add reddit-fetcher plugin`
+- PR: [#166][^pr-166] — `feat: add reddit-fetcher plugin`
 - Author: Jack ([`jack-nsheaps[bot]`](https://github.com/jack-nsheaps))
 - Branch: `feat/reddit-fetcher-plugin`
 - 2 commits ahead of `main` from 958a47a:
@@ -110,3 +123,6 @@ PR is by Jack. I shouldn't unilaterally force-push to a peer's branch. Three app
 ## Log
 
 - 2026-05-25 04:55Z: doc created. Awaiting Nate's pick on Q1 (approach) before executing.
+
+[^pr-166]: https://github.com/nsheaps/agents/pull/166
+[^master-c1]: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md
