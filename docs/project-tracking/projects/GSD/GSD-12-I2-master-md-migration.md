@@ -10,6 +10,10 @@ requester: contacts://heaps-group/byGithubUsername/nsheaps
 milestone: ../../milestones/M1.md
 legacy_ids:
   - I2
+references:
+  - id: commit-5f69967
+    type: commit
+    url: https://github.com/nsheaps/agents/commit/5f69967
 events:
   - {
       ts: 2026-05-25T23:36:00Z,
@@ -28,7 +32,7 @@ events:
 
 > fix the numbering in here before I go crazy. numbers don't matter, make them all have emoji for status. Define a key at the top level. Don't work on more than one. Move this entire thing to `nsheaps/agents/docs/project-tracking/MASTER.md`. You must start a doc for each one and link it from this list before doing anything, including work. Each of these gets a doc at `nsheaps/agents/docs/project-tracking/task-summary/TASK.md` TO BE CREATED ONLY WHEN YOU LINK IT.
 
-— Nate, MASTER.md `#intro` (item 2 in the original track-doc). Original verbatim bullet text recovered from agents commit [`5f69967`](https://github.com/nsheaps/agents/commit/5f69967) before the N2 ticket-style title rewrite.
+— Nate, MASTER.md `#intro` (item 2 in the original track-doc). Original verbatim bullet text recovered from agents commit [`5f69967`][^commit-5f69967] before the N2 ticket-style title rewrite.
 
 ## Deliverable
 
@@ -73,3 +77,5 @@ events:
 - 2026-05-24 03:45Z (alex): commit c7486a8 — Key lifted, "one in-flight" rule dropped, agent-teams marked ✅.
 - 2026-05-24 03:53Z (alex): commit 93f2ce1 — fixed broken relative link path.
 - 2026-05-24 04:00Z (alex): this commit — `git mv` to MASTER.md, redirect stub, retroactive item entries for in-flight session work (#intro#9, #intro#10).
+
+[^commit-5f69967]: https://github.com/nsheaps/agents/commit/5f69967
