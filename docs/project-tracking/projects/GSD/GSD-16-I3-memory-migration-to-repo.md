@@ -1,12 +1,28 @@
-> The following is the contents of the file as previously lived in docs/project-tracking/task-summary/xxxx.md. To triage this ticket, we'll need to appropriately file this as an actual ticket within the appropriate project.
-> Review the summary, and MASTER.md, and build out the ticket to triage.
-> Then, get the triage request to the actual ticket(s) in triage state and in the correct project(s). This will likely be one ticket per file for now, but you may choose to make more than one if you deem appropriate.
-> The ticket should capture this original summary, and the original messaging as it appears in MASTER.md. It MUST also be linked to the appropriate milestone.
-> When the ticket is ready, in the triage state, and is confirmed to have the needed information, update master.md appropriately to link to the ticket instead of keeping info in master.md. The link should be: `[$emojiState | $ticketShortDescription](relative/link/to/file/that/works/on/github/and/local/instead/of/link/to/github/directly.md)` the ticket short description.
-
+---
+type: chore
+id: GSD-16
+state: done
+created: 2026-05-24T03:30:00Z
+completed: 2026-05-24T04:00:00Z
+project: GSD
+assignee: contacts://heaps-group/byGithubUsername/nsheaps
+requester: contacts://heaps-group/byGithubUsername/nsheaps
+milestone: ../../milestones/M1.md
+legacy_ids:
+  - I3
+references:
+  - id: commit-4efbd3e
+    type: commit
+    url: https://github.com/nsheaps/.ai-agent-alex/commit/4efbd3e
+events:
+  - {
+      ts: 2026-05-25T23:40:00Z,
+      by: alex,
+      change: "promoted from to-triage/I3-memory-migration-to-repo to GSD-16 (state=done)",
+    }
 ---
 
-# Migrate alex memory files to repo `memory/`
+# [old I3] Migrate alex memory files to repo memory/
 
 **Track-doc item:** `I3` — [`#intro` / I3](../MASTER.md#intro) (was list-position #9 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I3` per `I6` on 2026-05-24)
 **Status:** ✅ done
@@ -39,7 +55,7 @@
 4. Commit migrated files to alex/main (gitignored old location, tracked new).
 5. Update hook coach message and add `.claude/rules/memory-location.md` rule to alex repo to enforce the new location for future writes.
 
-Alex commit: [`4efbd3e`](https://github.com/nsheaps/.ai-agent-alex/commit/4efbd3e).
+Alex commit: [`4efbd3e`][^commit-4efbd3e].
 
 ## Scope guardrails
 
@@ -58,3 +74,5 @@ Alex commit: [`4efbd3e`](https://github.com/nsheaps/.ai-agent-alex/commit/4efbd3
 - 2026-05-24 03:56Z (Nate): "the repo. You have to be able to send me links to them so on machine is not an option."
 - 2026-05-24 03:58Z (alex): migrated 28 files via `mv`, removed empty source dir, updated coach + added rule, commit 4efbd3e on alex/main.
 - 2026-05-24 04:00Z (alex): added retroactive tracking entry in MASTER.md as `#intro#9` per Nate's "track everything" directive.
+
+[^commit-4efbd3e]: https://github.com/nsheaps/.ai-agent-alex/commit/4efbd3e
