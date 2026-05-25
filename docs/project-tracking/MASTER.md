@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I45 -->
+<!-- next-id: I46 -->
 
 <a id="I1"></a>
 
@@ -106,6 +106,10 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 <a id="I44"></a>
 
 - 🆕 `I44`: build `incident-utils` plugin in `nsheaps/agents` with empty skill scaffolds for `incident-manage`, `incident-search`, `incident-type-behavioral`, `incident-type-infrastructure`, `incident-writing-postmortem`, `incident-type-software`. Multiple backends supported — start file-based, **really abstract out shared stuff** so other backends (Linear, GH issues) slot in cleanly. Skills self-update after each use. Fill `incident-type-behavioral` with 5 bullets covering: (1) track noted bad behavior, (2) research it, (3) experiment + fix, (4) validate, (5) deploy / ensure rollout for others. Install on alex + restart to pick up — going forward EVERY correction Nate gives gets logged as an incident BEFORE fixing. Overlaps with `correct-behavior` (agentic-behavior plugin) — likely supersedes or wraps it. Research inputs: look at `/home/nsheaps/.openclaw`, `nsheaps/aitkit` all branches back 1.5y, `nsheaps/claude-code-sessions` all branches back 1.5y for past incident-\* attempts. Per Nate Discord [1508323366082187407](https://discord.com/channels/1490863845252665415/1497431286661517353/1508323366082187407) (2026-05-25 04:18Z).
+
+<a id="I45"></a>
+
+- 🆕 `I45`: basic `dreaming` plugin in `nsheaps/agents` ("to do tonight"). Own plugin (not folded into agentic-behavior — but agentic-behavior likely-to-be-migrated rather than discarded). Flow: (1) **transcript triage** — review day's transcripts via haiku/sonnet sub-agents, extract tool failures, behavior corrections, user-upset moments into per-instance excerpts; (2) **daily retro** — comprehensive report: what went well, what didn't, behaviors to continue/stop/improve; (3) **improvement plan** — outline-first iteration on HOW to improve; (4) **ticket+task breakdown** — break plan into tickets, assign to self, tasks, work them with **max 1 PR per repo**, test thoroughly before new→open/draft→open; (5) **CI review** via review-utils dispatch; (6) **morning standup** — bring PRs up at start-of-work-day to merge BEFORE that day's work so improvements compound. Skills should **recursively call other skills** (both with + without `context:fork`). Run via `dreaming` sub-agent. Schedule via **plugin-settings cron** (NOT session-only CronCreate — must survive restarts; read Claude docs on plugin-settings crons). 1x/day @ 3am. **Catch-up**: if previous day's run was missed, on startup note last-run timestamp + suggest ad-hoc run NOW, but DO NOT execute unless operator agrees. Per Nate Discord [1508325147449364510](https://discord.com/channels/1490863845252665415/1497431286661517353/1508325147449364510) (2026-05-25 04:25Z).
 
 ### pause here HEREHERE
 
