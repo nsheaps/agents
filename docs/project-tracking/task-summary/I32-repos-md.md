@@ -62,7 +62,13 @@ Open questions for handler:
 ## Open Questions
 
 - See "Scope review" Q1–Q3 above.
+- **Resolved 2026-05-25 04:50Z** per Nate Discord [`1508331380239634652`](https://discord.com/channels/1490863845252665415/1497431286661517353/1508331380239634652):
+  - **Q1**: keep `.openclaw` in REPOS.md but use it as research-only (current behavior — clarified)
+  - **Q2**: yes — include touched-but-not-owned aux repos. Added: nsheaps/op-exec, nsheaps/homebrew-devsetup, nsheaps/.github
+  - **Q3**: no — just repos, not branches/worktrees (confirmed current behavior)
+- **New scope addition** from same message: full nsheaps org audit + cross-ref with `~/src/nsheaps` + last-year-activity filter. Dispatched as `AGENT(nsheaps-org-audit)` (task #509). Findings to land in `alex docs/research/nsheaps-org-repo-audit.md` — REPOS.md updates from that pass will follow.
 
 ## Log
 
 - 2026-05-25 04:35Z: doc created. Drafting REPOS.md v1 next.
+- 2026-05-25 05:08Z: Q1/Q2/Q3 resolved per Nate; REPOS.md updated to v1.1 with 3 aux repos + .openclaw clarification. nsheaps-org-audit subagent dispatched in parallel.
