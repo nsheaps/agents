@@ -16,7 +16,11 @@ references:
     url: https://github.com/nsheaps/.ai-agent-alex/pull/18
 events:
   - { ts: 2026-05-25T23:38:45Z, by: alex, change: "created from Nate Discord ask[^discord-ask]" }
-  - { ts: 2026-05-25T23:42:00Z, by: alex, change: "PR #18 opened with hook + settings.json wiring + unit tests" }
+  - {
+      ts: 2026-05-25T23:42:00Z,
+      by: alex,
+      change: "PR #18 opened with hook + settings.json wiring + unit tests",
+    }
 ---
 
 # GSD-22 — Force-background Agent() PreToolUse hook
@@ -68,4 +72,5 @@ From Nate Discord [`1508615338802286592`][^discord-ask] (2026-05-25 23:38Z):
 - Eventually move into a shared plugin so the rule is centrally maintained
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508615338802286592
+
 [^pr-18]: https://github.com/nsheaps/.ai-agent-alex/pull/18
