@@ -1,12 +1,28 @@
-> The following is the contents of the file as previously lived in docs/project-tracking/task-summary/xxxx.md. To triage this ticket, we'll need to appropriately file this as an actual ticket within the appropriate project.
-> Review the summary, and MASTER.md, and build out the ticket to triage.
-> Then, get the triage request to the actual ticket(s) in triage state and in the correct project(s). This will likely be one ticket per file for now, but you may choose to make more than one if you deem appropriate.
-> The ticket should capture this original summary, and the original messaging as it appears in MASTER.md. It MUST also be linked to the appropriate milestone.
-> When the ticket is ready, in the triage state, and is confirmed to have the needed information, update master.md appropriately to link to the ticket instead of keeping info in master.md. The link should be: `[$emojiState | $ticketShortDescription](relative/link/to/file/that/works/on/github/and/local/instead/of/link/to/github/directly.md)` the ticket short description.
-
+---
+type: feature
+id: GSD-18
+state: done
+created: 2026-05-24T03:30:00Z
+completed: 2026-05-24T04:30:00Z
+project: GSD
+assignee: contacts://heaps-group/byGithubUsername/nsheaps
+requester: contacts://heaps-group/byGithubUsername/nsheaps
+milestone: ../../milestones/M1.md
+legacy_ids:
+  - I5
+references:
+  - id: discord-1507961632469549076
+    type: discord-message
+    url: https://discord.com/channels/1490863845252665415/1497431286661517353/1507961632469549076
+events:
+  - {
+      ts: 2026-05-25T23:43:00Z,
+      by: alex,
+      change: "promoted from to-triage/I5-project-tracking-workflow to GSD-18 (state=done)",
+    }
 ---
 
-# Create `project-tracking-workflow` skill
+# [old I5] Create `project-tracking-workflow` skill
 
 **Track-doc item:** `I5` — [`#intro` / I5](../MASTER.md#intro) (assigned stable ID `I5` per `I6` on 2026-05-24)
 **Status:** ✅ done
@@ -16,7 +32,7 @@
 
 > capture this in a skill … keep it up to date as we iterate on the process.
 
-— Nate, Discord 2026-05-24 04:22Z ([msg `1507961632469549076`](https://discord.com/channels/1490863845252665415/1497431286661517353/1507961632469549076)). I5 is alex-created (no pre-N2 MASTER.md bullet with verbatim handler text). The full 7-step workflow content Nate provided is documented in the `## Source` section below.
+— Nate, Discord 2026-05-24 04:22Z ([msg `1507961632469549076`][^discord-1507961632469549076]). I5 is alex-created (no pre-N2 MASTER.md bullet with verbatim handler text). The full 7-step workflow content Nate provided is documented in the `## Source` section below.
 
 ## Deliverable
 
@@ -26,7 +42,7 @@
 
 ## Source
 
-Nate Discord 2026-05-24 04:21Z ([msg `1507961632469549076`](https://discord.com/channels/1490863845252665415/1497431286661517353/1507961632469549076)):
+Nate Discord 2026-05-24 04:21Z ([msg `1507961632469549076`][^discord-1507961632469549076]):
 
 The 7 generic steps:
 
@@ -78,3 +94,5 @@ The 10-step concrete example (for adding stable IDs) is documented in the skill 
 - 2026-05-24 04:25Z (Nate Discord): inserted new `9. extract … into scripts` bullet AND `## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE` header between `#intro#7` and `#intro#8`. Renumbered duplicate 9→10, 10→11, 11→12, 12→13. Bumped Rule 3's ref `#intro#11` → `#intro#12` (We're-gonna-do-this-in-order is now item 12).
 - 2026-05-24 04:25Z (alex): SKILL.md written at `.claude/skills/project-tracking-workflow/SKILL.md` (alex repo). Self-check: 7 steps present + in order, UPSTREAM marker, "keep up to date" note, Rules + Anti-patterns + Worked-example sections. Discoverable via Skill() (confirmed in skill list).
 - 2026-05-24 04:25Z (alex): flipped MASTER.md item 5 🚧 → ✅. Commit + push next.
+
+[^discord-1507961632469549076]: https://discord.com/channels/1490863845252665415/1497431286661517353/1507961632469549076
