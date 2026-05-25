@@ -1,12 +1,24 @@
-> The following is the contents of the file as previously lived in docs/project-tracking/task-summary/xxxx.md. To triage this ticket, we'll need to appropriately file this as an actual ticket within the appropriate project.
-> Review the summary, and MASTER.md, and build out the ticket to triage.
-> Then, get the triage request to the actual ticket(s) in triage state and in the correct project(s). This will likely be one ticket per file for now, but you may choose to make more than one if you deem appropriate.
-> The ticket should capture this original summary, and the original messaging as it appears in MASTER.md. It MUST also be linked to the appropriate milestone.
-> When the ticket is ready, in the triage state, and is confirmed to have the needed information, update master.md appropriately to link to the ticket instead of keeping info in master.md. The link should be: `[$emojiState | $ticketShortDescription](relative/link/to/file/that/works/on/github/and/local/instead/of/link/to/github/directly.md)` the ticket short description.
-
+---
+type: chore
+id: GSD-12
+state: done
+created: 2026-05-24T03:00:00Z
+completed: 2026-05-24T04:00:00Z
+project: GSD
+assignee: contacts://heaps-group/byGithubUsername/nsheaps
+requester: contacts://heaps-group/byGithubUsername/nsheaps
+milestone: ../../milestones/M1.md
+legacy_ids:
+  - I2
+events:
+  - {
+      ts: 2026-05-25T23:36:00Z,
+      by: alex,
+      change: "promoted from to-triage/I2-master-md-migration to GSD-12 (state=done)",
+    }
 ---
 
-# MASTER.md migration + numbering + key + rules sections
+# [old I2] MASTER.md migration + numbering + key + rules sections
 
 **Track-doc item:** `I2` — [`#intro` / I2](../MASTER.md#intro) (was list-position #4 before completed items were hoisted on 2026-05-24 04:05Z per `#rules` Rule 2; assigned stable ID `I2` per `I6` on 2026-05-24)
 **Status:** ✅ done
