@@ -1,4 +1,4 @@
-# reddit-fetcher
+# reddit
 
 Fetch Reddit posts, comments, and subreddit listings via Reddit's public JSON API. Returns markdown-formatted content suitable for LLM consumption. No authentication required.
 
@@ -7,7 +7,7 @@ Fetch Reddit posts, comments, and subreddit listings via Reddit's public JSON AP
 Add this plugin through the agents marketplace or install directly:
 
 ```bash
-claude plugin add --from https://github.com/nsheaps/agents --path plugins/claude-code/reddit-fetcher
+claude plugin add --from https://github.com/nsheaps/agents --path plugins/claude-code/reddit
 ```
 
 ## Dependencies

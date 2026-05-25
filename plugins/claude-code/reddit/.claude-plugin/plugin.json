@@ -1,5 +1,5 @@
 {
-  "name": "reddit-fetcher",
+  "name": "reddit",
   "version": "0.1.1",
   "description": "Fetch Reddit posts, comments, and subreddit listings via Reddit's public JSON API. Returns markdown-formatted content suitable for LLM consumption. No authentication required.",
   "author": {
@@ -15,6 +15,6 @@
     "social-media",
     "api"
   ],
-  "homepage": "https://github.com/nsheaps/agents/tree/main/plugins/claude-code/reddit-fetcher",
+  "homepage": "https://github.com/nsheaps/agents/tree/main/plugins/claude-code/reddit",
   "repository": "https://github.com/nsheaps/agents"
 }

@@ -23,7 +23,7 @@ if [[ -f "$_PLUGIN_JSON" ]] && command -v jq >/dev/null 2>&1; then
   _PLUGIN_VERSION="$(jq -r '.version' "$_PLUGIN_JSON")"
   _MARKETPLACE_URL="$(jq -r '.repository' "$_PLUGIN_JSON")"
 else
-  _PLUGIN_NAME="reddit-fetcher"
+  _PLUGIN_NAME="reddit"
   _PLUGIN_VERSION="0.1.0"
   _MARKETPLACE_URL="https://github.com/nsheaps/ai-mktpl"
 fi

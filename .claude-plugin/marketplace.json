@@ -54,13 +54,13 @@
       ]
     },
     {
-      "name": "reddit-fetcher",
+      "name": "reddit",
       "description": "Fetch Reddit posts, comments, and subreddit listings via Reddit's public JSON API. Returns markdown-formatted content suitable for LLM consumption. No authentication required.",
       "version": "0.1.1",
       "author": {
         "name": "Nathan Heaps"
       },
-      "source": "./plugins/claude-code/reddit-fetcher",
+      "source": "./plugins/claude-code/reddit",
       "category": "utility",
       "tags": [
         "utility",
