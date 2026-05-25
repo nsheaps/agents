@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I38 -->
+<!-- next-id: I39 -->
 
 - ✅ `I1`: [Turn off agent teams + restart](./task-summary/I1-agent-teams-off.md)
 - ✅ `I2`: [Migrate track-doc to MASTER.md + status-emoji key + per-task doc convention](./task-summary/I2-master-md-migration.md)
@@ -55,6 +55,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 - 🆕 `I31`: update rules for handling tasks to have one file per task like you've been doing, how that ticket file should look, and how we'll drill down from a milestone list (in order of priority, if I suggest an update to ordering, ask if the stuff before it actually is a lower priority than what I suggested, how each milestone has a list to each ticket and some metadata (also constantly updated), and anything else you feel is needed
   - This is manual for now, but I9 will automate it
+
+- 🚧 `I38`: [agentic-behavior self-rewrite skill with rubric scoring](./task-summary/I38-agentic-behavior-self-rewrite.md) — dispatch sub-agent ASYNC to land PR on ai-mktpl. Skill (context:fork) archives current ruleset (rules + skills + agents + tools) under a versioned archive dir, evaluates the prior version against a documented categorical-numeric rubric (categories adjustable per iteration but always documented + scored), and emits a new ruleset incorporating observed behavior since the last rewrite. Similar in spirit to dreaming. PR must request CI review.
 
 ## defining scope and cleaning git state
 
