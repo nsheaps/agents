@@ -39,6 +39,22 @@ log_fire() {
     >> "$LOG_FILE" 2>/dev/null || true
 }
 
+emit_decision() {
+  local decision="$1" reason="$2"
+  jq -n \
+    --arg decision "$decision" \
+    --arg reason "$reason" \
+    '{
+      hookSpecificOutput: (
+        {
+          hookEventName: "PreToolUse",
+          permissionDecision: $decision
+        }
+        + (if $reason == "" then {} else {permissionDecisionReason: $reason} end)
+      )
+    }'
+}
+
 # Only gate the write-class tools
 case "$TOOL_NAME" in
   Write|Edit|MultiEdit|NotebookEdit) : ;;
@@ -95,22 +111,6 @@ if [[ -d "$TASKS_DIR" ]]; then
     fi
   done < <(find "$TASKS_DIR" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
 fi
-
-emit_decision() {
-  local decision="$1" reason="$2"
-  jq -n \
-    --arg decision "$decision" \
-    --arg reason "$reason" \
-    '{
-      hookSpecificOutput: (
-        {
-          hookEventName: "PreToolUse",
-          permissionDecision: $decision
-        }
-        + (if $reason == "" then {} else {permissionDecisionReason: $reason} end)
-      )
-    }'
-}
 
 if (( IN_PROGRESS_COUNT == 0 )); then
   REASON='No task in_progress — start the appropriate existing task via TaskUpdate, or create one via TaskCreate to encompass this work. Keep the description up to date as you work (append dated event-log lines).'
