@@ -1,14 +1,14 @@
-# Project Tracking — CLAUDE.md
+CLAUDE.md's exist in this and child directories and are recursively included. Keep CLAUDE.md files extremely short and bulleted to prevent too much context waste.
 
-Bullets only — this file is hierarchically included. Details live in the linked files.
-
-## Layout
+We're currently setting up project management. Relevant resources:
 
 - [`MASTER.md`](MASTER.md) — running activity log + current work index.
 - [`SETUP.md`](SETUP.md) — one-time bootstrap instructions Alex is executing (2026-05-25).
 - [`intake/`](intake/) — handler brain-dumps awaiting triage. See [`intake/CLAUDE.md`](intake/CLAUDE.md).
 - `task-summary/` — legacy summaries to triage into tickets (project-setup step 5).
 - `<project>/` — per-project ticket queues (first one: `ai-agents/`).
+
+Use ticket and project management plugins (`ticket-utils`, `project-utils`) when they exist — until then, the file flow + git history is the system of record. Each state transition = a commit (so `git log` reconstructs the events log).
 
 ## Ticket lifecycle
 

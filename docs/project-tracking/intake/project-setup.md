@@ -49,6 +49,7 @@ Do these things, remember to commit each file after they're changed, especially 
 9. clean up task-summary since all files should have effectively been moved to the right location and it'd now be an empty folder.
 10. appropriately move the initialize.md doc to /to-triage/ folder. Clean up any folders that shouldn't be used for ticket management (task-summary will be used, do not delete that)
 11. do the process for moving that into the /org-triage-queue/ folder, split apart where necessary. This effectively processes the asks in initialize.md into triage requests
+12. audit the hierarchical CLAUDE.md files for quality. After setup is complete, the one-time-bootstrap references in each CLAUDE.md (e.g. "SETUP.md — Alex is executing 2026-05-25") become stale. Walk every `CLAUDE.md` under `docs/project-tracking/` and remove the dated/one-time setup references, ensure each is still bullets-only and succinct, and verify each links only to files that still exist. Commit the cleanup as a single sweep.
 
 Later the ticket-utils tools will automate all of this. For now we'll go without the parent drill down pages.
 
