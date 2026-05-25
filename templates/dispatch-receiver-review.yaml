@@ -39,6 +39,9 @@ jobs:
       source-base-ref: ${{ github.event.client_payload.source.base_ref }}
       check-run-id: ${{ github.event.client_payload.check_run_id }}
       consumer-workflow-run-url: ${{ github.event.client_payload.consumer_workflow_run_url }}
+      # Forward the consumer PR's event action so the receiver can short-circuit
+      # on `converted_to_draft` (posts neutral check + exits, no review run).
+      trigger-event-action: ${{ github.event.client_payload.trigger.action }}
       # plugin-ref: main  # default — pin if you want to lock to a specific revision
     secrets:
       REVIEW_GITHUB_APP_ID: ${{ secrets.REVIEW_GITHUB_APP_ID }}

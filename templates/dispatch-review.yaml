@@ -30,16 +30,19 @@ name: Dispatch PR Review
 
 on:
   pull_request:
-    types: [opened, reopened, synchronize, ready_for_review, labeled]
-  # workflow_run lets the dispatch re-evaluate the gate when CI settles —
-  # spec §"Trigger events"  bullet 3. Replace `CI` with whichever workflow
-  # in this repo produces the required-check results.
-  workflow_run:
-    workflows: ['CI']
-    types: [completed]
+    types: [opened, reopened, synchronize, ready_for_review, labeled, converted_to_draft]
 
 jobs:
   review:
+    # Gate at the template level (post-2026-05-23 redesign): only dispatch
+    # when the PR is open AND carries the request-review label. The
+    # `converted_to_draft` event also fires (PR is still in state=open while
+    # draft) so the receiver can short-circuit with a `neutral` check rather
+    # than running a review on a drafted PR. If you changed the request label
+    # name, update both this `if:` and the `request-label:` input below.
+    if: |
+      github.event.pull_request.state == 'open' &&
+      contains(github.event.pull_request.labels.*.name, 'request-review')
     # Explicit permissions: default_workflow_permissions is "read" in many
     # repos but the called workflow needs pull-requests + checks write.
     permissions:
