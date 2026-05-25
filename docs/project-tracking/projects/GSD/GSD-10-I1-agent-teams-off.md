@@ -14,7 +14,11 @@ references:
     type: github-commit
     url: https://github.com/nsheaps/agents/commit/5f69967
 events:
-  - { ts: 2026-05-25T23:32:00Z, by: alex, change: "promoted from to-triage/I1-agent-teams-off to GSD-10 (state=done)" }
+  - {
+      ts: 2026-05-25T23:32:00Z,
+      by: alex,
+      change: "promoted from to-triage/I1-agent-teams-off to GSD-10 (state=done)",
+    }
 ---
 
 # [old I1] Turn off agent teams (and restart)
