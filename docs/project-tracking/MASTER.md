@@ -81,7 +81,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 <a id="I32"></a>
 
-- 🆕 `I32`: define all repos in scope for this project tracking list in ./REPOS.md (needs Nate's eyes). MUST include: `/home/nsheaps/.openclaw`, `nsheaps/aitkit`, `nsheaps/claude-code-sessions` (per Nate Discord [1508325751265431552](https://discord.com/channels/1490863845252665415/1497431286661517353/1508325751265431552) — these were called out as research inputs for [`I44`](#I44) and should be tracked here too)
+- 🚧 [`I32`](./task-summary/I32-repos-md.md): define all repos in scope for this project tracking list in [`./REPOS.md`](../../REPOS.md) (needs Nate's eyes). MUST include: `/home/nsheaps/.openclaw`, `nsheaps/aitkit`, `nsheaps/claude-code-sessions` (per Nate Discord [1508325751265431552](https://discord.com/channels/1490863845252665415/1497431286661517353/1508325751265431552) — these were called out as research inputs for [`I44`](#I44) and should be tracked here too). v1 draft + 3 open questions in per-task doc; awaiting handler review.
   <a id="I30"></a>
 - 🆕 `I30`: commit outstanding work in agents, agent repos, ai-mktpl and other repos in REPOS.md
   - Read each file thoroughly before committing, taking notes in your journal about anything that will help with the next task, there's a lot of disparate ideasa, but don't go crazy here.
