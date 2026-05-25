@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I40 -->
+<!-- next-id: I41 -->
 
 - ✅ `I1`: [Turn off agent teams + restart](./task-summary/I1-agent-teams-off.md)
 - ✅ `I2`: [Migrate track-doc to MASTER.md + status-emoji key + per-task doc convention](./task-summary/I2-master-md-migration.md)
@@ -168,6 +168,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## role definition improvement
 
+- 🆕 `I40`: define agent roles (currently inlined in C7 sub-bullets) as agents in a new `agent-roles` plugin in nsheaps/agents. Alex doesn't own those definitions — persona gets processed by `agent-roles` and rules/skills are GENERATED so Alex's prompt becomes that role at runtime. Exception: the alex agent's own prompt itself (TBD — might need `claude --agent` flag-style invocation, research needed). **Research-first** before implementation — needs clarity on (a) how agent-roles plugin emits prompts/rules/skills, (b) how Alex's bootstrap picks them up, (c) the alex-prompt-as-exception bootstrap path. Per Nate Discord [1508287003282768045](https://discord.com/channels/1490863845252665415/1497431286661517353/1508287003282768045) (2026-05-25 01:54Z): "Def need to research more before implementation here".
 - 🆕 `I37`: split up C7 into many items if not already
 
 7. 🆕 `C7`: alex is now a project-manager, software-eng, agent-eng, quality-eng, researcher, ... lets talk about what we have and what we should have. _(related: [agents#115](https://github.com/nsheaps/agents/issues/115) — agent definitions from plugins)_
