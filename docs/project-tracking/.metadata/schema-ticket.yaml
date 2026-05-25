@@ -1,0 +1,92 @@
+# JSON Schema for ticket frontmatter — `docs/project-tracking/projects/<P>/*.md`.
+# Eventually validated programmatically by ticket-utils / project-utils.
+# Until then, ticket-updater agents enforce by convention.
+#
+# State is in the `state:` frontmatter field — tickets do NOT move folders
+# by state (differs from earlier convention; see CLAUDE.md notes).
+
+$schema: "https://json-schema.org/draft/2020-12/schema"
+$id: "https://github.com/nsheaps/agents/blob/main/docs/project-tracking/.metadata/schema-ticket.yaml"
+title: Ticket
+description: Frontmatter for a project ticket. Body contains the goal, original ask, requirements, acceptance criteria, and any triage notes added through the lifecycle.
+type: object
+required:
+  - type
+  - id
+  - state
+  - created
+  - project
+  - events
+properties:
+  type:
+    enum: [bug, feature, milestone-request, feedback, chore]
+  id:
+    type: string
+    description: Canonical ticket identifier (e.g. GSD-1). Format = `<PROJECT_ID>-<sequence>`.
+    pattern: "^[A-Z][A-Z0-9_]*-[0-9]+$"
+  legacy_ids:
+    type: array
+    description: Old identifiers (e.g. epoch IDs from the inbox phase, or I-IDs from MASTER.md). Preserves searchability.
+    items:
+      type: string
+  state:
+    enum: [triage, in-progress, done, will-not-do]
+    description: Lifecycle state. Source of truth — tickets live at `projects/<P>/$id-$slug.md` regardless of state. Was previously a folder; folder convention dropped 2026-05-25 per Nate Discord 1508572570239242382.
+  created:
+    type: string
+    format: date-time
+  project:
+    type: string
+    description: Project identifier (e.g. GSD). Matches the folder under projects/.
+  priority:
+    type: string
+    description: Free-form priority hint (e.g. `top-of-queue`, `p1`).
+  assignee:
+    type: string
+    description: contacts:// URL for the responsible agent/human.
+  requester:
+    type: string
+    description: contacts:// URL for who asked for the work.
+  references:
+    type: array
+    description: External resources (PRs, issues, Discord messages, docs). Each gets a footnote-ref in the body.
+    items:
+      type: object
+      required: [id, type, url]
+      properties:
+        id:
+          type: string
+          description: Footnote-ref id used in body (`[^id]`).
+        type:
+          enum: [discord-message, telegram-message, github-pr, github-issue, github-commit, doc, ticket, url]
+        url:
+          type: string
+  milestone:
+    type: string
+    description: Relative link to the milestone object this ticket contributes to (e.g. `../../milestones/GSD-26.md`).
+  events:
+    type: array
+    description: Chronological audit log. Append-only.
+    items:
+      type: object
+      required: [ts, by, change]
+      properties:
+        ts:
+          type: string
+          format: date-time
+        by:
+          type: string
+        change:
+          type: string
+additionalProperties: false
+allOf:
+  - if:
+      properties:
+        state:
+          const: done
+    then:
+      required: [completed]
+      properties:
+        completed:
+          type: string
+          format: date-time

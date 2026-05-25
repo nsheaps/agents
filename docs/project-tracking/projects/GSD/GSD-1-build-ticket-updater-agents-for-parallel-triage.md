@@ -1,9 +1,12 @@
 ---
 type: feature
+id: GSD-1
+legacy_ids:
+  - "1779737000"
 created: 2026-05-25T20:04:18Z
 state: triage
 project: GSD
-priority: top-of-queue (epoch 1779737000 explicitly chosen to sort first)
+priority: top-of-queue
 assignee: contacts://heaps-group/byGithubAppUrl/https://github.com/apps/alex-nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
@@ -15,11 +18,8 @@ references:
     url: ./1779737001-task-utils-assign-on-launch-and-auto-handoff.md
 events:
   - { ts: 2026-05-25T20:04:18Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - {
-      ts: 2026-05-25T21:00:00Z,
-      by: alex,
-      change: "moved to triage; ticket-updater agent file shipped in nsheaps/.ai-agent-alex@7567ab0; this very dispatch is the first real use",
-    }
+  - { ts: 2026-05-25T20:31:00Z, by: Agent(aeb7696f8486500de), change: "moved to triage; ticket-updater agent file shipped in nsheaps/.ai-agent-alex@7567ab0; first real dispatch" }
+  - { ts: 2026-05-25T20:55:00Z, by: alex, change: "renumbered 1779737000 -> GSD-1; moved out of triage/ subfolder (state now in frontmatter only per Nate Discord 1508572570239242382)" }
 ---
 
 # Build ticket-updater agents for parallel triage
