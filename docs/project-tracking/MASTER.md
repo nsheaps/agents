@@ -241,6 +241,13 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
             6. Teammate
             7. Agent-type hook
             8. MCP-type hook
+         6. **RESEARCH NEEDED**: can `Skill(context:fork)` be backgrounded? Per Nate Discord [`1508321259568631969`](https://discord.com/channels/1490863845252665415/1497431286661517353/1508321259568631969) (2026-05-25 04:10Z). `context:fork` saves parent context, but if it can't run in the background it may not be the one-true solution. Open questions:
+            1. Can `Skill(context:fork)` itself be dispatched as a background tool call (analogous to `Agent(run_in_background:true)`)?
+            2. Alternative 1: run the skill inside a regular `Agent(...)` dispatch — but that loses conversation context (sub-agent gets only the prompt, not the parent transcript).
+            3. Alternative 2: run inside a forked agent (`fork agent + fork skill = backgroundable + no skill context waste`). Caveat: agent forking appears to be a global flag, not per-call — needs CLI verification.
+            4. Can `Task()` encapsulate skill use AND run in background? (Investigate `subagent_type:` field in Agent tool surface for whether skills propagate.)
+            5. Hook monkey-patching option: PreToolUse hook adds an arg prefixing the prompt with conversation context summary, then the hook strips that arg before tool execution. Inject-context-via-hook pattern.
+            6. Maybe no context is okay/good — the parent ALWAYS summarizes intent before dispatching, so the sub-agent doesn't need the raw transcript. This is the current `Agent()` pattern.
       3. skill-learning
          1. even if you learn, you might still need to ask for help
          2. learning is a combination of a bunch of things
