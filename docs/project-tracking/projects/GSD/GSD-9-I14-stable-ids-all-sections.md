@@ -15,7 +15,11 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1507976714448535682
 events:
-  - { ts: 2026-05-25T23:30:00Z, by: alex, change: "promoted from to-triage/I14-stable-ids-all-sections to GSD-9 (state=done)" }
+  - {
+      ts: 2026-05-25T23:30:00Z,
+      by: alex,
+      change: "promoted from to-triage/I14-stable-ids-all-sections to GSD-9 (state=done)",
+    }
 ---
 
 # [old I14] Stable ticket-style IDs — all MASTER.md sections
