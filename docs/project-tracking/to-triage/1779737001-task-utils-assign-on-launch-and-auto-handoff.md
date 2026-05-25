@@ -61,4 +61,5 @@ That's 2 manual `TaskUpdate` calls per sub-agent dispatch — error-prone and ve
 - See also: [`1779737000`][^blocks-ticket-updater-agents] which is blocked by this — ticket-updater agents will benefit hugely from auto-assign since they're meant to be many + short-lived.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508561371275722812
+
 [^blocks-ticket-updater-agents]: ./1779737000-build-ticket-updater-agents-for-parallel-triage.md

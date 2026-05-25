@@ -55,4 +55,5 @@ Currently every ticket update is done by the foreground agent (Alex) sequentiall
 - Should integrate with the future `ticket-utils` plugin's CRUD skills once those exist.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508561371275722812
+
 [^blocked-by-task-utils-assign]: ./1779737001-task-utils-assign-on-launch-and-auto-handoff.md
