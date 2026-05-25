@@ -4,7 +4,7 @@ id: GSD-1
 legacy_ids:
   - "1779737000"
 created: 2026-05-25T20:04:18Z
-state: triage
+state: in-progress
 project: GSD
 priority: top-of-queue
 assignee: contacts://heaps-group/byGithubAppUrl/https://github.com/apps/alex-nsheaps
@@ -27,6 +27,11 @@ events:
       ts: 2026-05-25T20:55:00Z,
       by: alex,
       change: "renumbered 1779737000 -> GSD-1; moved out of triage/ subfolder (state now in frontmatter only per Nate Discord 1508572570239242382)",
+    }
+  - {
+      ts: 2026-05-25T21:30:00Z,
+      by: alex,
+      change: "advanced triage -> in-progress; ticket-updater agent used 6 times today (GSD-1 meta-bootstrap + M1-M5 milestone promotions); 2 follow-up gaps identified in Triage notes",
     }
 ---
 
@@ -70,9 +75,12 @@ Currently every ticket update is done by the foreground agent (Alex) sequentiall
 
 ## Triage notes
 
-- **Meta-bootstrap:** The first real use of the ticket-updater agent is this very dispatch — the agent updating this ticket is itself the artifact being triaged. Self-referential but intentional.
-- **Blocking relationship still holds:** The dependency on [`1779737001`][^blocked-by-task-utils-assign] (auto-assign on launch) remains active. Manual assignment is the current friction this ticket exists to remove; the ticket cannot be marked done until auto-assign-on-launch is implemented and removes the race condition class.
-- **Acceptance criteria status:** Only the agent file ships as of `nsheaps/.ai-agent-alex@7567ab0`. The "parallelize" demo (3 concurrent agents, 3 independent commits) and the skill/scaffold for launching ticket-update agents are still TODO.
+- **Meta-bootstrap:** First real use of the ticket-updater agent was the dispatch that moved this ticket to `triage` state (commit `60622b7`). Self-referential but intentional.
+- **Today's usage (2026-05-25):** 6 dispatches total — 1 meta-bootstrap on this ticket + 5 milestone promotions (M1 `a83f32a`, M2 `8bb7e51`, M3+M5 bundled in `c2f2b6a`, M4 `ce7c37d`). All produced focused single-file commits per the agent contract; agent ships at `nsheaps/.ai-agent-alex@7567ab0`, contract updated `067b411`.
+- **Remaining acceptance criteria (gaps tracked as follow-up tickets — TBD numbers):**
+  - **Formal launch skill / scaffold** — currently the caller hand-writes the dispatch prompt each time. Needs e.g. `Skill(dispatch-ticket-updater)` that takes (target_ticket_path, directive) and renders the prompt with the contract boilerplate.
+  - **Parallel-shared-workdir cross-bundling** — when 5 ticket-updaters dispatched in parallel against the same agents repo workdir, git rename detection absorbed M3's M3.md into M5's commit (`c2f2b6a`). Today's pivot: serial dispatch only. Long-term fix: worktree-per-subagent OR explicit serial-only mode in the agent contract.
+- **Blocking relationship still holds:** The dependency on `1779737001`[^blocked-by-task-utils-assign] (auto-assign on launch) remains active. Auto-assign would remove the manual-claim race that this ticket exists to solve in the first place.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508561371275722812
 
