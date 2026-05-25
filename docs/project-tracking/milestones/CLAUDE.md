@@ -2,41 +2,21 @@ CLAUDE.md's exist in this and child directories and are recursively included. Ke
 
 Milestones live here as siblings to `projects/` because they may span multiple projects (per `intake/initialize.md`).
 
-## File-per-milestone (proposal — pending Nate ack)
+## Schema
 
-- `milestones/$epoch-$slug.md` — canonical milestone doc with frontmatter + body
-- `milestones/$epoch-$slug.test-plan.md` — acceptance test plan (created when milestone is fleshed out; absent during early states)
-- `milestones/$epoch-$slug.results.$resultEpoch.md` — validation results, one per attempt
+- Frontmatter schema: [`../.metadata/schema-milestone.yaml`](../.metadata/schema-milestone.yaml) (JSON Schema, eventually programmatically validated).
+- File naming: `$id.md` (e.g. `GSD-26.md`), with sibling `$id.test-plan.md` and `$id.results.$epoch.md` files when applicable.
+- IDs use the canonical `<PROJECT_ID>-<sequence>` format (e.g. `GSD-26`); legacy MASTER.md I-IDs preserved in `legacy_ids` frontmatter + body.
 
-Sibling files (not subfolder) for greppability + parity with ticket files in `projects/<P>/<state>/`.
+## State
 
-## Frontmatter fields
-
-- `type: milestone`
-- `name` — human-readable name
-- `state` — `open` | `in-progress` | `complete`
-- `created` — ISO timestamp
-- `completed` — ISO timestamp, only when state=complete
-- `source` — link back to MASTER.md anchor (`../MASTER.md#<id>`)
-- `test_plan` — relative link to test-plan file (optional, may be absent)
-- `results` — list of relative links to results files (optional)
-- `tickets` — list of links to project tickets that contribute to this milestone (relative paths to `../projects/<P>/<state>/<ticket>.md`)
-- `events` — chronological list of `{ ts, by, change }` entries
+- `state:` frontmatter is the source of truth — milestones do NOT move folders by state. Differs from project tickets where `state:` and folder must agree.
+- Lifecycle: `open` → `in-progress` → `complete`.
+- On completion, MASTER.md gets a line under the milestone header:
+  > completed YYYY-MM-DD HH:MMZ. Verified against [test plan](./milestones/$id.test-plan.md), [results](./milestones/$id.results.$epoch.md)
 
 ## Body
 
-- Original MASTER.md content for the milestone header (verbatim)
-- Per-bullet sub-items with their I-IDs (preserved from MASTER.md)
-- Triage notes (added as milestone is fleshed out)
-
-## State transitions
-
-- `open` — extracted from MASTER.md, not yet fleshed out
-- `in-progress` — some tickets contributing to this milestone are in_progress
-- `complete` — all tickets contributing are done AND test plan results recorded
-
-File moves are NOT used for milestone state — milestones stay in `milestones/` regardless of state. The `state:` frontmatter field is the source of truth. (This differs from projects/, where state-folder = state.)
-
-When a milestone completes, MASTER.md gets a line under its header:
-
-> completed YYYY-MM-DD HH:MMZ. Verified against [milestone test plan](./milestones/$epoch-$slug.test-plan.md), [results](./milestones/$epoch-$slug.results.$epoch.md)
+- Original MASTER.md content for the milestone header (verbatim).
+- Per-bullet sub-items preserved with their I-IDs (so existing references still resolve via search).
+- Triage notes added as the milestone is fleshed out.
