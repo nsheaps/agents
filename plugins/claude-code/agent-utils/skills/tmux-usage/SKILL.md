@@ -1,3 +1,8 @@
+---
+name: tmux-usage
+description: How to use tmux effectively when working with Claude Code agent teams — session hierarchy, attach/detach, scripting teammate panes, common pitfalls.
+---
+
 # tmux Usage for Agent Teams
 
 How to use tmux effectively when working with Claude Code agent teams.

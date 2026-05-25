@@ -8,7 +8,7 @@
     {
       "name": "agent-utils",
       "description": "Agent infrastructure: skills for multi-agent orchestration + tools for settings drift detection and 2-stage settings merge + rules-sync (SessionStart symlink of plugin rules into the project) + upstream-check (throttled UserPromptSubmit hook that surfaces upstream agent-repo changes and dirty-state nags).",
-      "version": "0.4.1",
+      "version": "0.4.2",
       "author": {
         "name": "Nathan Heaps"
       },
