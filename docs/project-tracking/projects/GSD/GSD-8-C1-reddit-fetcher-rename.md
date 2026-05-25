@@ -16,7 +16,11 @@ references:
     type: doc
     url: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md
 events:
-  - { ts: 2026-05-25T23:18:00Z, by: alex, change: "promoted from to-triage/C1-reddit-fetcher-rename to GSD-8 (state=done)" }
+  - {
+      ts: 2026-05-25T23:18:00Z,
+      by: alex,
+      change: "promoted from to-triage/C1-reddit-fetcher-rename to GSD-8 (state=done)",
+    }
 ---
 
 # [old C1] rename reddit-fetcher plugin to reddit + merge + install on all agents
@@ -125,4 +129,5 @@ PR is by Jack. I shouldn't unilaterally force-push to a peer's branch. Three app
 - 2026-05-25 04:55Z: doc created. Awaiting Nate's pick on Q1 (approach) before executing.
 
 [^pr-166]: https://github.com/nsheaps/agents/pull/166
+
 [^master-c1]: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md
