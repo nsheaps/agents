@@ -44,11 +44,13 @@
     - Maybe a way to get around, agent repo becomes user config (basically how it is today), but instead, launch the session from a known session dir/temp dir, so things can be installed and uninstalled per-session.
   - add ability for org to define rules, for instance
     - When you CD into a folder that contain files matching the target (works best if you force read/write tooling to only accept files in the cwd, never absolute paths, forcing the agent to cd to the directory first)
+
       ```markdown
       ## target: \*_/.claude/skills/_/SKILL.md
 
       - For our org, skill files must contain frontmatter, even if it's not technically required.
       ```
+
   - Why?
     1. is abstract from the agent harness. Dir based rules require a CLAUDE.md in the dir
     2. Rule files don't have to live in the repo, an org can share many
@@ -56,6 +58,7 @@
     1. constant rule changing changes earlier parts of the transcript and requires a full uncached response
        possible mitigations:
        - inject rules into the convo after changing directory instead of into the rules folder
+
 -
 
 # milestones
@@ -248,9 +251,8 @@
       - :hammer: using mcp tools
       - :eyes: using built-in read tools
       - :2 people: using an Agent tool
-    - And when execution is getting wrapped in a skill - :mind-blown: using a skill (+ 1 emoji between status and active work)
-      > ▶️ $AGENT_NAME ($AGENT_HOME_DIR) <$GIT_AUTHOR_EMAIL> | Teams: (ON|OFF)
-  > claude($CLAUDE_PID, v=$CLAUDE_VERSION)://$SESSION_ID | Status: $SESSION_STATUS | Model: $MODEL (effort: $MODEL_EFFORT)
+    - And when execution is getting wrapped in a skill - :mind-blown: using a skill (+ 1 emoji between status and active work) > ▶️ $AGENT_NAME ($AGENT_HOME_DIR) <$GIT_AUTHOR_EMAIL> | Teams: (ON|OFF)
+      > claude($CLAUDE_PID, v=$CLAUDE_VERSION)://$SESSION_ID | Status: $SESSION_STATUS | Model: $MODEL (effort: $MODEL_EFFORT)
   > Ctx: 248k/500k (49.6%) [SSSTTTCCCCCCCCCFFFFFFFFF]
   > Updated: $RFC_3339_DATETIME_LOCAL_TZ
   > $REPOANDBRANCH_OR_PATH
