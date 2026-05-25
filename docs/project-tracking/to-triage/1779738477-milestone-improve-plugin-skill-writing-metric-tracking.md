@@ -1,0 +1,51 @@
+---
+type: milestone-request
+created: 2026-05-25T19:47:57Z
+created_epoch: 1779738477
+state: to-triage
+project: ai-agents
+requester: contacts://heaps-group/byGithubUsername/nsheaps
+source_doc: docs/project-tracking/MASTER.md
+source_header: "improve plugin + skill writing + metric tracking"
+events:
+  - { ts: 2026-05-25T19:47:57Z, by: alex, change: "created from MASTER.md milestone-extraction sweep (project-setup step 3, via sonnet subagent)" }
+---
+
+# Milestone request: improve plugin + skill writing + metric tracking
+
+## Original MASTER.md content
+
+> - 🆕 `I36`: do the plugin-dev plugin and skill-utils plugin work now
+> - 🆕 `C4`: make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
+>
+>   ```yaml
+>   name-of-skill-called:
+>     path: /absolute/path/to/skill/file/on/disk.md
+>     totalSuccess: 44
+>     totalError: 35
+>     totalUses: 69 # nice...
+>     successWithoutToolError: 34 # incremented when tool completes successfully without any tool call failures in it
+>     successWithoutToolErrorSessions:
+>       - 932f3641-0953-4857-b73d-6f3af56344b5: # the session ID that called it
+>           transcriptPath: /absolute/path/to/transcript.jsonl
+>           uses: # sorted chronologically
+>             - 569c7ec9-f409-43a1-9a65-ffc43e96b6e3: # message uuid of the tool call,
+>               until: 7fce8c3b-f55f-4b55-b1fb-b293a0b0f463 # message uuid of the end of the tool call
+>               toolCalls: # includes calls to other skills, but not their tool calls. Sorted by max number of calls
+>                 - "Bash(abcd 123)": # tool call with exact arguments, don't track each message
+>                   success: 34
+>                   error: 2
+>                 ...
+>     successWithToolError: 10 # during skill execution a tool call failed, but the skill execution was successful
+>     successWithToolErrorSessions: ...
+>     error: 25 # incremented when it fails
+>     errorSessions: ...
+>   ```
+>
+> - 🆕 `I41`: skill-writing skill must teach `context: fork` frontmatter — when to use it (forked subagent context, no parent conversation history), the documented full 15-field frontmatter schema ([code.claude.com/docs/en/skills.md](https://code.claude.com/docs/en/skills.md)), and a default-set recommendation (research at [`docs/research/skill-frontmatter.md`](https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/research/skill-frontmatter.md)). Per Nate Discord [1508293612880920627](https://discord.com/channels/1490863845252665415/1497431286661517353/1508293612880920627) (02:20Z).
+> - 🆕 `I42`: plugin-dev skills should describe **MCP-server-channel pattern** for cross-platform event surfacing — _instead of_ throttled-check hooks (current github-app throttle pattern is an anti-example). MCP server resource subscription pushes events; agents subscribe to a resource and the system tells them when it changes (PR CI green, new comment, issue update). Saves time, programmatic, no polling, fewer tokens.
+> - 🆕 `I43`: github plugin → expose an MCP server with subscribe/unsubscribe tools for resources (PRs, issues, check-runs, etc.). Agents subscribe → events arrive via the MCP channel rather than alex looping `gh pr checks` or polling for review state. Replaces the current github-app throttle pattern. Pairs with `I42`.
+
+## Triage notes
+
+(empty — to be filled during triage)
