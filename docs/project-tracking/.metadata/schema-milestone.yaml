@@ -20,8 +20,8 @@ properties:
     const: milestone
   id:
     type: string
-    description: New canonical milestone identifier (e.g. GSD-26). Format = `<PROJECT_ID>-<sequence>`. Replaces the legacy I-IDs from MASTER.md.
-    pattern: "^[A-Z][A-Z0-9_]*-[0-9]+$"
+    description: Canonical milestone identifier (e.g. M1, M2, ...). Format = `M<sequence>` (Linear-style, global namespace since milestones may span projects per intake/initialize.md). Replaces the legacy I-IDs from MASTER.md.
+    pattern: "^M[0-9]+$"
   legacy_ids:
     type: array
     description: Old MASTER.md identifiers (e.g. I42) that mapped to this milestone. Preserves searchability.
