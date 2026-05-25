@@ -98,6 +98,35 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ~~- 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.~~
 
+## improve plugin + skill writing + metric tracking
+
+- 🆕 `I36`: do the plugin-dev plugin and skill-utils plugin work now
+- 🆕 `C4`: make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
+
+  ```yaml
+  name-of-skill-called:
+    path: /absolute/path/to/skill/file/on/disk.md
+    totalSuccess: 44
+    totalError: 35
+    totalUses: 69 # nice...
+    successWithoutToolError: 34 # incremented when tool completes successfully without any tool call failures in it
+    successWithoutToolErrorSessions:
+      - 932f3641-0953-4857-b73d-6f3af56344b5: # the session ID that called it
+          transcriptPath: /absolute/path/to/transcript.jsonl
+          uses: # sorted chronologically
+            - 569c7ec9-f409-43a1-9a65-ffc43e96b6e3: # message uuid of the tool call,
+              until: 7fce8c3b-f55f-4b55-b1fb-b293a0b0f463 # message uuid of the end of the tool call
+              toolCalls: # includes calls to other skills, but not their tool calls. Sorted by max number of calls
+                - "Bash(abcd 123)": # tool call with exact arguments, don't track each message
+                  success: 34
+                  error: 2
+                ...
+    successWithToolError: 10 # during skill execution a tool call failed, but the skill execution was successful
+    successWithToolErrorSessions: ...
+    error: 25 # incremented when it fails
+    errorSessions: ...
+  ```
+
 ## fix compaction
 
 - `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place. in agent-utils
@@ -136,35 +165,6 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
     - rule?
   - `I23`: Do not let me increase scope, any increase goes in the relevant doc. For now, you'll take notes in open qs in the scratch doc we'll discuss later.
     - rule?
-
-## improve plugin + skill writing + metric tracking
-
-- 🆕 `I36`: do the plugin-dev plugin and skill-utils plugin work now
-- 🆕 `C4`: make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
-
-  ```yaml
-  name-of-skill-called:
-    path: /absolute/path/to/skill/file/on/disk.md
-    totalSuccess: 44
-    totalError: 35
-    totalUses: 69 # nice...
-    successWithoutToolError: 34 # incremented when tool completes successfully without any tool call failures in it
-    successWithoutToolErrorSessions:
-      - 932f3641-0953-4857-b73d-6f3af56344b5: # the session ID that called it
-          transcriptPath: /absolute/path/to/transcript.jsonl
-          uses: # sorted chronologically
-            - 569c7ec9-f409-43a1-9a65-ffc43e96b6e3: # message uuid of the tool call,
-              until: 7fce8c3b-f55f-4b55-b1fb-b293a0b0f463 # message uuid of the end of the tool call
-              toolCalls: # includes calls to other skills, but not their tool calls. Sorted by max number of calls
-                - "Bash(abcd 123)": # tool call with exact arguments, don't track each message
-                  success: 34
-                  error: 2
-                ...
-    successWithToolError: 10 # during skill execution a tool call failed, but the skill execution was successful
-    successWithToolErrorSessions: ...
-    error: 25 # incremented when it fails
-    errorSessions: ...
-  ```
 
 ## role definition improvement
 
