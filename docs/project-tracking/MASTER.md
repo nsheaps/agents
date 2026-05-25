@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I39 -->
+<!-- next-id: I40 -->
 
 - ✅ `I1`: [Turn off agent teams + restart](./task-summary/I1-agent-teams-off.md)
 - ✅ `I2`: [Migrate track-doc to MASTER.md + status-emoji key + per-task doc convention](./task-summary/I2-master-md-migration.md)
@@ -65,6 +65,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
   - Read each file thoroughly before committing, taking notes in your journal about anything that will help with the next task, there's a lot of disparate ideasa, but don't go crazy here.
   - 🆕 `C2`: let's commit all the other changes to the agents repo to main. we're gonna make some rapid changes make sure it's in a clean state.
   - 🆕 `C3`: Lets make sure anything that's easy to close PR wise on agents, agent repos, mktpl, tools, etc in the nsheaps org is closed. Most are not easy, but programatically dump it, then see if anything is relevant and easy.
+- 🆕 `I39`: audit nsheaps/agents, nsheaps/ai-mktpl, and all the agent repos — survey state (committed/uncommitted files, open PRs, branches, untracked directories, stray skills/plugins/scripts) before scoping I32 (REPOS.md) and downstream cleanup. Per Nate Discord [1508288275817959524](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288275817959524) + correction [1508288401248489564](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288401248489564) (02:00Z) — position is "after I30 and sub-bullets, not before I32".
 - 🆕 `C1`: rename this plugin to `reddit` from reddit-fetcher [PR #166](https://github.com/nsheaps/agents/pull/166) (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
 
 - 🆕 `I28`: Now that we have a bit more definition to each section, lets also talk about the approach, then split them into actual sections with headers
