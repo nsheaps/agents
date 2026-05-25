@@ -1,22 +1,34 @@
-> The following is the contents of the file as previously lived in docs/project-tracking/task-summary/xxxx.md. To triage this ticket, we'll need to appropriately file this as an actual ticket within the appropriate project.
-> Review the summary, and MASTER.md, and build out the ticket to triage.
-> Then, get the triage request to the actual ticket(s) in triage state and in the correct project(s). This will likely be one ticket per file for now, but you may choose to make more than one if you deem appropriate.
-> The ticket should capture this original summary, and the original messaging as it appears in MASTER.md. It MUST also be linked to the appropriate milestone.
-> When the ticket is ready, in the triage state, and is confirmed to have the needed information, update master.md appropriately to link to the ticket instead of keeping info in master.md. The link should be: `[$emojiState | $ticketShortDescription](relative/link/to/file/that/works/on/github/and/local/instead/of/link/to/github/directly.md)` the ticket short description.
-
+---
+type: feature
+id: GSD-9
+state: done
+created: 2026-05-24T21:00:00Z
+completed: 2026-05-25T00:00:00Z
+project: GSD
+assignee: contacts://heaps-group/byGithubUsername/nsheaps
+requester: contacts://heaps-group/byGithubUsername/nsheaps
+milestone: ../../milestones/M1.md
+legacy_ids:
+  - I14
+references:
+  - id: discord-nate-i14
+    type: discord-message
+    url: https://discord.com/channels/1490863845252665415/1497431286661517353/1507976714448535682
+events:
+  - { ts: 2026-05-25T23:30:00Z, by: alex, change: "promoted from to-triage/I14-stable-ids-all-sections to GSD-9 (state=done)" }
 ---
 
-# Stable ticket-style IDs — all MASTER.md sections
+# [old I14] Stable ticket-style IDs — all MASTER.md sections
 
-**Track-doc item:** `I14` — [`#intro` / I14](../MASTER.md#intro)
-**Status:** ✅ done
+**Track-doc item:** `I14` — [`#intro` / I14](../../../MASTER.md#intro)
+**Status:** done
 **Owner:** alex
 
 ## Original message
 
 > Give all the bullets stable IDs not just the ones we're working on
 
-— Nate, Discord 2026-05-24 ([msg `1507976714448535682`](https://discord.com/channels/1490863845252665415/1497431286661517353/1507976714448535682)). I14 is a meta-task created by alex after I6 scope-deviation: no pre-N2 MASTER.md bullet exists for I14 because it was created as a follow-up to I6's narrowed scope. The open question in the doc ("I14..I25 vs I14..I26") is resolved: `next-id: I27` in MASTER.md confirms I14..I26 / next-id I27 was correct.
+— Nate, Discord 2026-05-24 ([msg `1507976714448535682`][^discord-nate-i14]). I14 is a meta-task created by alex after I6 scope-deviation: no pre-N2 MASTER.md bullet exists for I14 because it was created as a follow-up to I6's narrowed scope. The open question in the doc ("I14..I25 vs I14..I26") is resolved: `next-id: I27` in MASTER.md confirms I14..I26 / next-id I27 was correct.
 
 ## Deliverable
 
@@ -66,7 +78,7 @@ Per I6 — see `I6-stable-ids.md` for the full spec. Summary:
 ## Implementation plan
 
 1. Create this task-summary doc. ✓
-2. Add I14 bullet to intro section of MASTER.md (🚧 status, link to this doc).
+2. Add I14 bullet to intro section of MASTER.md (in-progress status, link to this doc).
 3. Add IDs I15..I26 to the 12 existing unlabeled intro bullets in visual order.
 4. Update intro `<!-- next-id: I14 -->` to `<!-- next-id: I27 -->`.
 5. For each non-intro section (F, C, R, D, E):
@@ -92,3 +104,5 @@ Per I6 — see `I6-stable-ids.md` for the full spec. Summary:
 ## Log
 
 - 2026-05-24 (sub-agent sonnet dispatch): Created this task-summary doc as part of the ID sweep. Began MASTER.md edits.
+
+[^discord-nate-i14]: https://discord.com/channels/1490863845252665415/1497431286661517353/1507976714448535682
