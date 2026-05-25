@@ -9,7 +9,7 @@ related:
   - directory-taxonomy
 owner: alex
 created: 2026-05-22
-updated: 2026-05-22
+updated: 2026-05-25
 tags:
   - review
   - dispatch
@@ -20,7 +20,7 @@ tags:
 
 # review-dispatch
 
-> **Spec for the AI-code-review dispatch pipeline.** A consumer repo's PR event fires a tiny `dispatch-review.yaml` workflow, which calls a shared decider in `nsheaps/agents`. The decider gates on PR/CI state, posts a queued check-run on the consumer PR, and (if the gate passes) fires a `repository_dispatch` to the **target agent repo** (henry by default). The target's `dispatch-receiver-review.yaml` — also a tiny shell — calls the same `nsheaps/agents` shared workflow which runs the `review-utils` plugin under the target agent's GitHub App identity. Both consumer-side files (`dispatch-review.yaml` + `dispatch-receiver-review.yaml`) are copied into repos by `nsheaps/.github` CI automation.
+> **Spec for the AI-code-review dispatch pipeline.** A consumer repo's PR event fires a tiny `dispatch-review.yaml` workflow, which calls a shared decider in `nsheaps/agents`. The decider posts a pending check-run on the consumer PR and fires a `repository_dispatch` to the **target agent repo** (henry by default). The target's `dispatch-receiver-review.yaml` — also a tiny shell — calls the same `nsheaps/agents` shared workflow which runs the `review-utils` plugin under the target agent's GitHub App identity. Both consumer-side files (`dispatch-review.yaml` + `dispatch-receiver-review.yaml`) are copied into repos by `nsheaps/.github` CI automation.
 
 ## Status
 
@@ -28,7 +28,7 @@ DRAFT — landing alongside implementation in PR #165 per the spec-with-impl dir
 
 **Supersedes:** the post-[PR #164][^pr164] in-process executor (where the review ran on `nsheaps/agents` runners under a generic bot identity). The framing message[^framing] established that the reviewer-as-henry framing is authoritative: the review is henry's work product, executed in henry's repo, under henry's identity.
 
-**2026-05-23 redesign (Nate 18:08Z[^redesign-18-08z]):** dispatch is simplified to "post pending check + fire repo dispatch" — the CI-settled gate evaluation moves out of the decider. Triggering is reframed as "assigned and reviewable" — the dispatch fires on the union of PR-event types listed in [§Trigger events](#trigger-events-consumer-side) provided the PR is open and labelled (label name configurable via `inputs.request-label`). Two important invariants this redesign adds: (1) **the decider DOES NOT remove the trigger label** — the label stays so subsequent PR events keep re-firing the dispatch; the receiver dismisses prior approvals but never touches the label. (2) **`converted_to_draft` is a first-class event** — the receiver short-circuits with a `neutral` check rather than running a review the PR is no longer ready for. The pre-redesign "Dispatch gate" section is preserved below as struck-through historical context until the matching workflow rewrite (PR #165 step 2) lands.
+**2026-05-23 redesign (Nate 18:08Z[^redesign-18-08z]):** dispatch is simplified to "post pending check + fire repo dispatch" — the CI-settled gate evaluation moves out of the decider. Triggering is reframed as "assigned and reviewable" — the dispatch fires on the union of PR-event types listed in [§Trigger events](#trigger-events-consumer-side) provided the PR is open and labelled (label name configurable via `inputs.request-label`). Two important invariants this redesign adds: (1) **the decider DOES NOT remove the trigger label** — the label stays so subsequent PR events keep re-firing the dispatch; the receiver dismisses prior approvals but never touches the label. (2) **`converted_to_draft` is a first-class event** — the receiver short-circuits with a `neutral` check rather than running a review the PR is no longer ready for. The matching workflow rewrites landed in PRs #367 (decider) and #368 (receiver).
 
 ### Implementation map
 
@@ -41,7 +41,6 @@ DRAFT — landing alongside implementation in PR #165 per the spec-with-impl dir
 | Topology — plugin composite                     | [`../actions/run-agent/action.yaml`](../actions/run-agent/action.yaml)                                                   |
 | Topology — review-code skill                    | [`../skills/review-code/SKILL.md`](../skills/review-code/SKILL.md)                                                       |
 | Trigger events                                  | `templates/dispatch-review.yaml` `on:` block                                                                             |
-| Dispatch gate                                   | `review-dispatch.yaml` step "Evaluate dispatch gate"                                                                     |
 | Check-run lifecycle (queued/dispatched/failure) | `review-dispatch.yaml` steps "Post queued check" → "Update check (dispatched\|dispatch failed)"                          |
 | Check-run lifecycle (in_progress/terminal)      | `review-receiver.yaml` steps "Update check (in_progress\|terminal\|agent failed)"                                        |
 | Approval dismissal                              | `review-receiver.yaml` step "Dismiss prior approval reviews"                                                             |
@@ -100,7 +99,7 @@ flowchart TB
     OUT["review posted on the original PR<br/>+ metrics dropped to yaml/json"]
 
     CR -->|"uses: nsheaps/agents/<br/>.github/workflows/<br/>review-dispatch.yaml@main"| SD
-    SD -->|"gate passes →<br/>repository_dispatch event"| TR
+    SD -->|"repository_dispatch event"| TR
     TR -->|"uses: nsheaps/agents/<br/>.github/workflows/<br/>review-receiver.yaml@main"| SR
     SR -->|"runs plugin's<br/>run-agent composite"| RV
     RV -->|"claude-code-action runs<br/>the review-code skill"| OUT
@@ -110,52 +109,33 @@ flowchart TB
 
 ### Two `workflow_call`s, not one
 
-The decider and the receiver are SEPARATE shared workflows in `nsheaps/agents`. Combining them would conflate "should we review this PR?" (consumer-side gating, runs on consumer runners) with "now run the review" (target-side execution, runs on target runners under target's identity). Keeping them separate also lets us evolve receiver semantics (e.g. metrics schema, approval dismissal) without redeploying every consumer's `dispatch-review.yaml`.
+The decider and the receiver are SEPARATE shared workflows in `nsheaps/agents`. Combining them would conflate "route the dispatch" (consumer-side, runs on consumer runners) with "now run the review" (target-side execution, runs on target runners under target's identity). Keeping them separate also lets us evolve receiver semantics (e.g. metrics schema, approval dismissal) without redeploying every consumer's `dispatch-review.yaml`.
 
 ## Trigger events (consumer side)
 
-The consumer's `dispatch-review.yaml` listens for **any** of:
+The consumer's `dispatch-review.yaml` listens for **any** `pull_request` action in:
 
-- `pull_request` with action ∈ {`opened`, `ready_for_review`, `reopened`}.
-- `pull_request` with action `labeled` AND `event.label.name == inputs.request-label` (default `request-review`).
-- `workflow_run` of the consumer's own CI workflows with `conclusion ∈ {success, skipped}` and `event.pull_requests` non-empty — this is how "CI just settled" re-evaluates the gate.
-- (?) `issue_comment` containing a bot-mention pattern — see [Open questions §2](#open-questions).
+- `opened` — new PR created (non-draft).
+- `reopened` — previously closed PR re-opened.
+- `synchronize` — new commits pushed to an open PR.
+- `ready_for_review` — PR converted from draft to ready.
+- `labeled` — a label applied to the PR (the decider fires for any label; whether the PR carries the trigger label is enforced by the consumer template's job-level `if:` condition).
 
-Each event fires the workflow; the workflow then runs the dispatch gate (next section) to decide whether to actually dispatch.
+When the `pull_request.action` is `converted_to_draft`, the dispatch still fires and the receiver's `skip` job handles it — posting a `neutral` check and exiting early without running a review.
 
-## Dispatch gate (decider workflow)
+Each event fires the consumer's `dispatch-review.yaml`, which unconditionally calls the shared decider workflow (see [§Dispatch workflow (decider)](#dispatch-workflow-decider)).
 
-The shared `review-dispatch.yaml` evaluates these conditions in order. A gate decision determines BOTH whether to fire the `repository_dispatch` AND which check-run to post on the head SHA.
+## Dispatch workflow (decider)
 
-```mermaid
-flowchart TD
-    A[Event fires] --> B{Trigger event?}
-    B -->|PR opened/ready_for_review/reopened| C{PR draft?}
-    B -->|label applied = request-review| C
-    B -->|workflow_run settled| C
-    B -->|bot-mention?| C
+The shared `review-dispatch.yaml` always dispatches when invoked — there is no gate evaluation inside the decider. Consumer-template job-level `if:` conditions determine whether the decider is called at all (e.g. PR must be open and carry the trigger label). When called, the decider performs three steps:
 
-    C -->|draft AND trigger != label-applied| D[post check: failure 'PR is draft, not reviewing']
-    C -->|not draft OR label-on-draft| E{All required checks present?}
+1. **Check PR state (consumer-template level).** The consumer's `dispatch-review.yaml` job `if:` guard ensures the decider is invoked only when the PR is open and carries the trigger label, OR the PR was just converted to draft while the label is still present. This guard runs before the `workflow_call` — the decider itself receives no conditional logic.
+2. **Post pending check.** The decider's first action is `checks.create({name: "AI Code Review", head_sha, status: "queued", output: {title: "Dispatching review agent"}})`. The resulting `check_run_id` is captured and forwarded to the receiver so it can update the same check through the lifecycle.
+3. **Fire `repository_dispatch`.** The decider sends a `repository_dispatch` event to the target agent repo (`inputs.target-repo`, default `nsheaps/.ai-agent-henry`) carrying the source PR metadata (`repo`, `pr_number`, `head_sha`, `head_ref`, `base_ref`), `check_run_id`, `consumer_workflow_run_url`, and the triggering event action (so the receiver can short-circuit on `converted_to_draft`).
 
-    E -->|no checks at all| F[no-op — wait for CI to fire]
-    E -->|some required checks pending| F
-    E -->|all required settled| G{All success or skipped?}
+The decider does NOT remove the trigger label. The label persists so subsequent PR events (new commits, `ready_for_review`) keep re-firing the dispatch.
 
-    G -->|any failure| H[post check: failure 'CI failing, not reviewing']
-    G -->|all success/skipped| I[post check: queued 'Dispatching review agent']
-
-    I --> J[repository_dispatch → target repo]
-    J -->|dispatch ok| K[update check: queued 'Review agent dispatched']
-    J -->|dispatch error| L[update check: failure 'Failed to dispatch review agent']
-```
-
-### Detailed conditions
-
-- **Draft handling.** Reviews run on non-draft PRs, with one exception: if the trigger event is `pull_request.labeled` AND the applied label matches `inputs.request-label`, the dispatch runs even if the PR is still in draft. (This is the "I want pre-merge feedback before un-drafting" path.)
-- **"CI settled" semantics.** The decider fetches all check-runs for the head SHA via the GitHub API. If the consumer repo configures _required_ status checks (branch protection), the decider considers ONLY those required checks. Otherwise it considers all checks. A check is "settled" iff it has a terminal `conclusion ∈ {success, failure, skipped, neutral, cancelled, timed_out, action_required}`. The dispatch fires iff the relevant set is non-empty AND every entry is in `{success, skipped, neutral}` (the "OK to proceed" group).
-- **Zero-checks case.** If the relevant set is empty, the gate emits **no check-run** and exits silently. CI hasn't run yet; when it does, the consumer's `workflow_run` trigger re-fires the dispatch workflow, which re-evaluates. (Without this no-op rule we'd post a permanent "no CI" failure check on every fresh PR.)
-- **Required-checks-only.** Branch protection's required-checks list is fetched via `GET /repos/{owner}/{repo}/branches/{branch}/protection/required_status_checks`. If absent (no branch protection or no required-checks rule), fall back to "all checks present."
+Implementation: `.github/workflows/review-dispatch.yaml`
 
 ## Check-run lifecycle
 
@@ -163,28 +143,22 @@ Every check-run posted by the pipeline targets the head SHA of the consumer PR. 
 
 ```mermaid
 stateDiagram-v2
-    [*] --> Gate
+    [*] --> Trigger
 
-    Gate --> NoOp: 0 checks settled
-    Gate --> DraftFail: draft + non-label trigger
-    Gate --> CIFail: any required check failed
-    Gate --> Dispatching: gate passed
+    Trigger --> Dispatching: decider always fires\nqueued/'Dispatching review agent'
 
-    NoOp --> [*]: no check posted
-
-    DraftFail --> [*]: completed/failure\n'PR is draft'
-    CIFail --> [*]: completed/failure\n'CI failing'
-
-    Dispatching --> Dispatched: dispatch ok\nqueued/'Dispatched'
+    Dispatching --> Dispatched: dispatch ok\nqueued/'Review agent dispatched'
     Dispatching --> DispatchFail: dispatch error\nfailure/'Failed to dispatch'
 
-    Dispatched --> Running: receiver picks up\nin_progress/'Running...'
+    Dispatched --> Neutral: converted_to_draft\ncompleted/neutral\n'PR converted to draft'
+    Dispatched --> Running: normal review\nin_progress/'Review agent running...'
 
-    Running --> CommentOnly: agent verdict COMMENT\ncompleted/neutral\n'9 follow-ups found'
-    Running --> Rejected: agent verdict REQUEST_CHANGES\ncompleted/failure\n'34 follow-ups found'
-    Running --> Approved: agent verdict APPROVE\ncompleted/success\n'3 follow-ups found'
+    Running --> CommentOnly: agent verdict COMMENT\ncompleted/neutral\n'N follow-ups found'
+    Running --> Rejected: agent verdict REQUEST_CHANGES\ncompleted/failure\n'N follow-ups found'
+    Running --> Approved: agent verdict APPROVE\ncompleted/success\n'N follow-ups found'
     Running --> AgentFail: if: failure() guard\ncompleted/failure\n'review agent failed'
 
+    Neutral --> [*]
     DispatchFail --> [*]
     CommentOnly --> [*]
     Rejected --> [*]
@@ -194,8 +168,8 @@ stateDiagram-v2
 
 ### Stage-by-stage
 
-1. **Decider posts initial check.** The first action inside the dispatch job that decided to fire is `checks.create({name: "AI Code Review", head_sha, status: "queued", output: {title: "Dispatching review agent", summary: "..."}})`. The check_id is exported as a job output so the receiver can update it.
-2. **`repository_dispatch` payload.** The dispatch event carries: `event_type` (e.g. `pr-review`), `client_payload.source` (consumer repo, PR number, head SHA, head ref, base ref), `client_payload.check_run_id` (the consumer-side check-run to update), `client_payload.consumer_workflow_run_url` (so the receiver can preserve the deep link if it doesn't override).
+1. **Decider posts initial check.** The decider always posts a queued check as its first substantive action: `checks.create({name: "AI Code Review", head_sha, status: "queued", output: {title: "Dispatching review agent", summary: "..."}})`. The check_id is exported as a job output so the receiver can update it.
+2. **`repository_dispatch` payload.** The dispatch event carries: `event_type` (e.g. `pr-review`), `client_payload.source` (consumer repo, PR number, head SHA, head ref, base ref), `client_payload.check_run_id` (the consumer-side check-run to update), `client_payload.consumer_workflow_run_url` (so the receiver can preserve the deep link if it doesn't override), and `client_payload.trigger` (`event` + `action` fields from the originating PR event — the receiver uses `action` to detect `converted_to_draft` and short-circuit).
 3. **Receiver updates to in_progress.** First action on the receiver side is `checks.update({check_run_id, status: "in_progress", output: {title: "Review agent running..."}})`. The receiver runs under the target agent's GitHub App, but updates the check-run on the consumer repo — so the App must be installed on the consumer.
 4. **Agent runs.** `claude-code-action` invokes the `review-code` skill from the `review-utils` plugin. The skill posts the actual review (comment / REQUEST_CHANGES / APPROVE) via the GitHub MCP server. It ALSO emits a structured metrics file (yaml or json — schema TBD) into the workflow workspace.
 5. **Approval dismissal.** Before the agent runs, the receiver dismisses any prior `APPROVED` review from this bot on this PR. The intent: a previously-approved PR with new commits MUST get a fresh look before merge. Comment-only and request-changes reviews are NOT dismissed — they remain part of the audit trail. See [Open question §1](#open-questions) on whether this should happen earlier.
@@ -206,13 +180,9 @@ stateDiagram-v2
    - APPROVE → `completed/success` "The agent approved this PR. {N} follow-ups found."
 8. **`if: failure()` guard.** A final receiver step that runs only when an earlier step failed posts `completed/failure` "The review agent failed to run." This catches infrastructure failures (auth gone, MCP server crash, etc.) that would otherwise leave the check stuck `in_progress`.
 
-### Why posting a "draft, not reviewing" check?
-
-Contributors who open a draft PR and DON'T attach `request-review` see a failure check, not a missing check. The signal is: "the bot saw your PR and decided not to review yet." Without this, draft PRs would silently lack any review-check, and contributors would wonder if the workflow is wired correctly. The check title alone communicates the decision (no comment payload is needed).
-
 ### Why `details_url` always points at the most recent run?
 
-A dispatch can be re-triggered (new commits → workflow_run re-evaluates → fresh dispatch). The check-run with the OLD `details_url` becomes stale. `qoomon/actions--context@v5` exports the current job's workflow-run URL; we set `details_url` to this on every check update. The user clicking the check on the PR always lands on the run that produced the current state.
+A dispatch can be re-triggered (new commits push a `synchronize` event → fresh dispatch). The check-run with the OLD `details_url` becomes stale. `qoomon/actions--context@v5` exports the current job's workflow-run URL; we set `details_url` to this on every check update. The user clicking the check on the PR always lands on the run that produced the current state.
 
 ## End-to-end sequence
 
@@ -228,18 +198,16 @@ sequenceDiagram
     participant AG as agent runtime<br/>(claude-code-action)
     participant RV as review-utils plugin
 
-    U->>CR: pull_request opened / labeled / ready_for_review
+    U->>CR: pull_request event<br/>(opened / synchronize / labeled / ready_for_review / converted_to_draft)
     CR->>SD: workflow_call (with secrets)
-    SD->>SD: evaluate gate<br/>(draft, required-checks, all settled?)
+    SD->>CK: queued / 'Dispatching review agent'
+    SD->>TR: repository_dispatch event<br/>{source, check_run_id, head_sha, trigger}
+    SD->>CK: queued / 'Review agent dispatched'
+    TR->>SR: workflow_call (with secrets)
 
-    alt gate fails / no-op
-        SD-->>CK: post failure or skip
-        SD-->>U: terminal
-    else gate passes
-        SD->>CK: queued / 'Dispatching review agent'
-        SD->>TR: repository_dispatch event<br/>{source, check_run_id, head_sha}
-        SD->>CK: queued / 'Review agent dispatched'
-        TR->>SR: workflow_call (with secrets)
+    alt converted_to_draft
+        SR->>CK: neutral / 'PR converted to draft — review skipped'
+    else normal review
         SR->>CK: in_progress / 'Review agent running...'
         SR->>SR: dismiss prior APPROVED reviews
         SR->>AG: run review-code skill
@@ -284,7 +252,7 @@ flowchart LR
         C["REVIEW_ANTHROPIC_API_KEY<br/>OR CLAUDE_CODE_OAUTH_TOKEN"]
     end
 
-    A -.->|"edit label<br/>post queued check<br/>fire repository_dispatch"| gate
+    A -.->|"post queued check<br/>fire repository_dispatch"| gate
     B -.->|"in_progress check<br/>dismiss approvals<br/>post review comment<br/>terminal check"| receiver
     C -.->|"LLM auth for<br/>claude-code-action"| receiver
 ```
@@ -292,7 +260,6 @@ flowchart LR
 ### Consumer-side gate (passes through to `review-dispatch.yaml`)
 
 - `AUTOMATION_GITHUB_APP_ID` + `AUTOMATION_GITHUB_APP_PRIVATE_KEY` — automation-nsheaps[bot]. Used by the decider to:
-  - remove the `request-review` label after dispatch fires
   - post the initial queued check-run on the consumer PR head SHA
   - fire `repository_dispatch` to the target agent repo
 
@@ -317,14 +284,23 @@ flowchart LR
 3. **Blast-radius minimisation.** The gate runs on every consumer PR; if those creds leaked, the impact is "the attacker can post checks + remove labels." The receiver runs only on dispatched review jobs; if those creds leaked, the impact includes "the attacker can post bot-authored reviews / approvals." Smaller attack surface for the higher-privilege creds.
 4. **Multi-reviewer scaling.** When we add a second reviewer-agent, its `REVIEW_GITHUB_APP_*` is independent of the gate. No consumer-template change needed; the new agent just provisions its own receiver-side secret.
 
+### Scripts longer than ~3 lines live in `.github/scripts/`
+
+Shell logic exceeding ~3 lines is extracted from inline YAML `run:` blocks into standalone scripts under `.github/scripts/review-receiver/` in the `nsheaps/agents` repo. The receiver workflow checks out `nsheaps/agents` at the start of each run so these scripts are available on the runner.
+
+Current scripts (introduced in commit `ae5a886`):
+- `.github/scripts/review-receiver/dismiss-prior-approvals.sh` — dismisses prior `APPROVED` reviews from this bot on the consumer PR.
+- `.github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh` — reads the metrics yaml emitted by the agent and outputs the `conclusion` + `title` for the terminal check update.
+
+This convention keeps workflow YAML readable and makes shell logic independently testable.
+
 ## Open questions
 
 1. **Approval-dismissal timing.** Should we dismiss the prior `APPROVED` review at decider-time (right when the dispatch fires) instead of at receiver-time (when the agent starts running)? Decider-time dismissal closes the "PR is APPROVED, ready to merge" UI affordance ~30s earlier, but if the dispatch then fails downstream we've dismissed an approval we couldn't replace. Receiver-time dismissal is safer but leaves a brief window where the PR shows green-approved while the agent is queued.
    **Current implementation:** receiver-time (`review-receiver.yaml` step "Dismiss prior approval reviews"). Resolved if no objection; the safety argument outweighs the ~30s UI lag.
 2. **Bot mention as trigger.** Is `issue_comment` containing `@<bot-handle>` a valid trigger event? Use cases: contributor wants the bot to re-review after manually pushing fixes that don't change CI. Open issues: spam-resistance (only allow trigger from PR author + maintainers?), comment-only-on-PRs (issues without an associated PR should be a no-op).
    **Current implementation:** not wired. Templates only declare `pull_request` + `workflow_run`. Adding `issue_comment` is a small consumer-template edit + a decider gate-step extension; deferred until we have a clear use-case.
-3. **Distinguishing "no CI configured" from "CI hasn't started yet."** With zero checks present, current spec says "no-op + wait for `workflow_run`." But a repo with NO CI at all will never fire `workflow_run` — and so the review never runs. Options: (a) add a fallback timer that fires the gate after N minutes regardless; (b) require the consumer to set an input `requires-ci: false` to opt out of the CI gate; (c) call GH API to enumerate workflows, and if the repo has zero workflow files, fall through. (c) is cleanest but adds an API call.
-   **Current implementation:** option (none) — gate returns `decision=wait` and the workflow exits silently. A consumer with NO CI relies on the `pull_request: opened` trigger to fire the dispatch when the gate's "0 checks" case is hit... but the current gate treats 0 checks as "wait" and exits. This is a known gap; suggested follow-up: implement (b) as an `inputs.dispatch-without-ci` boolean defaulting to false.
+3. **Repos with no CI.** With the gate removed, the decider always dispatches on every listed PR event. A repo with no CI configured will dispatch on every push (`synchronize`). This is fine for now but opens the question of whether the consumer template should gate on CI presence (e.g. a job-level `if:` that checks for CI results). Deferred — the current design dispatches unconditionally when triggered.
 4. **Mention triggers on issues.** If we accept bot-mention as a trigger event (Q2), does it apply to plain issues (no PR) or only PR-bound issue comments? Plain-issue mentions are probably a "future skills" feature, not in scope here.
    **Current implementation:** out of scope until Q2 is resolved.
 5. **Metrics schema versioning.** When the metrics file schema changes, how do consumer/receiver workflows know which version they're reading? Embed a `$schema` field? Or version-bump the plugin and lockstep the receiver?
@@ -347,6 +323,7 @@ Bundled into PR #165 (this PR) unless noted otherwise.
 
 1. **Spec doc** — this file. ✅ (commits `ac301bf` + `15562d2`)
 2. **Revert in-process executor.** Restore `review-dispatch.yaml` to forwarder mode (drop the embedded `run-agent` step, restore `repository_dispatch`). Add the gate logic. ✅ (commit `260eef5`)
+2.5. **2026-05-23 redesign.** Drop the CI-settled gate; decider always dispatches; receiver handles `converted_to_draft` short-circuit; trigger label never removed. ✅ ([PR #367](https://github.com/nsheaps/agents/pull/367) decider rewrite + [PR #368](https://github.com/nsheaps/agents/pull/368) receiver rewrite)
 3. **Add `review-receiver.yaml`** to `nsheaps/agents`. Mirrors today's run-agent flow but driven by `repository_dispatch` payload + does the check-update + dismissal + metrics gate. ✅ (commit `4c1696b`)
 4. **Add `check-run-id` input to `run-agent` action.** Skip internal check creation when caller owns lifecycle. ✅ (commit `70296b4`)
 5. **Update consumer templates.** `templates/dispatch-review.yaml` drops anthropic/oauth + adds workflow_run trigger; NEW `templates/dispatch-receiver-review.yaml`. ✅ (commit `0a2ede7`)
@@ -355,6 +332,7 @@ Bundled into PR #165 (this PR) unless noted otherwise.
 8. **Retire henry's local composites** (`./.github/actions/agent-setup`, `./.github/actions/run-agent`, `.claude/prompts/pr-review.md`). ⏳ same henry-companion PR.
 9. **End-to-end smoke test** on an open PR in a consumer repo. ⏳ after henry-companion PR merges.
 10. **Migrate already-installed consumer gates** from `REVIEW_GITHUB_APP_*` → `AUTOMATION_GITHUB_APP_*` secrets (alex, jack, ai-mktpl). The gate/receiver creds split landed in this PR but pre-existing consumer-side files still pass `REVIEW_*`. ⏳ follow-up PR per consumer (or one bulk sweep via `nsheaps/.github` template re-sync).
+11. **Scripts extraction.** Shell logic >~3 lines extracted from inline `run:` blocks into `.github/scripts/review-receiver/` scripts. ✅ (commits `ae5a886` + `7ced518`)
 
 <!-- Footnote references — keep alphabetical/numeric, do not delete unused (a section may add a ref later). -->
 
