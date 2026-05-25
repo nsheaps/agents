@@ -239,6 +239,17 @@ There's a small ordering challenge: the parent gets `agent_id` back from the `Ag
 
 **Recommendation: C**. The friction we're solving is "sub-agents can't write"; making sub-agents partially-trusted is the simplest fix that doesn't require dispatch-time coordination. The parent-side invariant (one alex-in_progress) still enforces discipline where it matters.
 
-### OQ3 (deferred to next sub-task)
+### OQ3 resolved — local-directory marketplace install requires restart
 
-Whether `claude plugin install` from a local-directory marketplace requires restart for hook changes is still TBD — will validate when implementing hook changes in the next sub-task.
+Findings from #460-4 install attempt (2026-05-25 03:51Z):
+
+- `extraKnownMarketplaces` declared in `settings.local.json` is NOT picked up by the running session — only at session start. `claude plugin marketplace list` (in a fresh shell) does NOT show entries added via in-session settings edits.
+- `claude plugin marketplace add <path> --scope local` does register a new marketplace, but uses the marketplace.json `name` field (in our case `agents` — the upstream name), which collides with the existing `agents` marketplace declared in `.claude/settings.json`. Effect: the local override silently shadows the upstream pointer for that session, with undefined precedence across nested settings layers.
+- `claude plugin install task-utils@agents` succeeds (says "already installed at user scope") but the running session continues using the cached `task-utils@agents/0.1.0` from `~/.claude/plugins/cache/agents/task-utils/0.1.0/`. The new code at the worktree is not loaded.
+- Conclusion: **iterating hook code via local-directory marketplace requires a session restart to take effect**. The dev-marketplace pattern is real but the iteration cycle is "edit → restart → test", not "edit → reload → test". Doesn't help intra-session validation of the hook changes themselves.
+
+Implication for #460: the implementation (#460-3 → commit 4987188) is correct per design + bash-syntax-clean. E2E validation requires either:
+1. A controlled session restart (interrupts active work), OR
+2. PR-then-merge-then-restart cadence (matches normal plugin development flow).
+
+Going with option 2 — open PR with the design + impl, validate post-merge on next restart (or have a peer agent validate).
