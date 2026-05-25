@@ -16,7 +16,7 @@ The `require-task-in-progress.sh` PreToolUse hook gates Write/Edit/MultiEdit/Not
 - Sub-agent has no TaskCreate/TaskUpdate authority in the doctrine — only the parent does — so it can't simply create a task to satisfy the gate.
 - Workaround so far: parent says "save to <path>" so the sub-agent uses Write-permitted tools or skips the hook by going through Bash. Brittle and bypasses the discipline the hook exists to enforce.
 
-Same problem on the parent side: when alex dispatches 3 sub-agents in parallel and assigns each a task, those 3 in_progress tasks now occupy the 0-or-1 invariant slot meant for alex's *own* in-progress work.
+Same problem on the parent side: when alex dispatches 3 sub-agents in parallel and assigns each a task, those 3 in_progress tasks now occupy the 0-or-1 invariant slot meant for alex's _own_ in-progress work.
 
 ## 2. Rules (from directive, verbatim)
 
@@ -32,16 +32,18 @@ Same problem on the parent side: when alex dispatches 3 sub-agents in parallel a
 TaskCreate/TaskUpdate already accept an arbitrary `metadata` object that round-trips into the task JSON at `$CLAUDE_DIR/tasks/$SESSION_ID/${TASK_ID}.json` under `.metadata`. Use that field directly — no new file, no frontmatter parsing, no migration.
 
 **Field shape**:
+
 ```json
 {
   "metadata": {
-    "assignee": "alex"                    // or empty / absent → me
-                                          // or "arch-reader" / "<sub-agent-name>" → sub-agent
+    "assignee": "alex" // or empty / absent → me
+    // or "arch-reader" / "<sub-agent-name>" → sub-agent
   }
 }
 ```
 
 **Why metadata, not description-frontmatter or a sidecar file**:
+
 - Already supported by the TaskUpdate tool surface (`metadata` param) — no schema fight.
 - Stored on disk in the same JSON file the hook already reads — zero new I/O.
 - Independent of the description, so it isn't disturbed by event-log appends.
@@ -67,15 +69,16 @@ esac
 
 This satisfies rule 3 — parent can have one alex-in_progress + N sub-agent-in_progress simultaneously.
 
-The new-task-being-promoted is also checked: if I'm trying to move a sub-agent-assigned task to in_progress *from my session*, that's the parent dispatching — allowed regardless of the count (the parent doesn't "occupy" its own slot by assigning).
+The new-task-being-promoted is also checked: if I'm trying to move a sub-agent-assigned task to in_progress _from my session_, that's the parent dispatching — allowed regardless of the count (the parent doesn't "occupy" its own slot by assigning).
 
 Edge case (rule 4): when a sub-agent finishes and I want to reassign to myself, I must first ensure no other alex-task is in_progress. The existing invariant handles this once I flip `metadata.assignee` from `<n>` → `alex`.
 
 ### 4b. `require-task-in-progress.sh` sub-agent recognition
 
 Sub-agent's hook fires with the sub-agent's `SESSION_ID`. It needs to discover:
-1. *Am I a sub-agent?* — if so, what's my name?
-2. *Does my parent have an in_progress task assigned to me?*
+
+1. _Am I a sub-agent?_ — if so, what's my name?
+2. _Does my parent have an in_progress task assigned to me?_
 
 **Detection path — TBD, needs validation**:
 
@@ -102,7 +105,7 @@ For self (alex) calls (`AGENT_NAME` unset/empty), behavior is unchanged.
 
 ### 4c. Coach text
 
-`task-invariant.sh` coaches stay mostly as-is, with one addition: when TaskCreate sets `metadata.assignee` to a non-alex value, append: *"Sub-agent-assigned task — won't count toward your in_progress invariant. Remember rule 4: when the sub-agent returns, stop your other in-progress work before reassigning back to yourself."*
+`task-invariant.sh` coaches stay mostly as-is, with one addition: when TaskCreate sets `metadata.assignee` to a non-alex value, append: _"Sub-agent-assigned task — won't count toward your in_progress invariant. Remember rule 4: when the sub-agent returns, stop your other in-progress work before reassigning back to yourself."_
 
 ## 5. Workflow examples
 
@@ -158,6 +161,7 @@ Rename happens in this PR alongside the schema/hook changes — single coherent 
 Ran the probe per OQ1/OQ2 plan. Temp PreToolUse hook dumped stdin + env on Write/Edit fires; dispatched one sub-agent via `Agent(subagent_type: "general-purpose")` to trigger a sub-agent Write. Both fires captured under `/home/nsheaps/src/nsheaps/.ai-agent-alex/docs/journal/2026/05/25/subagent-hook-probe/`.
 
 ### Parent hook input (sample)
+
 ```json
 {
   "session_id": "6560d0ff-f5b1-4a9c-b585-d996c6a12250",
@@ -170,9 +174,11 @@ Ran the probe per OQ1/OQ2 plan. Temp PreToolUse hook dumped stdin + env on Write
   "tool_use_id": "toolu_..."
 }
 ```
+
 Notably absent: `agent_id`, `agent_type`, `parent_session_id`.
 
 ### Sub-agent hook input (sample)
+
 ```json
 {
   "session_id": "6560d0ff-f5b1-4a9c-b585-d996c6a12250",   // SAME as parent
@@ -189,17 +195,19 @@ Notably absent: `agent_id`, `agent_type`, `parent_session_id`.
 ```
 
 ### Env vars
+
 Identical in both fires — no `CLAUDE_AGENT_ID`, no `CLAUDE_PARENT_SESSION_ID`. `AGENT_NAME=alex` is the launcher-injected human-name only.
 
 ### Implications
 
-**OQ1 resolved**: there is NO `parent_session_id` because sub-agents run in the *same session* as the parent. `session_id` is shared. Sub-agent's `TASKS_DIR` at `$CLAUDE_DIR/tasks/$session_id/` IS the parent's task dir — no cross-session lookup needed. Big simplification over the v1 design.
+**OQ1 resolved**: there is NO `parent_session_id` because sub-agents run in the _same session_ as the parent. `session_id` is shared. Sub-agent's `TASKS_DIR` at `$CLAUDE_DIR/tasks/$session_id/` IS the parent's task dir — no cross-session lookup needed. Big simplification over the v1 design.
 
-**OQ2 resolved**: the sub-agent's *type* (`agent_type`) and auto-generated *id* (`agent_id`) ARE available in the hook stdin. The `name:` parameter to `Agent()` is NOT exposed to the hook directly — Claude appears to use `agent_id` as the canonical handle. The parent receives `agent_id` back in the Agent() result.
+**OQ2 resolved**: the sub-agent's _type_ (`agent_type`) and auto-generated _id_ (`agent_id`) ARE available in the hook stdin. The `name:` parameter to `Agent()` is NOT exposed to the hook directly — Claude appears to use `agent_id` as the canonical handle. The parent receives `agent_id` back in the Agent() result.
 
 ### Revised hook design (replaces v1 §4b)
 
 `require-task-in-progress.sh`:
+
 ```bash
 AGENT_ID="$(jq -r '.agent_id // empty' <<<"$INPUT")"
 
@@ -249,6 +257,7 @@ Findings from #460-4 install attempt (2026-05-25 03:51Z):
 - Conclusion: **iterating hook code via local-directory marketplace requires a session restart to take effect**. The dev-marketplace pattern is real but the iteration cycle is "edit → restart → test", not "edit → reload → test". Doesn't help intra-session validation of the hook changes themselves.
 
 Implication for #460: the implementation (#460-3 → commit 4987188) is correct per design + bash-syntax-clean. E2E validation requires either:
+
 1. A controlled session restart (interrupts active work), OR
 2. PR-then-merge-then-restart cadence (matches normal plugin development flow).
 
