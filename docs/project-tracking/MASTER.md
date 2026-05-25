@@ -53,7 +53,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
   <a id="I14"></a>
 - ✅ `I14`: [Stable ticket-style IDs across all MASTER.md sections (expanded scope of I6)](./task-summary/I14-stable-ids-all-sections.md)
   <a id="I27"></a>
-- 🆕 `I27`: [Audit I2–I14 per-task docs and backfill Original message sections](./task-summary/I27-backfill-original-message.md)
+- ✅ `I27`: [Audit I2–I14 per-task docs and backfill Original message sections](./task-summary/I27-backfill-original-message.md)
 
 ## ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
 
@@ -61,7 +61,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 - ✅ `I7`: [Spin down jack + henry, verify minimal 5m cron](./task-summary/I7-spin-down-peers.md)
   <a id="I15"></a>
-- `I15`: Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
+- ✅ `I15`: Now that we have stable IDs, update this list to use unordered lists `- item` instead of numbered lists where the numbers don't add value
 
 <a id="I29"></a>
 
@@ -88,7 +88,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
   - 🆕 `C2`: let's commit all the other changes to the agents repo to main. we're gonna make some rapid changes make sure it's in a clean state.
   - 🆕 `C3`: Lets make sure anything that's easy to close PR wise on agents, agent repos, mktpl, tools, etc in the nsheaps org is closed. Most are not easy, but programatically dump it, then see if anything is relevant and easy.
     <a id="I39"></a>
-- 🆕 `I39`: audit nsheaps/agents, nsheaps/ai-mktpl, and all the agent repos — survey state (committed/uncommitted files, open PRs, branches, untracked directories, stray skills/plugins/scripts) before scoping I32 (REPOS.md) and downstream cleanup. Per Nate Discord [1508288275817959524](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288275817959524) + correction [1508288401248489564](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288401248489564) (02:00Z) — position is "after I30 and sub-bullets, not before I32".
+- ✅ `I39`: audit nsheaps/agents, nsheaps/ai-mktpl, and all the agent repos — survey state (committed/uncommitted files, open PRs, branches, untracked directories, stray skills/plugins/scripts) before scoping I32 (REPOS.md) and downstream cleanup. Per Nate Discord [1508288275817959524](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288275817959524) + correction [1508288401248489564](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288401248489564) (02:00Z) — position is "after I30 and sub-bullets, not before I32". **Audit report landed in alex journal**: [`docs/journal/2026/05/24/repo-audit/repo-audit.md`](https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/journal/2026/05/24/repo-audit/repo-audit.md) (task #478/#481).
 - 🆕 `C1`: rename this plugin to `reddit` from reddit-fetcher [PR #166](https://github.com/nsheaps/agents/pull/166) (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
 
 <a id="I28"></a>
