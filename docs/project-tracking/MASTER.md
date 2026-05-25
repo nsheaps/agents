@@ -86,7 +86,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 - 🚧 `I30`: commit outstanding work in agents, agent repos, ai-mktpl and other repos in REPOS.md — **partial**: agents/ai-mktpl/alex/claude-code-sessions done; aitkit needs Nate's WIP resolution (workspace-file conflict); jack/henry need peer-coord (spun down); C3 not started.
   - Read each file thoroughly before committing, taking notes in your journal about anything that will help with the next task, there's a lot of disparate ideasa, but don't go crazy here.
   - ✅ `C2`: let's commit all the other changes to the agents repo to main. we're gonna make some rapid changes make sure it's in a clean state. **Done**: 9 scaffolding stubs committed [`7294b9b`](https://github.com/nsheaps/agents/commit/7294b9b); notes at [`alex docs/journal/2026/05/25/agents-stub-scaffolding-notes.md`](https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/journal/2026/05/25/agents-stub-scaffolding-notes.md).
-  - 🆕 `C3`: Lets make sure anything that's easy to close PR wise on agents, agent repos, mktpl, tools, etc in the nsheaps org is closed. Most are not easy, but programatically dump it, then see if anything is relevant and easy.
+  - 🆕 `C3`: **(scope expanded 2026-05-25 04:50Z per Nate)** — _(a)_ audit ALL open PRs across ALL open repos (state + age) and produce a report for Nate to triage tomorrow morning's merge sweep; _(b)_ make sure anything easy to close PR-wise on agents, agent repos, mktpl, tools, etc in the nsheaps org IS closed. Most are not easy — programatically dump it, then see if anything is relevant and easy. Per Nate Discord [`1508331380239634652`](https://discord.com/channels/1490863845252665415/1497431286661517353/1508331380239634652) "is that C3? increase the scope".
     <a id="I39"></a>
 - ✅ `I39`: audit nsheaps/agents, nsheaps/ai-mktpl, and all the agent repos — survey state (committed/uncommitted files, open PRs, branches, untracked directories, stray skills/plugins/scripts) before scoping I32 (REPOS.md) and downstream cleanup. Per Nate Discord [1508288275817959524](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288275817959524) + correction [1508288401248489564](https://discord.com/channels/1490863845252665415/1497431286661517353/1508288401248489564) (02:00Z) — position is "after I30 and sub-bullets, not before I32". **Audit report landed in alex journal**: [`docs/journal/2026/05/24/repo-audit/repo-audit.md`](https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/journal/2026/05/24/repo-audit/repo-audit.md) (task #478/#481).
 - 🚧 [`C1`](./task-summary/C1-reddit-fetcher-rename.md): rename this plugin to `reddit` from reddit-fetcher [PR #166](https://github.com/nsheaps/agents/pull/166) (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main. Per-task doc captures 3 approach options (A: ask Jack, B: take over PR, C: merge-then-rename) — Nate pick needed.
@@ -177,6 +177,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 ## word-vomit plugin
 
+- `E5`: [word-vomit plugin] Lets set up a mechanism for me to write random shit into a file that you guys watch and properly categorize and update it (file-utils from scratch[^scratch] to notify). _(Moved from `# end of tonight 2026-05-24` per Nate Discord [`1508331380239634652`](https://discord.com/channels/1490863845252665415/1497431286661517353/1508331380239634652) — this is the prototype vision; I11/I18/I19 are the implementation tickets._
 - 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md`
   - The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
 - `I18`: create a hook in ~~your config~~ ~~project-utils~~ word-vomit for userpromptsubmit post tool use and stop
@@ -371,7 +372,9 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 
 <a id="dreaming"></a>
 
-## dreaming (part of agentic-behavior? move to agents repo?)
+## dreaming (own `dreaming` plugin in nsheaps/agents per I45)
+
+Decision locked 2026-05-25 04:25Z (Nate Discord [`1508325147449364510`](https://discord.com/channels/1490863845252665415/1497431286661517353/1508325147449364510)): standalone `dreaming` plugin in `nsheaps/agents`, **NOT** folded into agentic-behavior (agentic-behavior still gets migrated rather than discarded). See [`I45`](#I45) for the basic-build scope and 6-step flow.
 
 needs more definition needs emphasis of learning based on what happened, not continuing any work, including work that might also improve the agent. Don't duplicate that work, but if that work is in progress, it can be updated during dreaming. Don't start new already-scoped work. make sure to scope work before doing it.
 
@@ -395,7 +398,7 @@ needs more definition needs emphasis of learning based on what happened, not con
    - **Concrete failure mode to defend against (added 2026-05-25 per Nate Discord [03:10Z](https://discord.com/channels/1490863845252665415/1497431286661517353/1508306137437704282)):** `gh pr merge` currently succeeds on `nsheaps/agents` even when no approving review exists (saw this on [PR #172](https://github.com/nsheaps/agents/pull/172) merge-after-REQUEST_CHANGES + [PR #173](https://github.com/nsheaps/agents/pull/173) merge-without-any-review). Branch protection on `main` should require: (a) ≥1 approving review, (b) dismiss stale reviews on push (so a force-push that addresses REQUEST_CHANGES forces a re-review), (c) required status checks (`validate`, `lint`, `test`), (d) bypass list for the github-app/codeowner identities that can self-merge for hotfixes. Captured in memory: [`feedback_ci_green_is_not_merge_signal.md`](https://github.com/nsheaps/.ai-agent-alex/blob/main/memory/feedback_ci_green_is_not_merge_signal.md).
 3. `E22`: extract all journals (from tmp/docs, randomness) to new location, consolidating where possible
 4. `E4`: lets set up github notifications for discord <=> github repos through repository-settings github app to make repo webhooks (maybe later using iac or a github app)
-5. `E5`: [word-vomit plugin] Lets set up a mechanism for me to write random shit into a file that you guys watch and properly categorize and update it (file-utils from scratch[^scratch] to notify)
+5. _(moved to `## word-vomit plugin` section per Nate 04:50Z — was `E5`)_
 6. `E6`: file-utils sync to s3?
    1. iac s3 setup?
       1. pulumi? cloudflare?
