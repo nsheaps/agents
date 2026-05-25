@@ -9,8 +9,8 @@
 
 - [ARCHITECTURE_DRAFT.md](file:///home/nsheaps/src/nsheaps/agents/ARCHITECTURE_DRAFT.md)
 - [docs/scratch.md](file:////home/nsheaps/src/nsheaps/agents/docs/scratch.md)
-- [this file](file:////home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/scratch.md)
-- [docs/journal/2026/05/16/managing-Tasks.md](/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/managing-Tasks.md)
+- [this file](file:////home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/entry003-scratch.md)
+- [docs/journal/2026/05/16/entry001-managing-Tasks.md](/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/entry001-managing-Tasks.md)
 - [ai-mktpl/plugins/agentic-behavior/README.md](file:////home/nsheaps/src/nsheaps/ai-mktpl/plugins/agentic-behavior/README.md)
 - ai-mktpl
 - [#private-notes](https://discord.com/channels/1490863845252665415/1497804459496046632)

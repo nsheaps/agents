@@ -234,7 +234,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
       6. with failure a more forceful message
       7. error an even more forcefull message
    3. do some research about doing deep research. Find the agent prompts claude has for managed agents, specifically the deep researcher. Since deep research is also a role, make sure those skils properly link into deep research.
-      1. take a peek at `docs/journal/2026/05/16/scratch.md` and find the area about research-utils and journal-utils (comprehensively, may be in multiple sections). Don't get distracted, I just want the skill names and high level ideas.
+      1. take a peek at `docs/journal/2026/05/16/entry003-scratch.md` and find the area about research-utils and journal-utils (comprehensively, may be in multiple sections). Don't get distracted, I just want the skill names and high level ideas.
       2. Rename deep-research to research-utils, create journal-utils, create empty shells of these skills that say nothing other than something like a reasonable description of when you'd use something like that, and a message in the skill saying "This skill hasn't been filled out with anything. Try running skill-learning to learn how to do this."
    4. using your new research skills, create product-utils plugin containing skills about being a project manager, Remmeber how the role ties back to responsibilities and capabilities. Product-utils is different from job-utils in that job-utils is about "doing jobs" and ensuring you are fulfilling your roles within the organization (continuing your work, proactively unblocking yourself, not duplicating work, not doing work that should be done by someone else, defining roles, etc). Also add "product-development" skill for how to develop a product
       1. also make job-utils with 'empty' skills for those too
@@ -317,8 +317,8 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
         - how to design how you're going to validate it before designing how you'll implement it
         - validating it after implementation against the deliverable
    2. one or two of them are a bit more structured here:
-      - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish project plan.md
-      - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish task-utils correction.md
+      - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/entry004-farish-project-plan.md
+      - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/entry005-farish-task-utils-correction.md
 
 <a id="dreaming"></a>
 
@@ -329,7 +329,7 @@ needs more definition needs emphasis of learning based on what happened, not con
 <!-- next-id: D3 -->
 
 0. pull in dreaming notes from scratch into the dreaming doc mentioned below
-1. 🆕 `D1`: Let's make the dream cycle described in the docs and run it once. read notes `/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/23/dreaming.md`
+1. 🆕 `D1`: Let's make the dream cycle described in the docs and run it once. read notes `/home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/23/entry007-dreaming.md`
 2. 🆕 `D2`: Let's make a dream about XXX thing (one time, recurring R times, indefinitely, frequency)
    1. then force it to dream about cleaning up nate's user configs vs the agents
    2. set up cron for each agent
@@ -453,6 +453,6 @@ needs more definition needs emphasis of learning based on what happened, not con
 40. `E40`: arcane absorb portainer containers
 41. `E41`: cept
 
-[^scratch]: file:///home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/scratch.md
+[^scratch]: file:///home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/entry003-scratch.md
 
-[^auto-agent]: file:///home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/scratch.md
+[^auto-agent]: file:///home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/16/entry003-scratch.md

@@ -48,6 +48,6 @@ The two PreToolUse hooks register automatically; the skill is available as `Skil
 
 ## Design
 
-Worked example for the breakdown pattern: [nsheaps/agents/docs/journal/2026/05/16/managing-tasks-example.md](https://github.com/nsheaps/agents/blob/main/docs/journal/2026/05/16/managing-tasks-example.md).
+Worked example for the breakdown pattern: [nsheaps/agents/docs/journal/2026/05/16/entry002-managing-tasks-example.md](https://github.com/nsheaps/agents/blob/main/docs/journal/2026/05/16/entry002-managing-tasks-example.md).
 
 **Internal reference (private):** the full spec lives at `docs/specs/draft/task-discipline-plugin.md` and `docs/specs/draft/manage-tasks-skill.md` in the `nsheaps/.ai-agent-alex` private repo where the workflow was proven out. The behavior is fully documented in the SKILL.md doctrine sections in this plugin; the spec drafts are mainly useful for the design rationale + change history.

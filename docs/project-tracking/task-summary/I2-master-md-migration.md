@@ -12,7 +12,7 @@
 
 ## Deliverable
 
-- Track doc lives at `docs/project-tracking/MASTER.md` (was `docs/journal/2026/05/23/getting-back-on-track.md`).
+- Track doc lives at `docs/project-tracking/MASTER.md` (was `docs/journal/2026/05/23/entry008-getting-back-on-track.md`).
 - All headers have `<a id="..."></a>` anchor IDs (`key`, `rules`, `intro`, `farish-skills`, `ball-rolling`, `cleanup-prs`, `fix-reviews`, `dreaming`, `end-of-tonight`).
 - Status emoji key defined at top of doc as its own H1 section (`#key`).
 - Cross-cutting Rules section defined as its own H1 (`#rules`), above the intro.
@@ -23,7 +23,7 @@
 ## Validation
 
 - `docs/project-tracking/MASTER.md` exists at HEAD of `main`.
-- `docs/journal/2026/05/23/getting-back-on-track.md` exists as a one-paragraph redirect.
+- `docs/journal/2026/05/23/entry008-getting-back-on-track.md` exists as a one-paragraph redirect.
 - Every header in MASTER.md has a unique `<a id="...">` anchor.
 - Every item from `#intro` through `#end-of-tonight` has a status emoji.
 - Per-task docs referenced from MASTER.md exist at `docs/project-tracking/task-summary/`.
