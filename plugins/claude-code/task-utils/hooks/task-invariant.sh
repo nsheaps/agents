@@ -145,8 +145,15 @@ if [[ "$TOOL_NAME" == "TaskCreate" ]]; then
     emit_decision "deny" "$REASON" ""
     exit 0
   fi
-  log_fire "allow" "tool=TaskCreate"
-  emit_decision "allow" "" "${BEHAVIOR_CHANGING_COACH}"$'\n\n'"${GENERIC_REMINDER}"
+  # If creating with a sub-agent assignee, add the rule-4 reminder.
+  NEW_ASSIGNEE="$(jq -r '.tool_input.metadata.assignee // empty' <<<"$INPUT")"
+  CREATE_EXTRA=""
+  case "$NEW_ASSIGNEE" in
+    ""|alex) : ;;
+    *) CREATE_EXTRA=$'\n\n''Sub-agent-assigned task (assignee="'"$NEW_ASSIGNEE"'") — won'\''t count toward your in_progress invariant (see assignee-design.md §3). Remember rule 4: when the sub-agent returns, stop your other in_progress work BEFORE reassigning metadata.assignee back to "alex" + flipping to in_progress.' ;;
+  esac
+  log_fire "allow" "tool=TaskCreate assignee=${NEW_ASSIGNEE:-alex}"
+  emit_decision "allow" "" "${BEHAVIOR_CHANGING_COACH}${CREATE_EXTRA}"$'\n\n'"${GENERIC_REMINDER}"
   exit 0
 fi
 
@@ -194,13 +201,20 @@ esac
 # ---- Deny path: pending→in_progress validation-steps required ---------------
 
 if [[ "$NEW_STATUS" == "in_progress" ]]; then
-  # 0-or-1 invariant first
+  # 0-or-1 invariant first — count only tasks where metadata.assignee is
+  # empty or "alex" (sub-agent-assigned tasks live in their own accounting
+  # per assignee-design.md §3 and don't gate the parent).
   OTHERS=""
   if [[ -d "$TASKS_DIR" ]]; then
     while IFS= read -r -d '' f; do
       f_id="$(jq -r '.id // empty' "$f" 2>/dev/null)"
       [[ "$f_id" == "$TASK_ID" ]] && continue
       f_status="$(jq -r '.status // empty' "$f" 2>/dev/null)"
+      f_assignee="$(jq -r '.metadata.assignee // empty' "$f" 2>/dev/null)"
+      case "$f_assignee" in
+        ""|alex) : ;;
+        *) continue ;;
+      esac
       if [[ "$f_status" == "in_progress" ]]; then
         f_subj="$(jq -r '.subject // empty' "$f" 2>/dev/null)"
         OTHERS+="#${f_id} (${f_subj}); "
