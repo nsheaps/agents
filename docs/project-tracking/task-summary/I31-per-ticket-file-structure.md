@@ -95,13 +95,13 @@ Files in `task-summary/` already conform to this template, so adoption is "renam
 
 Mapping (Linear-style):
 
-| Linear concept | MASTER.md realization |
-| --- | --- |
-| Project | `# alex goes brrrrrrr` (top-level title — this repo's master project) |
-| Milestone | `## <header>` section in MASTER.md |
-| Ticket | `- 🆕 \`Iddd\`: <title>` bullet within a milestone section |
-| Sub-ticket | nested bullet under a parent ticket (indented `  - 🆕 \`Cddd\`: ...`) |
-| Per-ticket detail | link to `docs/tickets/<section>/<ID>-<slug>.md` |
+| Linear concept    | MASTER.md realization                                                 |
+| ----------------- | --------------------------------------------------------------------- |
+| Project           | `# alex goes brrrrrrr` (top-level title — this repo's master project) |
+| Milestone         | `## <header>` section in MASTER.md                                    |
+| Ticket            | `- 🆕 \`Iddd\`: <title>` bullet within a milestone section            |
+| Sub-ticket        | nested bullet under a parent ticket (indented `  - 🆕 \`Cddd\`: ...`) |
+| Per-ticket detail | link to `docs/tickets/<section>/<ID>-<slug>.md`                       |
 
 When ticket-utils (I9) lands, it can pivot to github-issues-as-milestones or fs-only without changing this conceptual model.
 
