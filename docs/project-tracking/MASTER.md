@@ -35,7 +35,7 @@ These apply to ALL items in this document, regardless of which section they're i
 
 sub-agents are your friend. You're gonna read this whole file, be like "wow, nate is kinda cray cray", and come back here and focus on one section at a time, one task at a time.
 
-<!-- next-id: I41 -->
+<!-- next-id: I44 -->
 
 - ✅ `I1`: [Turn off agent teams + restart](./task-summary/I1-agent-teams-off.md)
 - ✅ `I2`: [Migrate track-doc to MASTER.md + status-emoji key + per-task doc convention](./task-summary/I2-master-md-migration.md)
@@ -126,6 +126,10 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
     error: 25 # incremented when it fails
     errorSessions: ...
   ```
+
+- 🆕 `I41`: skill-writing skill must teach `context: fork` frontmatter — when to use it (forked subagent context, no parent conversation history), the documented full 15-field frontmatter schema ([code.claude.com/docs/en/skills.md](https://code.claude.com/docs/en/skills.md)), and a default-set recommendation (research at [`docs/research/skill-frontmatter.md`](https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/research/skill-frontmatter.md)). Per Nate Discord [1508293612880920627](https://discord.com/channels/1490863845252665415/1497431286661517353/1508293612880920627) (02:20Z).
+- 🆕 `I42`: plugin-dev skills should describe **MCP-server-channel pattern** for cross-platform event surfacing — _instead of_ throttled-check hooks (current github-app throttle pattern is an anti-example). MCP server resource subscription pushes events; agents subscribe to a resource and the system tells them when it changes (PR CI green, new comment, issue update). Saves time, programmatic, no polling, fewer tokens.
+- 🆕 `I43`: github plugin → expose an MCP server with subscribe/unsubscribe tools for resources (PRs, issues, check-runs, etc.). Agents subscribe → events arrive via the MCP channel rather than alex looping `gh pr checks` or polling for review state. Replaces the current github-app throttle pattern. Pairs with `I42`.
 
 ## fix compaction
 
