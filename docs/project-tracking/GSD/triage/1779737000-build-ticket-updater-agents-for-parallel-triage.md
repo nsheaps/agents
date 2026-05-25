@@ -15,7 +15,11 @@ references:
     url: ./1779737001-task-utils-assign-on-launch-and-auto-handoff.md
 events:
   - { ts: 2026-05-25T20:04:18Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - { ts: 2026-05-25T21:00:00Z, by: alex, change: "moved to triage; ticket-updater agent file shipped in nsheaps/.ai-agent-alex@7567ab0; this very dispatch is the first real use" }
+  - {
+      ts: 2026-05-25T21:00:00Z,
+      by: alex,
+      change: "moved to triage; ticket-updater agent file shipped in nsheaps/.ai-agent-alex@7567ab0; this very dispatch is the first real use",
+    }
 ---
 
 # Build ticket-updater agents for parallel triage
