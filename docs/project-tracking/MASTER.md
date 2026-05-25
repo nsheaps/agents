@@ -57,6 +57,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
   - This is manual for now, but I9 will automate it
 
 ## defining scope and cleaning git state
+
 - 🆕 `I32`: define all repos in scope for this project tracking list in ./REPOS.md (needs Nate's eyes)
 - 🆕 `I30`: commit outstanding work in agents, agent repos, ai-mktpl and other repos in REPOS.md
   - Read each file thoroughly before committing, taking notes in your journal about anything that will help with the next task, there's a lot of disparate ideasa, but don't go crazy here.
@@ -72,7 +73,9 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
   - `I20`: [remove ticket number?] all of this is ill defined. All of this should bubble back into a spec in the agents repo in the appropriate place, though we'll still use the tickets for tracking.
 
 ### pause here HEREHERE
+
 ## make ticket-utils
+
 - 🆕 `I9`: extract the project-tracking task skill stuff into scripts and skills if they're not already that will help you make the changes without manually making updates to each file. be scrappy. minimum needed changes. task-utils basically does this so we;re just optimizing your token use. At minimum capture the updates in an sonnet agent instead of you doing the work 10. make the task updating skill use context:fork
   - This is ticket-utils. look this up in other files, we're not starting from scratch. we just need basic scripts that act like task-utils, but for tickets (right now we'll just use a file backend in the repo). Look at agents#157 for an idea of how task-utils does it, right now we just need fast and scrappy, we'll do ts later. Since this is also all encapsulated in a skill ticket-manage, with context:fork, running scripts is okay
     - If you think it's easier, scripts can be ts/bun scripts for later integration
@@ -86,18 +89,22 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
   - Never update these files by hand, the skill and scripts and tools in ticket-utils should be responsible for updating (all of) it (including TOCs when anything changes like state (if it bubbles back), name (if it changes), etc etc. Store the drilldowns as markdown lists rather than headers. Only use headers in the tickets themselves to separate secions
 
 ## improve the tickets
+
 - 🆕 `I10`: Take another X number of passes at this doucument (choose X before you start I10). Define what you think needs to be improved, what needs to be done now, what needs to be done later, what's a nice to have. Limit yourself to only the absolutely needed improvements to make this reasonable. Note the iterative process you have for breaking down tasks. Even if all stuff needs to be done, it doesn't all need to be done now AS LONG AS YOU DOCUMENT THE PROCESS so you don't forget to do it after completing each one.
   - individually check each list item in MASTER.md and it's subdocs recursively, make sure items that are rules are rules and tasks are tasks
 
 ~~- 🆕 `I8`: using tmux to write into your own shell, based on what we're about to do, compact yourself, then fork yourself. note at 12:11 am 2025-05-24, you just compacted, this can be marked complete.~~
 
 ## fix compaction
+
 - `I16`: Add a precompact hook to alex that injects compaction instructions. On pre-compact, generate a 3 word key-phrase. After compact, the agent MUST state that keyphrase, state that they know they were compacted, what they were working in before, what they're working on now, what they'll be working on, and if conversting with folks about what they're working on, where that conversation (or multiple) are taking place. in agent-utils
 
 ## fix {update+update(fail)+update}=>commit from being able to commit if one fails
+
 - `I17`: We need to make sure batches of tool calls fail back into the conversation instead of completing the rest of the tool calls, AND/OR make sure any commit tool call is separate from the actual updates
 
 ## word-vomit plugin
+
 - 🆕 `I11`: Create `nsheaps/agents/docs/project-tracking/INTAKE.md`
   - The top of the file should contain brief instructions for how to use it, and an area for the user to clearly type into
 - `I18`: create a hook in ~~your config~~ ~~project-utils~~ word-vomit for userpromptsubmit post tool use and stop
@@ -128,35 +135,36 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
     - rule?
 
 ## improve plugin + skill writing + metric tracking
+
 - 🆕 `I36`: do the plugin-dev plugin and skill-utils plugin work now
 - 🆕 `C4`: make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
 
-   ```yaml
-   name-of-skill-called:
-     path: /absolute/path/to/skill/file/on/disk.md
-     totalSuccess: 44
-     totalError: 35
-     totalUses: 69 # nice...
-     successWithoutToolError: 34 # incremented when tool completes successfully without any tool call failures in it
-     successWithoutToolErrorSessions:
-       - 932f3641-0953-4857-b73d-6f3af56344b5: # the session ID that called it
-           transcriptPath: /absolute/path/to/transcript.jsonl
-           uses: # sorted chronologically
-             - 569c7ec9-f409-43a1-9a65-ffc43e96b6e3: # message uuid of the tool call,
-               until: 7fce8c3b-f55f-4b55-b1fb-b293a0b0f463 # message uuid of the end of the tool call
-               toolCalls: # includes calls to other skills, but not their tool calls. Sorted by max number of calls
-                 - "Bash(abcd 123)": # tool call with exact arguments, don't track each message
-                   success: 34
-                   error: 2
-                 ...
-     successWithToolError: 10 # during skill execution a tool call failed, but the skill execution was successful
-     successWithToolErrorSessions: ...
-     error: 25 # incremented when it fails
-     errorSessions: ...
-   ```
-
+  ```yaml
+  name-of-skill-called:
+    path: /absolute/path/to/skill/file/on/disk.md
+    totalSuccess: 44
+    totalError: 35
+    totalUses: 69 # nice...
+    successWithoutToolError: 34 # incremented when tool completes successfully without any tool call failures in it
+    successWithoutToolErrorSessions:
+      - 932f3641-0953-4857-b73d-6f3af56344b5: # the session ID that called it
+          transcriptPath: /absolute/path/to/transcript.jsonl
+          uses: # sorted chronologically
+            - 569c7ec9-f409-43a1-9a65-ffc43e96b6e3: # message uuid of the tool call,
+              until: 7fce8c3b-f55f-4b55-b1fb-b293a0b0f463 # message uuid of the end of the tool call
+              toolCalls: # includes calls to other skills, but not their tool calls. Sorted by max number of calls
+                - "Bash(abcd 123)": # tool call with exact arguments, don't track each message
+                  success: 34
+                  error: 2
+                ...
+    successWithToolError: 10 # during skill execution a tool call failed, but the skill execution was successful
+    successWithToolErrorSessions: ...
+    error: 25 # incremented when it fails
+    errorSessions: ...
+  ```
 
 ## role definition improvement
+
 - 🆕 `I37`: split up C7 into many items if not already
 
 7. 🆕 `C7`: alex is now a project-manager, software-eng, agent-eng, quality-eng, researcher, ... lets talk about what we have and what we should have. _(related: [agents#115](https://github.com/nsheaps/agents/issues/115) — agent definitions from plugins)_
@@ -231,18 +239,17 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
       2. update skill-utils plugin to account for the idea that it's better to have a structured outline of skills you want without knowing how to do them (with the shell like above) than to have no skill at all
    5. confirm your project-manager role is all set up, and links appropriately
    6. using your new product skills, Lets reformat this file to be a table of contents to links tracking all of this work.
-   
-
-
 
 ## CI review recon + fixing
+
 - `I25`: Take note of what the state of the review bot is in nsheaps/agents and other repos and let me know. Test it if you don't know
+
 10. 🆕 `C8`: Lets look through all those transcripts and items. it's a lot to look through and a lot to waste tokens on, which I don't want to quite yet, so we'll focus on dumping all the data, then targeted extraction of everything related to the henry review workflow _(related: [agents#117](https://github.com/nsheaps/agents/issues/117) — reusable review dispatch; substantial progress via [PR #160](https://github.com/nsheaps/agents/pull/160), [PR #164](https://github.com/nsheaps/agents/pull/164), and in-flight [PR #165](https://github.com/nsheaps/agents/pull/165))_
     1. We'll do that by writing a script to dump an entire transcript from a discord channel and we'll dump all the channels and all the threads
     2. We'll also write a script to dump files for all the issues and prs in every repo we've been working in
     3. We'll use programatic tools to look for mentions in those transcripts, claude transcripts, issues, etc, to get a comprehensive view of what we actually want to do with henry. For each mention we'll note which file and where, then we'll use sonnet agents to go Read the files and extract any useful info into summary files (with access to more before/after), then more sonnet agents to compile those iteratively into a comprehensive spec for the CI Review bot (both with the scope of henry, but noting that I think long term it's gonna be independent and all logic and review data shared in every agent)
     4. build a small toolset that takes those structured pieces of data that you extracted and allows you to query for the data, rather than reading the files directly.
-    1. ⏸️ `R1`: Lets get this working with henry's repo for now. Once it's working, we can move it to a private repo at a later step
+    5. ⏸️ `R1`: Lets get this working with henry's repo for now. Once it's working, we can move it to a private repo at a later step
        1. do it based on what we learned from before from learning through transcripts and commit histories and pr comments etc. No leaf unturned for data found on this machine. Use haiku to find things with natural language, sonnet to evaluate them for meaning. NEVER use opus to read through transcripts. ALWAYS use query tools to read transcripts.
           1. add note to archiecture_draft in agents repo root for arch mantras, always try to prevent an agent from directly reading a file that's structured of any sort.
              1. js/ts, use a lang server and ast to query around
@@ -250,24 +257,27 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
              2. markdown
                 1. consider converting to html/toon/tron with query tools
 
-
 ## validate task-utils sub-agent delegation
+
 - `I26`: make sure task-utils updated and doesn't block you from doing a few of these tasks at the same time, especially with the backgrounding mechanism with agents.
   - 🆕 `I13`: Update task-utils to have a configuration to block or warn or quiet, something like
-      ```yaml
-      tasks:
-        maxInProgress: 3 # block setting another to in-progress if 3 are in progress
-        tooManyTasksLimit: 1 # print "blocK' on post tool use with warning about too many tasks in progress. Remind about delegating to subagent
-      ```
+    ```yaml
+    tasks:
+      maxInProgress: 3 # block setting another to in-progress if 3 are in progress
+      tooManyTasksLimit: 1 # print "blocK' on post tool use with warning about too many tasks in progress. Remind about delegating to subagent
+    ```
 
 <!-- next-id: C9 -->
+
 ## hookify fork
+
 5. 🆕 `C5`: fork hookify into our agents repo, as well as the sequential thinking mcp server and add the sequential thinking mcp to the agent-utils plugin _(partial: [`sequential-thinking`](https://github.com/nsheaps/ai-mktpl/tree/main/plugins/sequential-thinking) plugin exists in ai-mktpl but isn't bundled into agent-utils yet; hookify is upstream, no fork in nsheaps yet)_
 
 ## agent consistency audit update
+
 6. 🆕 `C6`: lets get a diff of all 3 agents, in a research doc. make an agent-drift plugin in nsheaps/agents. Post-tool-use cd into one of the agent repos, remind about the tracking doc, throttled to once every 5 minutes. Post edit tool use in one of the repos, remind about the tracking doc. Post tool use, stop, user prompt submit throttle 5m just pull the repo the tracking doc is in. If a tracked file changes post a reminder to the agent. Give the plugin a config of the repo, where it's checked out, the branch to commit to, and a list of files within to watch for changes after a git pull. If it ever tries to sync and the branch is wrong or a conflict happens, warn the agent
 
-9. 
+7.
 
 <a id="farish-skills"></a>
 
@@ -307,7 +317,6 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
    2. one or two of them are a bit more structured here:
       - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish project plan.md
       - /home/nsheaps/src/nsheaps/agents/docs/journal/2026/05/21/farish task-utils correction.md
-
 
 <a id="dreaming"></a>
 
