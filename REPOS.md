@@ -126,28 +126,28 @@ This file is the canonical list of repositories that are in scope for the work t
 
 Added per Nate's checkbox triage on [`nsheaps/agents#175`](https://github.com/nsheaps/agents/issues/175). These are in REPOS.md scope but kept in compact form until they need detailed entries. Promote to a numbered `### N.` block (above) when a ticket actually touches the repo.
 
-| repo                                                                      | last push  | description                                                                                |
-| ------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
-| [`nsheaps/iac`](https://github.com/nsheaps/iac)                           | 2026-05-25 |                                                                                            |
-| [`nsheaps/cept`](https://github.com/nsheaps/cept)                         | 2026-05-25 | Share your ideas and con-cept-ions with the world                                          |
-| [`nsheaps/claude-utils`](https://github.com/nsheaps/claude-utils)         | 2026-05-25 |                                                                                            |
-| [`nsheaps/renovate-config`](https://github.com/nsheaps/renovate-config)   | 2026-05-25 |                                                                                            |
-| [`nsheaps/nsheaps`](https://github.com/nsheaps/nsheaps)                   | 2026-05-24 |                                                                                            |
-| [`nsheaps/git-wt`](https://github.com/nsheaps/git-wt)                     | 2026-05-24 |                                                                                            |
-| [`nsheaps/farish`](https://github.com/nsheaps/farish)                     | 2026-05-24 | an app to use AI (BYOK) to generate 3d models for you to print based on your descriptio... |
-| [`nsheaps/github-actions`](https://github.com/nsheaps/github-actions)     | 2026-05-22 |                                                                                            |
-| [`nsheaps/agent-kenny`](https://github.com/nsheaps/agent-kenny)           | 2026-05-01 |                                                                                            |
-| [`nsheaps/claudesh`](https://github.com/nsheaps/claudesh)                 | 2026-04-26 |                                                                                            |
-| [`nsheaps/obsidian-vaults`](https://github.com/nsheaps/obsidian-vaults)   | 2026-04-23 |                                                                                            |
-| [`nsheaps/workspaces`](https://github.com/nsheaps/workspaces)             | 2026-04-07 |                                                                                            |
-| [`nsheaps/gs-stack-status`](https://github.com/nsheaps/gs-stack-status)   | 2026-03-23 | Terminal dashboard for git-spice stacked branch workflows                                  |
-| [`nsheaps/dotfiles`](https://github.com/nsheaps/dotfiles)                 | 2026-02-24 |                                                                                            |
-| [`nsheaps/.org`](https://github.com/nsheaps/.org)                         | 2026-02-24 | Organization-level shared resources for nsheaps                                            |
-| [`nsheaps/github2`](https://github.com/nsheaps/github2)                   | 2026-02-19 |                                                                                            |
-| [`nsheaps/.ai-agent-pamela`](https://github.com/nsheaps/.ai-agent-pamela) | 2026-01-16 |                                                                                            |
-| [`nsheaps/n8n`](https://github.com/nsheaps/n8n)                           | 2025-12-07 |                                                                                            |
-| [`nsheaps/.ai-agent-qlod`](https://github.com/nsheaps/.ai-agent-qlod)     | 2025-10-11 |                                                                                            |
-| [`nsheaps/.ai-old`](https://github.com/nsheaps/.ai-old)                   | 2025-10-11 |                                                                                            |
+| repo                                                                        | last push  | description                                                                                |
+| --------------------------------------------------------------------------- | ---------- | ------------------------------------------------------------------------------------------ |
+| [`nsheaps/iac`](https://github.com/nsheaps/iac)                             | 2026-05-25 |                                                                                            |
+| [`nsheaps/cept`](https://github.com/nsheaps/cept)                           | 2026-05-25 | Share your ideas and con-cept-ions with the world                                          |
+| [`nsheaps/claude-utils`](https://github.com/nsheaps/claude-utils)           | 2026-05-25 |                                                                                            |
+| [`nsheaps/renovate-config`](https://github.com/nsheaps/renovate-config)     | 2026-05-25 |                                                                                            |
+| [`nsheaps/nsheaps`](https://github.com/nsheaps/nsheaps)                     | 2026-05-24 |                                                                                            |
+| [`nsheaps/git-wt`](https://github.com/nsheaps/git-wt)                       | 2026-05-24 |                                                                                            |
+| [`nsheaps/farish`](https://github.com/nsheaps/farish)                       | 2026-05-24 | an app to use AI (BYOK) to generate 3d models for you to print based on your descriptio... |
+| [`nsheaps/github-actions`](https://github.com/nsheaps/github-actions)       | 2026-05-22 |                                                                                            |
+| [`nsheaps/agent-kenny`](https://github.com/nsheaps/agent-kenny)             | 2026-05-01 |                                                                                            |
+| [`nsheaps/claudesh`](https://github.com/nsheaps/claudesh)                   | 2026-04-26 |                                                                                            |
+| [`nsheaps/obsidian-vaults`](https://github.com/nsheaps/obsidian-vaults)     | 2026-04-23 |                                                                                            |
+| [`nsheaps/workspaces`](https://github.com/nsheaps/workspaces)               | 2026-04-07 |                                                                                            |
+| [`nsheaps/gs-stack-status`](https://github.com/nsheaps/gs-stack-status)     | 2026-03-23 | Terminal dashboard for git-spice stacked branch workflows                                  |
+| [`nsheaps/dotfiles`](https://github.com/nsheaps/dotfiles)                   | 2026-02-24 |                                                                                            |
+| [`nsheaps/.org`](https://github.com/nsheaps/.org)                           | 2026-02-24 | Organization-level shared resources for nsheaps                                            |
+| [`nsheaps/github2`](https://github.com/nsheaps/github2)                     | 2026-02-19 |                                                                                            |
+| [`nsheaps/.ai-agent-pamela`](https://github.com/nsheaps/.ai-agent-pamela)   | 2026-01-16 |                                                                                            |
+| [`nsheaps/n8n`](https://github.com/nsheaps/n8n)                             | 2025-12-07 |                                                                                            |
+| [`nsheaps/.ai-agent-qlod`](https://github.com/nsheaps/.ai-agent-qlod)       | 2025-10-11 |                                                                                            |
+| [`nsheaps/.ai-old`](https://github.com/nsheaps/.ai-old)                     | 2025-10-11 |                                                                                            |
 | [`nsheaps/brew-meta-formula`](https://github.com/nsheaps/brew-meta-formula) | 2023-09-07 | A repo for brew to use to install meta formula, since brew requires downloading somethi... |
 
 ## How to add a repo
