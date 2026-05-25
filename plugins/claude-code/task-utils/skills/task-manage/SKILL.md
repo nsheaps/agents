@@ -1,15 +1,15 @@
 ---
-name: manage-tasks
+name: task-manage
 description: Use at every task-lifecycle decision point (before TaskCreate, before TaskUpdate→in_progress, after TaskUpdate→completed) when you need help applying the task-management doctrine — atomicity check, breakdown planning, status-transition validity, or follow-up capture. Forks into an isolated context so the parent's window stays lean. Returns a ≤5-sentence imperative instruction the parent should execute. Trigger phrases — "is this task atomic?", "should I break this down?", "what task should I start next?", "I just completed a task, what now?", "plan my next move on the task list", "audit my task list discipline".
 context: fork
 model: sonnet
 allowed-tools: Read, Grep, Glob, TaskList, TaskGet
 ---
 
-<!-- SOURCE: ported from nsheaps/.ai-agent-alex (private) .claude/skills/manage-tasks/SKILL.md — keep this file as the upstream-of-record. Local copies in agent repos should be marked UPSTREAM: task-utils to track that they need to migrate here. -->
+<!-- SOURCE: ported from nsheaps/.ai-agent-alex (private) .claude/skills/task-manage/SKILL.md — keep this file as the upstream-of-record. Local copies in agent repos should be marked UPSTREAM: task-utils to track that they need to migrate here. Renamed manage-tasks → task-manage 2026-05-25 per Nate's noun-verb naming convention. -->
 <!-- SEE-ALSO: hooks/task-invariant.sh (lifecycle coach), hooks/require-task-in-progress.sh (write gating), both in this plugin -->
 
-# manage-tasks
+# task-manage
 
 You are forked into an isolated context to make a task-management decision on the parent's behalf. The parent does NOT see your reasoning — only the final instruction you return. Be deliberate, then concise.
 
@@ -296,7 +296,7 @@ This skill is designed to self-correct over time. If during this invocation you 
 - A repeated question from the parent that the doctrine should answer up front → add to the relevant section.
 - A new lifecycle decision point the parent should know to invoke you on → add to §2.
 
-**How to apply:** edit THIS file (the `SKILL.md` you were just dispatched from — resolve via `$CLAUDE_PLUGIN_ROOT/skills/manage-tasks/SKILL.md` or the path your invocation surfaced) using the Read + Edit tools. Append a one-line entry to §13 "Change log" noting what you changed and why (include the date in ISO-8601 UTC). Then return your decision to the parent as normal — the parent doesn't need to know you updated the skill (your edit persists for future runs). NOTE: when this skill lives in an installed plugin (e.g. `task-utils@agents`), edits to the cached plugin copy will be overwritten on the next plugin update — for persistent doctrine changes, open a PR against the upstream plugin repo.
+**How to apply:** edit THIS file (the `SKILL.md` you were just dispatched from — resolve via `$CLAUDE_PLUGIN_ROOT/skills/task-manage/SKILL.md` or the path your invocation surfaced) using the Read + Edit tools. Append a one-line entry to §13 "Change log" noting what you changed and why (include the date in ISO-8601 UTC). Then return your decision to the parent as normal — the parent doesn't need to know you updated the skill (your edit persists for future runs). NOTE: when this skill lives in an installed plugin (e.g. `task-utils@agents`), edits to the cached plugin copy will be overwritten on the next plugin update — for persistent doctrine changes, open a PR against the upstream plugin repo.
 
 If your insight is too speculative to commit (single observation, might not generalize), DON'T edit the skill — note the observation in your reply for the parent to consider raising with the handler.
 

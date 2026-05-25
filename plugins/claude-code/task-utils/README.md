@@ -1,6 +1,6 @@
 # task-utils
 
-Task discipline hooks and the `manage-tasks` skill — packages the workflow originally proven out in [nsheaps/.ai-agent-alex](https://github.com/nsheaps/.ai-agent-alex).
+Task discipline hooks and the `task-manage` skill (renamed from `manage-tasks` per noun-verb naming convention) — packages the workflow originally proven out in [nsheaps/.ai-agent-alex](https://github.com/nsheaps/.ai-agent-alex).
 
 ## What it provides
 
@@ -19,7 +19,7 @@ Task discipline hooks and the `manage-tasks` skill — packages the workflow ori
 
 **Skill**:
 
-- **`manage-tasks`** — doctrine for the atomicity check, breakdown pattern, status-transition table, validation-steps mechanism, background-subagent (`AGENT(<n>)`) prefix, MONITORING(<monitor-id>) prefix, and behavior-changing-jumps-the-queue rule. Forks into an isolated context via `context: fork` so the parent's window stays lean and returns a ≤5-sentence imperative instruction.
+- **`task-manage`** — doctrine for the atomicity check, breakdown pattern, status-transition table, validation-steps mechanism, background-subagent (`AGENT(<n>)`) prefix, MONITORING(<monitor-id>) prefix, and behavior-changing-jumps-the-queue rule. Forks into an isolated context via `context: fork` so the parent's window stays lean and returns a ≤5-sentence imperative instruction.
 
 ## Installation
 
@@ -44,7 +44,7 @@ Then in a fresh session:
 claude plugin install task-utils@agents
 ```
 
-The two PreToolUse hooks register automatically; the skill is available as `Skill(manage-tasks)`.
+The two PreToolUse hooks register automatically; the skill is available as `Skill(task-manage)` (was `Skill(manage-tasks)` pre-rename).
 
 ## Design
 
