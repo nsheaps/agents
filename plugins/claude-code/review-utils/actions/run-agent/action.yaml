@@ -114,7 +114,14 @@ runs:
       if: ${{ steps.trigger-meta.outputs.head_sha != '' }}
       uses: LouisBrunner/checks-action@v3.1.0
       with:
-        token: ${{ steps.github-token.outputs.token }}
+        # Use runner's GITHUB_TOKEN (has checks:write via the reusable
+        # workflow's job-level permissions block) instead of the REVIEW App
+        # token — the REVIEW App installation lacks checks:write on consumer
+        # repos, which caused "Resource not accessible by integration" errors
+        # on PRs (e.g. ai-mktpl#549). The trigger-repo is always the same as
+        # the caller of this composite action (workflow_call inherits the
+        # consumer's context), so GITHUB_TOKEN's same-repo scope is correct.
+        token: ${{ github.token }}
         repo: ${{ inputs.trigger-repo }}
         sha: ${{ steps.trigger-meta.outputs.head_sha }}
         name: AI Code Review
@@ -238,7 +245,9 @@ runs:
       if: ${{ always() && steps.check.outputs.check_id != '' }}
       uses: LouisBrunner/checks-action@v3.1.0
       with:
-        token: ${{ steps.github-token.outputs.token }}
+        # Same reasoning as the Create check run step above — use runner's
+        # GITHUB_TOKEN rather than the REVIEW App token.
+        token: ${{ github.token }}
         repo: ${{ inputs.trigger-repo }}
         check_id: ${{ steps.check.outputs.check_id }}
         conclusion: ${{ steps.claude.outcome == 'success' && 'success' || steps.claude.outcome == 'cancelled' && 'cancelled' || 'failure' }}
