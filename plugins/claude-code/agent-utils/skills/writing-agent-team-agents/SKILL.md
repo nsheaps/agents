@@ -1,3 +1,8 @@
+---
+name: writing-agent-team-agents
+description: How to author agent files (frontmatter + system prompt body) for the agent-teams project — file structure, naming, frontmatter fields, prompt conventions.
+---
+
 # Writing Agent Team Agents
 
 How to create and maintain agent files for the agent-team project.
