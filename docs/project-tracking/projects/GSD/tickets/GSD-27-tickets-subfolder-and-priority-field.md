@@ -7,7 +7,7 @@ created: 2026-05-26T00:11:00Z
 project: GSD
 assignee: contacts://heaps-group/byGithubAppUrl/https%3A%2F%2Fgithub.com%2Fapps%2Falex-nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
-milestone: file://../../../milestones/M2.md
+milestone: "<a href=\"../../../milestones/M2.md\">../../../milestones/M2.md</a>"
 references:
   - id: discord-tickets-subfolder
     type: discord-message
