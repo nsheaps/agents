@@ -1,13 +1,14 @@
 ---
 type: feature
 id: GSD-18
+priority: 4
 state: done
 created: 2026-05-24T03:30:00Z
 completed: 2026-05-24T04:30:00Z
 project: GSD
 assignee: contacts://heaps-group/byGithubUsername/nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
-milestone: ../../milestones/M1.md
+milestone: ../../../milestones/M1.md
 legacy_ids:
   - I5
 references:

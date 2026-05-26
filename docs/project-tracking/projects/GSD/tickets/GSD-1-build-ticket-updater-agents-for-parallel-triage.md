@@ -6,7 +6,7 @@ legacy_ids:
 created: 2026-05-25T20:04:18Z
 state: in-progress
 project: GSD
-priority: top-of-queue
+priority: 1
 assignee: contacts://heaps-group/byGithubAppUrl/https://github.com/apps/alex-nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
@@ -22,6 +22,11 @@ events:
       ts: 2026-05-25T20:31:00Z,
       by: Agent(aeb7696f8486500de),
       change: "moved to triage; ticket-updater agent file shipped in nsheaps/.ai-agent-alex@7567ab0; first real dispatch",
+    }
+  - {
+      ts: 2026-05-26T01:21:00Z,
+      by: alex,
+      change: "priority 4 → 1 — Henry P1 on PR #177: migration silently defaulted top-of-queue string → 4, restoring urgency signal",
     }
   - {
       ts: 2026-05-25T20:55:00Z,

@@ -1,13 +1,14 @@
 ---
 type: feature
 id: GSD-8
+priority: 4
 state: done
 created: 2026-05-25T19:39:00Z
 completed: 2026-05-25T20:30:00Z
 project: GSD
 assignee: contacts://heaps-group/byGithubUsername/nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
-milestone: ../../milestones/M5.md
+milestone: ../../../milestones/M5.md
 references:
   - id: pr-166
     type: github-pr

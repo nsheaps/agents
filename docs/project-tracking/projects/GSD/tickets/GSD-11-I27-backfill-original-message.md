@@ -1,13 +1,14 @@
 ---
 type: chore
 id: GSD-11
+priority: 4
 state: done
 created: 2026-05-24T17:00:00Z
 completed: 2026-05-24T18:00:00Z
 project: GSD
 assignee: contacts://heaps-group/byGithubUsername/nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
-milestone: ../../milestones/M1.md
+milestone: ../../../milestones/M1.md
 legacy_ids:
   - I27
 events:

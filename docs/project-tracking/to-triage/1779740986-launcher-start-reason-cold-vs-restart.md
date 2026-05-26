@@ -4,6 +4,7 @@ created: 2026-05-25T20:29:46Z
 state: to-triage
 priority: 1
 project: GSD
+priority: 4
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask

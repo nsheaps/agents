@@ -33,8 +33,9 @@ Do these things, remember to commit each file after they're changed, especially 
    > The ticket should capture this original summary, and the original messaging as it appears in MASTER.md. It MUST also be linked to the appropriate milestone.
    > When the ticket is ready, in the triage state, and is confirmed to have the needed information, update master.md appropriately to link to the ticket instead of keeping info in master.md. The link should be: `[$emojiState | $ticketShortDescription](relative/link/to/file/that/works/on/github/and/local/instead/of/link/to/github/directly.md)` the ticket short description.
    > After each file is processed with the prefixed message, move the file to the /to-triage/. This effectively triages the previous task summaries to turn them into real tickets.
-7. do the triaging in the project queue(s). Tickets that are verified completed can go straight to the completed state. Anything else in progress needs the ticket updated with the fields from the bug ticket template or feature ticket template:
+7. do the triaging in the project queue(s). Tickets live at `projects/<P>/tickets/<id>-<slug>.md` (note the `tickets/` subfolder — non-ticket project artifacts like `PROJECT.md` sit at the project root). Tickets that are verified completed can go straight to the completed state. Anything else in progress needs the ticket updated with the fields from the bug ticket template or feature ticket template:
 
+- **priority** (every ticket): integer 0-5, default 4. 0 = critical / do now, 5 = maybe later. P0 tickets are triaged FIRST when the queue has multiple candidates — surface this in the triage doc. Stamp it on `to-triage/` files too (default 4) so the queue can be sorted before promotion to a project.
 - bug tickets should include a description of the problem, the expected, the actual, and steps to reproduce, along with any analytics info that helps identify things that might not be included in str or desc
 - feature tickets should include a
   - user story(s) - one for each persona affected by the feature

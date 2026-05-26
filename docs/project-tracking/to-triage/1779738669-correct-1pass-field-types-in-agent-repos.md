@@ -3,6 +3,7 @@ type: bug
 created: 2026-05-25T19:51:09Z
 state: to-triage
 project: GSD
+priority: 4
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
