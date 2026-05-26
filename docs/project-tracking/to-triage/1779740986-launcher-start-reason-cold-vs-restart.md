@@ -2,6 +2,7 @@
 type: feature
 created: 2026-05-25T20:29:46Z
 state: to-triage
+priority: 1
 project: GSD
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
@@ -10,6 +11,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508567575733469214
 events:
   - { ts: 2026-05-25T20:29:46Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:18:27Z,
+      by: alex,
+      change: "priority (unset) → 1 per Nate Discord[^discord-prio]",
+    }
 ---
 
 # Launcher: tell the agent in the start-prompt whether this was a cold launch or a normal restart
@@ -57,3 +63,5 @@ A direct signal from the launcher would let the agent just KNOW.
 - Likely interacts with `scheduled-tasks.yaml` rule: on cold start, the rule says "always CronList-dedupe before recreating" — that's still correct, but with this signal the agent can do MORE (e.g. on cold also re-dispatch any AGENT(...) tasks that were in_progress at last known checkpoint).
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508567575733469214
+
+[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>

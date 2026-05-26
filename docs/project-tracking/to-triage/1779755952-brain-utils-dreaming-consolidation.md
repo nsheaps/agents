@@ -3,7 +3,7 @@ type: chore
 created: 2026-05-26T00:45:00Z
 state: to-triage
 project: GSD
-priority: 0
+priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
@@ -11,6 +11,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508632218023760062
 events:
   - { ts: 2026-05-26T00:45:00Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:18:27Z,
+      by: alex,
+      change: "priority 0 → 1 per Nate Discord[^discord-prio]",
+    }
 ---
 
 # brain-utils owns M6: fold dreaming into brain-utils
@@ -30,3 +35,5 @@ Source: Discord msg[^discord-ask] (2026-05-26 00:45Z)
 ## Footnote references
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508632218023760062
+
+[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>

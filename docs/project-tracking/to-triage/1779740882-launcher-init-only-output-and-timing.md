@@ -2,6 +2,7 @@
 type: feature
 created: 2026-05-25T20:28:02Z
 state: to-triage
+priority: 1
 project: GSD
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
@@ -10,6 +11,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508567250225856522
 events:
   - { ts: 2026-05-25T20:28:02Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:18:27Z,
+      by: alex,
+      change: "priority (unset) → 1 per Nate Discord[^discord-prio]",
+    }
 ---
 
 # Launcher --init-only: visible output + per-section timing summaries
@@ -67,3 +73,5 @@ Currently `bin/agent` runs `claude --init-only --dangerously-skip-permissions` t
 - nx parallelization: speculative — flagged as a forcing function for the timing-format, not as in-scope work.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508567250225856522
+
+[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>

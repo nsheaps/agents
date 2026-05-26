@@ -2,6 +2,7 @@
 type: feature
 created: 2026-05-25T21:24:20Z
 state: to-triage
+priority: 1
 project: GSD
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
@@ -10,6 +11,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508581415829377065
 events:
   - { ts: 2026-05-25T21:24:20Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:18:27Z,
+      by: alex,
+      change: "priority (unset) → 1 per Nate Discord[^discord-prio]",
+    }
 ---
 
 # Plugin: brain-utils — thought / feeling / memory management with auto-record hooks
@@ -68,3 +74,5 @@ A relational graph backend lets thoughts/feelings/memories cross-reference each 
 - The journal-writing skill could plug into this — journal entries become a serialized projection of the graph for a given day.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508581415829377065
+
+[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>

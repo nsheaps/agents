@@ -2,6 +2,7 @@
 type: bug
 created: 2026-05-25T19:36:06Z
 state: to-triage
+priority: 2
 project: GSD
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
@@ -10,6 +11,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508554062340034831
 events:
   - { ts: 2026-05-25T19:36:06Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:18:27Z,
+      by: alex,
+      change: "priority (unset) → 2 per Nate Discord[^discord-prio]",
+    }
 ---
 
 # task-utils PreToolUse hook: validation error is non-comprehensive — wastes tool calls
@@ -97,3 +103,5 @@ Format example:
 - Currently no validation-step linter exists for the create/in-progress path either — caller can only discover the requirements at completion time. Worth surfacing in the hook coach text on transition-to-in-progress too (already partially done).
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508554062340034831
+
+[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>

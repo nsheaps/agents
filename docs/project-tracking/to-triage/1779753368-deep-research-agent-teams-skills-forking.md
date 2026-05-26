@@ -2,6 +2,7 @@
 type: research
 created: 2026-05-25T23:55:17Z
 state: to-triage
+priority: 3
 project: GSD
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
@@ -10,6 +11,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508619501350944959
 events:
   - { ts: 2026-05-25T23:55:17Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:18:27Z,
+      by: alex,
+      change: "priority (unset) → 3 per Nate Discord[^discord-prio]",
+    }
 ---
 
 # Deep research: agent teams, skills, agents, forking, --agent flag
@@ -51,3 +57,5 @@ For each: find the canonical doc, find at least one real example (in our repos, 
 - Do NOT dispatch this as urgent — it's a backlog research item, not blocking other work.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508619501350944959
+
+[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>
