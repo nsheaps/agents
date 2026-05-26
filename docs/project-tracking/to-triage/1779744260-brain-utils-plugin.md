@@ -3,6 +3,7 @@ type: feature
 created: 2026-05-25T21:24:20Z
 state: to-triage
 project: GSD
+priority: 4
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask

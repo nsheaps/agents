@@ -3,7 +3,7 @@ type: feature
 created: 2026-05-25T20:04:18Z
 state: to-triage
 project: GSD
-priority: top-of-queue (epoch 1779737001 explicitly chosen to sort second)
+priority: 4
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
