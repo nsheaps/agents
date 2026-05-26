@@ -328,8 +328,10 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 ## 🆕 [M2](milestones/M2.md): agent consistency audit update
 
 6. 🆕 `C6`: lets get a diff of all 3 agents, in a research doc. make an agent-drift plugin in nsheaps/agents. Post-tool-use cd into one of the agent repos, remind about the tracking doc, throttled to once every 5 minutes. Post edit tool use in one of the repos, remind about the tracking doc. Post tool use, stop, user prompt submit throttle 5m just pull the repo the tracking doc is in. If a tracked file changes post a reminder to the agent. Give the plugin a config of the repo, where it's checked out, the branch to commit to, and a list of files within to watch for changes after a git pull. If it ever tries to sync and the branch is wrong or a conflict happens, warn the agent
-
-7.
+7. 🚧 P0 [GSD-22 — Force-background Agent() PreToolUse hook](projects/GSD/GSD-22-force-background-agent-hook.md) ([PR #18](https://github.com/nsheaps/.ai-agent-alex/pull/18))
+8. 🚧 P0 [GSD-23 — Chain-mantra update for ARCHITECTURE_DRAFT.md](projects/GSD/GSD-23-chain-mantra-update.md)
+9. 🚧 P0 [GSD-24 — Bash chain-count PreToolUse hook](projects/GSD/GSD-24-bash-chain-count-hook.md)
+10. 🚧 P0 [GSD-27 — Tickets/ subfolder migration + priority field](projects/GSD/tickets/GSD-27-tickets-subfolder-and-priority-field.md)
 
 <a id="farish-skills"></a>
 
