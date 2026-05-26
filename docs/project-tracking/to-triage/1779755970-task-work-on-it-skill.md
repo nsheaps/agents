@@ -17,7 +17,7 @@ events:
 
 ## Original Discord message
 
-> we probably should have a task-work-on-it skill (p0). (with context:fork too? not sure, if the skill returns and it just has some output but not all of the tool calls and such, the agent might still have to look through transcripts (if the code and PR and commits and outputs aren't good enough, and outputs can be improved over time by better prompting), so forking might hurt? who knows.... maybe...lets start with yes lets fork but keep a topic list for journaling that you keep updated that when you journal without a topic you think about those topics too (and capture the other topics we've talked about so far))  Maybe those skills can have hooks that auto manage task state to remove something from your needs
+> we probably should have a task-work-on-it skill (p0). (with context:fork too? not sure, if the skill returns and it just has some output but not all of the tool calls and such, the agent might still have to look through transcripts (if the code and PR and commits and outputs aren't good enough, and outputs can be improved over time by better prompting), so forking might hurt? who knows.... maybe...lets start with yes lets fork but keep a topic list for journaling that you keep updated that when you journal without a topic you think about those topics too (and capture the other topics we've talked about so far)) Maybe those skills can have hooks that auto manage task state to remove something from your needs
 
 Source: Discord msg[^discord-ask] (2026-05-26 01:00Z)
 

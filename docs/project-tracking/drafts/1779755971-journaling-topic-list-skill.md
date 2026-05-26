@@ -10,7 +10,11 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508636419617194044
 events:
-  - { ts: 2026-05-26T01:02:31Z, by: alex, change: "drafted from Discord ask[^discord-ask] — P1 split from task-work-on-it (P0)" }
+  - {
+      ts: 2026-05-26T01:02:31Z,
+      by: alex,
+      change: "drafted from Discord ask[^discord-ask] — P1 split from task-work-on-it (P0)",
+    }
 ---
 
 # Journaling topic-list skill (persistent topics + auto-consult when journaling without explicit topic)
