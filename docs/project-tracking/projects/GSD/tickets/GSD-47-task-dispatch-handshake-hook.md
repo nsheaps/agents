@@ -13,8 +13,16 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508645192092221502
 events:
-  - { ts: 2026-05-26T01:37:23Z, by: alex, change: "filed from Discord ask[^discord-ask] per immediate-file-on-receive rule" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-47 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-26T01:37:23Z,
+      by: alex,
+      change: "filed from Discord ask[^discord-ask] per immediate-file-on-receive rule",
+    }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-47 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # Move task-dispatch handshake+rename+un-assign sequence into hooks

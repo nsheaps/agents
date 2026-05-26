@@ -21,9 +21,21 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684
 events:
   - { ts: 2026-05-25T21:24:20Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - { ts: 2026-05-26T00:45:00Z, by: alex, change: "Nate: brain-utils owns M6 (dreaming) — dreaming is a subskill/component inside brain-utils[^discord-dreaming-fold]" }
-  - { ts: 2026-05-26T01:18:27Z, by: alex, change: "priority (unset) → 1 per Nate Discord[^discord-prio]" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-37 (state=triage); folded in 1779755952 (brain-utils owns M6) per triager-v2" }
+  - {
+      ts: 2026-05-26T00:45:00Z,
+      by: alex,
+      change: "Nate: brain-utils owns M6 (dreaming) — dreaming is a subskill/component inside brain-utils[^discord-dreaming-fold]",
+    }
+  - {
+      ts: 2026-05-26T01:18:27Z,
+      by: alex,
+      change: "priority (unset) → 1 per Nate Discord[^discord-prio]",
+    }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-37 (state=triage); folded in 1779755952 (brain-utils owns M6) per triager-v2",
+    }
 ---
 
 # Plugin: brain-utils — thought/feeling/memory management with auto-record hooks (owns M6/dreaming)

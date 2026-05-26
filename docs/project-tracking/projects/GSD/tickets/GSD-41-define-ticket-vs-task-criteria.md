@@ -28,11 +28,31 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508635451253325976
 events:
-  - { ts: 2026-05-26T00:50:39Z, by: alex, change: "filed from Discord ask[^discord-ask] per immediate-file-on-receive rule" }
-  - { ts: 2026-05-26T00:55:27Z, by: alex, change: "appended Nate's refined criteria[^discord-refinement]" }
-  - { ts: 2026-05-26T00:56:37Z, by: alex, change: "appended Nate's delegation-preference refinement[^discord-delegate]" }
-  - { ts: 2026-05-26T01:00:00Z, by: alex, change: "appended Nate's 3 refinements 00:57Z+00:58Z×2 (monitor-id format, task-tracking-priority, agent-start-needs-validation)[^discord-monitorid][^discord-priority][^discord-henrystart]" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-41 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-26T00:50:39Z,
+      by: alex,
+      change: "filed from Discord ask[^discord-ask] per immediate-file-on-receive rule",
+    }
+  - {
+      ts: 2026-05-26T00:55:27Z,
+      by: alex,
+      change: "appended Nate's refined criteria[^discord-refinement]",
+    }
+  - {
+      ts: 2026-05-26T00:56:37Z,
+      by: alex,
+      change: "appended Nate's delegation-preference refinement[^discord-delegate]",
+    }
+  - {
+      ts: 2026-05-26T01:00:00Z,
+      by: alex,
+      change: "appended Nate's 3 refinements 00:57Z+00:58Z×2 (monitor-id format, task-tracking-priority, agent-start-needs-validation)[^discord-monitorid][^discord-priority][^discord-henrystart]",
+    }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-41 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # Define criteria: ALL work in Tasks; MOST work also in Tickets — what's "most"?

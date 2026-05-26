@@ -17,7 +17,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508637136302374933
 events:
   - { ts: 2026-05-26T01:04:29Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-45 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-45 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # Absorb scratch into MASTER.md without losing context or duplicating work

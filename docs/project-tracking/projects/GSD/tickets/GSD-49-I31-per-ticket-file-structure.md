@@ -16,8 +16,16 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508286485273640980
 events:
-  - { ts: 2026-05-25T02:00:00Z, by: alex, change: "created from MASTER.md I31 bullet + per-task doc I31-per-ticket-file-structure.md" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-49 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-25T02:00:00Z,
+      by: alex,
+      change: "created from MASTER.md I31 bullet + per-task doc I31-per-ticket-file-structure.md",
+    }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-49 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # I31 — per-ticket file structure + milestone drilldown rules

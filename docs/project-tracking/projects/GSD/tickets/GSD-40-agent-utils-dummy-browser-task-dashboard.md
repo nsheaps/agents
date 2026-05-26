@@ -14,7 +14,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508624607509217391
 events:
   - { ts: 2026-05-26T00:16:12Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-40 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-40 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # Dummy browser dashboard (agent-mcp-service → agent-controller)

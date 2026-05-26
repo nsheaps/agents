@@ -29,12 +29,36 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508644125807869962
 events:
   - { ts: 2026-05-26T01:08:08Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - { ts: 2026-05-26T01:31:22Z, by: alex, change: "appended Nate's new triage workflow spec — big spec message[^discord-spec-process]" }
-  - { ts: 2026-05-26T01:31:49Z, by: alex, change: "appended Nate's rationale for iterative-context capture[^discord-spec-rationale]" }
-  - { ts: 2026-05-26T01:32:12Z, by: alex, change: "appended Nate's execution-mode clarification (always background)[^discord-spec-background]" }
-  - { ts: 2026-05-26T01:32:40Z, by: alex, change: "appended Nate's alteration-scope rule (triage-queue may alter todo/in_progress with approval)[^discord-spec-alteration]" }
-  - { ts: 2026-05-26T01:33:08Z, by: alex, change: "appended Nate's acceptance-criteria constraint (alteration must update AC)[^discord-spec-acceptance]" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-46 (state=triage) per triager-v2 workflow (self-referential meta-ticket)" }
+  - {
+      ts: 2026-05-26T01:31:22Z,
+      by: alex,
+      change: "appended Nate's new triage workflow spec — big spec message[^discord-spec-process]",
+    }
+  - {
+      ts: 2026-05-26T01:31:49Z,
+      by: alex,
+      change: "appended Nate's rationale for iterative-context capture[^discord-spec-rationale]",
+    }
+  - {
+      ts: 2026-05-26T01:32:12Z,
+      by: alex,
+      change: "appended Nate's execution-mode clarification (always background)[^discord-spec-background]",
+    }
+  - {
+      ts: 2026-05-26T01:32:40Z,
+      by: alex,
+      change: "appended Nate's alteration-scope rule (triage-queue may alter todo/in_progress with approval)[^discord-spec-alteration]",
+    }
+  - {
+      ts: 2026-05-26T01:33:08Z,
+      by: alex,
+      change: "appended Nate's acceptance-criteria constraint (alteration must update AC)[^discord-spec-acceptance]",
+    }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-46 (state=triage) per triager-v2 workflow (self-referential meta-ticket)",
+    }
 ---
 
 # triage-promotion + MASTER.md update (P3+ workflow)

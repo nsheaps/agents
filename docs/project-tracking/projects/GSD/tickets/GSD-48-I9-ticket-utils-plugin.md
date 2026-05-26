@@ -19,8 +19,16 @@ references:
     type: doc
     url: ../../to-triage/I9-ticket-utils.md
 events:
-  - { ts: 2026-05-25T02:00:00Z, by: alex, change: "created from MASTER.md I9 bullet + per-task doc I9-ticket-utils.md" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-48 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-25T02:00:00Z,
+      by: alex,
+      change: "created from MASTER.md I9 bullet + per-task doc I9-ticket-utils.md",
+    }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-48 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # I9 — ticket-utils plugin (file-backed ticket-manage skill, mirrors task-utils)

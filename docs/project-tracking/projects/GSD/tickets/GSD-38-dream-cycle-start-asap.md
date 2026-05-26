@@ -18,7 +18,11 @@ references:
 events:
   - { ts: 2026-05-26T00:45:00Z, by: alex, change: "created from Discord ask[^discord-ask]" }
   - { ts: 2026-05-26T01:18:27Z, by: alex, change: "priority 0 → 1 per Nate Discord[^discord-prio]" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-38 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-38 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # Dream cycle: start ASAP to self-correct behavior

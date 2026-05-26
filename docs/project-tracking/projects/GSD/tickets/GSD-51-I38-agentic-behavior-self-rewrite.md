@@ -14,7 +14,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508284806859849889
 events:
   - { ts: 2026-05-25T01:50:00Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-51 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-51 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # I38 — agentic-behavior self-rewrite skill with rubric scoring

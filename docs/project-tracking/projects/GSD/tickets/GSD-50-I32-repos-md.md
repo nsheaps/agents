@@ -19,8 +19,16 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508331380239634652
 events:
-  - { ts: 2026-05-25T04:35:00Z, by: alex, change: "created from MASTER.md I32 bullet + per-task doc I32-repos-md.md" }
-  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-50 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-25T04:35:00Z,
+      by: alex,
+      change: "created from MASTER.md I32 bullet + per-task doc I32-repos-md.md",
+    }
+  - {
+      ts: 2026-05-26T01:40:00Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-50 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # I32 — REPOS.md (define all in-scope repos for project tracking)
