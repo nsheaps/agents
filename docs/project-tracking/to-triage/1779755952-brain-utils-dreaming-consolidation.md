@@ -11,11 +11,7 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508632218023760062
 events:
   - { ts: 2026-05-26T00:45:00Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - {
-      ts: 2026-05-26T01:18:27Z,
-      by: alex,
-      change: "priority 0 → 1 per Nate Discord[^discord-prio]",
-    }
+  - { ts: 2026-05-26T01:18:27Z, by: alex, change: "priority 0 → 1 per Nate Discord[^discord-prio]" }
 ---
 
 # brain-utils owns M6: fold dreaming into brain-utils
