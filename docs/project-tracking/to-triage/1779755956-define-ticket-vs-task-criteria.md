@@ -25,6 +25,11 @@ events:
       by: alex,
       change: "appended Nate's delegation-preference refinement[^discord-delegate]",
     }
+  - {
+      ts: 2026-05-26T01:00:00Z,
+      by: alex,
+      change: "appended Nate's 3 refinements 00:57Z+00:58Z×2 (monitor-id format, task-tracking-priority, agent-start-needs-validation)[^discord-monitorid][^discord-priority][^discord-henrystart]",
+    }
 ---
 
 # Define criteria: ALL work in Tasks; MOST work also in Tickets — what's "most"?
@@ -101,6 +106,50 @@ When NOT to delegate:
 
 **Implementation implication:** the forked-skill ticket-intake ([1779755955](./1779755955-forked-skill-ticket-intake.md)) is the canonical example of this pattern. Other change-actions (file-write tickets, plugin edits, settings tweaks) should similarly grow forked-skill wrappers so the default path is delegation, not inline execution.
 
+## Refinement 3 (Nate 00:57Z): MONITORING(<id>) prefix must be actual Monitor() task ID
+
+Per Discord [1508635180137582703](https://discord.com/channels/1490863845252665415/1497431286661517353/1508635180137582703)[^discord-monitorid]:
+
+> No, it should be a Monitor() and you track the ID of that, not the PR. The monitor monitors the PR
+
+**Corrected convention:** `MONITORING(<task-id>)` where `<task-id>` is the actual `Monitor()` task ID (e.g. `a7c2e5e` style), NOT a descriptive label like `pr-177-19`. The Monitor IS what's monitoring the PR; the prefix names the Monitor, not its subject.
+
+Workflow:
+1. Arm a `Monitor()` with `persistent: true` watching for the relevant event (PR review state change, CI completion, file change, etc.)
+2. Capture the Monitor's task ID from the result
+3. Use that ID as the `MONITORING(<id>)` prefix on the dependent Task
+
+Backfill needed: every existing `MONITORING(<descriptive-label>)` task in TaskList should be re-evaluated — either re-armed with a real Monitor + ID-update, or recognized as `MONITORING(cron-<id>)` (existing cron jobs that count as the monitor).
+
+## Refinement 4 (Nate 00:58Z): Task tracking = first priority
+
+Per Discord [1508635284189872219](https://discord.com/channels/1490863845252665415/1497431286661517353/1508635284189872219)[^discord-priority]:
+
+> task tracking should always be first priority. if your tasks are out of order, then my scatter brain is just gonna confuses us all
+
+**Implication:** before any other work in a turn (including reading Discord, replying, executing change-actions), task discipline check first:
+- Is TaskList state accurate to reality (no stale `in_progress`, no missing tasks for in-flight work)?
+- Is the next intended action's Task in_progress + correctly scoped?
+- Are MONITORING/AGENT prefixes valid + IDs current?
+
+Out-of-order or out-of-date TaskList = breaks Nate's external model of where we are = compounds the "scatter brain" load.
+
+## Refinement 5 (Nate 00:58Z): Even starting a peer agent needs a Task with validation steps
+
+Per Discord [1508635451253325976](https://discord.com/channels/1490863845252665415/1497431286661517353/1508635451253325976)[^discord-henrystart]:
+
+> for now, even starting henry should have a task with validation steps
+
+**Implication:** task-discipline scope extends to peer-agent ops (tmux start/stop, restart, kill). Every such op needs:
+- A pre-created Task BEFORE the action (`bin/run-agent`, `tmux kill-session`, etc.)
+- A `## Validation steps` section in the Task description that confirms expected post-state
+- Status updates as validation proceeds
+
+Concretely for "start henry":
+- Task before `./bin/run-agent`
+- Validation: tmux session exists → wait → capture-pane shows live claude prompt → Discord ping round-trip succeeds → state PASS
+- If any step fails, task stays `in_progress` (or new sub-task) until resolved
+
 ## Footnote references
 
 [^discord-ask]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508633434082512946>
@@ -108,3 +157,6 @@ When NOT to delegate:
 [^discord-refinement]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508634642868207747>
 
 [^discord-delegate]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508634934321872988>
+[^discord-monitorid]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508635180137582703>
+[^discord-priority]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508635284189872219>
+[^discord-henrystart]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508635451253325976>
