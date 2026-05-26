@@ -15,7 +15,11 @@ events:
       by: alex,
       change: "drafted from Discord ask[^discord-ask] — filed to drafts/ per new rule[^drafts-rule]",
     }
-  - { ts: 2026-05-25T00:00:00Z, by: alex-triager, change: "promoted drafts/ → to-triage/ (priority 0)" }
+  - {
+      ts: 2026-05-25T00:00:00Z,
+      by: alex-triager,
+      change: "promoted drafts/ → to-triage/ (priority 0)",
+    }
 ---
 
 # Reconfigure henry to enable Claude agent teams

@@ -15,7 +15,11 @@ events:
       by: alex,
       change: "drafted from Discord ask[^discord-ask] — P1 split from task-work-on-it (P0)",
     }
-  - { ts: 2026-05-25T00:00:00Z, by: alex-triager, change: "promoted drafts/ → to-triage/ (priority 1)" }
+  - {
+      ts: 2026-05-25T00:00:00Z,
+      by: alex-triager,
+      change: "promoted drafts/ → to-triage/ (priority 1)",
+    }
 ---
 
 # Journaling topic-list skill (persistent topics + auto-consult when journaling without explicit topic)
