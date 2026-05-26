@@ -386,10 +386,6 @@ needs more definition needs emphasis of learning based on what happened, not con
    1. then force it to dream about cleaning up nate's user configs vs the agents
    2. set up cron for each agent
 
-<a id="I38"></a>
-
-3. 🚧 `I38`: [agentic-behavior self-rewrite skill with rubric scoring](./task-summary/I38-agentic-behavior-self-rewrite.md) — dispatch sub-agent ASYNC to land PR on ai-mktpl. Skill (context:fork) archives current ruleset (rules + skills + agents + tools) under a versioned archive dir, evaluates the prior version against a documented categorical-numeric rubric (categories adjustable per iteration but always documented + scored), and emits a new ruleset incorporating observed behavior since the last rewrite. Similar in spirit to dreaming. PR must request CI review. _(moved from M1 → M6 per Nate Discord 00:26Z — fits the dreaming theme)_
-
 <a id="end-of-tonight"></a>
 
 # end of tonight 2026-05-24
