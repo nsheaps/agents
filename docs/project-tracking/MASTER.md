@@ -73,9 +73,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
 - 🚧 `I31`: [per-ticket file structure + milestone drilldown rules](./task-summary/I31-per-ticket-file-structure.md) — update rules for handling tasks to have one file per task, how that ticket file should look, and how we'll drill down from a milestone list (in order of priority; reorder-priority handshake required; each milestone has a list to each ticket + metadata; placeholder-IDs (i?/c?) honored)
   - This is manual for now, but I9 will automate it
 
-<a id="I38"></a>
-
-- 🚧 `I38`: [agentic-behavior self-rewrite skill with rubric scoring](./task-summary/I38-agentic-behavior-self-rewrite.md) — dispatch sub-agent ASYNC to land PR on ai-mktpl. Skill (context:fork) archives current ruleset (rules + skills + agents + tools) under a versioned archive dir, evaluates the prior version against a documented categorical-numeric rubric (categories adjustable per iteration but always documented + scored), and emits a new ruleset incorporating observed behavior since the last rewrite. Similar in spirit to dreaming. PR must request CI review.
+_(I38 moved to M6 — see [dreaming section](#dreaming))_
 
 ## 🆕 [M5](milestones/M5.md): defining scope and cleaning git state
 
@@ -387,6 +385,10 @@ needs more definition needs emphasis of learning based on what happened, not con
 2. 🆕 `D2`: Let's make a dream about XXX thing (one time, recurring R times, indefinitely, frequency)
    1. then force it to dream about cleaning up nate's user configs vs the agents
    2. set up cron for each agent
+
+<a id="I38"></a>
+
+3. 🚧 `I38`: [agentic-behavior self-rewrite skill with rubric scoring](./task-summary/I38-agentic-behavior-self-rewrite.md) — dispatch sub-agent ASYNC to land PR on ai-mktpl. Skill (context:fork) archives current ruleset (rules + skills + agents + tools) under a versioned archive dir, evaluates the prior version against a documented categorical-numeric rubric (categories adjustable per iteration but always documented + scored), and emits a new ruleset incorporating observed behavior since the last rewrite. Similar in spirit to dreaming. PR must request CI review. _(moved from M1 → M6 per Nate Discord 00:26Z — fits the dreaming theme)_
 
 <a id="end-of-tonight"></a>
 
