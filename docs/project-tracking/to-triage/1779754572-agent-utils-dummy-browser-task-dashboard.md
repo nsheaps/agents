@@ -34,7 +34,7 @@ Build a dashboard that shows the agent's live task list + state, with a WebSocke
 1. **agent-utils plugin scope** — where in the existing plugin (apps/? packages/? new subfolder?) does the webserver + websocket live?
 2. **agent-mcp-service usage** — research what `agent-mcp-service` exposes today (tools? channel messages?) and confirm it's the right host for this dashboard.
 3. **Socket file pub/sub** — proposed pattern: plugins write events to a unix socket; the dashboard server reads from it and broadcasts to WebSocket clients. Triage agent should validate this design or propose alternatives (e.g. Redis pub/sub, named pipe, in-process channel).
-4. **Tool-emits-event contract** — every TaskCreate/TaskUpdate (and similar) emits an event. Where does that hook live? PostToolUse hook on Task* matchers? Inside the task-utils plugin? Both?
+4. **Tool-emits-event contract** — every TaskCreate/TaskUpdate (and similar) emits an event. Where does that hook live? PostToolUse hook on Task\* matchers? Inside the task-utils plugin? Both?
 5. **Dashboard UI** — simple HTML+JS, no framework needed. Shows: task ID, subject, status, owner, blockedBy chain. Updates live.
 6. **Future migration path** — once `agent-controller` exists as the canonical event-bus daemon:
    - Tasks still write to the socket.
