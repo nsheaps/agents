@@ -117,9 +117,10 @@ Five messages from Nate constitute a comprehensive new spec for how the triage q
 ### Refinement 1 (Nate 01:31Z) — the full iterative triage process[^discord-spec-process]
 
 > going forward, I think iteratively processing the triage queue should look like:
+>
 > 1. capture everything in to-triage immediately, with a priority indicative of the resulting ticket, not of the triaging.
 > 2. everything must go from to-triage to project triage queues before the triage queues can be processed
->   a. if you are processing triage queues and something shows up in to-triage, you must triage that first.
+>    a. if you are processing triage queues and something shows up in to-triage, you must triage that first.
 > 3. When triaging the to-triage folder, do so chronologically. For each item, scan the rest of the triage items and related resources. To process that item, you can fold in bits and pieces of future items as long as those are appropriately marked in the item in to-triage. Take each bit of the item you're triaging and use it to build the files in the project triage queues. Each item in to-triage can update 0, 1, or more tickets in the triage queue. Keep processing chunks of the item in to-triage and the items you've pulled forward (and marked) in future triage items, until no more remain in the current file. Do not pull forward unrelated items. If an item is in the current triage item and is unrelated to teh current item, it can be moved to a new, next-in-line item.
 > 4. when the to-triage folder is empty, we can triage the stuff in the triage-queue one at a time to get stuff into the triage state. Until a ticket is manually moved from triage to todo by a grooming process, or by a priority of that ticket 3 or higher (if multiple triages make the same queued triage ticket, the highest priority wins), the ticket stays in the triage state. If the ticket has a priority p3 or higher, it should immediately be moved into the backlog.
 > 5. whenever stuff comes into to-triage, that takes highest priority. Those items in there make their way to triage queues, and those either a) become new triage tickets or b) updates tickets already in existence in backlog or triage state.
@@ -163,8 +164,13 @@ Specifically:
 - The Acceptance criteria section above still applies to the immediate sweep that prompted this ticket; the new spec's Refinement 5 (AC must accompany any alteration) applies to all future ticket mutations.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508637831411662960
+
 [^discord-spec-process]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508643677935898826
+
 [^discord-spec-rationale]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508643791337422848
+
 [^discord-spec-background]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508643891325304993
+
 [^discord-spec-alteration]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508644006551093381
+
 [^discord-spec-acceptance]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508644125807869962
