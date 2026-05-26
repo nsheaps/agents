@@ -1,7 +1,7 @@
 ---
 type: feature
 created: 2026-05-26T01:02:31Z
-state: draft
+state: to-triage
 project: GSD
 priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -15,6 +15,7 @@ events:
       by: alex,
       change: "drafted from Discord ask[^discord-ask] — P1 split from task-work-on-it (P0)",
     }
+  - { ts: 2026-05-25T00:00:00Z, by: alex-triager, change: "promoted drafts/ → to-triage/ (priority 1)" }
 ---
 
 # Journaling topic-list skill (persistent topics + auto-consult when journaling without explicit topic)
