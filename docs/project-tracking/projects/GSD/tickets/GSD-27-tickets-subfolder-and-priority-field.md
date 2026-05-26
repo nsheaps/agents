@@ -16,7 +16,11 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508623334491820062
 events:
-  - { ts: 2026-05-26T00:11:00Z, by: alex, change: "created from Nate Discord asks[^discord-tickets-subfolder][^discord-priority-field]" }
+  - {
+      ts: 2026-05-26T00:11:00Z,
+      by: alex,
+      change: "created from Nate Discord asks[^discord-tickets-subfolder][^discord-priority-field]",
+    }
 ---
 
 # GSD-27 — Tickets/ subfolder migration + priority field
@@ -97,4 +101,5 @@ PR URLs TBD — will be filled in once PRs land.
 - Auto-priority-bumping when handler tags as P0 via Discord
 
 [^discord-tickets-subfolder]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508622920316878988
+
 [^discord-priority-field]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508623334491820062
