@@ -55,7 +55,7 @@ sub-agents are your friend. You're gonna read this whole file, be like "wow, nat
   <a id="I27"></a>
 - ✅ `I27`: [Audit I2–I14 per-task docs and backfill Original message sections](./task-summary/I27-backfill-original-message.md)
 
-## 🆕 [M1](milestones/M1.md): ACTUAL END OF TONIGHT. TOMORROW STARTS HERE
+## 🆕 [M1](milestones/M1.md): Session bootstrap + project-tracking foundations
 
 <a id="I7"></a>
 
