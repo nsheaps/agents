@@ -1,7 +1,10 @@
 ---
 type: feature
 created: 2026-05-26T00:38:00Z
-state: to-triage
+id: GSD-31
+legacy_ids:
+  - "1779755954"
+state: triage
 project: GSD
 priority: 0
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -11,6 +14,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508630474720018503
 events:
   - { ts: 2026-05-26T00:38:00Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:25:00Z,
+      by: alex,
+      change: "promoted to-triage → GSD-31 (state=triage) per #601 workflow",
+    }
 ---
 
 # ticket-utils plugin: hoist ticket-updater + project-tracking-workflow from alex repo
