@@ -61,6 +61,7 @@ Per Discord [1508634642868207747](https://discord.com/channels/14908638452526654
 **Sharpened criteria:**
 
 **NO Task needed (read-like / chat / search):**
+
 - `Skill()` invocations (delegated to sub-agent context via `context: fork`)
 - `Read()` and other read-only file inspections
 - `Grep`/`Glob` searches
@@ -68,6 +69,7 @@ Per Discord [1508634642868207747](https://discord.com/channels/14908638452526654
 - Note-writing (scratch, journal drafts) where it's NOT significant research
 
 **Task REQUIRED (any change):**
+
 - ANY file write/edit/delete (even single-char) — change is a change
 - ANY git operation that mutates state (commit, push, merge, branch, etc.)
 - ANY config edit (settings.json, plugin config, env var change)
@@ -75,6 +77,7 @@ Per Discord [1508634642868207747](https://discord.com/channels/14908638452526654
 - ANY sub-agent dispatch that performs writes
 
 **Ticket REQUIRED (in addition to Task) — first-cut from initial filing, still pending Nate ack:**
+
 - Anything with a deliverable (PR, doc, skill, plugin)
 - Anything multi-step
 - Anything behavior-changing
@@ -91,6 +94,7 @@ Per Discord [1508634934321872988](https://discord.com/channels/14908638452526654
 **Default delegation pattern:** when work needs a Task (per refinement 1), the default execution path is `Skill(<some-skill>)` with `context: fork` — the skill body becomes the sub-agent. The parent agent stays focused on the higher-level orchestration; the sub-agent owns the implementation work (and its own task discipline within the fork).
 
 When NOT to delegate:
+
 - Single-tool-call atomic edits where dispatch overhead exceeds the work itself
 - Work that requires tight back-and-forth with the parent's evolving context
 - Work where the result MUST inform the very next parent action (use foreground sub-agent if delegating; otherwise inline)
@@ -100,5 +104,7 @@ When NOT to delegate:
 ## Footnote references
 
 [^discord-ask]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508633434082512946>
+
 [^discord-refinement]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508634642868207747>
+
 [^discord-delegate]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508634934321872988>
