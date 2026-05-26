@@ -1,7 +1,10 @@
 ---
 type: chore
 created: 2026-05-26T00:36:34Z
-state: to-triage
+id: GSD-28
+legacy_ids:
+  - "1779755794"
+state: triage
 project: GSD
 priority: 0
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -19,6 +22,11 @@ events:
       ts: 2026-05-25T00:00:00Z,
       by: alex-triager,
       change: "promoted drafts/ → to-triage/ (priority 0)",
+    }
+  - {
+      ts: 2026-05-26T01:25:00Z,
+      by: alex,
+      change: "promoted to-triage → GSD-28 (state=triage) per #601 workflow",
     }
 ---
 
