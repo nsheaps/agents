@@ -99,8 +99,8 @@
     },
     {
       "name": "task-utils",
-      "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + task-manage skill for atomic-task workflow",
-      "version": "0.2.0",
+      "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + task-manage skill for atomic-task workflow. Blocking behaviour is configurable via plugins.settings.yaml.",
+      "version": "0.3.0",
       "author": {
         "name": "Nathan Heaps"
       },
