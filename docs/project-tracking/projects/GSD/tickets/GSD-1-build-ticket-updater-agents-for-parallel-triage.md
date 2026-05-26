@@ -6,7 +6,7 @@ legacy_ids:
 created: 2026-05-25T20:04:18Z
 state: in-progress
 project: GSD
-priority: top-of-queue
+priority: 4
 assignee: contacts://heaps-group/byGithubAppUrl/https://github.com/apps/alex-nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:

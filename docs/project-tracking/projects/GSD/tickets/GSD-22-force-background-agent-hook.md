@@ -1,12 +1,13 @@
 ---
 type: feature
 id: GSD-22
+priority: 0
 state: in-progress
 created: 2026-05-25T23:38:45Z
 project: GSD
 assignee: contacts://heaps-group/byGithubAppUrl/https%3A%2F%2Fgithub.com%2Fapps%2Falex-nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
-milestone: ../../milestones/M2.md
+milestone: ../../../milestones/M2.md
 references:
   - id: discord-ask
     type: discord-message

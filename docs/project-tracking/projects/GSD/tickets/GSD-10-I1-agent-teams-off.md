@@ -1,6 +1,7 @@
 ---
 type: chore
 id: GSD-10
+priority: 4
 state: done
 created: 2026-05-24T03:00:00Z
 completed: 2026-05-24T03:30:00Z
