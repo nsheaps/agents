@@ -1,27 +1,29 @@
 ---
 type: feature
+id: GSD-36
+legacy_ids:
+  - "1779740986"
 created: 2026-05-25T20:29:46Z
-state: to-triage
-priority: 1
+state: triage
 project: GSD
-priority: 4
+priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508567575733469214
+  - id: discord-prio
+    type: discord-message
+    url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684
 events:
   - { ts: 2026-05-25T20:29:46Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - {
-      ts: 2026-05-26T01:18:27Z,
-      by: alex,
-      change: "priority (unset) → 1 per Nate Discord[^discord-prio]",
-    }
+  - { ts: 2026-05-26T01:18:27Z, by: alex, change: "priority (unset) → 1 per Nate Discord[^discord-prio]" }
+  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-36 (state=triage) per triager-v2 workflow" }
 ---
 
 # Launcher: tell the agent in the start-prompt whether this was a cold launch or a normal restart
 
-## Original Discord message
+## Original ask
 
 > the launch prompt to the agent should specify if it was a cold launch (system just turned on, or agent died and tmux shell or launcher were killed), or the launcher restarted it because claude exited (normal restart)
 
@@ -60,9 +62,9 @@ A direct signal from the launcher would let the agent just KNOW.
 ## Notes
 
 - Adjacent to the existing launcher-log + continuation-prompt construction in `bin/agent`.
-- Related to (but distinct from) [`1779740882-launcher-init-only-output-and-timing.md`](./1779740882-launcher-init-only-output-and-timing.md) — both touch the launcher's observability surface but address different needs.
+- Related to GSD-35 (launcher --init-only output/timing) — both touch the launcher's observability surface but address different needs.
 - Likely interacts with `scheduled-tasks.yaml` rule: on cold start, the rule says "always CronList-dedupe before recreating" — that's still correct, but with this signal the agent can do MORE (e.g. on cold also re-dispatch any AGENT(...) tasks that were in_progress at last known checkpoint).
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508567575733469214
 
-[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>
+[^discord-prio]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684

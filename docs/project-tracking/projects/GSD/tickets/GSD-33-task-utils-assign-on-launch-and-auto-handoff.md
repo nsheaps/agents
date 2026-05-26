@@ -1,7 +1,10 @@
 ---
 type: feature
+id: GSD-33
+legacy_ids:
+  - "1779737001"
 created: 2026-05-25T20:04:18Z
-state: to-triage
+state: triage
 project: GSD
 priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -11,19 +14,16 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508561371275722812
   - id: blocks-ticket-updater-agents
     type: ticket
-    url: ./1779737000-build-ticket-updater-agents-for-parallel-triage.md
+    url: ../tickets/GSD-1-build-ticket-updater-agents-for-parallel-triage.md
 events:
   - { ts: 2026-05-25T20:04:18Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - {
-      ts: 2026-05-26T01:21:00Z,
-      by: alex,
-      change: "priority 4 → 1 — Henry P1 on PR #177: migration silently defaulted top-of-queue string → 4, restoring urgency signal",
-    }
+  - { ts: 2026-05-26T01:21:00Z, by: alex, change: "priority 4 → 1 — Henry P1 on PR #177: migration silently defaulted top-of-queue string → 4, restoring urgency signal" }
+  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-33 (state=triage) per triager-v2 workflow" }
 ---
 
 # task-utils: assign-on-launch + auto-handoff (one-task-at-a-time enhancement)
 
-## Original Discord message
+## Original ask
 
 > we should also pull forward the task-utils one-task-at-a-time ticket to the front, and make sure the "not blocked by this" includes making something that can assign a task to an agent on launch rather than manual editing of the tasks so you can just call an agent and tell it to work on a task and hooks auto-assign it to that agent (and when the agent is done, the task is updated and moved back to pending?). Make that triage 1779737001 so it's done second.
 
@@ -43,7 +43,7 @@ Currently the manual flow for sub-agent dispatch is:
 4. Subagent does work, returns.
 5. Foreground agent calls `TaskUpdate(taskId, status="completed")` (or back to pending if blocked).
 
-That's 2 manual `TaskUpdate` calls per sub-agent dispatch — error-prone and verbose. With the ticket-updater-agents pattern from [`1779737000`][^blocks-ticket-updater-agents] launching many subagents in parallel, the friction multiplies.
+That's 2 manual `TaskUpdate` calls per sub-agent dispatch — error-prone and verbose. With the ticket-updater-agents pattern from GSD-1[^blocks-ticket-updater-agents] launching many subagents in parallel, the friction multiplies.
 
 ## Requirements
 
@@ -63,8 +63,9 @@ That's 2 manual `TaskUpdate` calls per sub-agent dispatch — error-prone and ve
 
 - Adjacent to the existing 0-or-1 in_progress invariant in `require-task-in-progress.sh`.
 - Integration point: the `Agent` tool dispatch path. Some hook would need to fire on agent launch to do the claim.
-- See also: [`1779737000`][^blocks-ticket-updater-agents] which is blocked by this — ticket-updater agents will benefit hugely from auto-assign since they're meant to be many + short-lived.
+- See also: GSD-1[^blocks-ticket-updater-agents] which is blocked by this — ticket-updater agents will benefit hugely from auto-assign since they're meant to be many + short-lived.
+- Related to GSD-34 (task-dispatch handshake hook) — both touch the task lifecycle at sub-agent launch time.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508561371275722812
 
-[^blocks-ticket-updater-agents]: ./1779737000-build-ticket-updater-agents-for-parallel-triage.md
+[^blocks-ticket-updater-agents]: ../tickets/GSD-1-build-ticket-updater-agents-for-parallel-triage.md

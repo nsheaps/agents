@@ -1,27 +1,29 @@
 ---
-type: research
+type: chore
+id: GSD-39
+legacy_ids:
+  - "1779753368"
 created: 2026-05-25T23:55:17Z
-state: to-triage
-priority: 3
+state: triage
 project: GSD
-priority: 4
+priority: 3
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508619501350944959
+  - id: discord-prio
+    type: discord-message
+    url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684
 events:
   - { ts: 2026-05-25T23:55:17Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - {
-      ts: 2026-05-26T01:18:27Z,
-      by: alex,
-      change: "priority (unset) → 3 per Nate Discord[^discord-prio]",
-    }
+  - { ts: 2026-05-26T01:18:27Z, by: alex, change: "priority (unset) → 3 per Nate Discord[^discord-prio]" }
+  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-39 (state=triage) per triager-v2 workflow" }
 ---
 
 # Deep research: agent teams, skills, agents, forking, --agent flag
 
-## Original Discord message
+## Original ask
 
 > add a triage task to deeply research docs and examples for teammates/agent teams, skills, agents, forked subagents, forked skills, agents, agent prompts, --agent flag passed to claude. Come up with a good approach of what to suggest. Compare your approach to whats in our docs. Link your comparison research in the arch draft under an open questions section
 
@@ -50,13 +52,18 @@ For each: find the canonical doc, find at least one real example (in our repos, 
 3. Comparison section: line up the recommended approach against what's currently in `nsheaps/agents/ARCHITECTURE_DRAFT.md` — what aligns, what diverges, what's missing on either side.
 4. PR to `nsheaps/agents` adding an entry under **Open Questions** in `ARCHITECTURE_DRAFT.md` that links to the comparison research note.
 
-## Approach notes (for triage agent)
+## Acceptance criteria
 
-- Should be a feature ticket (research deliverable + arch-draft PR).
-- Likely milestone: M2 (agent consistency / setup) or M11 (improve plugin + skill writing). Triage agent decides.
-- The research itself should be dispatched as a sub-agent (`deep-research:lead-researcher` looks right per available agents) — `run_in_background: true`, `isolation: "worktree"` if any PR work.
-- Do NOT dispatch this as urgent — it's a backlog research item, not blocking other work.
+- Research note exists with citations + examples for all 7 topics.
+- Synthesis + comparison sections are present and substantive.
+- `ARCHITECTURE_DRAFT.md` has an Open Questions entry linking to the research note (via PR).
+
+## Approach notes
+
+- Dispatch as a sub-agent (`deep-research:lead-researcher` looks right) — `run_in_background: true`, `isolation: "worktree"` if any PR work.
+- Do NOT dispatch this as urgent — P3 backlog research item, not blocking other work.
+- Cross-link with GSD-40 (agent-utils dummy browser dashboard) — the dashboard surfaces some of the agent-team primitives that this research will cover.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508619501350944959
 
-[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>
+[^discord-prio]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684

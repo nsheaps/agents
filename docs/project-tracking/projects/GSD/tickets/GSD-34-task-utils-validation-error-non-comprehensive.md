@@ -1,27 +1,29 @@
 ---
 type: bug
+id: GSD-34
+legacy_ids:
+  - "1779737766"
 created: 2026-05-25T19:36:06Z
-state: to-triage
-priority: 2
+state: triage
 project: GSD
-priority: 4
+priority: 2
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508554062340034831
+  - id: discord-prio
+    type: discord-message
+    url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684
 events:
   - { ts: 2026-05-25T19:36:06Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - {
-      ts: 2026-05-26T01:18:27Z,
-      by: alex,
-      change: "priority (unset) → 2 per Nate Discord[^discord-prio]",
-    }
+  - { ts: 2026-05-26T01:18:27Z, by: alex, change: "priority (unset) → 2 per Nate Discord[^discord-prio]" }
+  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-34 (state=triage) per triager-v2 workflow" }
 ---
 
 # task-utils PreToolUse hook: validation error is non-comprehensive — wastes tool calls
 
-## Original Discord message
+## Original ask
 
 > Add a bug (bugs should get higher priority than picking up something else on the MASTER.md list)
 >
@@ -105,4 +107,4 @@ Format example:
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508554062340034831
 
-[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>
+[^discord-prio]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684

@@ -1,7 +1,10 @@
 ---
 type: feature
+id: GSD-47
+legacy_ids:
+  - "1779759524"
 created: 2026-05-26T01:37:23Z
-state: to-triage
+state: triage
 project: GSD
 priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -10,11 +13,8 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508645192092221502
 events:
-  - {
-      ts: 2026-05-26T01:37:23Z,
-      by: alex,
-      change: "filed from Discord ask[^discord-ask] per immediate-file-on-receive rule",
-    }
+  - { ts: 2026-05-26T01:37:23Z, by: alex, change: "filed from Discord ask[^discord-ask] per immediate-file-on-receive rule" }
+  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-47 (state=triage) per triager-v2 workflow" }
 ---
 
 # Move task-dispatch handshake+rename+un-assign sequence into hooks
@@ -78,5 +78,7 @@ Nate flagged that "this also has bits from our lovely scratch/arch-draft/initial
 
 - This ticket exists because skill/rule guidance was demonstrably insufficient: in this very session (2026-05-26 01:31-01:37Z) the orchestrator dispatched `spec-filer` with the AGENT(...) prefix already in place, skipping the handshake step entirely.
 - Behavior-changing: once hooks land, every subsequent sub-agent dispatch enforces the canonical sequence — so this ticket must be worked early (P1).
+- Related to GSD-33 (task-utils auto-assign on launch) — both touch the task lifecycle at sub-agent dispatch time. GSD-33 is about auto-assignment via hooks; this ticket is about handshake enforcement.
+- Related to GSD-43 (task-work-on-it skill) — that skill WILL need to comply with the handshake sequence once this hook exists.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508645192092221502

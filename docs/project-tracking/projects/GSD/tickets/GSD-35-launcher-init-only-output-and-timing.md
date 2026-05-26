@@ -1,27 +1,29 @@
 ---
 type: feature
+id: GSD-35
+legacy_ids:
+  - "1779740882"
 created: 2026-05-25T20:28:02Z
-state: to-triage
-priority: 1
+state: triage
 project: GSD
-priority: 4
+priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508567250225856522
+  - id: discord-prio
+    type: discord-message
+    url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684
 events:
   - { ts: 2026-05-25T20:28:02Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - {
-      ts: 2026-05-26T01:18:27Z,
-      by: alex,
-      change: "priority (unset) → 1 per Nate Discord[^discord-prio]",
-    }
+  - { ts: 2026-05-26T01:18:27Z, by: alex, change: "priority (unset) → 1 per Nate Discord[^discord-prio]" }
+  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-35 (state=triage) per triager-v2 workflow" }
 ---
 
 # Launcher --init-only: visible output + per-section timing summaries
 
-## Original Discord message
+## Original ask
 
 > lets add another triage ticket, the launcher when it runs --init-only. A) it'd be nice if there was some output there, maybe we can run claude-stream on transcript from it or whatever? B) it needs to time each section, so the logs don't just have the timing info from when the log is written, but a summary after each, `[pre-pass] finished. took 34s` so it's easier to parse, especially if they're done in parallel (which may later be handled by nx?)
 
@@ -72,7 +74,8 @@ Currently `bin/agent` runs `claude --init-only --dangerously-skip-permissions` t
 - Adjacent to the existing launcher-log mechanism in `bin/agent` (the `log()` function that prefixes `[YYYY-MM-DD HH:MM:SS]`).
 - claude-stream tool: unclear what it does — needs research as part of triage. If it's the right tool, the implementation may be small.
 - nx parallelization: speculative — flagged as a forcing function for the timing-format, not as in-scope work.
+- Related to GSD-36 (launcher start-reason cold vs restart) — both touch launcher observability but address different needs.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508567250225856522
 
-[^discord-prio]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684>
+[^discord-prio]: https://discord.com/channels/1490863845252665415/1497431286661517353/1508640427283185684

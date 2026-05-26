@@ -1,7 +1,10 @@
 ---
 type: chore
+id: GSD-45
+legacy_ids:
+  - "1779755980"
 created: 2026-05-26T01:04:29Z
-state: to-triage
+state: triage
 project: GSD
 priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -14,11 +17,12 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508637136302374933
 events:
   - { ts: 2026-05-26T01:04:29Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - { ts: 2026-05-26T01:40:00Z, by: alex-triager, change: "promoted to-triage → GSD-45 (state=triage) per triager-v2 workflow" }
 ---
 
 # Absorb scratch into MASTER.md without losing context or duplicating work
 
-## Original Discord message
+## Original ask
 
 > I think we need a p1 ticket for absorbing scratch into MASTER.md without losing context or duplicating stuff. This organization is a massive undertaking. Lets start with a task that just updates the project-setup.md file with all the things we need to do so far with this convo because wow this is hard to keep track of
 
@@ -42,9 +46,9 @@ The project-tracking organization work is in active flight tonight — many item
 
 - Verify exact scratch filenames first. Per SETUP.md + earlier archaeology, at least `docs/scratch.md` exists; there may be more under `docs/`.
 - Non-trivial because:
-  - scratch is unstructured prose,
-  - MASTER.md uses stable IDs,
-  - many scratch items have already been promoted to tickets / milestones (need dedupe, not blind re-import).
+  - scratch is unstructured prose
+  - MASTER.md uses stable IDs
+  - many scratch items have already been promoted to tickets / milestones (need dedupe, not blind re-import)
 - Must preserve context (rationale, links, side discussions), not just headline items.
 
 ## Open architecture question
@@ -54,11 +58,11 @@ The project-tracking organization work is in active flight tonight — many item
 - `project-setup.md` becomes (or links to) `M1.md`
 - `intake/` folder evolves to just the bootstrap instructions for someone setting up project-tracking from scratch (i.e. the "how to start using this system" doc, not a parallel milestone tracker)
 
-Triage should decide this before splitting work.
+Triage grooming should decide this before splitting work.
 
-## Companion task (handled separately by parent)
+## Companion task (NOT part of this ticket)
 
-Update `project-setup.md` with a chronological ordered list of all tickets surfaced in tonight's convo. Alex (parent) is handling this directly — it is NOT part of this ticket and should NOT be re-filed by triage.
+Update `project-setup.md` with a chronological ordered list of all tickets surfaced in tonight's convo. Alex (parent) handled this directly — it is NOT part of this ticket and should NOT be re-filed by triage.
 
 ## Acceptance criteria
 
