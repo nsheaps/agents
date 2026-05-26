@@ -1,9 +1,11 @@
-# JSON Schema for ticket frontmatter — `docs/project-tracking/projects/<P>/*.md`.
+# JSON Schema for ticket frontmatter — `docs/project-tracking/projects/<P>/tickets/*.md`.
 # Eventually validated programmatically by ticket-utils / project-utils.
 # Until then, ticket-updater agents enforce by convention.
 #
 # State is in the `state:` frontmatter field — tickets do NOT move folders
-# by state (differs from earlier convention; see CLAUDE.md notes).
+# by state (differs from earlier convention; see CLAUDE.md notes). Tickets live
+# at `projects/<P>/tickets/<id>-<slug>.md` so non-ticket project artifacts can
+# sit at `projects/<P>/` without mixing.
 
 $schema: "https://json-schema.org/draft/2020-12/schema"
 $id: "https://github.com/nsheaps/agents/blob/main/docs/project-tracking/.metadata/schema-ticket.yaml"
@@ -31,7 +33,7 @@ properties:
       type: string
   state:
     enum: [triage, in-progress, done, will-not-do]
-    description: Lifecycle state. Source of truth — tickets live at `projects/<P>/$id-$slug.md` regardless of state. Was previously a folder; folder convention dropped 2026-05-25 per Nate Discord 1508572570239242382.
+    description: Lifecycle state. Source of truth — tickets live at `projects/<P>/tickets/$id-$slug.md` regardless of state. Was previously a folder; folder convention dropped 2026-05-25 per Nate Discord 1508572570239242382.
   created:
     type: string
     format: date-time
@@ -39,8 +41,14 @@ properties:
     type: string
     description: Project identifier (e.g. GSD). Matches the folder under projects/.
   priority:
-    type: string
-    description: Free-form priority hint (e.g. `top-of-queue`, `p1`).
+    type: integer
+    minimum: 0
+    maximum: 5
+    default: 4
+    description: |
+      Integer priority 0-5. 0 = critical / do now, 5 = maybe later.
+      Default is 4. P0 tickets are triaged first when the queue has multiple
+      candidates; triage docs must surface this field.
   assignee:
     type: string
     description: contacts:// URL for the responsible agent/human.
