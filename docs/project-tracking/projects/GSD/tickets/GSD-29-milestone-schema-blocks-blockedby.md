@@ -1,7 +1,10 @@
 ---
 type: chore
 created: 2026-05-26T00:45:00Z
-state: to-triage
+id: GSD-29
+legacy_ids:
+  - "1779755950"
+state: triage
 project: GSD
 priority: 0
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -11,6 +14,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508632218023760062
 events:
   - { ts: 2026-05-26T00:45:00Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:25:00Z,
+      by: alex,
+      change: "promoted to-triage → GSD-29 (state=triage) per #601 workflow",
+    }
 ---
 
 # Milestone schema: blocks / blockedBy ordering fields
