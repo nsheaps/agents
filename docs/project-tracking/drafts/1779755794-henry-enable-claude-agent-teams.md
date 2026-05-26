@@ -10,7 +10,11 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508628998366691458
 events:
-  - { ts: 2026-05-26T00:36:34Z, by: alex, change: "drafted from Discord ask[^discord-ask] — filed to drafts/ per new rule[^drafts-rule]" }
+  - {
+      ts: 2026-05-26T00:36:34Z,
+      by: alex,
+      change: "drafted from Discord ask[^discord-ask] — filed to drafts/ per new rule[^drafts-rule]",
+    }
 ---
 
 # Reconfigure henry to enable Claude agent teams
@@ -41,4 +45,5 @@ Per the new drafts rule (Nate Discord [1508628282814496808](https://discord.com/
 ## Footnote references
 
 [^discord-ask]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508628998366691458>
+
 [^drafts-rule]: <https://discord.com/channels/1490863845252665415/1497431286661517353/1508628282814496808>
