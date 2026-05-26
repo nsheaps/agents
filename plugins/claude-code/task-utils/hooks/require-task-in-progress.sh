@@ -11,6 +11,11 @@
 # correspond to an actively-tracked atomic task so progress is
 # observable and validatable.
 #
+# Configuration (plugins.settings.yaml):
+#   task-utils:
+#     enabled: true               # master switch — false disables all task-utils hooks
+#     requireInProgress: true     # this hook — false allows writes without an in_progress task
+#
 # Output contract (per claude-code docs hooks.md PreToolUse):
 #   - Exit 0 with JSON on STDOUT for policy decisions.
 #   - `permissionDecisionReason` carries the deny text (clean prose).
@@ -54,6 +59,44 @@ emit_decision() {
       )
     }'
 }
+
+# read_config KEY DEFAULT
+# Reads a key from the task-utils section of plugins.settings.yaml.
+# Returns the DEFAULT value if the file or key is missing.
+# Keys are read as strings: "true"/"false" for booleans.
+read_config() {
+  local key="$1" default="$2"
+  local config_file="${CLAUDE_PROJECT_DIR:-.}/.claude/plugins.settings.yaml"
+  if [[ ! -f "$config_file" ]]; then
+    echo "$default"
+    return
+  fi
+  python3 - "$config_file" "$key" "$default" <<'PYEOF' 2>/dev/null || echo "$default"
+import sys
+try:
+    import yaml
+    cfg_file, key, default = sys.argv[1], sys.argv[2], sys.argv[3]
+    with open(cfg_file) as f:
+        cfg = yaml.safe_load(f) or {}
+    section = cfg.get('task-utils', {}) or {}
+    val = section.get(key)
+    if val is None:
+        print(default)
+    else:
+        print('true' if val is True else ('false' if val is False else str(val)))
+except Exception:
+    print(sys.argv[3] if len(sys.argv) > 3 else 'true')
+PYEOF
+}
+
+# Check master switch and this hook's specific flag
+ENABLED="$(read_config enabled true)"
+REQUIRE_IN_PROGRESS="$(read_config requireInProgress true)"
+
+if [[ "$ENABLED" == "false" || "$REQUIRE_IN_PROGRESS" == "false" ]]; then
+  log_fire "allow-config-disabled" "tool=${TOOL_NAME} enabled=${ENABLED} requireInProgress=${REQUIRE_IN_PROGRESS}"
+  exit 0
+fi
 
 # Only gate the write-class tools
 case "$TOOL_NAME" in

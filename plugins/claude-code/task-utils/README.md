@@ -21,6 +21,51 @@ Task discipline hooks and the `task-manage` skill (renamed from `manage-tasks` p
 
 - **`task-manage`** — doctrine for the atomicity check, breakdown pattern, status-transition table, validation-steps mechanism, background-subagent (`AGENT(<n>)`) prefix, MONITORING(<monitor-id>) prefix, and behavior-changing-jumps-the-queue rule. Forks into an isolated context via `context: fork` so the parent's window stays lean and returns a ≤5-sentence imperative instruction.
 
+## Configuration
+
+All blocking behaviour is opt-in via `plugins.settings.yaml` in your project's `.claude/` directory. Add a `task-utils:` section to tune or disable enforcement:
+
+```yaml
+# .claude/plugins.settings.yaml
+task-utils:
+  # Master switch — set false to disable all task-utils hooks entirely.
+  # Default: true
+  enabled: true
+
+  # Enforce the 0-or-1 in_progress invariant (task-invariant.sh).
+  # Set false to allow multiple concurrent in_progress tasks (e.g. multi-workstream setups).
+  # Default: true
+  singleTaskBlocking: true
+
+  # Require a <validation-steps> block before a task can move to in_progress,
+  # and require RESULT(...) lines on checked steps before completing.
+  # Default: true
+  requireValidationSteps: true
+
+  # Require at least one task in in_progress before Write/Edit/MultiEdit/NotebookEdit
+  # tools are permitted (require-task-in-progress.sh).
+  # Default: true
+  requireInProgress: true
+```
+
+**Defaults are all `true`** — existing installs with no `task-utils:` section in their settings file continue to behave exactly as before. Agents that need to relax the rules can set any combination of the above to `false` without touching the plugin source.
+
+Example — disable all blocking while keeping coaching:
+
+```yaml
+task-utils:
+  singleTaskBlocking: false
+  requireValidationSteps: false
+  requireInProgress: false
+```
+
+Example — disable everything (full pass-through):
+
+```yaml
+task-utils:
+  enabled: false
+```
+
 ## Installation
 
 Add to your `.claude/settings.json`:
