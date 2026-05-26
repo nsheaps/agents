@@ -3,7 +3,7 @@ type: feature
 created: 2026-05-25T20:04:18Z
 state: to-triage
 project: GSD
-priority: 4
+priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: discord-ask
@@ -14,6 +14,11 @@ references:
     url: ./1779737000-build-ticket-updater-agents-for-parallel-triage.md
 events:
   - { ts: 2026-05-25T20:04:18Z, by: alex, change: "created from Discord ask[^discord-ask]" }
+  - {
+      ts: 2026-05-26T01:21:00Z,
+      by: alex,
+      change: "priority 4 → 1 — Henry P1 on PR #177: migration silently defaulted top-of-queue string → 4, restoring urgency signal",
+    }
 ---
 
 # task-utils: assign-on-launch + auto-handoff (one-task-at-a-time enhancement)
