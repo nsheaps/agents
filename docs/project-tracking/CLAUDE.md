@@ -6,7 +6,7 @@ We're currently setting up project management. Relevant resources:
 - [`SETUP.md`](SETUP.md) — one-time bootstrap instructions Alex is executing (2026-05-25).
 - [`intake/`](intake/) — handler brain-dumps awaiting triage. See [`intake/CLAUDE.md`](intake/CLAUDE.md).
 - `task-summary/` — legacy summaries to triage into tickets (project-setup step 5).
-- `projects/<project>/` — per-project ticket files, flat (`projects/<P>/$id-$slug.md`). State in frontmatter, not in folders.
+- `projects/<project>/` — per-project artifacts. Tickets live in `projects/<P>/tickets/$id-$slug.md` (flat under the `tickets/` subfolder). State in frontmatter, not in folders. Non-ticket artifacts (PROJECT.md, milestone summaries) sit at the project root.
 - `milestones/` — milestone objects (state in frontmatter; siblings to `projects/` since milestones may span projects).
 - `to-triage/` — incoming items waiting to be mapped to a project + assigned a canonical id.
 - `.metadata/` — JSON Schema files for the doc types defined here (`schema-ticket.yaml`, `schema-milestone.yaml`).
