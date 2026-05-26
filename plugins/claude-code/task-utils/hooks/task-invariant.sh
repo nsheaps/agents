@@ -23,6 +23,12 @@
 #   4. Coach on atomicity / breakdown / parallelism / stakeholder ping.
 #      Three coach variants (STARTED, COMPLETED, GENERIC) — see below.
 #
+# Configuration (plugins.settings.yaml):
+#   task-utils:
+#     enabled: true                  # master switch — false disables all task-utils hooks
+#     singleTaskBlocking: true       # enforce 0-or-1 in_progress invariant
+#     requireValidationSteps: true   # require <validation-steps> block before in_progress
+#
 # Output contract (per claude-code docs hooks.md PreToolUse):
 #   - Exit 0 with JSON on STDOUT for policy decisions.
 #   - `permissionDecisionReason` carries deny text (clean prose).
@@ -55,6 +61,46 @@ esac
 
 CLAUDE_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
 TASKS_DIR="$CLAUDE_DIR/tasks/$SESSION_ID"
+
+# read_config KEY DEFAULT
+# Reads a key from the task-utils section of plugins.settings.yaml.
+# Returns the DEFAULT value if the file or key is missing.
+# Keys are returned as strings: "true"/"false" for booleans.
+read_config() {
+  local key="$1" default="$2"
+  local config_file="${CLAUDE_PROJECT_DIR:-.}/.claude/plugins.settings.yaml"
+  if [[ ! -f "$config_file" ]]; then
+    echo "$default"
+    return
+  fi
+  python3 - "$config_file" "$key" "$default" <<'PYEOF' 2>/dev/null || echo "$default"
+import sys
+try:
+    import yaml
+    cfg_file, key, default = sys.argv[1], sys.argv[2], sys.argv[3]
+    with open(cfg_file) as f:
+        cfg = yaml.safe_load(f) or {}
+    section = cfg.get('task-utils', {}) or {}
+    val = section.get(key)
+    if val is None:
+        print(default)
+    else:
+        print('true' if val is True else ('false' if val is False else str(val)))
+except Exception:
+    print(sys.argv[3] if len(sys.argv) > 3 else 'true')
+PYEOF
+}
+
+# Check master switch first — if disabled, exit immediately (no coaching either)
+ENABLED="$(read_config enabled true)"
+if [[ "$ENABLED" == "false" ]]; then
+  log_fire "allow-config-disabled" "tool=${TOOL_NAME} enabled=false"
+  exit 0
+fi
+
+# Read individual blocking flags (defaults: both true)
+SINGLE_TASK_BLOCKING="$(read_config singleTaskBlocking true)"
+REQUIRE_VALIDATION_STEPS="$(read_config requireValidationSteps true)"
 
 # ---- Reminder text (verbatim per Nate 2026-05-17 02:53Z + 04:06Z) -----------
 
@@ -201,35 +247,37 @@ esac
 # ---- Deny path: pending→in_progress validation-steps required ---------------
 
 if [[ "$NEW_STATUS" == "in_progress" ]]; then
-  # 0-or-1 invariant first — count only tasks where metadata.assignee is
-  # empty or "alex" (sub-agent-assigned tasks live in their own accounting
-  # per assignee-design.md §3 and don't gate the parent).
-  OTHERS=""
-  if [[ -d "$TASKS_DIR" ]]; then
-    while IFS= read -r -d '' f; do
-      f_id="$(jq -r '.id // empty' "$f" 2>/dev/null)"
-      [[ "$f_id" == "$TASK_ID" ]] && continue
-      f_status="$(jq -r '.status // empty' "$f" 2>/dev/null)"
-      f_assignee="$(jq -r '.metadata.assignee // empty' "$f" 2>/dev/null)"
-      case "$f_assignee" in
-        ""|alex) : ;;
-        *) continue ;;
-      esac
-      if [[ "$f_status" == "in_progress" ]]; then
-        f_subj="$(jq -r '.subject // empty' "$f" 2>/dev/null)"
-        OTHERS+="#${f_id} (${f_subj}); "
-      fi
-    done < <(find "$TASKS_DIR" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
-  fi
-  if [[ -n "$OTHERS" ]]; then
-    REASON="Cannot move task #${TASK_ID} to in_progress — already in_progress: ${OTHERS%; }. Project rule: exactly 0 or 1 task may be in_progress. Pick one: (a) complete current via TaskUpdate status=completed, (b) move it back to pending via TaskUpdate status=pending, (c) create a sub-task via TaskCreate to capture the new direction (the in-progress task may itself be a planning/break-down task — see worked example at https://github.com/nsheaps/agents/blob/main/docs/journal/2026/05/16/managing-tasks-example.md). Use sequential-thinking; append a dated event-log line to the in-progress task's description noting the pivot before changing state."
-    log_fire "deny" "task=${TASK_ID} reason=in_progress-conflict conflict=${OTHERS%; }"
-    emit_decision "deny" "$REASON" ""
-    exit 0
+  # 0-or-1 invariant — only enforced when singleTaskBlocking is true.
+  # Count only tasks where metadata.assignee is empty or "alex" (sub-agent-assigned
+  # tasks live in their own accounting per assignee-design.md §3 and don't gate parent).
+  if [[ "$SINGLE_TASK_BLOCKING" == "true" ]]; then
+    OTHERS=""
+    if [[ -d "$TASKS_DIR" ]]; then
+      while IFS= read -r -d '' f; do
+        f_id="$(jq -r '.id // empty' "$f" 2>/dev/null)"
+        [[ "$f_id" == "$TASK_ID" ]] && continue
+        f_status="$(jq -r '.status // empty' "$f" 2>/dev/null)"
+        f_assignee="$(jq -r '.metadata.assignee // empty' "$f" 2>/dev/null)"
+        case "$f_assignee" in
+          ""|alex) : ;;
+          *) continue ;;
+        esac
+        if [[ "$f_status" == "in_progress" ]]; then
+          f_subj="$(jq -r '.subject // empty' "$f" 2>/dev/null)"
+          OTHERS+="#${f_id} (${f_subj}); "
+        fi
+      done < <(find "$TASKS_DIR" -maxdepth 1 -name '*.json' -print0 2>/dev/null)
+    fi
+    if [[ -n "$OTHERS" ]]; then
+      REASON="Cannot move task #${TASK_ID} to in_progress — already in_progress: ${OTHERS%; }. Project rule: exactly 0 or 1 task may be in_progress. Pick one: (a) complete current via TaskUpdate status=completed, (b) move it back to pending via TaskUpdate status=pending, (c) create a sub-task via TaskCreate to capture the new direction (the in-progress task may itself be a planning/break-down task — see worked example at https://github.com/nsheaps/agents/blob/main/docs/journal/2026/05/16/managing-tasks-example.md). Use sequential-thinking; append a dated event-log line to the in-progress task's description noting the pivot before changing state."
+      log_fire "deny" "task=${TASK_ID} reason=in_progress-conflict conflict=${OTHERS%; }"
+      emit_decision "deny" "$REASON" ""
+      exit 0
+    fi
   fi
 
-  # Validation-steps required (rule 2)
-  if [[ "$VS_UNCHECKED" -lt 1 ]]; then
+  # Validation-steps required (rule 2) — only enforced when requireValidationSteps is true.
+  if [[ "$REQUIRE_VALIDATION_STEPS" == "true" && "$VS_UNCHECKED" -lt 1 ]]; then
     REASON="Cannot move task #${TASK_ID} to in_progress — the task description has no <validation-steps> block with at least one unchecked \"- [ ]\" item. Add validation steps that capture the pass/fail criteria for this task, in this format inside the description:
 
   <validation-steps>
@@ -247,19 +295,21 @@ fi
 # ---- Deny path: in_progress→completed validation-steps complete + RESULT ----
 
 if [[ "$NEW_STATUS" == "completed" && "$CURRENT_STATUS" == "in_progress" ]]; then
-  # Rule 3: every step must be checked
-  if [[ "$VS_UNCHECKED" -gt 0 ]]; then
-    REASON="Cannot move task #${TASK_ID} to completed — ${VS_UNCHECKED} validation step(s) remain unchecked in <validation-steps>. Either complete the work (and check each item + add a RESULT(...) line as evidence), or park the task back to pending via TaskUpdate(status=pending) to keep the lifecycle honest. Note: pending→completed (without ever transitioning to in_progress) IS allowed when no validation is intended (cancellation, immediate-no-op tasks, etc.) — rule 4."
-    log_fire "deny" "task=${TASK_ID} reason=validation-incomplete unchecked=${VS_UNCHECKED}"
-    emit_decision "deny" "$REASON" ""
-    exit 0
-  fi
-  # Rule 3 part 2: each [x] step must have a RESULT line
-  if [[ -n "$VS_MISSING_RESULT" ]]; then
-    REASON="Cannot move task #${TASK_ID} to completed — the following checked validation step(s) are missing RESULT lines (1-based item indices): ${VS_MISSING_RESULT}. Add a RESULT(<timestamp>[, by (\$agentName|Agent(\$subAgentId))]): <evidence> line directly after each \"- [x]\" item documenting how you verified it. Example: RESULT(2026-05-17 04:06Z, by alex): log line \"X\" in /path/to/log confirms."
-    log_fire "deny" "task=${TASK_ID} reason=missing-result indices=${VS_MISSING_RESULT}"
-    emit_decision "deny" "$REASON" ""
-    exit 0
+  # Rule 3: every step must be checked — only enforced when requireValidationSteps is true.
+  if [[ "$REQUIRE_VALIDATION_STEPS" == "true" ]]; then
+    if [[ "$VS_UNCHECKED" -gt 0 ]]; then
+      REASON="Cannot move task #${TASK_ID} to completed — ${VS_UNCHECKED} validation step(s) remain unchecked in <validation-steps>. Either complete the work (and check each item + add a RESULT(...) line as evidence), or park the task back to pending via TaskUpdate(status=pending) to keep the lifecycle honest. Note: pending→completed (without ever transitioning to in_progress) IS allowed when no validation is intended (cancellation, immediate-no-op tasks, etc.) — rule 4."
+      log_fire "deny" "task=${TASK_ID} reason=validation-incomplete unchecked=${VS_UNCHECKED}"
+      emit_decision "deny" "$REASON" ""
+      exit 0
+    fi
+    # Rule 3 part 2: each [x] step must have a RESULT line
+    if [[ -n "$VS_MISSING_RESULT" ]]; then
+      REASON="Cannot move task #${TASK_ID} to completed — the following checked validation step(s) are missing RESULT lines (1-based item indices): ${VS_MISSING_RESULT}. Add a RESULT(<timestamp>[, by (\$agentName|Agent(\$subAgentId))]): <evidence> line directly after each \"- [x]\" item documenting how you verified it. Example: RESULT(2026-05-17 04:06Z, by alex): log line \"X\" in /path/to/log confirms."
+      log_fire "deny" "task=${TASK_ID} reason=missing-result indices=${VS_MISSING_RESULT}"
+      emit_decision "deny" "$REASON" ""
+      exit 0
+    fi
   fi
 fi
 
@@ -271,6 +321,6 @@ else
   ADDITIONAL_CONTEXT="${GENERIC_REMINDER}"
 fi
 
-log_fire "allow" "tool=${TOOL_NAME}${NEW_STATUS:+ new_status=$NEW_STATUS} current_status=${CURRENT_STATUS:-none} unchecked=${VS_UNCHECKED} checked=${VS_CHECKED}"
+log_fire "allow" "tool=${TOOL_NAME}${NEW_STATUS:+ new_status=$NEW_STATUS} current_status=${CURRENT_STATUS:-none} unchecked=${VS_UNCHECKED} checked=${VS_CHECKED} singleTaskBlocking=${SINGLE_TASK_BLOCKING} requireValidationSteps=${REQUIRE_VALIDATION_STEPS}"
 emit_decision "allow" "" "$ADDITIONAL_CONTEXT"
 exit 0
