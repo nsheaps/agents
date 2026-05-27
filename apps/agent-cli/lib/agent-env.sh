@@ -61,4 +61,9 @@ agent_env_export() {
   export CLAUDE_CODE_ENABLE_AWAY_SUMMARY=1
   export CLAUDE_CODE_ENABLE_BACKGROUND_PLUGIN_REFRESH=1
   export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
+  # Pin the task list to the agent name so every session/fork/restart for this
+  # agent shares the same ~/.claude/tasks/<agent>/ dir. Without this, each new
+  # session UUID gets its own task list (and /fork starts empty).
+  # Ref: https://code.claude.com/docs/en/env-vars#:~:text=CLAUDE_CODE_TASK_LIST_ID
+  export CLAUDE_CODE_TASK_LIST_ID="$AGENT_NAME"
 }
