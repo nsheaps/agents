@@ -5,6 +5,7 @@ Reproduced 2026-05-27: alex hit E2BIG on every Bash tool call. Recovery required
 Root cause hypothesis: `[1pass] Chained $HOME/.env.local into CLAUDE_ENV_FILE` runs on every SessionStart hook fire, appending without dedup. Over many resume/compact cycles the file grows. Need either (1) idempotent append (check if already chained), (2) truncate-and-rewrite each session, or (3) cap the file size with a rotation/reset on launcher startup.
 
 Diagnostic notes:
+
 - E2BIG is env + argv combined exceeding ARG_MAX (~2MB on Linux), so it's the cumulative env size, not any single var.
 - The Bash tool inherits the claude process env; once the parent process's env is too big, no child can be spawned at all.
 - Moving session-env files on disk doesn't help the current process (its env is already loaded); only a restart fixes the live state.

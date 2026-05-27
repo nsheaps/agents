@@ -5,6 +5,7 @@ Why: when Bash is broken (see companion ticket on session-env E2BIG), I lose Glo
 Even outside the Bash-broken case, this would be a quality-of-life improvement: "list the directory" is a frequent intent, and we currently force the agent through Glob or Bash `ls` for it. A PreToolUse hook that does `if isdir(path): emit listing as tool_result, decision=block` would short-circuit the EISDIR error and serve the obvious intent.
 
 Implementation notes:
+
 - Hook should match PreToolUse for tool `Read`.
 - Check `stat(input.file_path)` — if directory, run a bounded listing (e.g., top 200 entries with size/mtime, like `ls -la`) and emit it as the tool response with decision: "block" + reason explaining we showed listing instead.
 - Keep output bounded so listing a huge dir doesn't blow context.

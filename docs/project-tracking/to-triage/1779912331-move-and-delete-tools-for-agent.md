@@ -1,6 +1,7 @@
 Give the agent first-class Move and Delete tools, so the file-manipulation primitives aren't just Read/Write/Edit (which together force a 3-step Read→Write-new→Write-empty-old dance to "move" a file, and don't really support delete at all).
 
 The trigger: 2026-05-27 recovery scenario where Bash was broken (E2BIG) and Nate asked me to rename a session-env file to .bak. With only Read/Write/Edit, the safe move is:
+
 1. Read source
 2. Write content to dest path
 3. Write empty/zero-content to source
