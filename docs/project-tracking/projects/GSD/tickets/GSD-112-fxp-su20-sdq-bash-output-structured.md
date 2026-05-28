@@ -16,7 +16,11 @@ references:
     type: github-blob
     url: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/675.yaml
 events:
-  - { ts: 2026-05-28T22:00:00Z, by: alex, change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.20 had no canonical GSD ticket" }
+  - {
+      ts: 2026-05-28T22:00:00Z,
+      by: alex,
+      change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.20 had no canonical GSD ticket",
+    }
 ---
 
 # GSD-112 — triage: Bash output >5 lines + structured SDQ-CLI
@@ -35,4 +39,5 @@ Add triage tickets — Bash output >5 lines should auto-route through SDQ-CLI fo
 - [alex-task #675][^alex-task]
 
 [^fixprompt-dashboard]: https://github.com/nsheaps/.ai-agent-alex/issues/20
+
 [^alex-task]: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/675.yaml

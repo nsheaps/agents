@@ -16,14 +16,18 @@ references:
     type: github-blob
     url: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/665.yaml
 events:
-  - { ts: 2026-05-28T22:00:00Z, by: alex, change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.12 had no canonical GSD ticket" }
+  - {
+      ts: 2026-05-28T22:00:00Z,
+      by: alex,
+      change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.12 had no canonical GSD ticket",
+    }
 ---
 
-# GSD-104 — PostToolUse hook on Bash(git commit:*) for throttled task-discipline reminder
+# GSD-104 — PostToolUse hook on Bash(git commit:\*) for throttled task-discipline reminder
 
 ## Original ask
 
-Add PostToolUse hook on Bash(git commit:*) — 1m throttled reminder that nudges the agent to keep tasks/tickets in sync with each commit.
+Add PostToolUse hook on Bash(git commit:\*) — 1m throttled reminder that nudges the agent to keep tasks/tickets in sync with each commit.
 
 ## Status
 
@@ -35,4 +39,5 @@ Add PostToolUse hook on Bash(git commit:*) — 1m throttled reminder that nudges
 - [alex-task #665][^alex-task]
 
 [^fixprompt-dashboard]: https://github.com/nsheaps/.ai-agent-alex/issues/20
+
 [^alex-task]: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/665.yaml

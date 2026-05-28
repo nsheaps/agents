@@ -16,7 +16,11 @@ references:
     type: github-blob
     url: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/672.yaml
 events:
-  - { ts: 2026-05-28T22:00:00Z, by: alex, change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.17 had no canonical GSD ticket" }
+  - {
+      ts: 2026-05-28T22:00:00Z,
+      by: alex,
+      change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.17 had no canonical GSD ticket",
+    }
 ---
 
 # GSD-109 — pr-status-cli — default to --all-open + sort order open→merged→closed
@@ -35,4 +39,5 @@ pr-status-cli: default to --all-open (always show open PRs); sort order open-by-
 - [alex-task #672][^alex-task]
 
 [^fixprompt-dashboard]: https://github.com/nsheaps/.ai-agent-alex/issues/20
+
 [^alex-task]: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/672.yaml
