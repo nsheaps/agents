@@ -23,10 +23,10 @@ Run this behavior when you detect a new Claude Code version via any of:
 
    If file exists, skip — already captured.
 
-3. **Run cchistory** (see `.claude/skills/cchistory.md` for full details):
+3. **Run cchistory** (see `docs/research/cchistory.md` for full details):
 
    ```bash
-   cd /Users/nathan.heaps/src/nsheaps/agent-team
+   # Run from the repo root
    CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 cchistory <version> --claude-args '--dangerously-skip-permissions'
    ```
 
@@ -67,6 +67,5 @@ The system prompt is the foundation for all agent behavior. Changes to it can si
 
 ## References
 
-- [cchistory skill](./../skills/cchistory.md)
-- [Road Runner's cchistory research](../../docs/research/cchistory.md)
+- [cchistory research](../../docs/research/cchistory.md)
 - [cchistory web UI](https://cchistory.mariozechner.at/) — auto-updates every 30 min, useful for quick comparison
