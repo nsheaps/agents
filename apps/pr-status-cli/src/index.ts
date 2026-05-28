@@ -180,7 +180,9 @@ function classifyContexts(pr: any): Ctx[] {
       const status = n.status; // QUEUED / IN_PROGRESS / COMPLETED / PENDING / WAITING
       const conclusion = n.conclusion; // SUCCESS / FAILURE / NEUTRAL / CANCELLED / TIMED_OUT / ACTION_REQUIRED / STALE / SKIPPED
       const pending = status !== "COMPLETED";
-      const passed = !pending && (conclusion === "SUCCESS" || conclusion === "NEUTRAL" || conclusion === "SKIPPED");
+      const passed =
+        !pending &&
+        (conclusion === "SUCCESS" || conclusion === "NEUTRAL" || conclusion === "SKIPPED");
       const failed = !pending && !passed;
       return { required: !!n.isRequired, pending, passed, failed };
     } else {
@@ -312,8 +314,7 @@ function digestSortKey(pr: any): [number, number, number, number, number, number
   const stateBucket = s === "🟣" ? 1 : s === "❌" ? 2 : 0;
   // Mergeability rank (lower = more mergeable); only relevant for open PRs
   const mss: string = pr.mergeStateStatus ?? "";
-  const mergeRank =
-    mss === "CLEAN" ? 0 : mss === "UNSTABLE" ? 1 : mss === "BEHIND" ? 2 : 3;
+  const mergeRank = mss === "CLEAN" ? 0 : mss === "UNSTABLE" ? 1 : mss === "BEHIND" ? 2 : 3;
   // CI rank: best CI state first
   const ci = ciEmoji(pr);
   const ciRank =
@@ -564,7 +565,11 @@ async function main() {
 
   // In digest mode: collect (slug, sortKey, line) so we can sort per-repo before
   // emitting.  In ref mode: print immediately (preserve caller-specified order).
-  type CollectedLine = { slug: string; sortKey: [number, number, number, number, number, number]; line: string };
+  type CollectedLine = {
+    slug: string;
+    sortKey: [number, number, number, number, number, number];
+    line: string;
+  };
   const collected: CollectedLine[] = [];
 
   for (let start = 0; start < refs.length; start += BATCH_SIZE) {
