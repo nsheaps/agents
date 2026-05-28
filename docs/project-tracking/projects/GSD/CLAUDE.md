@@ -20,3 +20,10 @@ Bullets only — hierarchically included with the parent.
 - Only **unassigned** or **assigned-to-you** tickets in `state=triage` are yours to action.
 - Assigned-to-someone-else = that person's work, even if it's been sitting.
 - When multiple tickets are actionable, sort by `priority:` ascending (lowest number first — P0 before P1 before P4).
+
+## Required fields on every ticket (ENFORCE)
+
+- `references:` MUST include an entry of `type: alex-task` (or `jack-task`/`henry-task`) with the originating task ID + URL. No originating task = bad job; file the missing task retroactively first, then reference it.
+- `aliases:` SHOULD list previous human-readable names (FXP/1.2, I27, C1, etc.) for discoverability. Order: most-recent first, oldest last.
+
+See `../../.metadata/schema-ticket.yaml` for field shapes and the allowed `type` enum values (now includes `alex-task`, `jack-task`, `henry-task`).
