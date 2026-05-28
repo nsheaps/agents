@@ -140,11 +140,10 @@ jobs:
         with:
           ref: main
           fetch-depth: 0
-          path: self
 
       - name: Authenticate as GitHub App (for nsheaps/.org)
         id: auth
-        uses: ./self/.github/actions/github-app-auth
+        uses: ./.github/actions/github-app-auth
         with:
           app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
           private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
