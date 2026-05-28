@@ -138,12 +138,11 @@ jobs:
           git commit -m "chore: update agent-team claude-team to ${VERSION}"
           git push -u origin "$BRANCH"
 
-          cat > /tmp/pr-body.md <<BODY_EOF
-Automated formula update from agent-team release
-
-**Release:** ${RELEASE_URL}
-**Workflow:** ${JOB_URL}
-BODY_EOF
+          {
+            printf 'Automated formula update from agent-team release\n\n'
+            printf '**Release:** %s\n' "${RELEASE_URL}"
+            printf '**Workflow:** %s\n' "${JOB_URL}"
+          } > /tmp/pr-body.md
 
           PR_URL=$(gh pr create \
             --title "chore: update agent-team claude-team to ${VERSION}" \

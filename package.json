@@ -9,6 +9,7 @@
   },
   "license": "UNLICENSED",
   "workspaces": [
+    "apps/*",
     "packages/*",
     "services/*",
     "lib/*",
