@@ -10,7 +10,13 @@ assignee: contacts://heaps-group/byGithubUsername/nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 legacy_ids:
   - I1
+aliases:
+  - "I1"
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-571"
+    note: "#571: Round 1 — promote 10 done-bucket to-triage → GSD-N tickets"
   - id: agents-commit-5f69967
     type: github-commit
     url: https://github.com/nsheaps/agents/commit/5f69967

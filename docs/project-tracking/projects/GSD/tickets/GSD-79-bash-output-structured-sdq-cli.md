@@ -9,6 +9,10 @@ project: GSD
 priority: 2
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-677"
+    note: "#677: AGENT(triage-3-tickets): Promote 3 just-filed to-triage tickets into GSD-N ticke"
   - id: nate-discord-sdq
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1509641003160699121

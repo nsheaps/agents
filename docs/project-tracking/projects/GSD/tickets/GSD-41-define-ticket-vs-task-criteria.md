@@ -9,6 +9,10 @@ project: GSD
 priority: 0
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-611"
+    note: "#611: AGENT(triager-v2): Process to-triage chronologically per new spec (14 items)"
   - id: discord-ask
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508633434082512946
