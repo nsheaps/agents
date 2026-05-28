@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.2](https://github.com/nsheaps/agents/compare/v0.1.1...v0.1.2) (2026-05-28)
+
+### Maintenance
+
+* **pr-status:** patch nsheaps/agents[#202](https://github.com/nsheaps/agents/issues/202) (opened) ([e9dd4c0](https://github.com/nsheaps/agents/commit/e9dd4c0b0557c3151f5ee7c52e94e8254bde26c3))
+
 ## [0.1.1](https://github.com/nsheaps/agents/compare/v0.1.0...v0.1.1) (2026-05-28)
 
 ### Maintenance
