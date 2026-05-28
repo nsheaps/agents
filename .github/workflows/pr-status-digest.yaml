@@ -1,0 +1,136 @@
+name: PR Status Digest
+
+# Generates emoji-bucketed PR-status digests for every repo in REPOS.md scope:
+# one doc per repo at docs/pr-status/per-repo/<owner>--<repo>.md, plus one
+# combined doc at docs/pr-status/all.md. Commits + pushes any changes back to
+# main via the github-app-auth composite (no user PAT).
+#
+# Triggers:
+#   - schedule:           every 12h
+#   - workflow_dispatch:  manual via Actions UI
+#   - repository_dispatch:cross-repo refresh (event type: pr-status-refresh)
+#   - pull_request:       on PR state changes in THIS repo (NOT synchronize)
+#
+# Source: GSD-76 / FXP-1.12.2 — Nate Discord 2026-05-28 03:56Z.
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"
+  workflow_dispatch:
+  repository_dispatch:
+    types: [pr-status-refresh]
+  pull_request:
+    # State changes only — explicitly NOT `synchronize` (don't re-run on every push)
+    types: [opened, closed, reopened, ready_for_review, converted_to_draft]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: pr-status-digest
+  cancel-in-progress: false
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Authenticate as GitHub App
+        id: auth
+        uses: ./.github/actions/github-app-auth
+        with:
+          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Setup mise (bun)
+        uses: jdx/mise-action@v4
+
+      - name: Resolve scope from REPOS.md
+        id: scope
+        run: |
+          set -euo pipefail
+          mapfile -t SLUGS < <(scripts/parse-repos-md.sh REPOS.md)
+          echo "Found ${#SLUGS[@]} repo slugs in REPOS.md scope:"
+          printf '  - %s\n' "${SLUGS[@]}"
+          # Persist for later steps (newline-separated; multiline outputs are fine)
+          {
+            echo "slugs<<EOF"
+            printf '%s\n' "${SLUGS[@]}"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Generate per-repo digests + combined
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+          # Mirror Nate's default: open + closed-merged only (no closed-no-merge).
+          # `pr-status digest` itself doesn't filter post-hoc — we filter via
+          # `--state=all` then drop ❌ lines (closed-no-merge) below.
+        run: |
+          set -euo pipefail
+          mkdir -p docs/pr-status/per-repo
+          CLI="apps/pr-status-cli/src/index.ts"
+          TS=$(date -u +%Y-%m-%dT%H:%MZ)
+          REPO_ARGS=()
+
+          # --- per-repo ---
+          while IFS= read -r slug; do
+            [[ -z "$slug" ]] && continue
+            REPO_ARGS+=(--repo "$slug")
+            out="docs/pr-status/per-repo/${slug//\//--}.md"
+            echo "::group::digest for $slug → $out"
+            {
+              echo "# PR Status — $slug"
+              echo
+              echo "_Generated $TS · scope: this repo · open + merged 🟣 only (closed-no-merge ❌ excluded)._"
+              echo
+              # --state=all returns everything; drop ❌ closed-no-merge lines.
+              bun run "$CLI" digest --repo "$slug" --state=all --since=all --limit=500 2>&1 \
+                | { grep -vE '^digest query:|^discovered ' || true; } \
+                | { grep -vE '^❌' || true; }
+            } > "$out"
+            echo "::endgroup::"
+          done <<< "${{ steps.scope.outputs.slugs }}"
+
+          # --- combined ---
+          out="docs/pr-status/all.md"
+          echo "::group::combined digest → $out"
+          {
+            echo "# PR Status — REPOS.md scope (combined)"
+            echo
+            echo "_Generated $TS · scope: ${#REPO_ARGS[@]} flags (${REPO_ARGS[@]:1:1} …) · open + merged 🟣 only._"
+            echo
+            bun run "$CLI" digest "${REPO_ARGS[@]}" --state=all --since=all --limit=2000 2>&1 \
+              | { grep -vE '^digest query:|^discovered ' || true; } \
+              | { grep -vE '^❌' || true; }
+          } > "$out"
+          echo "::endgroup::"
+
+      - name: Configure git identity (github-app bot)
+        env:
+          BOT_USER_ID: ${{ steps.auth.outputs.user-id }}
+          BOT_USER_NAME: ${{ steps.auth.outputs.user-name }}
+        run: |
+          git config user.name  "$BOT_USER_NAME"
+          git config user.email "${BOT_USER_ID}+${BOT_USER_NAME}@users.noreply.github.com"
+
+      - name: Commit + push if changed
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+          TRIGGER: ${{ github.event_name }}
+        run: |
+          set -euo pipefail
+          git add docs/pr-status/
+          if git diff --cached --quiet; then
+            echo "No digest changes — nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore(pr-status): regenerate REPOS.md digest (trigger: ${TRIGGER})"
+          # Push back to main using the app token
+          REMOTE_URL="https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push "$REMOTE_URL" HEAD:main
