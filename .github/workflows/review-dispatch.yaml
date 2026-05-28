@@ -76,7 +76,7 @@ jobs:
       - name: Generate review bot token
         id: auth
         if: steps.gate.outputs.should_dispatch == 'true'
-        uses: actions/create-github-app-token@v2
+        uses: actions/create-github-app-token@v3
         with:
           app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
           private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
