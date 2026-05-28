@@ -1,0 +1,28 @@
+{
+  "name": "@nsheaps/agent-web",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Web frontend service for the agent team. Distributed as a container via ghcr.io/nsheaps/agent-web.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nsheaps/agent-team.git",
+    "directory": "services/agent-web"
+  },
+  "license": "UNLICENSED",
+  "scripts": {
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "format-check": "prettier --check . --ignore-path ../../.prettierignore",
+    "lint": "bun run format-check && tsc --noEmit",
+    "build": "tsc -b",
+    "test": "bun test --pass-with-no-tests"
+  }
+}

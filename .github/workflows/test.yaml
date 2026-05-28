@@ -77,10 +77,13 @@ jobs:
           echo "Changes made or lint failed! Auto-committed the fixes, but more lint and format issues may remain."
           exit 1
 
-  test:
+  build-and-test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+        with:
+          # Full history needed so nx affected/cache can compare against the base.
+          fetch-depth: 0
 
       - name: Setup mise
         uses: jdx/mise-action@v4
@@ -88,5 +91,11 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run tests
-        run: mise run test
+      - name: nx lint (all workspace packages)
+        run: bunx nx run-many --target=lint
+
+      - name: nx build (all workspace packages)
+        run: bunx nx run-many --target=build
+
+      - name: nx test (all workspace packages)
+        run: bunx nx run-many --target=test

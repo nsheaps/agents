@@ -14,22 +14,28 @@ node = "24.15.0"
 "pipx:litellm" = { version = "1.83.14", extras = "proxy" }
 tilt = "0.37.3"
 
-# TODO Add nx? or install nx through bun? + migrate mise tasks to scripts in folder + scripts should delegate to nx in this repo
+# nx is installed via bun (root devDependency). Invoke as `bunx nx`.
+# See docs/MONOREPO.md for the full pattern.
 
 [tasks.format]
-description = "Format markdown files with prettier"
-# todo: this needs to come from mise, not bun
-run = "bun run prettier --write '**/*.md'"
+description = "Format all files (root markdown + each workspace package via nx)"
+run = """
+bun run format
+bunx nx run-many --target=format
+"""
 
 [tasks.format-check]
-description = "Check markdown formatting with prettier"
-run = "bun run prettier --check '**/*.md'"
+description = "Check formatting (root markdown + each workspace package via nx)"
+run = """
+bun run format-check
+bunx nx run-many --target=format-check
+"""
 
 [tasks.lint]
-description = "Auto-fix lint issues (prettier --write) + shell syntax check"
+description = "Lint all packages via nx, plus shell-script syntax check"
 depends = ["format"]
 run = """
-# Shell script syntax check (skip non-shell files: .ts, .js, .py, .rb, .go)
+bunx nx run-many --target=lint
 for script in bin/*; do
   [ -d "$script" ] && continue
   [ -f "$script" ] || continue
@@ -51,7 +57,7 @@ echo "All lint checks passed."
 description = "Check-only linting (no auto-fix) — for read-only CI gates"
 depends = ["format-check"]
 run = """
-# Shell script syntax check (skip non-shell files: .ts, .js, .py, .rb, .go)
+bunx nx run-many --target=lint
 for script in bin/*; do
   [ -d "$script" ] && continue
   [ -f "$script" ] || continue
@@ -69,11 +75,15 @@ done
 echo "All lint checks passed."
 """
 
+[tasks.build]
+description = "Build all workspace packages via nx"
+run = "bunx nx run-many --target=build"
+
 [tasks.test]
-description = "Run tests"
-run = "bun test"
+description = "Run tests across all workspace packages via nx"
+run = "bunx nx run-many --target=test"
 
 [tasks.check]
-description = "Run all checks (format + lint + test)"
-depends = ["lint", "test"]
+description = "Run all checks (format + lint + build + test)"
+depends = ["lint", "build", "test"]
 run = "echo 'All checks passed'"

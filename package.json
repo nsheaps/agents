@@ -8,11 +8,27 @@
     "url": "https://github.com/nsheaps/agent-team.git"
   },
   "license": "UNLICENSED",
+  "workspaces": [
+    "packages/*",
+    "services/*",
+    "lib/*"
+  ],
+  "scripts": {
+    "format": "prettier --write \"**/*.md\" --ignore-path .prettierignore",
+    "format-check": "prettier --check \"**/*.md\" --ignore-path .prettierignore",
+    "lint": "bun run format",
+    "lint-check": "bun run format-check",
+    "build": "echo 'root: no build target'",
+    "test": "echo 'root: no test target'"
+  },
   "devDependencies": {
     "@release-it/bumper": "^7.0.5",
     "@release-it/conventional-changelog": "^10.0.0",
+    "@types/bun": "^1.1.0",
+    "nx": "^20.0.0",
     "prettier": "^3.0.0",
-    "release-it": "^20.0.0"
+    "release-it": "^20.0.0",
+    "typescript": "^5.4.0"
   },
   "dependencies": {
     "gray-matter": "^4.0.3"
