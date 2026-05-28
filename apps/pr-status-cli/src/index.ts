@@ -481,24 +481,47 @@ async function main() {
     return;
   }
 
-  const query = buildQuery(refs);
-  const data = await ghGraphql(query);
-  if (data.errors) {
-    console.error("GraphQL errors:");
-    console.error(JSON.stringify(data.errors, null, 2));
+  // Query in chunks so a single 502/size-limit failure doesn't abort the
+  // whole digest. Exit 0 if ≥1 chunk succeeded; exit 1 only if ALL failed.
+  const BATCH_SIZE = 25;
+  let anySuccess = false;
+  let failCount = 0;
+
+  for (let start = 0; start < refs.length; start += BATCH_SIZE) {
+    const chunk = refs.slice(start, start + BATCH_SIZE);
+    const query = buildQuery(chunk);
+    let data: any;
+    try {
+      data = await ghGraphql(query);
+    } catch (e) {
+      console.error(`warn: chunk [${start}–${start + chunk.length - 1}] failed: ${e}`);
+      failCount++;
+      continue;
+    }
+    if (data.errors) {
+      console.error(`warn: chunk [${start}–${start + chunk.length - 1}] had GraphQL errors:`);
+      console.error(JSON.stringify(data.errors, null, 2));
+      failCount++;
+      continue;
+    }
+    anySuccess = true;
+    chunk.forEach((ref, i) => {
+      const slot = data.data?.[`pr${i}`];
+      const pr = slot?.pullRequest;
+      if (!pr) {
+        console.log(
+          `⚠️⚠️⚠️ [[${ref.owner}/${ref.repo}#${ref.number}] (not found)](https://github.com/${ref.owner}/${ref.repo}/pull/${ref.number})`,
+        );
+        return;
+      }
+      console.log(formatLine(ref, pr));
+    });
+  }
+
+  if (!anySuccess && failCount > 0) {
     process.exit(1);
   }
-  refs.forEach((ref, i) => {
-    const slot = data.data?.[`pr${i}`];
-    const pr = slot?.pullRequest;
-    if (!pr) {
-      console.log(
-        `⚠️⚠️⚠️ [[${ref.owner}/${ref.repo}#${ref.number}] (not found)](https://github.com/${ref.owner}/${ref.repo}/pull/${ref.number})`,
-      );
-      return;
-    }
-    console.log(formatLine(ref, pr));
-  });
+  // partial failures: exit 0 — warnings already emitted to stderr
 }
 
 main().catch((e) => {
