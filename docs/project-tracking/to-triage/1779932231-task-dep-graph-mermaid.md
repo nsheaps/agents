@@ -15,6 +15,14 @@ When a task-lifecycle hook fires, produce (or regenerate) a markdown file contai
 
 The output file location is TBD at triage — candidates include `.claude/task-graph.md`, `docs/tasks/dep-graph.md`, or an ephemeral rendered artifact.
 
+## Refinement (2026-05-28 01:52Z, Nate Discord [1509373646945255565](https://discord.com/channels/1490863845252665415/1497431286661517353/1509373646945255565))
+
+> "for the task mermaid diagram, I'd also love to add some scope, that I want a second list that's just a list of the tickets in the order that they appear in your console"
+
+In addition to the filtered mermaid graph, the same hook should emit a second flat list — every task in the order they appear in the agent's task console (i.e. the order returned by `TaskList`). This gives the handler a quick scroll-friendly view of what's queued without having to render the graph.
+
+Both outputs should live in the same generated markdown file (or sibling files), updated by the same task-lifecycle hook.
+
 ## Context
 
 - Task docs have frontmatter fields including `status`, `blocks` (list of task IDs this task is blocking), and `blockedBy` (list of task IDs blocking this one).
