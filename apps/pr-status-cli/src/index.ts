@@ -295,16 +295,16 @@ function formatLine(ref: Ref, pr: any): string {
 }
 
 /**
- * Global sort key for digest mode.
+ * Per-repo sort key for digest mode.
  *
- * Sort order (ascending, lower = appears first):
+ * Sort order within each repo (ascending, lower = appears first):
  *   1. stateBucket:  0 open → 1 merged → 2 closed-no-merge
  *   2. mergeRank:    0 CLEAN → 1 UNSTABLE → 2 BEHIND → 3 other (open PRs only)
  *   3. ciRank:       0 ✅/🟢 (pass) → 1 🔵 (running) → 2 🔴 (partial) → 3 🟠 (partial-running) → 4 ❌/⛔️ (fail/blocked)
  *   4. reviewRank:   0 ✅ (codeowner-approved) → 1 🟢 (approved) → 2 🟠 (approved-not-met) → 3 💬 (commented) → 4 🔵 (no reviews) → 5 ❌ (changes-req)
  *   5. -prNumber:    higher PR number first (newer first) within the same bucket
  *
- * PRs are sorted globally across all repos — no per-repo grouping.
+ * Repos are grouped (sorted by slug) then PRs within each repo sorted by this key.
  */
 function digestSortKey(pr: any): [number, number, number, number, number, number] {
   const s = stateEmoji(pr);
@@ -562,7 +562,7 @@ async function main() {
   let anySuccess = false;
   let failCount = 0;
 
-  // In digest mode: collect (sortKey, line) so we can sort globally before
+  // In digest mode: collect (slug, sortKey, line) so we can sort per-repo before
   // emitting.  In ref mode: print immediately (preserve caller-specified order).
   type CollectedLine = { slug: string; sortKey: [number, number, number, number, number, number]; line: string };
   const collected: CollectedLine[] = [];
@@ -608,10 +608,12 @@ async function main() {
     });
   }
 
-  // Digest mode: global sort (open→merged→closed, then mergeability→CI→review→number desc).
-  // No per-repo grouping — PRs from all repos are sorted together.
+  // Digest mode: sort per-repo (open by mergeability/CI/review → merged → closed) then emit.
+  // Repos are grouped alphabetically by slug; within each repo, PRs are sorted by the key.
   if (sortDigest && collected.length > 0) {
     collected.sort((a, b) => {
+      if (a.slug < b.slug) return -1;
+      if (a.slug > b.slug) return 1;
       for (let k = 0; k < a.sortKey.length; k++) {
         if (a.sortKey[k] !== b.sortKey[k]) return a.sortKey[k] - b.sortKey[k];
       }
