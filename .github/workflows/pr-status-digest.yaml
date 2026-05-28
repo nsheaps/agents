@@ -80,6 +80,11 @@ jobs:
           PR_ACTION: ${{ github.event.action }}
         run: |
           set -euo pipefail
+          # patch-event seeds the dir when missing; guard in case it was a no-op
+          if [[ ! -d docs/pr-status ]]; then
+            echo "No digest changes — docs/pr-status/ not created, nothing to commit."
+            exit 0
+          fi
           git add docs/pr-status/
           if git diff --cached --quiet; then
             echo "No digest changes — nothing to commit."

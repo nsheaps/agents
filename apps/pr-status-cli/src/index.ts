@@ -30,7 +30,8 @@
  * up to --limit (default 500), then runs the same batched status query.
  */
 
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
+import { dirname } from "node:path";
 
 type Ref = { owner: string; repo: string; number: number };
 
@@ -451,17 +452,45 @@ function lineMatchesPr(line: string, slug: string, number: number): boolean {
 }
 
 /**
+ * Build the minimal seed content for a digest file that doesn't exist yet.
+ *
+ * The seeded file matches the format the full-regen `digest` job produces so
+ * that the next scheduled full-regen will not notice a structural difference.
+ * The header note says "(seeded by patch-event)" so it's clearly auditable.
+ *
+ * per-repo files use slug = "owner/repo"; all.md uses "REPOS.md scope (combined)".
+ */
+function seedDigestContent(filePath: string, slug: string): string {
+  const ts = new Date().toISOString().replace(/\.\d+Z$/, "Z");
+  const isAll = filePath.endsWith("/all.md") || filePath === "all.md";
+  if (isAll) {
+    return `# PR Status — REPOS.md scope (combined)\n\n_Generated ${ts} · seeded by patch-event (full regen pending)._\n\n`;
+  }
+  return `# PR Status — ${slug}\n\n_Generated ${ts} · seeded by patch-event (full regen pending)._\n\n`;
+}
+
+/**
  * Patch a single per-repo digest file: find the line for this PR number,
  * replace it with the new line. If no line found, append at end of content
  * (before blank trailer lines). Returns true if the file was changed.
+ *
+ * If the digest file does not exist, it is seeded with a minimal header (same
+ * structure the full-regen `digest` job produces) and the new line is inserted.
+ * The parent directory is created if needed.
  */
 function patchDigestFile(filePath: string, ref: Ref, newLine: string): boolean {
+  const slug = `${ref.owner}/${ref.repo}`;
+
   if (!existsSync(filePath)) {
-    console.error(`patch-event: digest file not found: ${filePath} — skipping`);
-    return false;
+    // Seed the file so the patch can proceed and the workflow `git add` succeeds.
+    const dir = dirname(filePath);
+    mkdirSync(dir, { recursive: true });
+    const seeded = seedDigestContent(filePath, slug) + newLine + "\n";
+    writeFileSync(filePath, seeded, "utf8");
+    console.error(`patch-event: seeded missing digest file ${filePath} with line for ${slug}#${ref.number}`);
+    return true;
   }
 
-  const slug = `${ref.owner}/${ref.repo}`;
   const content = readFileSync(filePath, "utf8");
   const lines = content.split("\n");
 
