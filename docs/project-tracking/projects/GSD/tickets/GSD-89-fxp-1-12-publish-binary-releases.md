@@ -35,6 +35,7 @@ Discord ask 2026-05-28 ~06:00Z: Publish pr-status-cli as a bun-compiled binary v
 ## Status
 
 **state=triage** — blocked on homebrew tap A/B decision (unanswered as of 2026-05-28 06:00Z, msg [1509436277441822740](https://discord.com/channels/1490863845252665415/1497431286661517353/1509436277441822740)):
+
 - **A** = existing `homebrew-devsetup` (default)
 - **B** = new `homebrew-tap`
 

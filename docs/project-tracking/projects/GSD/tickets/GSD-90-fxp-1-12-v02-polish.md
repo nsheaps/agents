@@ -36,6 +36,7 @@ events:
 ## Original ask
 
 Follow-on polish items for pr-status-cli deferred from v0.1 merge:
+
 - Per-alias 404 handling + chunking (alex-task [#645](https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/6560d0ff-f5b1-4a9c-b585-d996c6a12250/645.json))
 - Henry's P3 nits from review (alex-task [#654](https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/6560d0ff-f5b1-4a9c-b585-d996c6a12250/654.json))
 
