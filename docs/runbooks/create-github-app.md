@@ -46,42 +46,42 @@ For personal agents under `nsheaps`, ownership = personal. Adjust the URL in ste
 2. Click **New GitHub App** (top right)
 3. Fill in the form:
 
-   | Field                          | Value                                                                                               |
-   | ------------------------------ | --------------------------------------------------------------------------------------------------- |
-   | **GitHub App name**            | `<agent-name>-nsheaps` (e.g. `jack-nsheaps`, `henry-nsheaps`) — becomes the bot user `<name>[bot]`  |
-   | **Description**                | e.g. "Agentic AI assistant — commits and PRs on behalf of Nate Heaps"                               |
-   | **Homepage URL**                | `https://github.com/nsheaps/agents` (any valid URL works; placeholder is fine)                      |
-   | **Callback URL**                | Leave blank unless the agent does OAuth user flows                                                  |
-   | **Setup URL**                   | Leave blank                                                                                         |
-   | **Webhook** → **Active**        | **UNCHECK** this box — agents don't use webhooks (they poll via API). This avoids needing a webhook endpoint. |
-   | **Webhook URL**                 | Blank (only required if Active is checked)                                                         |
-   | **Webhook secret**              | Blank                                                                                               |
+   | Field                    | Value                                                                                                         |
+   | ------------------------ | ------------------------------------------------------------------------------------------------------------- |
+   | **GitHub App name**      | `<agent-name>-nsheaps` (e.g. `jack-nsheaps`, `henry-nsheaps`) — becomes the bot user `<name>[bot]`            |
+   | **Description**          | e.g. "Agentic AI assistant — commits and PRs on behalf of Nate Heaps"                                         |
+   | **Homepage URL**         | `https://github.com/nsheaps/agents` (any valid URL works; placeholder is fine)                                |
+   | **Callback URL**         | Leave blank unless the agent does OAuth user flows                                                            |
+   | **Setup URL**            | Leave blank                                                                                                   |
+   | **Webhook** → **Active** | **UNCHECK** this box — agents don't use webhooks (they poll via API). This avoids needing a webhook endpoint. |
+   | **Webhook URL**          | Blank (only required if Active is checked)                                                                    |
+   | **Webhook secret**       | Blank                                                                                                         |
 
 ### 3. Configure repository permissions
 
 Under **Repository permissions**, set:
 
-| Permission         | Access       | Why                                                    |
-| ------------------ | ------------ | ------------------------------------------------------ |
-| **Contents**       | Read & write | Push commits, create branches                         |
-| **Metadata**       | Read-only    | Required baseline permission                          |
-| **Pull requests**  | Read & write | Create PRs, comment, approve, merge                   |
-| **Issues**         | Read & write | Create and update issues                              |
-| **Actions**        | Read-only    | Check CI status on PRs                                |
-| **Checks**         | Read & write | Post check runs (required for PR status)             |
+| Permission         | Access       | Why                                                                              |
+| ------------------ | ------------ | -------------------------------------------------------------------------------- |
+| **Contents**       | Read & write | Push commits, create branches                                                    |
+| **Metadata**       | Read-only    | Required baseline permission                                                     |
+| **Pull requests**  | Read & write | Create PRs, comment, approve, merge                                              |
+| **Issues**         | Read & write | Create and update issues                                                         |
+| **Actions**        | Read-only    | Check CI status on PRs                                                           |
+| **Checks**         | Read & write | Post check runs (required for PR status)                                         |
 | **Workflows**      | Read & write | Only if the agent will modify `.github/workflows/*.yml` files — enable if needed |
-| **Administration** | No access    | Do NOT grant — keeps agents from changing repo settings |
-| **Secrets**        | No access    | Do NOT grant — keeps agents from reading repo secrets  |
+| **Administration** | No access    | Do NOT grant — keeps agents from changing repo settings                          |
+| **Secrets**        | No access    | Do NOT grant — keeps agents from reading repo secrets                            |
 
 ### 4. Configure organization permissions (if org-owned App)
 
 Under **Organization permissions**, set:
 
-| Permission        | Access       | Why                                             |
-| ----------------- | ------------ | ----------------------------------------------- |
-| **Members**       | Read-only    | Resolve usernames for @mentions in PR bodies    |
-| **Projects**      | Read & write | Only if the agent uses org-level Projects      |
-| **Administration** | No access   | Do NOT grant                                    |
+| Permission         | Access       | Why                                          |
+| ------------------ | ------------ | -------------------------------------------- |
+| **Members**        | Read-only    | Resolve usernames for @mentions in PR bodies |
+| **Projects**       | Read & write | Only if the agent uses org-level Projects    |
+| **Administration** | No access    | Do NOT grant                                 |
 
 ### 5. Account permissions
 
@@ -163,11 +163,11 @@ agent's vault.
 4. Click **Edit**
 5. Add three fields:
 
-   | Field name                 | Type     | Value                                                                                            |
-   | -------------------------- | -------- | ------------------------------------------------------------------------------------------------ |
-   | `GITHUB_APP_ID`            | Text     | The App ID from step 8 (numeric)                                                                 |
-   | `GITHUB_INSTALLATION_ID`   | Text     | The Installation ID from step 10 (numeric)                                                       |
-   | `GITHUB_APP_PRIVATE_KEY`   | Password / Notes | **Full contents of the .pem file**, including `-----BEGIN RSA PRIVATE KEY-----` and end lines |
+   | Field name               | Type             | Value                                                                                         |
+   | ------------------------ | ---------------- | --------------------------------------------------------------------------------------------- |
+   | `GITHUB_APP_ID`          | Text             | The App ID from step 8 (numeric)                                                              |
+   | `GITHUB_INSTALLATION_ID` | Text             | The Installation ID from step 10 (numeric)                                                    |
+   | `GITHUB_APP_PRIVATE_KEY` | Password / Notes | **Full contents of the .pem file**, including `-----BEGIN RSA PRIVATE KEY-----` and end lines |
 
 6. For the private key, use a **multi-line text** (Notes) field or a long Password field depending on the item type. Copy the ENTIRE file contents:
 

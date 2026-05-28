@@ -33,23 +33,23 @@ at the design level; this runbook documents HOW to grant them.
 The agent cannot function without these. Reading, posting, threading,
 and reacting to messages all require at least one of these:
 
-| Permission | Purpose |
-| :--- | :--- |
-| `VIEW_CHANNEL` | See channels the bot is a member of |
-| `VIEW_AUDIT_LOG` | Correlate bot actions with audit entries when debugging |
-| `READ_MESSAGE_HISTORY` | Fetch past messages in a channel (required for context) |
-| `SEND_MESSAGES` | Post messages to text channels |
-| `SEND_MESSAGES_IN_THREADS` | Post into threads the bot has joined |
-| `EMBED_LINKS` | Post rich embeds (structured replies, link previews) |
-| `ATTACH_FILES` | Upload files (screenshots, logs, generated artifacts) |
-| `ADD_REACTIONS` | React to handler messages (acknowledgement, status) |
-| `USE_EXTERNAL_EMOJIS` | Use custom emojis from other servers in replies |
-| `USE_EXTERNAL_STICKERS` | Use stickers from other servers |
-| `MENTION_EVERYONE` | Use `@everyone`/`@here`/role mentions when authorized |
-| `USE_APPLICATION_COMMANDS` | Register and invoke slash commands |
-| `USE_EMBEDDED_ACTIVITIES` | Launch embedded activities (voice/video features) |
-| `CREATE_PUBLIC_THREADS` | Open public work threads for features/issues |
-| `CREATE_PRIVATE_THREADS` | Open private threads for handler-only conversations |
+| Permission                 | Purpose                                                 |
+| :------------------------- | :------------------------------------------------------ |
+| `VIEW_CHANNEL`             | See channels the bot is a member of                     |
+| `VIEW_AUDIT_LOG`           | Correlate bot actions with audit entries when debugging |
+| `READ_MESSAGE_HISTORY`     | Fetch past messages in a channel (required for context) |
+| `SEND_MESSAGES`            | Post messages to text channels                          |
+| `SEND_MESSAGES_IN_THREADS` | Post into threads the bot has joined                    |
+| `EMBED_LINKS`              | Post rich embeds (structured replies, link previews)    |
+| `ATTACH_FILES`             | Upload files (screenshots, logs, generated artifacts)   |
+| `ADD_REACTIONS`            | React to handler messages (acknowledgement, status)     |
+| `USE_EXTERNAL_EMOJIS`      | Use custom emojis from other servers in replies         |
+| `USE_EXTERNAL_STICKERS`    | Use stickers from other servers                         |
+| `MENTION_EVERYONE`         | Use `@everyone`/`@here`/role mentions when authorized   |
+| `USE_APPLICATION_COMMANDS` | Register and invoke slash commands                      |
+| `USE_EMBEDDED_ACTIVITIES`  | Launch embedded activities (voice/video features)       |
+| `CREATE_PUBLIC_THREADS`    | Open public work threads for features/issues            |
+| `CREATE_PRIVATE_THREADS`   | Open private threads for handler-only conversations     |
 
 ### Recommended extras (5) — enable advanced operations
 
@@ -58,13 +58,13 @@ management. Jack's current installation is missing all five, which
 blocks operations like creating the `#mergeathon` channel and managing
 long-running threads.
 
-| Permission | Why the bot needs it |
-| :--- | :--- |
-| `MANAGE_CHANNELS` | Create text/voice channels and categories; modify channel permissions and topics (e.g. opening `#mergeathon` for a multi-agent work session) |
-| `MANAGE_MESSAGES` | Pin messages to channels, delete other users' messages in moderation contexts, cross-post from announcement channels |
-| `MANAGE_ROLES` | Dynamically adjust role permissions for future self-service flows (e.g. granting temporary access to a work channel) |
-| `MANAGE_WEBHOOKS` | Create/list/delete webhooks for outbound integrations (e.g. routing GitHub webhook payloads into a Discord channel) |
-| `MANAGE_THREADS` | Rename, archive, and lock threads owned by other users (the bot can already manage its own threads; this extends management to the full channel) |
+| Permission        | Why the bot needs it                                                                                                                             |
+| :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MANAGE_CHANNELS` | Create text/voice channels and categories; modify channel permissions and topics (e.g. opening `#mergeathon` for a multi-agent work session)     |
+| `MANAGE_MESSAGES` | Pin messages to channels, delete other users' messages in moderation contexts, cross-post from announcement channels                             |
+| `MANAGE_ROLES`    | Dynamically adjust role permissions for future self-service flows (e.g. granting temporary access to a work channel)                             |
+| `MANAGE_WEBHOOKS` | Create/list/delete webhooks for outbound integrations (e.g. routing GitHub webhook payloads into a Discord channel)                              |
+| `MANAGE_THREADS`  | Rename, archive, and lock threads owned by other users (the bot can already manage its own threads; this extends management to the full channel) |
 
 ## Prerequisites
 

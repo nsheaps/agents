@@ -120,13 +120,13 @@ working.
 Without these, the bot cannot perform channel/role/webhook/thread management
 operations. Each missing permission blocks a concrete class of agent work:
 
-| Permission | Blocks | Why the bot needs it |
-| :--- | :--- | :--- |
-| `MANAGE_CHANNELS` | Opening work channels (e.g. `#mergeathon`), modifying channel topics, adjusting channel permissions | Agents need to spin up and tear down work channels as part of multi-agent coordination flows |
-| `MANAGE_MESSAGES` | Pinning handler instructions, cross-posting announcements, moderating stale bot messages | Agents manage their own message lifecycle and surface important content |
-| `MANAGE_ROLES` | Self-service permission grants (temporary access to a work channel) | Future flows where the agent grants another user limited access on request |
-| `MANAGE_WEBHOOKS` | Routing GitHub/external webhooks into Discord channels | Webhook CRUD for integrations is an agent-owned operation, not a handler-owned one |
-| `MANAGE_THREADS` | Renaming, archiving, or locking threads owned by other users | Bots can manage their own threads without this, but cannot manage handler-opened threads (e.g. renaming a forum post after scope change) |
+| Permission        | Blocks                                                                                              | Why the bot needs it                                                                                                                     |
+| :---------------- | :-------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `MANAGE_CHANNELS` | Opening work channels (e.g. `#mergeathon`), modifying channel topics, adjusting channel permissions | Agents need to spin up and tear down work channels as part of multi-agent coordination flows                                             |
+| `MANAGE_MESSAGES` | Pinning handler instructions, cross-posting announcements, moderating stale bot messages            | Agents manage their own message lifecycle and surface important content                                                                  |
+| `MANAGE_ROLES`    | Self-service permission grants (temporary access to a work channel)                                 | Future flows where the agent grants another user limited access on request                                                               |
+| `MANAGE_WEBHOOKS` | Routing GitHub/external webhooks into Discord channels                                              | Webhook CRUD for integrations is an agent-owned operation, not a handler-owned one                                                       |
+| `MANAGE_THREADS`  | Renaming, archiving, or locking threads owned by other users                                        | Bots can manage their own threads without this, but cannot manage handler-opened threads (e.g. renaming a forum post after scope change) |
 
 Status: as of 2026-04-09, Jack's installation is MISSING all five recommended-extra
 permissions. This is a known gap tracked as handler feedback on PR #122.
