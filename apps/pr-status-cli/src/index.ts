@@ -426,8 +426,9 @@ const EMOJI_TIP_RE = /\[([^[\]]+)\]\(#\s*"([^"]+)"\)/g;
 
 function extractEmojiTips(line: string): Array<{ emoji: string; title: string }> {
   const results: Array<{ emoji: string; title: string }> = [];
-  // Strip strikethrough wrapper if present
-  const stripped = line.replace(/^- ~~(.+)~~$/, "$1").replace(/^- /, "").replace(/^~~(.+)~~$/, "$1");
+  // Strip the leading "- " bullet prefix and any "~~...~~" strikethrough wrapper.
+  // Emitted lines are always one of: "- ~~<body>~~" (closed/merged) or "- <body>" (open).
+  const stripped = line.replace(/^- ~~(.+)~~$/, "$1").replace(/^- /, "");
   let m: RegExpExecArray | null;
   EMOJI_TIP_RE.lastIndex = 0;
   while ((m = EMOJI_TIP_RE.exec(stripped)) !== null) {
@@ -485,8 +486,9 @@ function buildPatchedLine(
  * We match on the `[[slug#N]` substring anywhere in the line.
  */
 function lineMatchesPr(line: string, slug: string, number: number): boolean {
-  // Strip strikethrough wrapper then check for [[slug#N] anywhere in line
-  const stripped = line.replace(/^- ~~(.+)~~$/, "$1").replace(/^- /, "").replace(/^~~(.+)~~$/, "$1");
+  // Strip the leading "- " bullet prefix and any "~~...~~" strikethrough wrapper,
+  // then check for [[slug#N] anywhere in line.
+  const stripped = line.replace(/^- ~~(.+)~~$/, "$1").replace(/^- /, "");
   return stripped.includes(`[[${slug}#${number}]`);
 }
 
