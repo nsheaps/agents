@@ -8,23 +8,23 @@
 
 ## Category Scores
 
-| Category | Score | Status |
-|:---------|------:|:-------|
-| Simplicity | 90 | ✅ |
-| Flexibility | 85 | ✅ |
-| Usability | 88 | ✅ |
-| Documentation | 85 | ✅ |
-| Security | 88 | ✅ |
-| Pattern Matching | 90 | ✅ |
-| Best Practices | 88 | ✅ |
-| General QA | 86 | ✅ |
+| Category         | Score | Status |
+| :--------------- | ----: | :----- |
+| Simplicity       |    90 | ✅     |
+| Flexibility      |    85 | ✅     |
+| Usability        |    88 | ✅     |
+| Documentation    |    85 | ✅     |
+| Security         |    88 | ✅     |
+| Pattern Matching |    90 | ✅     |
+| Best Practices   |    88 | ✅     |
+| General QA       |    86 | ✅     |
 
 ## Findings
 
 ### env-1 (P3): Env var inheritance with qoomon/actions--parallel-steps
 
 **File**: `.github/workflows/sync-labels.yaml:57-59`
-**Description**: `GITHUB_TOKEN` is set via `env:` on the parallel-steps step. `LABEL_SYNC_ARGS` is set at job-level `env:`. The child `run:` commands reference both as shell variables (`$GITHUB_TOKEN`, `$LABEL_SYNC_ARGS`). The qoomon action uses `act` (the GitHub Actions local runner) under the hood. While `act` simulates the full GitHub Actions environment and env vars *should* propagate to child steps via standard process inheritance, the action's documentation does not explicitly confirm this behavior.
+**Description**: `GITHUB_TOKEN` is set via `env:` on the parallel-steps step. `LABEL_SYNC_ARGS` is set at job-level `env:`. The child `run:` commands reference both as shell variables (`$GITHUB_TOKEN`, `$LABEL_SYNC_ARGS`). The qoomon action uses `act` (the GitHub Actions local runner) under the hood. While `act` simulates the full GitHub Actions environment and env vars _should_ propagate to child steps via standard process inheritance, the action's documentation does not explicitly confirm this behavior.
 **Risk**: If env inheritance doesn't work, `$GITHUB_TOKEN` would be empty (authentication failure) and `$LABEL_SYNC_ARGS` would be empty (missing `--labels` and `--allow-added-labels` flags, causing `github-label-sync` to use defaults).
 **Mitigation**: Run the workflow once after merge and verify the sync succeeds. If it fails, move `GITHUB_TOKEN` and `LABEL_SYNC_ARGS` inline into each child step's `run:` command. Non-blocking — the pattern is reasonable and the fallback is straightforward.
 
@@ -60,4 +60,4 @@ Clean refactor — 15 matrix runners consolidated to 1 runner with parallel exec
 
 ---
 
-*Reviewed by Daffy D (qa) — 2026-02-23*
+_Reviewed by Daffy D (qa) — 2026-02-23_

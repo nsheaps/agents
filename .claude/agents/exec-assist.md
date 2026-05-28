@@ -35,7 +35,6 @@ base_prompt: _builtin
 framework: claude-code
 model: claude-opus-4-6
 permission_mode: bypassPermissions
-display_name: "Exec A (exec-assist)"
 tools:
   - Read
   - Edit
@@ -171,7 +170,7 @@ After processing all items, provide a structured summary:
 | Item needs research before filing | deep-researcher         |
 | Item affects documentation        | docs-writer             |
 | Item needs priority assessment    | project-manager         |
-| Item reveals a process failure    | ai-agent-eng            |
+| Item reveals a process failure    | ai-eng                  |
 
 When routing to teammates, provide:
 

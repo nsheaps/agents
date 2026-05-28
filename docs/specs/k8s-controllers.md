@@ -7,6 +7,7 @@ related:
   - agent-harness-lifecycle
   - agent-launcher
   - observability
+  - tilt-orchestration
 owner: jack
 created: 2026-04-08
 updated: 2026-04-08
@@ -15,6 +16,7 @@ tags:
   - infrastructure
   - deployment
 ---
+
 # Kubernetes Controllers for Agent Lifecycle
 
 ## Problem Statement

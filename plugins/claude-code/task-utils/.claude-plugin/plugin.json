@@ -1,0 +1,20 @@
+{
+  "name": "task-utils",
+  "version": "0.3.0",
+  "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + task-manage skill for atomic-task workflow. Blocking behaviour is configurable via plugins.settings.yaml.",
+  "author": {
+    "name": "Nathan Heaps",
+    "email": "nsheaps@gmail.com",
+    "url": "https://github.com/nsheaps"
+  },
+  "homepage": "https://github.com/nsheaps/agents/tree/main/plugins/claude-code/task-utils",
+  "repository": "https://github.com/nsheaps/agents",
+  "keywords": [
+    "task-management",
+    "hooks",
+    "claude-code",
+    "agent-discipline",
+    "validation-steps",
+    "in-progress-invariant"
+  ]
+}

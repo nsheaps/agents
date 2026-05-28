@@ -16,6 +16,7 @@
 **Status: FIXED**
 
 **Evidence**: `action-v2.sh` lines 376-380:
+
 ```bash
 # [H3] Validate sync-interval is a positive integer
 if [[ ! "${SYNC_INTERVAL}" =~ ^[1-9][0-9]*$ ]]; then
@@ -33,6 +34,7 @@ Validation runs before any API call or jq usage. The regex `^[1-9][0-9]*$` corre
 **Status: FIXED**
 
 **Evidence**: `action-v2.sh` lines 370-374:
+
 ```bash
 # [H4] Reject unsupported auth-type values
 if [[ "${AUTH_TYPE}" != "none" && "${AUTH_TYPE}" != "http" ]]; then
@@ -42,13 +44,15 @@ fi
 ```
 
 `action-v2.yml` line 50-52:
+
 ```yaml
 auth-type:
-  description: 'Git authentication type: none or http'
-  default: 'http'
+  description: "Git authentication type: none or http"
+  default: "http"
 ```
 
 `action-readme-v2.md` line 74:
+
 ```
 | `auth-type`        | No       | `http`                | Git auth type: `none` or `http`
 ```
@@ -62,6 +66,7 @@ The advertised values (`none`, `http`) are the only accepted values. The `ssh` o
 **Status: STILL PRESENT**
 
 **Evidence**: `action-v2.sh` line 142:
+
 ```bash
 done < <(find "${search_dir}" -maxdepth 2 -type f \( \
 ```
@@ -71,6 +76,7 @@ The depth cap remains hardcoded at `maxdepth 2`. There is no `compose-scan-depth
 **Impact**: A user with a directory structure three or more levels deep (e.g. `infra/apps/web/compose.yml`) will get a silent empty result from the scanner and the action will exit with "No compose files found", with no indication that depth is the cause. This is a usability trap that is still completely invisible to the user.
 
 **What is needed to resolve**:
+
 - Option A: Add a `compose-scan-depth` input with a sensible default and document it.
 - Option B: Document the two-level limit explicitly in the README and in the `compose-dir` input description in `action-v2.yml`.
 
@@ -96,19 +102,19 @@ This unambiguously documents the scope (runner, not container) and the combinati
 
 ```yaml
 repository-url:
-  default: ''          # actual default: https://github.com/${GITHUB_REPOSITORY}.git
+  default: "" # actual default: https://github.com/${GITHUB_REPOSITORY}.git
 
 repository-name:
-  default: ''          # actual default: ${GITHUB_REPOSITORY##*/}
+  default: "" # actual default: ${GITHUB_REPOSITORY##*/}
 
 branch:
-  default: ''          # actual default: ${GITHUB_REF_NAME:-main}
+  default: "" # actual default: ${GITHUB_REF_NAME:-main}
 
 git-token:
-  default: ''          # no computed default; genuinely empty — this one is fine
+  default: "" # no computed default; genuinely empty — this one is fine
 
 sync-name-prefix:
-  default: ''          # actual default: ${GITHUB_REPOSITORY##*/}
+  default: "" # actual default: ${GITHUB_REPOSITORY##*/}
 ```
 
 The README input table does carry human-readable default descriptions ("GitHub repo HTTPS URL", "GitHub repo name", "Triggering branch") which is an improvement over v1. However, the `action.yml` itself still shows `default: ''` for inputs that have real computed defaults, which is the file tooling reads first. IDEs, schema validators, and the GitHub Marketplace all surface the `action.yml` defaults — a reader who never opens the README or the shell script sees no hint that these inputs have meaningful defaults.
@@ -116,11 +122,12 @@ The README input table does carry human-readable default descriptions ("GitHub r
 The `git-token` `default: ''` case is genuinely empty and is fine as-is.
 
 **What is needed to resolve**: Use YAML comments in `action.yml` adjacent to the affected inputs to document the computed default inline, e.g.:
+
 ```yaml
 branch:
-  description: 'Branch to sync from. Defaults to the branch that triggered the workflow.'
+  description: "Branch to sync from. Defaults to the branch that triggered the workflow."
   required: false
-  default: ''   # computed default: $GITHUB_REF_NAME (the triggering branch)
+  default: "" # computed default: $GITHUB_REF_NAME (the triggering branch)
 ```
 
 This is Low severity; it does not break functionality. It is a documentation clarity gap.
@@ -177,16 +184,16 @@ There is no mention that discovery is limited to two directory levels. This is t
 
 ## Score
 
-| Finding | v1 Status | v2 Status | Weight |
-|---------|-----------|-----------|--------|
-| H3: SYNC_INTERVAL unvalidated | Present | FIXED | +12 |
-| H4: SSH auth-type unusable | Present | FIXED | +10 |
-| M8: maxdepth 2 undocumented | Present | STILL PRESENT | 0 |
-| M13: env-vars + compose-dir undocumented | Present | FIXED | +6 |
-| L9: computed defaults show `default: ''` | Present | STILL PRESENT (partial) | -2 (partial credit) |
-| N1: `--argjson` ordering coupling | New | Medium | -4 |
-| N2: compose-dir description missing depth | New | Low | -2 |
-| N3: auto-sync=false + sync-interval silent | New | Low | -2 |
+| Finding                                    | v1 Status | v2 Status               | Weight              |
+| ------------------------------------------ | --------- | ----------------------- | ------------------- |
+| H3: SYNC_INTERVAL unvalidated              | Present   | FIXED                   | +12                 |
+| H4: SSH auth-type unusable                 | Present   | FIXED                   | +10                 |
+| M8: maxdepth 2 undocumented                | Present   | STILL PRESENT           | 0                   |
+| M13: env-vars + compose-dir undocumented   | Present   | FIXED                   | +6                  |
+| L9: computed defaults show `default: ''`   | Present   | STILL PRESENT (partial) | -2 (partial credit) |
+| N1: `--argjson` ordering coupling          | New       | Medium                  | -4                  |
+| N2: compose-dir description missing depth  | New       | Low                     | -2                  |
+| N3: auto-sync=false + sync-interval silent | New       | Low                     | -2                  |
 
 **Previous score**: 62  
 **Adjustments**: +12 (H3 fixed) +10 (H4 fixed) +6 (M13 fixed) -0 (M8 still present) -0 (L9 partial, no improvement) -4 (N1 new) -2 (N2 new) -2 (N3 new)  

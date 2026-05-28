@@ -307,6 +307,11 @@ Define agents in code — not just markdown files, but structured definitions th
 
 ### Proposed Structure
 
+Each agent directory includes a `.claude/` directory following the per-agent `.claude/`
+directory standard (see `agents-cli.md` §Per-Agent `.claude/` Directory Standard). The
+launcher sets `CLAUDE_SETTINGS_DIR` to this directory at launch time, ensuring agent
+isolation on shared machines.
+
 ```
 agents/
 ├── engineer/
@@ -316,7 +321,7 @@ agents/
 │   ├── persona.md           # Public-facing identity
 │   ├── behaviors/           # Agent-specific behaviors (overrides)
 │   └── workspace/
-│       ├── .claude/         # Agent-specific Claude Code config
+│       ├── .claude/         # Agent-specific Claude Code config (per-agent standard)
 │       └── setup.sh         # Workspace initialization script
 ├── researcher/
 │   ├── agent.yaml

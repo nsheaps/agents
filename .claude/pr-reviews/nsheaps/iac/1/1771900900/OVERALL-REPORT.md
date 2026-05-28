@@ -5,16 +5,16 @@
 
 ## Category Scores
 
-| Category | Score | Status |
-|:---------|------:|:-------|
-| Simplicity | 92 | Pass |
-| Flexibility | 88 | Pass |
-| Usability | 91 | Pass |
-| Documentation | 93 | Pass |
-| Security | 72 | Below threshold |
-| Pattern Matching | 88 | Pass |
-| Best Practices | 79 | Below threshold |
-| General QA | 80 | Below threshold |
+| Category         | Score | Status          |
+| :--------------- | ----: | :-------------- |
+| Simplicity       |    92 | Pass            |
+| Flexibility      |    88 | Pass            |
+| Usability        |    91 | Pass            |
+| Documentation    |    93 | Pass            |
+| Security         |    72 | Below threshold |
+| Pattern Matching |    88 | Pass            |
+| Best Practices   |    79 | Below threshold |
+| General QA       |    80 | Below threshold |
 
 > Score capped at 94: categories Security (72), Best Practices (79), and General QA (80) are below 85%.
 
@@ -45,6 +45,7 @@
 **Expected**: Either document clearly that `PULUMI_R2_ENDPOINT` MUST be set before R2 credentials are enabled, or use an empty/unset default that causes an explicit failure rather than constructing a broken URL.
 
 **Recommendation**: Add a guard in `detect_backend()`:
+
 ```bash
 if [[ "${R2_ENDPOINT}" == *"ACCOUNT_ID"* ]]; then
   echo "ERROR: PULUMI_R2_ENDPOINT is not configured. Set it before enabling R2." >&2
@@ -111,6 +112,7 @@ fi
 **Description**: The wrapper's `main()` function calls `exec pulumi ...` without first verifying that the `pulumi` binary is on `PATH`. If `mise install` has not been run, the error will be a generic `command not found: pulumi` with no hint about what to do.
 
 **Expected**: A guard at the top of `main()`:
+
 ```bash
 if ! command -v pulumi &>/dev/null; then
   echo "ERROR: pulumi not found. Run 'mise install' first." >&2

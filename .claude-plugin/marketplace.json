@@ -1,0 +1,123 @@
+{
+  "name": "agents",
+  "owner": {
+    "name": "nsheaps",
+    "url": "https://github.com/nsheaps"
+  },
+  "plugins": [
+    {
+      "name": "agent-utils",
+      "description": "Agent infrastructure: skills for multi-agent orchestration + tools for settings drift detection and 2-stage settings merge + rules-sync (SessionStart symlink of plugin rules into the project) + upstream-check (throttled UserPromptSubmit hook that surfaces upstream agent-repo changes and dirty-state nags).",
+      "version": "0.4.2",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/agent-utils",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "agent-team",
+        "orchestration",
+        "tmux",
+        "multi-agent",
+        "claude-code",
+        "skills",
+        "agent-development",
+        "settings",
+        "config-merge",
+        "hook"
+      ]
+    },
+    {
+      "name": "cron-utils",
+      "description": "Skills for managing scheduled tasks (crons) and idle-conversation follow-up. Provides idle-5-min (cron-tick delegate) and active-convo-goes-idle (single-reminder decision).",
+      "version": "0.1.1",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/cron-utils",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "scheduling",
+        "cron",
+        "idle",
+        "claude-code",
+        "agent-discipline",
+        "self-poll"
+      ]
+    },
+    {
+      "name": "reddit",
+      "description": "Fetch Reddit posts, comments, and subreddit listings via Reddit's public JSON API. Returns markdown-formatted content suitable for LLM consumption. No authentication required.",
+      "version": "0.1.1",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/reddit",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "reddit",
+        "fetcher",
+        "research",
+        "community",
+        "social-media",
+        "api"
+      ]
+    },
+    {
+      "name": "review-utils",
+      "description": "Self-contained PR-review pipeline: composite GitHub Actions (agent-setup, run-agent), reusable workflow integration, and the review-code skill that drives the review methodology. Replaces the previous scattered setup across nsheaps/agents + nsheaps/.ai-agent-henry.",
+      "version": "0.1.3",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/review-utils",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "claude-code",
+        "code-review",
+        "github-actions",
+        "pr-review",
+        "skill",
+        "review-dispatch"
+      ]
+    },
+    {
+      "name": "task-utils",
+      "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + task-manage skill for atomic-task workflow. Blocking behaviour is configurable via plugins.settings.yaml.",
+      "version": "0.3.0",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/task-utils",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "task-management",
+        "hooks",
+        "claude-code",
+        "agent-discipline",
+        "validation-steps",
+        "in-progress-invariant"
+      ]
+    }
+  ]
+}

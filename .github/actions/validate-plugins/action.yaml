@@ -1,0 +1,11 @@
+name: Validate Plugins
+description: Validate plugin structure and marketplace consistency
+
+runs:
+  using: composite
+  steps:
+    - name: mise run validate
+      id: validate
+      shell: bash
+      run: |
+        mise run validate

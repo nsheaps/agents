@@ -1,0 +1,27 @@
+{
+  "name": "@nsheaps/agent-cluster-controller",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Cluster-level controller service for an agent team. Distributed as a container via ghcr.io/nsheaps/agent-cluster-controller.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nsheaps/agent-team.git",
+    "directory": "services/agent-cluster-controller"
+  },
+  "license": "UNLICENSED",
+  "scripts": {
+    "format": "prettier --write . --ignore-path ../../.prettierignore && tsc --noEmit",
+    "lint": "prettier --check . --ignore-path ../../.prettierignore && tsc --noEmit",
+    "build": "tsc -b",
+    "test": "bun test --pass-with-no-tests"
+  }
+}

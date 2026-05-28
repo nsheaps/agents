@@ -15,6 +15,7 @@ tags:
   - marketplace
   - infrastructure
 ---
+
 # Plugin System Design
 
 ## Problem Statement
@@ -39,7 +40,7 @@ harness configuration needs to be codified so new agents can be set up consisten
    - `hooks/` — lifecycle scripts (SessionStart, PreToolUse, PostToolUse, Stop)
    - `agents/` — agent definitions with frontmatter (model, tools, etc.)
    - `mcpServers/` — MCP server configuration
-   Source: `docs/research/ai-mktpl-deep-dive.md`.
+     Source: `docs/research/ai-mktpl-deep-dive.md`.
 
 3. **Secret injection via `plugins.settings.yaml`**: Each agent declares 1Password
    item references (`op://vault/item`) in its `plugins.settings.yaml`. The `1pass`
@@ -78,6 +79,13 @@ harness configuration needs to be codified so new agents can be set up consisten
    in PR comments. A PR opened by Henry (`henry-nsheaps[bot]`) that contained
    `plugin-dev@claude-plugins-official` (substring match on `@claude`) caused a false
    positive trigger. Source: `docs/research/pr390-critical-investigation.md`.
+
+## Plugin Consolidation History
+
+- **`plugin-dev` merged into `plugin-utils`** (2026-05): The original `plugin-dev` plugin
+  (plugin and skill development tooling) was consolidated into `plugin-utils`. There is no
+  longer a separate `plugin-dev` plugin. Any references to `plugin-dev` in older documents
+  should be read as `plugin-utils`. The `skill-utils` plugin remains separate.
 
 ## Open Questions
 

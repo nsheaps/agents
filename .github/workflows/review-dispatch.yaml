@@ -1,0 +1,128 @@
+name: Review Dispatch (reusable)
+
+# Reusable workflow that performs an AI code review on a consumer-repo PR.
+#
+# Architecture (after review-utils plugin migration):
+#   1. Consumer repo PR event triggers consumer's tiny `dispatch-review.yaml`.
+#   2. Consumer template calls this reusable workflow with the four secrets.
+#   3. This workflow checks out nsheaps/agents@main, then invokes the
+#      plugin's `run-agent` composite action which does the actual review
+#      (GitHub App auth, check run, claude-code-action, finalize).
+#
+# Previously this workflow forwarded a `repository_dispatch` event to
+# nsheaps/.ai-agent-henry, and henry's own `repo-dispatch.yaml` ran the
+# review. That cross-repo path is retired; the plugin owns the review.
+
+on:
+  workflow_call:
+    inputs:
+      request-label:
+        description: 'Label name that opts draft PRs into review and is removed after dispatch.'
+        required: false
+        default: 'request-review'
+        type: string
+      dispatch-on-draft:
+        description: 'If true, run review on non-labeled draft PRs too. Default: only non-draft + labeled-draft.'
+        required: false
+        default: false
+        type: boolean
+      plugin-ref:
+        description: 'Git ref of nsheaps/agents to check out for the plugin contents. Default: main.'
+        required: false
+        default: 'main'
+        type: string
+    secrets:
+      REVIEW_GITHUB_APP_ID:
+        required: true
+      REVIEW_GITHUB_APP_PRIVATE_KEY:
+        required: true
+      REVIEW_ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+
+jobs:
+  review:
+    # No job-level if: — inputs context is not available at job scheduling time
+    # for workflow_call. All gating runs inside the job.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    concurrency:
+      group: review-dispatch-${{ github.event.pull_request.number }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Evaluate dispatch condition
+        id: gate
+        run: |
+          draft="${{ github.event.pull_request.draft }}"
+          action="${{ github.event.action }}"
+          label="${{ github.event.label.name }}"
+          dispatch_on_draft="${{ inputs.dispatch-on-draft }}"
+          request_label="${{ inputs.request-label }}"
+
+          if [[ "$draft" != "true" ]] || \
+             [[ "$dispatch_on_draft" == "true" ]] || \
+             ( [[ "$action" == "labeled" ]] && [[ "$label" == "$request_label" ]] ); then
+            echo "should_dispatch=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "should_dispatch=false" >> "$GITHUB_OUTPUT"
+            echo "Skipping: draft PR not labeled with '$request_label' and dispatch-on-draft=false"
+          fi
+
+      - name: Generate review bot token
+        id: auth
+        if: steps.gate.outputs.should_dispatch == 'true'
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ github.repository_owner }}
+
+      - name: Remove request-review label
+        if: steps.gate.outputs.should_dispatch == 'true' && github.event.action == 'labeled' && github.event.label.name == inputs.request-label
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+        run: |
+          gh pr edit ${{ github.event.pull_request.number }} \
+            --remove-label "${{ inputs.request-label }}" \
+            --repo "${{ github.repository }}"
+
+      - name: Checkout nsheaps/agents (for the plugin)
+        if: steps.gate.outputs.should_dispatch == 'true'
+        uses: actions/checkout@v6
+        with:
+          repository: nsheaps/agents
+          ref: ${{ inputs.plugin-ref }}
+          path: .
+
+      - name: Run review agent
+        if: steps.gate.outputs.should_dispatch == 'true'
+        uses: ./plugins/claude-code/review-utils/actions/run-agent
+        with:
+          trigger: |
+            {
+              "referer": "${{ github.repository }}/${{ github.workflow_ref }}",
+              "source": {
+                "repo": "${{ github.repository }}",
+                "pr_number": ${{ github.event.pull_request.number }},
+                "head_sha": "${{ github.event.pull_request.head.sha }}",
+                "head_ref": "${{ github.event.pull_request.head.ref }}",
+                "base_ref": "${{ github.event.pull_request.base.ref }}"
+              },
+              "trigger": {
+                "event": "pull_request",
+                "action": "${{ github.event.action }}",
+                "label": ${{ toJson(github.event.label.name || '') }}
+              }
+            }
+          trigger-repo: ${{ github.repository }}
+          trigger-ref: ${{ github.event.pull_request.head.sha }}
+          event-name: pull_request/${{ github.event.action }}
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          anthropic-api-key: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
+          claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

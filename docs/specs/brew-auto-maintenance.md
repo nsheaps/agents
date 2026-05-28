@@ -97,17 +97,17 @@ Plist location: `~/Library/LaunchAgents/com.nsheaps.brew-auto-maintenance.plist`
 
 **State machine and error behaviors**:
 
-| Situation | Behavior |
-|-----------|----------|
-| `install` called when plist already exists | Overwrite plist and re-bootstrap; print "Reinstalling service" |
-| `install` called when binary path in plist no longer exists | Error: "Binary not found at {path}. Re-install brew-auto-maintenance first." |
-| `uninstall` called when service is currently running | Run `stop` first, then `bootout`, then remove plist |
-| `uninstall` called when service is not installed | Exit 0 with "Service not installed — nothing to do" |
-| `start` called when service is not installed | Exit 1 with "Service not installed. Run `service install` first." |
-| `stop` called when service is not running | Exit 0 with "Service not running — nothing to do" |
-| `launchctl bootstrap` fails | Print stderr from launchctl, exit 1 with "Failed to load service" |
-| Plist file has wrong permissions (not 644) | Correct to 644 before bootstrapping |
-| `brew` not found in PATH | All subcommands that invoke brew exit 1 with "brew not found in PATH. Is Homebrew installed?" Note: launchd PATH differs from interactive shell PATH — the plist may need an explicit `EnvironmentVariables` key for PATH if `brew` is not at a standard location (`/usr/local/bin/brew` or `/opt/homebrew/bin/brew`). |
+| Situation                                                   | Behavior                                                                                                                                                                                                                                                                                                               |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `install` called when plist already exists                  | Overwrite plist and re-bootstrap; print "Reinstalling service"                                                                                                                                                                                                                                                         |
+| `install` called when binary path in plist no longer exists | Error: "Binary not found at {path}. Re-install brew-auto-maintenance first."                                                                                                                                                                                                                                           |
+| `uninstall` called when service is currently running        | Run `stop` first, then `bootout`, then remove plist                                                                                                                                                                                                                                                                    |
+| `uninstall` called when service is not installed            | Exit 0 with "Service not installed — nothing to do"                                                                                                                                                                                                                                                                    |
+| `start` called when service is not installed                | Exit 1 with "Service not installed. Run `service install` first."                                                                                                                                                                                                                                                      |
+| `stop` called when service is not running                   | Exit 0 with "Service not running — nothing to do"                                                                                                                                                                                                                                                                      |
+| `launchctl bootstrap` fails                                 | Print stderr from launchctl, exit 1 with "Failed to load service"                                                                                                                                                                                                                                                      |
+| Plist file has wrong permissions (not 644)                  | Correct to 644 before bootstrapping                                                                                                                                                                                                                                                                                    |
+| `brew` not found in PATH                                    | All subcommands that invoke brew exit 1 with "brew not found in PATH. Is Homebrew installed?" Note: launchd PATH differs from interactive shell PATH — the plist may need an explicit `EnvironmentVariables` key for PATH if `brew` is not at a standard location (`/usr/local/bin/brew` or `/opt/homebrew/bin/brew`). |
 
 ### 3.5 `config`
 
@@ -118,6 +118,7 @@ brew-auto-maintenance config reset    # Write default config (prompts if exists)
 ```
 
 **Editor resolution for `config edit`** (in priority order):
+
 1. `$VISUAL` environment variable
 2. `$EDITOR` environment variable
 3. `open -t {path}` (macOS TextEdit as safe fallback)
@@ -172,7 +173,7 @@ taps:
     formulae:
       - "uufft"
   - tap: "homebrew/cask-fonts"
-    formulae: []  # upgrade all from this tap
+    formulae: [] # upgrade all from this tap
 ```
 
 ### 4.3 Go Struct
@@ -204,19 +205,20 @@ type TapConfig struct {
 
 ### 5.1 Dependencies
 
-| Package | Purpose | Notes |
-|---------|---------|-------|
-| `fyne.io/systray` | Menu bar icon + menu | Requires CGO; actively maintained (Feb 2026) |
-| `gopkg.in/yaml.v3` | Config parsing | Sufficient for MVP; upgrade to koanf if config grows |
-| `os/exec` | Shell out to `brew` + `launchctl` | stdlib; always use `context.WithTimeout` |
-| `text/template` | plist generation | stdlib; no launchd Go wrapper exists |
-| `github.com/spf13/cobra` | CLI subcommand parsing | **Required** — nested subcommands (`service install`, `config show`) and multiple per-command flags make hand-rolled parsing error-prone |
+| Package                  | Purpose                           | Notes                                                                                                                                    |
+| ------------------------ | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| `fyne.io/systray`        | Menu bar icon + menu              | Requires CGO; actively maintained (Feb 2026)                                                                                             |
+| `gopkg.in/yaml.v3`       | Config parsing                    | Sufficient for MVP; upgrade to koanf if config grows                                                                                     |
+| `os/exec`                | Shell out to `brew` + `launchctl` | stdlib; always use `context.WithTimeout`                                                                                                 |
+| `text/template`          | plist generation                  | stdlib; no launchd Go wrapper exists                                                                                                     |
+| `github.com/spf13/cobra` | CLI subcommand parsing            | **Required** — nested subcommands (`service install`, `config show`) and multiple per-command flags make hand-rolled parsing error-prone |
 
 See [research §1–§4](../../research/brew-auto-maintenance.md) for library evaluation rationale.
 
 ### 5.2 launchd Integration
 
 **Log paths**: `{{.LogPath}}` and `{{.ErrLogPath}}` resolve to:
+
 - stdout: `~/Library/Logs/brew-auto-maintenance/brew-auto-maintenance.log`
 - stderr: `~/Library/Logs/brew-auto-maintenance/brew-auto-maintenance.error.log`
 
@@ -343,6 +345,7 @@ brews:
 ```
 
 **CGO cross-compilation constraint**: `CGO_ENABLED=1` with cross-compilation (building `amd64` on an `arm64` machine or vice versa) requires an explicit cross-compiler toolchain. CI must either:
+
 - Use a macOS runner per architecture (one `macos-13` for amd64, one `macos-14`/`macos-15` for arm64), OR
 - Use a cross-compiler (e.g., `o64-clang`) via a Docker image — complex and brittle on macOS
 
@@ -357,6 +360,7 @@ Note: Phase 1 (`CGO_ENABLED=0`) can cross-compile freely. The runner-per-arch re
 ### Phase 1: CLI Foundation (MVP)
 
 **Deliverables**:
+
 - `brew-auto-maintenance check` — show outdated formulae/casks
 - `brew-auto-maintenance upgrade` — run update + upgrade with tap/formula filtering
 - `brew-auto-maintenance config show/edit/reset`
@@ -368,6 +372,7 @@ Note: Phase 1 (`CGO_ENABLED=0`) can cross-compile freely. The runner-per-arch re
 ### Phase 2: launchd Service
 
 **Deliverables**:
+
 - `brew-auto-maintenance service install/uninstall/start/stop/status/restart`
 - Embedded plist template
 - Periodic `check` + conditional `upgrade` via `StartInterval`
@@ -378,6 +383,7 @@ Note: Phase 1 (`CGO_ENABLED=0`) can cross-compile freely. The runner-per-arch re
 ### Phase 3: Menu Bar
 
 **Deliverables**:
+
 - `brew-auto-maintenance tray` — starts menu bar app
 - `.app` bundle structure (for distribution)
 - Template icon (22×22, dark/light mode)
@@ -398,13 +404,14 @@ Note: Phase 1 (`CGO_ENABLED=0`) can cross-compile freely. The runner-per-arch re
 
 ## 7. Open Questions
 
-| # | Question | Impact |
-|---|----------|--------|
-| 1 | `brew outdated --json=v2` exact schema for tap-specific formulae | Needed for Phase 1 |
-| 2 | Notification approach: `osascript` vs CGO `UserNotifications` | Phase 3/4 |
-| 3 | Code signing automation: `mitchellh/gon` or GoReleaser built-in? | Phase 4 |
+| #   | Question                                                         | Impact             |
+| --- | ---------------------------------------------------------------- | ------------------ |
+| 1   | `brew outdated --json=v2` exact schema for tap-specific formulae | Needed for Phase 1 |
+| 2   | Notification approach: `osascript` vs CGO `UserNotifications`    | Phase 3/4          |
+| 3   | Code signing automation: `mitchellh/gon` or GoReleaser built-in? | Phase 4            |
 
 **Resolved**:
+
 - ~~Use `cobra` for subcommands?~~ → **cobra required** (see §5.1)
 - ~~`installSchedule` cron parsing: `robfig/cron` or stdlib?~~ → **Use `robfig/cron` v3** for cron format; disambiguation rule (duration-first, then cron) specified in §4.2
 

@@ -1,0 +1,42 @@
+# Runs an AI code review against this repo's PRs via the review-utils plugin
+# in nsheaps/agents.
+#
+# This file is a template — copy into your repo at
+# `.github/workflows/dispatch-review.yaml`. Synced via nsheaps/.github when
+# that is in place; until then, copy-paste.
+#
+# Requirements (provisioned via nsheaps/.github/secret-sync.yaml):
+#   - REVIEW_GITHUB_APP_ID
+#   - REVIEW_GITHUB_APP_PRIVATE_KEY  (App installed on this repo for label
+#                                     editing + check run + review comment)
+#   - REVIEW_ANTHROPIC_API_KEY       (optional — Anthropic API key)
+#   - CLAUDE_CODE_OAUTH_TOKEN        (optional — Claude OAuth, alternative to API key)
+# Exactly ONE of REVIEW_ANTHROPIC_API_KEY or CLAUDE_CODE_OAUTH_TOKEN must be set.
+
+name: Dispatch PR Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, labeled]
+
+jobs:
+  review:
+    # Explicit permissions needed: default_workflow_permissions is "read" in many repos,
+    # but the called workflow requests pull-requests: write + checks: write. Without
+    # this block, GitHub refuses to create the job (startup_failure).
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    uses: nsheaps/agents/.github/workflows/review-dispatch.yaml@main
+    # secrets: inherit does not pass required secrets cross-repo (GitHub limitation).
+    # Explicitly pass required secrets.
+    secrets:
+      REVIEW_GITHUB_APP_ID: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+      REVIEW_GITHUB_APP_PRIVATE_KEY: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+      REVIEW_ANTHROPIC_API_KEY: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+    # Optional overrides (uncomment to use):
+    # with:
+    #   request-label: request-review
+    #   plugin-ref: main

@@ -18,15 +18,15 @@ What is cchistory, how does it work, what are its flags, what does the specific 
 
 ### Identity
 
-| Field | Value |
-|-------|-------|
-| Package | `@mariozechner/cchistory` |
-| Version | 1.1.11 (installed) |
-| Author | Mario Zechner (badlogic) |
-| Repository | [github.com/badlogic/cchistory](https://github.com/badlogic/cchistory) |
-| Web UI | [cchistory.mariozechner.at](https://cchistory.mariozechner.at/) (updates every 30 min) |
-| Blog | [cchistory: Tracking Claude Code System Prompt and Tool Changes](https://mariozechner.at/posts/2025-08-03-cchistory/) |
-| Companion tool | `@mariozechner/claude-trace` — API request interception |
+| Field          | Value                                                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Package        | `@mariozechner/cchistory`                                                                                             |
+| Version        | 1.1.11 (installed)                                                                                                    |
+| Author         | Mario Zechner (badlogic)                                                                                              |
+| Repository     | [github.com/badlogic/cchistory](https://github.com/badlogic/cchistory)                                                |
+| Web UI         | [cchistory.mariozechner.at](https://cchistory.mariozechner.at/) (updates every 30 min)                                |
+| Blog           | [cchistory: Tracking Claude Code System Prompt and Tool Changes](https://mariozechner.at/posts/2025-08-03-cchistory/) |
+| Companion tool | `@mariozechner/claude-trace` — API request interception                                                               |
 
 **Note**: The npm package `cchistory` (v0.2.1 by stephaneckardt) is a **different, unrelated package**. The correct package is `@mariozechner/cchistory`.
 
@@ -69,17 +69,20 @@ From `dist/core/request-filter.js`:
 
 ```javascript
 function selectBestRequest(pairs) {
-    const nonHaikuPairs = filterNonHaikuRequests(pairs);
-    const requestsWithToolsAndSystemPrompt = filterRequestsWithTools(nonHaikuPairs)
-        .filter((pair) => pair.request.body.system);
-    if (requestsWithToolsAndSystemPrompt.length > 0) {
-        const sorted = requestsWithToolsAndSystemPrompt.sort(
-            (a, b) => (b.request.body.tools?.length || 0) - (a.request.body.tools?.length || 0)
-        );
-        return sorted[0];
-    }
-    if (nonHaikuPairs.length > 0) { return nonHaikuPairs[0]; }
-    throw new Error("No non-Haiku request found in the log");
+  const nonHaikuPairs = filterNonHaikuRequests(pairs);
+  const requestsWithToolsAndSystemPrompt = filterRequestsWithTools(nonHaikuPairs).filter(
+    (pair) => pair.request.body.system,
+  );
+  if (requestsWithToolsAndSystemPrompt.length > 0) {
+    const sorted = requestsWithToolsAndSystemPrompt.sort(
+      (a, b) => (b.request.body.tools?.length || 0) - (a.request.body.tools?.length || 0),
+    );
+    return sorted[0];
+  }
+  if (nonHaikuPairs.length > 0) {
+    return nonHaikuPairs[0];
+  }
+  throw new Error("No non-Haiku request found in the log");
 }
 ```
 
@@ -96,20 +99,20 @@ This means cchistory picks the request with the **most tools** that also has a *
 
 From `--help` output and source code:
 
-| Flag/Arg | Type | Description |
-|----------|------|-------------|
-| `version` | Positional | Claude Code npm version to extract (e.g., `2.1.50`) |
-| `--latest` | Boolean | Extract all versions from specified version through latest release |
-| `--binary-path <path>` | String | Use a custom/local Claude Code binary instead of downloading |
+| Flag/Arg                 | Type            | Description                                                             |
+| ------------------------ | --------------- | ----------------------------------------------------------------------- |
+| `version`                | Positional      | Claude Code npm version to extract (e.g., `2.1.50`)                     |
+| `--latest`               | Boolean         | Extract all versions from specified version through latest release      |
+| `--binary-path <path>`   | String          | Use a custom/local Claude Code binary instead of downloading            |
 | `--claude-args "<args>"` | String (quoted) | Pass additional arguments to the Claude Code instance during extraction |
-| `--version`, `-v` | Boolean | Show cchistory version |
-| `--help`, `-h` | Boolean | Show usage documentation |
+| `--version`, `-v`        | Boolean         | Show cchistory version                                                  |
+| `--help`, `-h`           | Boolean         | Show usage documentation                                                |
 
 ### Environment Variables
 
-| Variable | Effect |
-|----------|--------|
-| `DEBUG=1` | Enable detailed output showing intercepted API requests and traces |
+| Variable                                | Effect                                                                              |
+| --------------------------------------- | ----------------------------------------------------------------------------------- |
+| `DEBUG=1`                               | Enable detailed output showing intercepted API requests and traces                  |
 | Any env var prefixed before the command | Passed to the Claude Code instance (e.g., `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`) |
 
 ### Usage Examples
@@ -151,13 +154,13 @@ CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 cchistory 2.1.50 --claude-args '--dangero
 
 ### Component-by-Component Breakdown
 
-| Component | What It Does |
-|-----------|-------------|
+| Component                                | What It Does                                                                                                                                                                                                                     |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1` | Environment variable passed to the Claude Code instance. Enables the experimental agent teams feature flag, which adds agent-team-related instructions to the system prompt (TeamCreate, SendMessage, teammate management, etc.) |
-| `cchistory` | The extraction tool |
-| `2.1.50` | Target Claude Code version to download from npm and extract |
-| `--claude-args` | cchistory flag to pass arguments through to the Claude Code instance |
-| `'--dangerously-skip-permissions'` | Claude Code flag that disables all permission prompts. Required because cchistory runs non-interactively — without this, the test haiku would stall waiting for permission approval |
+| `cchistory`                              | The extraction tool                                                                                                                                                                                                              |
+| `2.1.50`                                 | Target Claude Code version to download from npm and extract                                                                                                                                                                      |
+| `--claude-args`                          | cchistory flag to pass arguments through to the Claude Code instance                                                                                                                                                             |
+| `'--dangerously-skip-permissions'`       | Claude Code flag that disables all permission prompts. Required because cchistory runs non-interactively — without this, the test haiku would stall waiting for permission approval                                              |
 
 ### What Actually Happens
 
@@ -198,6 +201,7 @@ The resulting `prompts-2.1.50.md` will contain the **full system prompt includin
 ### How Teammate Prompts Work
 
 When Claude Code spawns a teammate (via the Task tool with `team_name`), the teammate is a **separate Claude Code process** with its own:
+
 - System prompt (constructed dynamically based on agent type, spawn prompt, and project context)
 - Context window
 - API connection
@@ -223,6 +227,7 @@ When Claude Code spawns a teammate (via the Task tool with `team_name`), the tea
 ### What cchistory DOES Capture When Agent Teams Are Enabled
 
 With `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1`, cchistory captures the **lead session's system prompt**, which includes:
+
 - All standard Claude Code instructions
 - Agent team coordination instructions (how to spawn teammates, use SendMessage, manage tasks)
 - TeamCreate, SendMessage, TaskCreate/Update/List/Get tool definitions
@@ -232,12 +237,12 @@ This reveals the **framework** for agent teams but not individual teammate promp
 
 ### Workarounds for Teammate Prompt Inspection
 
-| Approach | Method | Confidence |
-|----------|--------|------------|
-| **claude-trace directly** | Run claude-trace on a live team session, filter for teammate process API calls | Medium — requires identifying teammate PIDs |
-| **Self-reporting** | Ask a teammate to output its own system prompt via a task | Medium-High — teammates can read their own system context |
-| **File inspection** | Read `.claude/agents/<type>.md` + project CLAUDE.md + team config to reconstruct what the prompt would be | High — all inputs are files on disk |
-| **Modified cchistory** | Fork cchistory to trace child processes, or run cchistory within a teammate context | Low — significant engineering effort |
+| Approach                  | Method                                                                                                    | Confidence                                                |
+| ------------------------- | --------------------------------------------------------------------------------------------------------- | --------------------------------------------------------- |
+| **claude-trace directly** | Run claude-trace on a live team session, filter for teammate process API calls                            | Medium — requires identifying teammate PIDs               |
+| **Self-reporting**        | Ask a teammate to output its own system prompt via a task                                                 | Medium-High — teammates can read their own system context |
+| **File inspection**       | Read `.claude/agents/<type>.md` + project CLAUDE.md + team config to reconstruct what the prompt would be | High — all inputs are files on disk                       |
+| **Modified cchistory**    | Fork cchistory to trace child processes, or run cchistory within a teammate context                       | Low — significant engineering effort                      |
 
 **Recommendation**: The most practical approach is file inspection — read the agent definition, CLAUDE.md, team rules, and team config, which together comprise the inputs to teammate prompt construction. The framework assembles these deterministically.
 
@@ -245,15 +250,15 @@ This reveals the **framework** for agent teams but not individual teammate promp
 
 ## Confidence Levels
 
-| Finding | Confidence |
-|---------|------------|
-| cchistory extracts system prompts via claude-trace interception | **High** — verified from source code |
-| Request selection prefers non-Haiku with most tools | **High** — read `selectBestRequest()` directly |
-| MCP tools are filtered out of output | **High** — `filterAndSortTools()` excludes `mcp__` prefix |
-| Agent teams env var adds team instructions to system prompt | **High** — documented Claude Code behavior |
-| cchistory cannot capture teammate prompts | **High** — architectural limitation (separate processes, single test request, request filter logic) |
-| `--dangerously-skip-permissions` is required for non-interactive use | **Medium-High** — inferred from non-interactive execution model |
-| File inspection is the most practical alternative for teammate prompts | **Medium** — reasonable inference, not empirically tested |
+| Finding                                                                | Confidence                                                                                          |
+| ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------- |
+| cchistory extracts system prompts via claude-trace interception        | **High** — verified from source code                                                                |
+| Request selection prefers non-Haiku with most tools                    | **High** — read `selectBestRequest()` directly                                                      |
+| MCP tools are filtered out of output                                   | **High** — `filterAndSortTools()` excludes `mcp__` prefix                                           |
+| Agent teams env var adds team instructions to system prompt            | **High** — documented Claude Code behavior                                                          |
+| cchistory cannot capture teammate prompts                              | **High** — architectural limitation (separate processes, single test request, request filter logic) |
+| `--dangerously-skip-permissions` is required for non-interactive use   | **Medium-High** — inferred from non-interactive execution model                                     |
+| File inspection is the most practical alternative for teammate prompts | **Medium** — reasonable inference, not empirically tested                                           |
 
 ---
 

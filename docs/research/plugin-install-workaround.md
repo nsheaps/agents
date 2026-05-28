@@ -27,6 +27,7 @@ claude plugin list --json                                                  # out
 ```
 
 The `--help` output for `claude plugin install` shows only two options:
+
 - `-h, --help` — Display help
 - `-s, --scope <scope>` — Installation scope: user, project, or local (default: "user")
 
@@ -53,6 +54,7 @@ There is no `--yes`, `--non-interactive`, `--no-confirm`, or similar flag becaus
 ### `enabledPlugins` in `~/.claude/settings.json`
 
 Format:
+
 ```json
 {
   "enabledPlugins": {
@@ -67,6 +69,7 @@ Claude Code reads this on session start. Setting a value to `true` enables the p
 ### `extraKnownMarketplaces` in `~/.claude/settings.json`
 
 Format:
+
 ```json
 {
   "extraKnownMarketplaces": {
@@ -85,6 +88,7 @@ Supported source types: `github`, `git`, `url`, `npm`, `file`, `directory`, `hos
 ### `~/.claude/plugins/installed_plugins.json`
 
 This file tracks physical plugin installations with this structure:
+
 ```json
 {
   "version": 2,
@@ -129,14 +133,14 @@ For project-scoped plugins, entries also include `"projectPath"`.
 
 ### Relevant Issues
 
-| Issue | Title | Status | Notes |
-|-------|-------|--------|-------|
-| [#19522](https://github.com/anthropics/claude-code/issues/19522) | Non-interactive plugin installation | Open | Requests `claude --not-interactive /plugin install`. No Anthropic response. |
-| [#12840](https://github.com/anthropics/claude-code/issues/12840) | Headless/programmatic plugin installation | Closed (NOT_PLANNED) | Requests `claude -p "/plugin install"`. Closed after 60 days of inactivity. |
-| [#13505](https://github.com/anthropics/claude-code/issues/13505) | Declarative plugin management for Nix/NixOS | Closed (by author) | Proposes `claude plugin install --no-interactive` and `claude plugin sync`. |
-| [#12999](https://github.com/anthropics/claude-code/issues/12999) | CLI subcommands for programmatic plugin management | Closed (duplicate of #11676) | Proposes `claude plugin install`, `update`, `remove` CLI subcommands. |
-| [#27247](https://github.com/anthropics/claude-code/issues/27247) | enabledPlugins in settings.local.json silently ignored | Open | Critical bug for our use case. |
-| [#20661](https://github.com/anthropics/claude-code/issues/20661) | Installed but not added to enabledPlugins | Closed (dup of #17832) | Install doesn't auto-enable. |
+| Issue                                                            | Title                                                  | Status                       | Notes                                                                       |
+| ---------------------------------------------------------------- | ------------------------------------------------------ | ---------------------------- | --------------------------------------------------------------------------- |
+| [#19522](https://github.com/anthropics/claude-code/issues/19522) | Non-interactive plugin installation                    | Open                         | Requests `claude --not-interactive /plugin install`. No Anthropic response. |
+| [#12840](https://github.com/anthropics/claude-code/issues/12840) | Headless/programmatic plugin installation              | Closed (NOT_PLANNED)         | Requests `claude -p "/plugin install"`. Closed after 60 days of inactivity. |
+| [#13505](https://github.com/anthropics/claude-code/issues/13505) | Declarative plugin management for Nix/NixOS            | Closed (by author)           | Proposes `claude plugin install --no-interactive` and `claude plugin sync`. |
+| [#12999](https://github.com/anthropics/claude-code/issues/12999) | CLI subcommands for programmatic plugin management     | Closed (duplicate of #11676) | Proposes `claude plugin install`, `update`, `remove` CLI subcommands.       |
+| [#27247](https://github.com/anthropics/claude-code/issues/27247) | enabledPlugins in settings.local.json silently ignored | Open                         | Critical bug for our use case.                                              |
+| [#20661](https://github.com/anthropics/claude-code/issues/20661) | Installed but not added to enabledPlugins              | Closed (dup of #17832)       | Install doesn't auto-enable.                                                |
 
 **Key observation**: Issue #12999 proposed `claude plugin install` as a CLI subcommand — and this was implemented. The current `claude plugin` CLI subcommand tree includes `install`, `uninstall`, `enable`, `disable`, `list`, `update`, and `marketplace` subcommands that all work non-interactively. Many of the feature requests may have been filed before these CLI subcommands existed, or may not be aware they exist.
 
@@ -174,6 +178,7 @@ claude --plugin-dir ./plugin-one --plugin-dir ./plugin-two
 ### For a Local Marketplace Directory
 
 You can set up a directory-based marketplace source in `extraKnownMarketplaces`:
+
 ```json
 {
   "extraKnownMarketplaces": {
@@ -230,16 +235,17 @@ This DOES persist across sessions (unlike `--plugin-dir`).
 
 ### Key Files
 
-| File | Purpose | Editable? |
-|------|---------|-----------|
-| `installed_plugins.json` | Tracks all installed plugins, versions, scopes, paths | Yes (JSON, version 2 format) |
-| `known_marketplaces.json` | Maps marketplace names to sources and local paths | Yes (JSON) |
-| `blocklist.json` | Plugins blocked for security reasons | Yes (JSON) |
-| `cache/` | Actual plugin files (copied from marketplace) | Could be manually populated |
+| File                      | Purpose                                               | Editable?                    |
+| ------------------------- | ----------------------------------------------------- | ---------------------------- |
+| `installed_plugins.json`  | Tracks all installed plugins, versions, scopes, paths | Yes (JSON, version 2 format) |
+| `known_marketplaces.json` | Maps marketplace names to sources and local paths     | Yes (JSON)                   |
+| `blocklist.json`          | Plugins blocked for security reasons                  | Yes (JSON)                   |
+| `cache/`                  | Actual plugin files (copied from marketplace)         | Could be manually populated  |
 
 ### Manual Population
 
 Theoretically possible by:
+
 1. Copying plugin files into `cache/<marketplace>/<plugin>/<version>/`
 2. Adding an entry to `installed_plugins.json`
 3. Adding `"plugin@marketplace": true` to `enabledPlugins` in `settings.json`
@@ -271,6 +277,7 @@ Per [Issue #27247](https://github.com/anthropics/claude-code/issues/27247) (open
 ### Settings Precedence (documented)
 
 From highest to lowest:
+
 1. Managed (`managed-settings.json`)
 2. Command line arguments
 3. Local (`.claude/settings.local.json`)
@@ -335,11 +342,13 @@ For fully declarative setup without CLI (e.g., Nix, dotfiles):
 ## Sources (Complete)
 
 ### Official Documentation
+
 - [Plugins (Create)](https://code.claude.com/docs/en/plugins) — Plugin structure, --plugin-dir
 - [Discover and Install Plugins](https://code.claude.com/docs/en/discover-plugins) — Installation, marketplaces, team config
 - [Settings](https://code.claude.com/docs/en/settings) — enabledPlugins, extraKnownMarketplaces, settings precedence
 
 ### GitHub Issues
+
 - [#19522](https://github.com/anthropics/claude-code/issues/19522) — Non-interactive plugin installation (Open)
 - [#12840](https://github.com/anthropics/claude-code/issues/12840) — Headless/programmatic plugin installation (Closed, NOT_PLANNED)
 - [#13505](https://github.com/anthropics/claude-code/issues/13505) — Declarative plugin management for Nix (Closed by author)
@@ -349,5 +358,6 @@ For fully declarative setup without CLI (e.g., Nix, dotfiles):
 - [#17832](https://github.com/anthropics/claude-code/issues/17832) — Directory marketplace plugins not auto-enabled
 
 ### Local Verification
+
 - All CLI commands tested locally on 2026-02-23
 - File structures inspected at `~/.claude/plugins/` and `~/.claude/settings.json`
