@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.10](https://github.com/nsheaps/agents/compare/v0.1.9...v0.1.10) (2026-05-28)
+
+### Maintenance
+
+* **GSD-101:** disable pr-status-digest until cross-repo rework ([#205](https://github.com/nsheaps/agents/issues/205)) ([28ed78d](https://github.com/nsheaps/agents/commit/28ed78da652acf3468301210ef49c48b31564389))
+
 ## [0.1.9](https://github.com/nsheaps/agents/compare/v0.1.8...v0.1.9) (2026-05-28)
 
 ### Maintenance
