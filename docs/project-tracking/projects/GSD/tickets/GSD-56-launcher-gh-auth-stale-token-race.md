@@ -13,8 +13,16 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1509287398473994460
 events:
-  - { ts: 2026-05-27T20:09:22Z, by: alex, change: "created from launcher auth failure debug session; Nate ack'd[^discord-ack]" }
-  - { ts: 2026-05-28T02:02:08Z, by: alex-triager, change: "promoted to-triage → GSD-56 (state=triage)" }
+  - {
+      ts: 2026-05-27T20:09:22Z,
+      by: alex,
+      change: "created from launcher auth failure debug session; Nate ack'd[^discord-ack]",
+    }
+  - {
+      ts: 2026-05-28T02:02:08Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-56 (state=triage)",
+    }
 ---
 
 # GSD-56 — launcher gh-auth stale-token race

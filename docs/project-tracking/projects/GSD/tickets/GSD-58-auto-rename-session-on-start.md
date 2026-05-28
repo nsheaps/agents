@@ -17,7 +17,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1509290622077374518
 events:
   - { ts: 2026-05-27T20:34:31Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - { ts: 2026-05-28T02:02:19Z, by: alex-triager, change: "promoted to-triage → GSD-58 (state=triage) per triager workflow" }
+  - {
+      ts: 2026-05-28T02:02:19Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-58 (state=triage) per triager workflow",
+    }
 ---
 
 # GSD-58 — Auto-rename Claude Code sessions on start
@@ -60,4 +64,5 @@ Implement a mechanism (ideally a SessionStart hook) that automatically renames e
 4. Open questions 1–4 above are resolved in triage before implementation begins.
 
 [^discord-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353/1509293729356447796
+
 [^discord-context]: https://discord.com/channels/1490863845252665415/1497431286661517353/1509290622077374518

@@ -14,7 +14,11 @@ references:
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1509375013965533184
 events:
   - { ts: 2026-05-28T01:57:26Z, by: alex, change: "created from Discord ask[^discord-ask]" }
-  - { ts: 2026-05-28T02:02:40Z, by: alex-triager, change: "promoted to-triage → GSD-60 (state=triage) per triager-v2 workflow" }
+  - {
+      ts: 2026-05-28T02:02:40Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-60 (state=triage) per triager-v2 workflow",
+    }
 ---
 
 # GSD-60 — hookify double-posting

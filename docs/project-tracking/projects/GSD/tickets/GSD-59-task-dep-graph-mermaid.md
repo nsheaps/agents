@@ -81,4 +81,5 @@ Both outputs should live in the same generated markdown file (or sibling files),
 ---
 
 [^discord-initial-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353
+
 [^discord-refinement]: https://discord.com/channels/1490863845252665415/1497431286661517353/1509373646945255565
