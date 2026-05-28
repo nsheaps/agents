@@ -6,12 +6,13 @@ name: PR Status Digest
 # main via the github-app-auth composite (no user PAT).
 #
 # Triggers:
-#   - schedule:           every 12h
-#   - workflow_dispatch:  manual via Actions UI
-#   - repository_dispatch:cross-repo refresh (event type: pr-status-refresh)
-#   - pull_request:       on PR state changes in THIS repo (NOT synchronize)
+#   - schedule:           every 12h          → full regen
+#   - workflow_dispatch:  manual via UI       → full regen
+#   - repository_dispatch: cross-repo refresh → full regen
+#   - pull_request:       PR state changes    → event-driven patch (no API calls)
 #
 # Source: GSD-76 / FXP-1.12.2 — Nate Discord 2026-05-28 03:56Z.
+# Event-driven patch: FXP/SU.29 — Nate Discord 2026-05-28 20:22Z.
 
 on:
   schedule:
@@ -31,10 +32,69 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # ── Event-driven patch ────────────────────────────────────────────────────
+  # Runs ONLY on pull_request events. Reads the event payload directly (no
+  # extra API calls), patches the single PR line in the existing digest files,
+  # and commits if anything changed.
+  patch:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Authenticate as GitHub App
+        id: auth
+        uses: ./.github/actions/github-app-auth
+        with:
+          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Setup mise (bun)
+        uses: jdx/mise-action@v4
+
+      - name: Patch digest from PR event payload
+        run: |
+          set -euo pipefail
+          CLI="apps/pr-status-cli/src/index.ts"
+          bun run "$CLI" patch-event \
+            --event-file "$GITHUB_EVENT_PATH" \
+            --digest-dir  docs/pr-status
+
+      - name: Configure git identity (github-app bot)
+        env:
+          BOT_USER_ID: ${{ steps.auth.outputs.user-id }}
+          BOT_USER_NAME: ${{ steps.auth.outputs.user-name }}
+        run: |
+          git config user.name  "$BOT_USER_NAME"
+          git config user.email "${BOT_USER_ID}+${BOT_USER_NAME}@users.noreply.github.com"
+
+      - name: Commit + push if changed
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+          PR_REPO: ${{ github.event.repository.full_name }}
+          PR_NUM: ${{ github.event.pull_request.number }}
+          PR_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+          git add docs/pr-status/
+          if git diff --cached --quiet; then
+            echo "No digest changes — nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore(pr-status): patch ${PR_REPO}#${PR_NUM} (${PR_ACTION})"
+          git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push origin HEAD:main
+
+  # ── Full regeneration ─────────────────────────────────────────────────────
+  # Runs on schedule, workflow_dispatch, and repository_dispatch (not on
+  # pull_request — those are handled by the patch job above).
   digest:
     runs-on: ubuntu-latest
-    # Skip fork PRs: secrets (AUTOMATION_GITHUB_APP_*) aren't available, auth would fail.
-    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    if: github.event_name != 'pull_request'
     steps:
       - name: Checkout main
         uses: actions/checkout@v6
