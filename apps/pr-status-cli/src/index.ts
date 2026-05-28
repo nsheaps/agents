@@ -486,6 +486,7 @@ async function main() {
   if (data.errors) {
     console.error("GraphQL errors:");
     console.error(JSON.stringify(data.errors, null, 2));
+    process.exit(1);
   }
   refs.forEach((ref, i) => {
     const slot = data.data?.[`pr${i}`];
