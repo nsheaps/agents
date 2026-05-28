@@ -1,6 +1,33 @@
+---
+type: feature
+id: GSD-59
+legacy_ids:
+  - "1779932231"
+created: 2026-05-28T01:37:11Z
+state: triage
+project: GSD
+priority: 4
+requester: contacts://heaps-group/byGithubUsername/nsheaps
+references:
+  - id: discord-initial-ask
+    type: discord-message
+    url: "https://discord.com/channels/1490863845252665415/1497431286661517353"
+  - id: discord-refinement
+    type: discord-message
+    url: "https://discord.com/channels/1490863845252665415/1497431286661517353/1509373646945255565"
+events:
+  - {
+      ts: 2026-05-28T02:02:32Z,
+      by: alex-triager,
+      change: "promoted to-triage → GSD-59 (state=triage)",
+    }
+---
+
+# GSD-59 — Task dep-graph mermaid
+
 Generate a mermaid dependency-graph markdown file from the task system (task-utils plugin or a Task\* hook in alex's repo), showing all tasks and their dependencies, colored by status, filtered to actionable leaf nodes.
 
-## What was asked
+## Original ask
 
 When a task-lifecycle hook fires, produce (or regenerate) a markdown file containing a [Mermaid](https://mermaid.js.org/) `flowchart` or `graph` diagram that:
 
@@ -15,7 +42,7 @@ When a task-lifecycle hook fires, produce (or regenerate) a markdown file contai
 
 The output file location is TBD at triage — candidates include `.claude/task-graph.md`, `docs/tasks/dep-graph.md`, or an ephemeral rendered artifact.
 
-## Refinement (2026-05-28 01:52Z, Nate Discord [1509373646945255565](https://discord.com/channels/1490863845252665415/1497431286661517353/1509373646945255565))
+## Refinement [^discord-refinement]
 
 > "for the task mermaid diagram, I'd also love to add some scope, that I want a second list that's just a list of the tickets in the order that they appear in your console"
 
@@ -45,17 +72,13 @@ Both outputs should live in the same generated markdown file (or sibling files),
 4. **Filter depth** — should _completed_ parent tasks be shown (as "done" ancestry context) or fully hidden? Nate's ask says omit parents of pending/in-progress tasks, but completed parents of completed leaves may add useful context.
 5. **Plugin home** — task-utils is the logical home; if so, this needs a PR against `ai-mktpl`. Alternatively, prototype locally in `.claude/skills/task-graph/` first (per skill-resolution-order rules) and upstream later.
 
-## Priority
-
-Default **4** (nice-to-have tooling improvement — not blocking any current work).
-
-## Source
-
-Nate, Discord [2026-05-28 ~01:08Z](https://discord.com/channels/1490863845252665415/1497431286661517353) — chat 1497431286661517353.
-Follow-up authorization at 2026-05-28 01:34Z: "sure if you wanna go through the gsd ticket process lets do that in parallel with a sub-agent."
-
 ## Related
 
 - task-utils plugin (`ai-mktpl`) — task lifecycle hooks and task-manage skill
-- `blocks` / `blockedBy` fields on task frontmatter (see `1779766960-task-hierarchy-blocking-relaxation.md` for related task-graph semantics work)
+- `blocks` / `blockedBy` fields on task frontmatter (see GSD-52 for related task-graph semantics work)
 - Mermaid docs: https://mermaid.js.org/syntax/flowchart.html
+
+---
+
+[^discord-initial-ask]: https://discord.com/channels/1490863845252665415/1497431286661517353
+[^discord-refinement]: https://discord.com/channels/1490863845252665415/1497431286661517353/1509373646945255565
