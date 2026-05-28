@@ -23,10 +23,14 @@ runs:
         HAS_ERRORS=false
         FIX="${{ inputs.fix }}"
 
+        # fix=true → `mise run format` (apply auto-fixers, then re-verify).
+        # fix=false → `mise run lint` (read-only, no writes).
+        # `mise run format` can write files AND still fail when a non-fixable
+        # check (tsc --noEmit, etc.) fails after the writes.
         if [ "$FIX" = "true" ]; then
-          mise run lint || HAS_ERRORS=true
+          mise run format || HAS_ERRORS=true
         else
-          mise run lint-check || HAS_ERRORS=true
+          mise run lint || HAS_ERRORS=true
         fi
 
         # Check if any files were changed by auto-fix

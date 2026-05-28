@@ -11,22 +11,19 @@
   "workspaces": [
     "packages/*",
     "services/*",
-    "lib/*"
+    "lib/*",
+    "plugins"
   ],
   "nx": {
     "name": "root",
     "includedScripts": [
       "format",
-      "format-check",
-      "lint",
-      "lint-check"
+      "lint"
     ]
   },
   "scripts": {
-    "format": "prettier --write \"**/*.md\" --ignore-path .prettierignore --ignore-path .prettierignore-root",
-    "format-check": "prettier --check \"**/*.md\" --ignore-path .prettierignore --ignore-path .prettierignore-root",
-    "lint": "bun run format-check && bash scripts/lint-shell.sh",
-    "lint-check": "bun run format-check && bash scripts/lint-shell.sh"
+    "format": "prettier --write \"**/*.md\" --ignore-path .prettierignore --ignore-path .prettierignore-root && bash scripts/lint-shell.sh",
+    "lint": "prettier --check \"**/*.md\" --ignore-path .prettierignore --ignore-path .prettierignore-root && bash scripts/lint-shell.sh"
   },
   "devDependencies": {
     "@release-it/bumper": "^7.0.5",

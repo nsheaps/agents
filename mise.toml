@@ -14,36 +14,37 @@ node = "24.15.0"
 "pipx:litellm" = { version = "1.83.14", extras = "proxy" }
 tilt = "0.37.3"
 
-# nx is installed via bun (root devDependency). Every task below is a pure
-# `bunx nx run-many --target=<name>` invocation — no inline prettier, no
-# inline shell-syntax check. The root project (registered via the `nx`
-# block in package.json) owns repo-level concerns (root markdown,
-# bin/ shell-syntax) and excludes workspace dirs via .prettierignore-root,
-# so nx can parallelize root + per-package targets with no overlap.
+# nx is installed via bun (root devDependency). Every fan-out task below is
+# a pure `bunx nx run-many --target=<name>` invocation — no inline prettier,
+# no inline shell-syntax check, no `bun run` fallbacks. The root project
+# (registered via the `nx` block in package.json) owns repo-level concerns;
+# workspace packages own their own. `.prettierignore-root` keeps the root
+# target from touching files the workspace targets handle.
+#
+# format vs lint semantics:
+#   lint   — run ALL checks read-only (prettier --check + tsc --noEmit +
+#            shell-syntax + …). Never writes. Safe for CI gates.
+#   format — run all auto-fixers (prettier --write, etc.), THEN run the same
+#            check suite as lint. So `format` can write files AND still
+#            fail when a non-fixable check (tsc, plugin validate, etc.)
+#            fails. The autofix CI workflow uses `mise run format` and
+#            commits any writes; the validate gate uses `mise run lint`.
 # See docs/MONOREPO.md for the full pattern.
 
 [tasks.format]
-description = "Format every project via nx (root + each workspace package)"
+description = "Auto-fix every project via nx (root + each workspace package), then re-verify with the same checks lint runs"
 run = "bunx nx run-many --target=format"
 
-[tasks.format-check]
-description = "Check formatting for every project via nx"
-run = "bunx nx run-many --target=format-check"
-
 [tasks.lint]
-description = "Lint every project via nx (root project runs prettier --check + shell-syntax sweep; workspace packages run prettier --check + tsc --noEmit)"
+description = "Read-only lint every project via nx (no writes)"
 run = "bunx nx run-many --target=lint"
 
-[tasks.lint-check]
-description = "Lint-check (no auto-fix) every project via nx — read-only CI gate"
-run = "bunx nx run-many --target=lint-check"
-
 [tasks.build]
-description = "Build every workspace package via nx (root has no build target and is skipped)"
+description = "Build every workspace package via nx (root and the plugins package have no build target and are skipped)"
 run = "bunx nx run-many --target=build"
 
 [tasks.test]
-description = "Test every workspace package via nx (root has no test target and is skipped)"
+description = "Test every workspace package via nx (TS packages: bun test; @nsheaps/agents-plugins: claude plugin validate)"
 run = "bunx nx run-many --target=test"
 
 [tasks.check]

@@ -19,9 +19,8 @@
   },
   "license": "UNLICENSED",
   "scripts": {
-    "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "format-check": "prettier --check . --ignore-path ../../.prettierignore",
-    "lint": "bun run format-check && tsc --noEmit",
+    "format": "prettier --write . --ignore-path ../../.prettierignore && tsc --noEmit",
+    "lint": "prettier --check . --ignore-path ../../.prettierignore && tsc --noEmit",
     "build": "tsc -b",
     "test": "bun test --pass-with-no-tests"
   }
