@@ -69,12 +69,14 @@ Both outputs should live in the same generated markdown file (or sibling files),
 **Skill**: `.claude/skills/task-graph/` in alex's repo (`/home/nsheaps/src/nsheaps/.ai-agent-alex/`)
 
 Files:
+
 - `SKILL.md` — skill descriptor, invoke with `Skill(task-graph)`
 - `generate.sh` — shell script wrapping a Python generator; reads from `$CLAUDE_CONFIG_DIR/tasks/$CLAUDE_CODE_TASK_LIST_ID/*.json`
 
 **Output**: `$CLAUDE_CONFIG_DIR/tmp/task-graph.md` (ephemeral, not committed)
 
 **Demo run results** (2026-05-28T02:12Z):
+
 - Total tasks: 623 (572 completed, 49 pending, 2 in_progress)
 - Leaf tasks in graph: 47 (pending/in_progress tasks with no pending/in_progress descendants)
 - Edges in graph: 0 (all 47 leaf tasks are independent — no edges between terminal nodes)
