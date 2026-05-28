@@ -16,7 +16,11 @@ references:
     type: github-blob
     url: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/684.yaml
 events:
-  - { ts: 2026-05-28T22:00:00Z, by: alex, change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.27 had no canonical GSD ticket" }
+  - {
+      ts: 2026-05-28T22:00:00Z,
+      by: alex,
+      change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.27 had no canonical GSD ticket",
+    }
 ---
 
 # GSD-119 — address Nate's PR #192 review — add Step 0 project-pick (default)
@@ -35,4 +39,5 @@ Address Nate's PR #192 review feedback — add Step 0 project-pick (default proj
 - [alex-task #684][^alex-task]
 
 [^fixprompt-dashboard]: https://github.com/nsheaps/.ai-agent-alex/issues/20
+
 [^alex-task]: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/684.yaml

@@ -16,7 +16,11 @@ references:
     type: github-blob
     url: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/685.yaml
 events:
-  - { ts: 2026-05-28T22:00:00Z, by: alex, change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.28 had no canonical GSD ticket" }
+  - {
+      ts: 2026-05-28T22:00:00Z,
+      by: alex,
+      change: "filed per Nate 2026-05-28 21:55-21:57Z FXP→GSD reconcile directive — FXP/SU.28 had no canonical GSD ticket",
+    }
 ---
 
 # GSD-120 — edge-sync-workflow-v2: reusable+org-sync+consumer workflows
@@ -35,4 +39,5 @@ Build reusable + org-sync + consumer workflows for upstream sync (edge-sync-work
 - [alex-task #685][^alex-task]
 
 [^fixprompt-dashboard]: https://github.com/nsheaps/.ai-agent-alex/issues/20
+
 [^alex-task]: https://github.com/nsheaps/.ai-agent-alex/blob/main/tasks/alex/685.yaml
