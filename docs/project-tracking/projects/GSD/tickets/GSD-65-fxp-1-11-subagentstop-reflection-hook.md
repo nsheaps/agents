@@ -16,7 +16,11 @@ references:
     type: github-issue
     url: https://github.com/nsheaps/.ai-agent-alex/issues/20
 events:
-  - { ts: 2026-05-28T02:30:00Z, by: alex, change: "created from alex-task #637 (Nate Discord 18:56Z); task already completed — backfilled as state=done" }
+  - {
+      ts: 2026-05-28T02:30:00Z,
+      by: alex,
+      change: "created from alex-task #637 (Nate Discord 18:56Z); task already completed — backfilled as state=done",
+    }
 ---
 
 # FXP/1.11 — SubagentStop reflection hook (feeds future dreaming plugin)

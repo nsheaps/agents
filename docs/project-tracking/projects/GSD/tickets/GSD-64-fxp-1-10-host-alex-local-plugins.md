@@ -16,7 +16,11 @@ references:
     type: github-issue
     url: https://github.com/nsheaps/.ai-agent-alex/issues/20
 events:
-  - { ts: 2026-05-28T02:30:00Z, by: alex, change: "created from alex-task #633 (Nate Discord 18:47Z) — promoted to FXP/1.10 numbering" }
+  - {
+      ts: 2026-05-28T02:30:00Z,
+      by: alex,
+      change: "created from alex-task #633 (Nate Discord 18:47Z) — promoted to FXP/1.10 numbering",
+    }
 ---
 
 # FXP/1.10 — host alex-local hooks/skills into nsheaps/agents plugins
@@ -79,4 +83,5 @@ Out:
 This item never made it to the [fixprompt dashboard][^fixprompt-dashboard] (issue #20) because the source `fixprompt.md` caps at numbered bullet 9; FXP/1.10+ items were added in subsequent Discord conversations and tracked only as alex-tasks until now. This ticket closes that gap.
 
 [^task-633]: alex-task://633 — local agent task, see also Nate Discord 2026-05-27 18:47Z
+
 [^fixprompt-dashboard]: https://github.com/nsheaps/.ai-agent-alex/issues/20

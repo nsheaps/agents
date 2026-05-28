@@ -19,7 +19,11 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1509379165923709049
 events:
-  - { ts: 2026-05-28T02:24:40Z, by: alex, change: "created from fixprompt.md FXP/1.8 line; Nate Discord 02:13Z designated this as the next FXP task" }
+  - {
+      ts: 2026-05-28T02:24:40Z,
+      by: alex,
+      change: "created from fixprompt.md FXP/1.8 line; Nate Discord 02:13Z designated this as the next FXP task",
+    }
 ---
 
 # FXP/1.8 — quick-and-scrappy MCP ticket server (bun/ts)
@@ -90,5 +94,7 @@ Out:
 - task-utils plugin (`nsheaps/agents/plugins/claude-code/task-utils/`) — file-based predecessor
 
 [^fixprompt-source]: https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/journal/2026/05/25/fixprompt.md#L28
+
 [^fixprompt-dashboard]: https://github.com/nsheaps/.ai-agent-alex/issues/20
+
 [^discord-next-task]: https://discord.com/channels/1490863845252665415/1497431286661517353/1509379165923709049
