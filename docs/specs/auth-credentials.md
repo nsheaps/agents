@@ -99,37 +99,40 @@ Each agent's Discord bot needs a specific permission set to fully function. Thes
 are documented at the design level here; for the HOW (OAuth2 URL Generator, invite
 flow, and verification commands), see `docs/runbooks/create-discord-bot.md`.
 
-### Baseline permissions (15) — required for core function
+### Baseline permissions (14) — required for core function
 
-The agent cannot operate on Discord without all fifteen of these. They cover the
+The agent cannot operate on Discord without all fourteen of these. They cover the
 minimum capability surface: seeing channels, reading history, posting replies,
 opening threads, reacting to messages, and registering slash commands.
 
 `VIEW_CHANNEL`, `VIEW_AUDIT_LOG`, `READ_MESSAGE_HISTORY`, `SEND_MESSAGES`,
 `SEND_MESSAGES_IN_THREADS`, `EMBED_LINKS`, `ATTACH_FILES`, `ADD_REACTIONS`,
-`USE_EXTERNAL_EMOJIS`, `USE_EXTERNAL_STICKERS`, `MENTION_EVERYONE`,
-`USE_APPLICATION_COMMANDS`, `USE_EMBEDDED_ACTIVITIES`, `CREATE_PUBLIC_THREADS`,
-`CREATE_PRIVATE_THREADS`.
+`USE_EXTERNAL_EMOJIS`, `USE_EXTERNAL_STICKERS`, `USE_APPLICATION_COMMANDS`,
+`CREATE_PUBLIC_THREADS`, `CREATE_PRIVATE_THREADS`, `MENTION_EVERYONE`.
+
+`MENTION_EVERYONE` is gated to baseline only for agents whose handler explicitly
+wants role-mention support (e.g. pinging `@reviewers` when a PR opens). This same
+permission also enables `@everyone`/`@here`, which can spam an entire server, so
+the agent must never send those unprompted. If the agent has no concrete
+role-mention use case, omit `MENTION_EVERYONE` from baseline and move it to
+recommended extras.
 
 Rationale: these were derived from an API audit of Jack's role in the dev guild
-on 2026-04-09. All fifteen are granted on Jack's existing installation and are
-working.
+on 2026-04-09. They are granted on Jack's existing installation and are working.
 
-### Recommended extras (5) — enable advanced operations
+### Recommended extras (6) — enable advanced operations
 
 Without these, the bot cannot perform channel/role/webhook/thread management
 operations. Each missing permission blocks a concrete class of agent work:
 
-| Permission        | Blocks                                                                                              | Why the bot needs it                                                                                                                     |
-| :---------------- | :-------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
-| `MANAGE_CHANNELS` | Opening work channels (e.g. `#mergeathon`), modifying channel topics, adjusting channel permissions | Agents need to spin up and tear down work channels as part of multi-agent coordination flows                                             |
-| `MANAGE_MESSAGES` | Pinning handler instructions, cross-posting announcements, moderating stale bot messages            | Agents manage their own message lifecycle and surface important content                                                                  |
-| `MANAGE_ROLES`    | Self-service permission grants (temporary access to a work channel)                                 | Future flows where the agent grants another user limited access on request                                                               |
-| `MANAGE_WEBHOOKS` | Routing GitHub/external webhooks into Discord channels                                              | Webhook CRUD for integrations is an agent-owned operation, not a handler-owned one                                                       |
-| `MANAGE_THREADS`  | Renaming, archiving, or locking threads owned by other users                                        | Bots can manage their own threads without this, but cannot manage handler-opened threads (e.g. renaming a forum post after scope change) |
-
-Status: as of 2026-04-09, Jack's installation is MISSING all five recommended-extra
-permissions. This is a known gap tracked as handler feedback on PR #122.
+| Permission                | Blocks                                                                                              | Why the bot needs it                                                                                                                     |
+| :------------------------ | :-------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `MANAGE_CHANNELS`         | Opening work channels (e.g. `#mergeathon`), modifying channel topics, adjusting channel permissions | Agents need to spin up and tear down work channels as part of multi-agent coordination flows                                             |
+| `MANAGE_MESSAGES`         | Pinning handler instructions, cross-posting announcements, moderating stale bot messages            | Agents manage their own message lifecycle and surface important content                                                                  |
+| `MANAGE_ROLES`            | Self-service permission grants (temporary access to a work channel)                                 | Future flows where the agent grants another user limited access on request                                                               |
+| `MANAGE_WEBHOOKS`         | Routing GitHub/external webhooks into Discord channels                                              | Webhook CRUD for integrations is an agent-owned operation, not a handler-owned one                                                       |
+| `MANAGE_THREADS`          | Renaming, archiving, or locking threads owned by other users                                        | Bots can manage their own threads without this, but cannot manage handler-opened threads (e.g. renaming a forum post after scope change) |
+| `USE_EMBEDDED_ACTIVITIES` | Launching embedded voice/video activities in a channel                                              | Text-only agents do not need this; grant only for a concrete activity-launching use case                                                 |
 
 ### Per-agent scoping
 
@@ -151,7 +154,7 @@ currently do).
   agent (Henry, Pamela)?** Documented in `docs/runbooks/create-github-app.md`.
   Related runbooks cover Discord, Telegram, and 1Password provisioning.
 - **What Discord bot permissions does an agent need to be fully functional?**
-  Answered in the "Discord Bot Permissions" section above: 15 baseline + 5
+  Answered in the "Discord Bot Permissions" section above: 14 baseline + 6
   recommended-extra permissions. HOW to grant them is in
   `docs/runbooks/create-discord-bot.md`.
 

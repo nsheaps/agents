@@ -179,14 +179,38 @@ agent's vault.
 
 7. Click **Save**
 
+8. **Verify newlines survived the round-trip.** Some 1Password field types
+   (Password vs Notes vs Text) strip newlines silently — a PEM with stripped
+   newlines is invalid and produces opaque `error parsing key` failures at
+   token-generation time. Confirm the stored value round-trips intact:
+
+   ```bash
+   op read "op://Agent-<Name>/ENVIRONMENT/GITHUB_APP_PRIVATE_KEY" | head -1
+   # Expected: -----BEGIN RSA PRIVATE KEY-----
+
+   op read "op://Agent-<Name>/ENVIRONMENT/GITHUB_APP_PRIVATE_KEY" | tail -1
+   # Expected: -----END RSA PRIVATE KEY----- (or an empty trailing line followed by it)
+
+   # Strong check: re-parse the stored value
+   op read "op://Agent-<Name>/ENVIRONMENT/GITHUB_APP_PRIVATE_KEY" \
+     | openssl rsa -noout -check
+   # Expected: RSA key ok
+   ```
+
+   If the header is not on its own line, or `openssl rsa -check` fails, the
+   field type stripped newlines. Re-create the field as a **multi-line Notes**
+   field (or 1Password's "Document" attachment), re-paste, and re-verify.
+
 ### 12. Destroy the local PEM file
 
 After confirming the private key is stored in 1Password:
 
 ```bash
-shred -u ~/Downloads/<app-name>.*.private-key.pem
-# or on macOS (no shred):
+# macOS (primary operator platform — no `shred`):
 rm -P ~/Downloads/<app-name>.*.private-key.pem
+
+# Linux alternative:
+shred -u ~/Downloads/<app-name>.*.private-key.pem
 ```
 
 Do NOT leave the PEM sitting in `~/Downloads`. It's a secret.
@@ -204,11 +228,26 @@ op read "op://Agent-<Name>/ENVIRONMENT/GITHUB_APP_PRIVATE_KEY" > /tmp/app-key.pe
 chmod 600 /tmp/app-key.pem
 ```
 
-Generate a JWT (GitHub App auth uses a JWT signed with the private key to
-request an installation token):
+**Prefer `bin/generate-token.sh`** in the agent repo for token generation —
+it handles JWT signing, installation-token exchange, and caching, and works
+identically across macOS and Linux:
 
 ```bash
-# The repo's bin/generate-token.sh handles this. For manual verification:
+GH_TOKEN="$(bin/generate-token.sh)"
+curl -s -H "Authorization: token $GH_TOKEN" https://api.github.com/user | jq .login
+# Expected: "jack-nsheaps[bot]" (or similar)
+```
+
+<details>
+<summary>Manual JWT generation (advanced — for debugging when `bin/generate-token.sh` is unavailable)</summary>
+
+The block below uses `date +%s` and `openssl base64 -A`. Both behave
+differently across macOS and Linux (`date -r` vs `date -d`, BSD vs GNU
+base64 line-wrapping). It works on a stock Linux box and a recent macOS
+with `openssl` from Homebrew, but may fail on older macOS systems shipping
+LibreSSL. If anything breaks, use `bin/generate-token.sh` instead.
+
+```bash
 NOW=$(date +%s)
 EXP=$((NOW + 540))
 HEADER=$(printf '{"alg":"RS256","typ":"JWT"}' | openssl base64 -A | tr '+/' '-_' | tr -d '=')
@@ -228,14 +267,13 @@ curl -s -H "Authorization: token $TOKEN" https://api.github.com/user | jq .login
 # Expected: "jack-nsheaps[bot]" (or similar)
 
 # Clean up
-shred -u /tmp/app-key.pem
+shred -u /tmp/app-key.pem 2>/dev/null || rm -P /tmp/app-key.pem
 ```
+
+</details>
 
 **Expected:** The `login` field shows `<app-name>[bot]`, matching the App
 name from step 2.
-
-For production use, **prefer `bin/generate-token.sh`** in the agent repo,
-which wraps this flow and handles caching/renewal.
 
 ## Common Pitfalls
 

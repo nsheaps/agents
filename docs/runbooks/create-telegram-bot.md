@@ -120,14 +120,20 @@ Send a test message in the group after adding the bot.
 This is needed because the agent's telegram plugin uses numeric chat IDs,
 not group names, for routing.
 
-1. After adding the bot and sending at least one message in the group, run:
+1. **Send a fresh test message in the group immediately before running the
+   command below.** `getUpdates` only returns messages from the last 24 hours,
+   AND Telegram marks updates as "seen" after each successful `getUpdates`
+   call — so on re-runs you may get an empty result even for messages that
+   are only a few minutes old. A fresh message right before the call avoids
+   both gotchas.
+2. Then run:
 
 ```bash
 TOKEN="$(op read "op://Agent-<Name>/ENVIRONMENT/TELEGRAM_BOT_TOKEN")"
 curl -s "https://api.telegram.org/bot${TOKEN}/getUpdates" > /tmp/telegram-updates.json
 ```
 
-2. Read the file and find entries with `"chat": { "type": "group", ... }`:
+3. Read the file and find entries with `"chat": { "type": "group", ... }`:
 
 ```bash
 jq '.result[] | .message.chat | {id, title, type}' /tmp/telegram-updates.json
@@ -143,10 +149,10 @@ Output will look like:
 }
 ```
 
-3. Note the `id` (negative for groups, positive for DMs). Store these in the
+4. Note the `id` (negative for groups, positive for DMs). Store these in the
    agent's channel config (not in 1Password — chat IDs are not secrets).
 
-> **Note:** `getUpdates` only returns messages received in the last 24 hours. If you don't see your test message, send another one in the group and re-run. Also, `getUpdates` is incompatible with webhook mode — if the agent is running and using webhooks, stop it first or use the Telegram API's `getChat` with a username instead.
+> **Note:** If the result is empty even after sending a fresh test message, the bot is likely running in webhook mode elsewhere — `getUpdates` is incompatible with webhooks. Either stop the agent first, call `deleteWebhook`, or use the Telegram API's `getChat` with a public group username instead.
 
 ## Verification
 

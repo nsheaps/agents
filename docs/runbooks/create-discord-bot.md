@@ -22,49 +22,49 @@ allowlist each agent independently.
 ## Required Bot Permissions
 
 The bot permissions below were derived from an API audit of Jack's current
-role in the development guild. Grant all 20 in the OAuth2 URL Generator
-(step 7) and in the bot's server role after invite.
+role in the development guild. Grant the 14 baseline permissions in the
+OAuth2 URL Generator (step 7) and in the bot's server role after invite;
+grant the 6 recommended extras as needed for advanced operations.
 
 See `docs/specs/auth-credentials.md` for WHY each permission is needed
 at the design level; this runbook documents HOW to grant them.
 
-### Baseline (15) — required for core bot function
+### Baseline (14) — required for core bot function
 
 The agent cannot function without these. Reading, posting, threading,
 and reacting to messages all require at least one of these:
 
-| Permission                 | Purpose                                                 |
-| :------------------------- | :------------------------------------------------------ |
-| `VIEW_CHANNEL`             | See channels the bot is a member of                     |
-| `VIEW_AUDIT_LOG`           | Correlate bot actions with audit entries when debugging |
-| `READ_MESSAGE_HISTORY`     | Fetch past messages in a channel (required for context) |
-| `SEND_MESSAGES`            | Post messages to text channels                          |
-| `SEND_MESSAGES_IN_THREADS` | Post into threads the bot has joined                    |
-| `EMBED_LINKS`              | Post rich embeds (structured replies, link previews)    |
-| `ATTACH_FILES`             | Upload files (screenshots, logs, generated artifacts)   |
-| `ADD_REACTIONS`            | React to handler messages (acknowledgement, status)     |
-| `USE_EXTERNAL_EMOJIS`      | Use custom emojis from other servers in replies         |
-| `USE_EXTERNAL_STICKERS`    | Use stickers from other servers                         |
-| `MENTION_EVERYONE`         | Use `@everyone`/`@here`/role mentions when authorized   |
-| `USE_APPLICATION_COMMANDS` | Register and invoke slash commands                      |
-| `USE_EMBEDDED_ACTIVITIES`  | Launch embedded activities (voice/video features)       |
-| `CREATE_PUBLIC_THREADS`    | Open public work threads for features/issues            |
-| `CREATE_PRIVATE_THREADS`   | Open private threads for handler-only conversations     |
+| Permission                 | Purpose                                                                                                                                                                                                                                                                                                                                                                                       |
+| :------------------------- | :-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `VIEW_CHANNEL`             | See channels the bot is a member of                                                                                                                                                                                                                                                                                                                                                           |
+| `VIEW_AUDIT_LOG`           | Correlate bot actions with audit entries when debugging                                                                                                                                                                                                                                                                                                                                       |
+| `READ_MESSAGE_HISTORY`     | Fetch past messages in a channel (required for context)                                                                                                                                                                                                                                                                                                                                       |
+| `SEND_MESSAGES`            | Post messages to text channels                                                                                                                                                                                                                                                                                                                                                                |
+| `SEND_MESSAGES_IN_THREADS` | Post into threads the bot has joined                                                                                                                                                                                                                                                                                                                                                          |
+| `EMBED_LINKS`              | Post rich embeds (structured replies, link previews)                                                                                                                                                                                                                                                                                                                                          |
+| `ATTACH_FILES`             | Upload files (screenshots, logs, generated artifacts)                                                                                                                                                                                                                                                                                                                                         |
+| `ADD_REACTIONS`            | React to handler messages (acknowledgement, status)                                                                                                                                                                                                                                                                                                                                           |
+| `USE_EXTERNAL_EMOJIS`      | Use custom emojis from other servers in replies                                                                                                                                                                                                                                                                                                                                               |
+| `USE_EXTERNAL_STICKERS`    | Use stickers from other servers                                                                                                                                                                                                                                                                                                                                                               |
+| `USE_APPLICATION_COMMANDS` | Register and invoke slash commands                                                                                                                                                                                                                                                                                                                                                            |
+| `CREATE_PUBLIC_THREADS`    | Open public work threads for features/issues                                                                                                                                                                                                                                                                                                                                                  |
+| `CREATE_PRIVATE_THREADS`   | Open private threads for handler-only conversations                                                                                                                                                                                                                                                                                                                                           |
+| `MENTION_EVERYONE`         | Send role-mentions to ping a specific group (e.g. `@reviewers`) when the handler explicitly asks. **Caveat:** this same Discord permission also gates `@everyone`/`@here`, which can spam an entire server. Grant only if the agent has a concrete role-mention use case; otherwise omit from baseline and add to recommended extras. The agent should never send `@everyone`/`@here` unprompted. |
 
-### Recommended extras (5) — enable advanced operations
+### Recommended extras (6) — enable advanced operations
 
 Without these, the bot cannot perform channel/role/webhook/thread
-management. Jack's current installation is missing all five, which
-blocks operations like creating the `#mergeathon` channel and managing
-long-running threads.
+management. Grant them if the agent needs to create channels, manage
+webhooks, or moderate threads on the handler's behalf.
 
-| Permission        | Why the bot needs it                                                                                                                             |
-| :---------------- | :----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `MANAGE_CHANNELS` | Create text/voice channels and categories; modify channel permissions and topics (e.g. opening `#mergeathon` for a multi-agent work session)     |
-| `MANAGE_MESSAGES` | Pin messages to channels, delete other users' messages in moderation contexts, cross-post from announcement channels                             |
-| `MANAGE_ROLES`    | Dynamically adjust role permissions for future self-service flows (e.g. granting temporary access to a work channel)                             |
-| `MANAGE_WEBHOOKS` | Create/list/delete webhooks for outbound integrations (e.g. routing GitHub webhook payloads into a Discord channel)                              |
-| `MANAGE_THREADS`  | Rename, archive, and lock threads owned by other users (the bot can already manage its own threads; this extends management to the full channel) |
+| Permission                | Why the bot needs it                                                                                                                                |
+| :------------------------ | :-------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `MANAGE_CHANNELS`         | Create text/voice channels and categories; modify channel permissions and topics (e.g. opening `#mergeathon` for a multi-agent work session)        |
+| `MANAGE_MESSAGES`         | Pin messages to channels, delete other users' messages in moderation contexts, cross-post from announcement channels                                |
+| `MANAGE_ROLES`            | Dynamically adjust role permissions for future self-service flows (e.g. granting temporary access to a work channel)                                |
+| `MANAGE_WEBHOOKS`         | Create/list/delete webhooks for outbound integrations (e.g. routing GitHub webhook payloads into a Discord channel)                                 |
+| `MANAGE_THREADS`          | Rename, archive, and lock threads owned by other users (the bot can already manage its own threads; this extends management to the full channel)    |
+| `USE_EMBEDDED_ACTIVITIES` | Launch embedded activities (voice/video features). Text-only agents do not need this; grant only for a concrete future activity-launching use case. |
 
 ## Prerequisites
 
@@ -79,7 +79,7 @@ long-running threads.
 
 1. Go to <https://discord.com/developers/applications>
 2. Click the **New Application** button (top right)
-3. Enter a name that identifies the agent. Convention: `<AgentName>-Bot` (e.g. `Jack-Bot`, `Henry-Bot`)
+3. Enter a name that identifies the agent. Convention: `<agent-name>-nsheaps` to match the GitHub App identity (e.g. `jack-nsheaps`, `henry-nsheaps`). The bot's **username** (set later on the Bot page, step 3) is what appears in chat — keep it consistent with this application name so the Discord and GitHub identities line up.
 4. Check the Developer Terms of Service box
 5. Click **Create**
 
@@ -152,7 +152,8 @@ op item edit "ENVIRONMENT" --vault "Agent-<Name>" \
    - `applications.commands`
 4. Under **BOT PERMISSIONS**, check each permission in the grid matching
    the lists in the [Required Bot Permissions](#required-bot-permissions)
-   section above (all 15 baseline + 5 recommended extras). The grid
+   section above (all 14 baseline + the 6 recommended extras you intend
+   to grant). The grid
    automatically computes the integer that goes in the invite URL's
    `permissions=` query parameter.
 5. Copy the generated URL from the **GENERATED URL** field at the bottom

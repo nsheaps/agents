@@ -147,7 +147,7 @@ local Claude settings, where the launcher sources it into the environment.
    If it's NOT gitignored, add `.claude/settings.local.json` to the repo's
    `.gitignore` immediately — before committing anything else.
 
-> **Do not write the token to `~/.claude/settings.local.json`.** That file is shared by all agents on this machine. Per-agent secrets belong in the agent-specific repo, under its `.claude/` directory. See `~/.ai-agent-jack/.claude/rules/secrets-and-shared-machine.md`.
+> **Do not write the token to `~/.claude/settings.local.json`.** That file is shared by all agents on this machine. Per-agent secrets belong in the agent-specific repo, under its `.claude/` directory (i.e. `<agent-repo>/.claude/settings.local.json`).
 
 ### 7. Test the token
 
@@ -169,16 +169,24 @@ abc123xxxxxxxxxx              Agent-<Name>
 the service account was over-scoped — delete it and recreate with the correct
 vault scope.
 
-Then try reading a non-existent field (the ENVIRONMENT item is still empty) to
-confirm the path convention works:
+At this point the ENVIRONMENT item has no named fields yet (the Discord,
+Telegram, and GitHub App runbooks add them). Any `op read
+"op://Agent-<Name>/ENVIRONMENT/<FIELD>"` will return 404 until those
+runbooks populate the item — that is expected, not a failure.
+
+To confirm the item itself exists and the title is correct, list the
+vault's items instead:
 
 ```bash
-op read "op://Agent-<Name>/ENVIRONMENT/notesPlain"
+op item list --vault "Agent-<Name>"
 ```
 
-This should return the Notes text you entered in step 3. If you get a 404,
-check that the item title is exactly `ENVIRONMENT` (case-sensitive in some
-plans).
+The `ENVIRONMENT` item should appear. If not, check that the item title
+is exactly `ENVIRONMENT` (case-sensitive in some plans) and that the
+service account has Read Items access to this vault.
+
+Field-level reads (`op read "op://Agent-<Name>/ENVIRONMENT/DISCORD_BOT_TOKEN"`)
+become valid once the credential runbooks run.
 
 ### 8. Record the vault name in the agent's plugins.settings.yaml
 
@@ -246,7 +254,7 @@ or field name is wrong. Path format is `op://<VAULT>/<ITEM>/<FIELD>`.
 - **Service account token rotation forgotten.** If you set a 90-day expiration and forget to rotate, the agent will start getting 401s on day 91. Set a calendar reminder. Or use "Never Expires" and accept the trade-off.
 - **Field names case-sensitive.** `op read "op://Agent-Jack/ENVIRONMENT/discord_bot_token"` fails if the field is `DISCORD_BOT_TOKEN`. Stick to the SCREAMING_SNAKE_CASE convention used by environment variables.
 - **Item title `environment` (lowercase) doesn't resolve.** Some 1Password accounts are case-sensitive on item titles. Use `ENVIRONMENT` exactly to match the convention.
-- **Writing secrets to `~/.claude/settings.local.json`.** That file is in the user home, which is shared between all agents on the machine. Per-agent secrets belong under the agent's own repo. See `.claude/rules/secrets-and-shared-machine.md`.
+- **Writing secrets to `~/.claude/settings.local.json`.** That file is in the user home, which is shared between all agents on the machine. Per-agent secrets belong under the agent's own repo (`<agent-repo>/.claude/settings.local.json`).
 - **Gitignore gap.** If `.claude/settings.local.json` is accidentally committed, the token is in git history. Revoke it immediately in 1Password, create a new one, and force-clean the history or accept the secret is compromised.
 - **Multiple `ENVIRONMENT` items.** Having two items both named `ENVIRONMENT` in the same vault causes `op read` to pick one arbitrarily. Always check `op item list --vault "Agent-<Name>"` for duplicates after setup.
 - **Echoing the token.** Running `echo $OP_SERVICE_ACCOUNT_TOKEN` lands it in shell history (`~/.zsh_history` or `~/.bash_history`). Never do this. Use `printf '%s' "$OP_SERVICE_ACCOUNT_TOKEN" | wc -c` if you need to confirm it's set without revealing the value.
