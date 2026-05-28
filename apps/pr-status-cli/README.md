@@ -29,15 +29,15 @@ All refs are merged into ONE aliased GraphQL request to `gh api graphql`.
 
 Discovers PRs via GitHub GraphQL `search` (`is:pr` plus your filters), then runs the same batched status query and emits the same emoji-bucketed lines. At least one of `--org` or `--author` is required.
 
-| flag | default | notes |
-|---|---|---|
-| `--org <name>` | — | repeatable; multiple orgs OR'd |
-| `--author <user>` (alias `--user`) | — | repeatable; multiple authors OR'd |
-| `--since <dur\|iso>` | `12hr` | `Nm`/`Nhr`/`Nh`/`Nd`/`Nw`/`all` or ISO8601 |
-| `--state` | `all` | `open` / `closed` / `merged` / `all` |
-| `--by` | `updated` | `updated` or `created` — what `--since` filters on |
-| `--limit N` | `500` | hard cap |
-| `--refs-only` | off | emit `owner/repo#N` refs, skip the status query |
+| flag                               | default   | notes                                              |
+| ---------------------------------- | --------- | -------------------------------------------------- |
+| `--org <name>`                     | —         | repeatable; multiple orgs OR'd                     |
+| `--author <user>` (alias `--user`) | —         | repeatable; multiple authors OR'd                  |
+| `--since <dur\|iso>`               | `12hr`    | `Nm`/`Nhr`/`Nh`/`Nd`/`Nw`/`all` or ISO8601         |
+| `--state`                          | `all`     | `open` / `closed` / `merged` / `all`               |
+| `--by`                             | `updated` | `updated` or `created` — what `--since` filters on |
+| `--limit N`                        | `500`     | hard cap                                           |
+| `--refs-only`                      | off       | emit `owner/repo#N` refs, skip the status query    |
 
 ## Output
 
