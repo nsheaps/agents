@@ -4,7 +4,7 @@ id: GSD-59
 legacy_ids:
   - "1779932231"
 created: 2026-05-28T01:37:11Z
-state: triage
+state: in-progress
 project: GSD
 priority: 4
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -20,6 +20,11 @@ events:
       ts: 2026-05-28T02:02:32Z,
       by: alex-triager,
       change: "promoted to-triage → GSD-59 (state=triage)",
+    }
+  - {
+      ts: 2026-05-28T02:15:00Z,
+      by: alex-picard,
+      change: "state=triage → in-progress — prototype skill built at .claude/skills/task-graph/ in alex repo; demo run generated 791-line output at .claude/tmp/task-graph.md; all 5 OQs resolved",
     }
 ---
 
@@ -57,20 +62,42 @@ Both outputs should live in the same generated markdown file (or sibling files),
 - The feature is primarily for the agents repo / alex's task-utils usage, but should generalise to any agent using task-utils.
 - Mermaid is already rendered natively by GitHub markdown, so a `.md` file with a fenced ` ```mermaid ``` ` block is sufficient for visualisation without a separate build step.
 
-## Implementation paths to research at triage
+## Implementation — Prototype (2026-05-28)
 
-- **Hook location**: PostToolUse hook on task-manage skill calls vs. a dedicated `task-graph` command/skill in task-utils.
-- **Rendering approach**: write a shell script or Node.js/Python helper that walks task frontmatter and emits mermaid syntax; invoke from the hook.
-- **Filter algorithm**: reverse-adjacency traversal — mark any task that has a descendant with `status: pending | in_progress` as "hidden"; show only unmarked tasks.
-- **Link syntax in Mermaid**: use `click <nodeId> href "<url>"` statements to make nodes clickable.
+### What was built
 
-## Open questions for triage
+**Skill**: `.claude/skills/task-graph/` in alex's repo (`/home/nsheaps/src/nsheaps/.ai-agent-alex/`)
 
-1. **Scope** — alex's repo only, or ship in the task-utils plugin for all agents?
-2. **Trigger** — every task state change (PostToolUse), or on-demand command, or both?
-3. **Output file** — committed to the repo, or written to `.claude/tmp/` as a scratch artifact?
-4. **Filter depth** — should _completed_ parent tasks be shown (as "done" ancestry context) or fully hidden? Nate's ask says omit parents of pending/in-progress tasks, but completed parents of completed leaves may add useful context.
-5. **Plugin home** — task-utils is the logical home; if so, this needs a PR against `ai-mktpl`. Alternatively, prototype locally in `.claude/skills/task-graph/` first (per skill-resolution-order rules) and upstream later.
+Files:
+- `SKILL.md` — skill descriptor, invoke with `Skill(task-graph)`
+- `generate.sh` — shell script wrapping a Python generator; reads from `$CLAUDE_CONFIG_DIR/tasks/$CLAUDE_CODE_TASK_LIST_ID/*.json`
+
+**Output**: `$CLAUDE_CONFIG_DIR/tmp/task-graph.md` (ephemeral, not committed)
+
+**Demo run results** (2026-05-28T02:12Z):
+- Total tasks: 623 (572 completed, 49 pending, 2 in_progress)
+- Leaf tasks in graph: 47 (pending/in_progress tasks with no pending/in_progress descendants)
+- Edges in graph: 0 (all 47 leaf tasks are independent — no edges between terminal nodes)
+- Output file: 791 lines
+
+### Open questions — resolved
+
+**OQ1: Scope** → Local skill in alex repo at `.claude/skills/task-graph/`. Follow-up: upstream to `task-utils` plugin in ai-mktpl. Marked with `<!-- UPSTREAM: task-utils -->` in SKILL.md.
+
+**OQ2: Trigger** → On-demand skill (invoke as `Skill(task-graph)`). Hook integration (PostToolUse on TaskCreate/TaskUpdate) is a follow-up — not built now.
+
+**OQ3: Output file** → `$CLAUDE_CONFIG_DIR/tmp/task-graph.md` (per no-system-tmp rule, NOT committed). Ephemeral, regenerated on each invocation.
+
+**OQ4: Filter depth** → Completed parents of completed leaves are HIDDEN. Algorithm: a task is shown in View 1 if and only if (a) its status is not `completed`, AND (b) it has no pending/in_progress descendant (via DFS on `blocks` edges). All completed tasks are hidden from View 1.
+
+**OQ5: Plugin home** → Same as OQ1 — alex local first, task-utils eventually.
+
+### What is NOT yet done (follow-up work)
+
+- **Hook trigger**: Wire skill to PostToolUse on TaskCreate/TaskUpdate so graph regenerates automatically on task state changes.
+- **Plugin upstream**: Migrate to `task-utils` plugin in ai-mktpl once skill stabilizes.
+- **GitHub URL mapping**: Current links use `https://github.com/nsheaps/.ai-agent-alex/issues/<id>` which assumes task IDs = GitHub issue numbers. This may not hold for all agents.
+- **Configurable output path**: Hardcoded to alex's task list; needs parameterization for multi-agent use.
 
 ## Related
 
