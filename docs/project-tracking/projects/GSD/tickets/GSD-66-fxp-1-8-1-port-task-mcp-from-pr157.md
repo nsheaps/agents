@@ -42,29 +42,50 @@ Land a new branch in `nsheaps/agents` that brings in the **task-MCP server** (Bu
 2. Applying the CI fixes from #157 (claude-code 2.1.128 pin, node dep, `inputs.*` workflow fix).
 3. Leaving the agent-tools-baseline backout + YAML flat store + farish session archive OUT of scope (those are #157-specific concerns).
 
-This becomes the **dependency branch** for FXP/1.8 ([GSD-62][^gsd-62-parent]) — the ticket-MCP server reuses the same scaffolding.
+This is the **expanded port** that builds on the simple ticket-MCP foundation from FXP/1.8 ([GSD-62][^gsd-62-parent]). Per Nate Discord 2026-05-28 02:50Z correction: GSD-62 (simple ticket-MCP) ships first; GSD-66 (port task-MCP from #157 + bolt on shared multi-backend/reconciliation/CLI patterns) builds on top.
 
 ## Scope
 
-In:
+In (port from #157):
 
-- Port `apps/task-mcp/` (Bun MCP server) from PR #157 — same tool surface (task_list, task_get, task_create, task_update, task_stop).
+- Port `apps/task-mcp/` (Bun MCP server) from PR #157 — task tool surface (task_list, task_get, task_create, task_update, task_stop).
 - Port `mcp/build.sh` build script (native build on-device).
 - Port the `TASK_UTILS_REQUIRE_TASK=0` opt-out wiring in the task-utils plugin.
 - Port the CI fixes (claude-code pin, node dep, workflow `if:` fix).
-- New branch named after this ticket: `feat/gsd-66-task-mcp` (or similar — branch and PR named after ticket id per Nate's directive).
+
+In (expanded scope per Nate 02:31Z):
+
+- **Multi-backend storage** for BOTH task and ticket documents:
+  - (a) files only
+  - (b) files + git (auto push/pull, possibly via `git-sync` utility)
+  - (c) Linear
+  - (d) GitHub Issues
+- **Reconciliation engine** — k8s-controller-like: resource actions trigger JIT updates to live backends, plus a periodic reconcile process that maintains eventual consistency. Reconcile triggered at MCP server startup.
+- **Project-id mappings** in configs:
+  - Ticket configs: project-id → repo / Linear-project mappings
+  - Task configs: map to repo or Linear (recommended: GitHub Issues)
+- **Shared code package(s)** — first time we're building shared code across 2 servers + 2 CLIs; this establishes the patterns.
+- **agent-task-cli + agent-ticket-cli** — same functionality as the MCP servers, plus a `reconcile` subcommand for ad-hoc execution and user exploration/editing.
+- New branch named after this ticket: `feat/gsd-66-task-mcp` (branch and PR named after ticket id per Nate's directive).
 
 Out:
 
 - The agent-tools-baseline backout (separate concern, already resolved).
 - The YAML flat store migration (separate concern — task-utils JSON→YAML, not MCP-related).
 - The farish session archive (unrelated).
-- Ticket-MCP server (that's FXP/1.8 = GSD-62 — built on TOP of this branch).
-- Multi-backend storage, reconciliation, CLI (also FXP/1.8 scope — see GSD-62).
 
-## Blocks
+## Blocked by
 
-- [GSD-62](./GSD-62-fxp-1-8-bun-ts-mcp-ticket-server.md) (FXP/1.8) — ticket-MCP server reuses this branch as base.
+- [GSD-62](./GSD-62-fxp-1-8-bun-ts-mcp-ticket-server.md) (FXP/1.8) — simple ticket-MCP foundation must ship first.
+
+## Research checkpoint required before dispatch
+
+Per Nate Discord 02:31Z: "significant research to understand the desired state and plan well so we don't build this twice". Before any branch work begins:
+
+- Survey ALL prior-art in the repo files re: task/ticket MCP server design, multi-backend storage, reconciliation patterns (including but not limited to #157's task-MCP).
+- Survey GSD tickets that touch ticket/task management (GSD-31 ticket-utils-plugin, GSD-32 ticket-intake, GSD-33 task-utils assign-on-launch, GSD-34 task-utils validation, GSD-41 ticket-vs-task criteria, GSD-48 ticket-utils plugin, GSD-49 per-ticket file structure).
+- Produce a design doc with shared-code package layout + per-backend adapter interface + reconcile cycle pseudocode.
+- Handler review of design doc before any code work.
 
 ## Open Questions
 
