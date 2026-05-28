@@ -7,6 +7,7 @@
  *   pr-status digest [--org <name>...] [--author <user>...] [--since <dur|iso>]
  *                    [--state open|closed|merged|all] [--by created|updated]
  *                    [--limit N] [--refs-only] [--all-open|--no-all-open]
+ *                    [--out-dir <dir>]  # emit per-repo files instead of stdout
  *   pr-status patch-event [--event-file <path>] [--digest-dir <dir>]
  *
  * Ref forms (ref mode):
@@ -22,6 +23,12 @@
  * $GITHUB_EVENT_PATH or --event-file), patch ONLY the matching line in the
  * per-repo digest file, and update the combined all.md — no API calls.
  *
+ * --out-dir mode: when set, runs a SINGLE search query across all --repo args,
+ * buckets results by repo, and writes one file per repo at
+ * <out-dir>/<owner>--<repo>.md. Also writes all lines to stdout (for combined).
+ * The query is automatically chunked if the repo list would exceed the GitHub
+ * search query length limit (~230 chars for the repo: qualifiers).
+ *
  * Output (one line per PR):
  *   <state><ci><review> [[owner/repo#N] title](url)
  *
@@ -30,8 +37,8 @@
  * up to --limit (default 500), then runs the same batched status query.
  */
 
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { dirname } from "node:path";
+import { readFileSync, writeFileSync, existsSync, mkdirSync, appendFileSync } from "node:fs";
+import { dirname, join } from "node:path";
 
 type Ref = { owner: string; repo: string; number: number };
 
@@ -298,8 +305,8 @@ function formatLine(ref: Ref, pr: any): string {
   const author = authorLink(pr);
   const body = `${emojis} [[${slug}#${pr.number}] ${title}](${url})${author}`;
   // Strikethrough merged 🟣 OR closed-no-merge ❌ — both terminal states.
-  if (s === "🟣" || s === "❌") return `~~${body}~~`;
-  return body;
+  if (s === "🟣" || s === "❌") return `- ~~${body}~~`;
+  return `- ${body}`;
 }
 
 /**
@@ -419,8 +426,9 @@ const EMOJI_TIP_RE = /\[([^[\]]+)\]\(#\s*"([^"]+)"\)/g;
 
 function extractEmojiTips(line: string): Array<{ emoji: string; title: string }> {
   const results: Array<{ emoji: string; title: string }> = [];
-  // Strip strikethrough wrapper if present
-  const stripped = line.replace(/^~~(.+)~~$/, "$1");
+  // Strip the leading "- " bullet prefix and any "~~...~~" strikethrough wrapper.
+  // Emitted lines are always one of: "- ~~<body>~~" (closed/merged) or "- <body>" (open).
+  const stripped = line.replace(/^- ~~(.+)~~$/, "$1").replace(/^- /, "");
   let m: RegExpExecArray | null;
   EMOJI_TIP_RE.lastIndex = 0;
   while ((m = EMOJI_TIP_RE.exec(stripped)) !== null) {
@@ -467,8 +475,8 @@ function buildPatchedLine(
   const author = ` by [@${authorLogin}](${authorUrl})`;
 
   const body = `${stateTip}${ciTip}${reviewTip} [[${slug}#${ref.number}] ${title}](${url})${author}`;
-  if (s === "🟣" || s === "❌") return `~~${body}~~`;
-  return body;
+  if (s === "🟣" || s === "❌") return `- ~~${body}~~`;
+  return `- ${body}`;
 }
 
 /**
@@ -478,8 +486,9 @@ function buildPatchedLine(
  * We match on the `[[slug#N]` substring anywhere in the line.
  */
 function lineMatchesPr(line: string, slug: string, number: number): boolean {
-  // Strip strikethrough wrapper then check for [[slug#N] anywhere in line
-  const stripped = line.replace(/^~~(.+)~~$/, "$1");
+  // Strip the leading "- " bullet prefix and any "~~...~~" strikethrough wrapper,
+  // then check for [[slug#N] anywhere in line.
+  const stripped = line.replace(/^- ~~(.+)~~$/, "$1").replace(/^- /, "");
   return stripped.includes(`[[${slug}#${number}]`);
 }
 
@@ -649,6 +658,7 @@ type DigestArgs = {
    *  filters the closed/merged bucket.  Pass --no-all-open to restore the old
    *  behaviour where --since trims every bucket uniformly. */
   allOpen: boolean;
+  outDir: string | null;
 };
 
 function parseDigestArgs(argv: string[]): DigestArgs {
@@ -662,6 +672,7 @@ function parseDigestArgs(argv: string[]): DigestArgs {
     limit: 500,
     refsOnly: false,
     allOpen: true,
+    outDir: null,
   };
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i];
@@ -686,12 +697,13 @@ function parseDigestArgs(argv: string[]): DigestArgs {
     else if (v === "--refs-only") a.refsOnly = true;
     else if (v === "--all-open") a.allOpen = true;
     else if (v === "--no-all-open") a.allOpen = false;
+    else if (v === "--out-dir" || v.startsWith("--out-dir=")) a.outDir = take();
     else if (v === "-h" || v === "--help") {
       console.error(
         "usage: pr-status digest [--org N...] [--author U...] [--repo OWNER/REPO...]\n" +
           "                       [--since DUR|ISO] [--state open|closed|merged|all]\n" +
           "                       [--by created|updated] [--limit N] [--refs-only]\n" +
-          "                       [--all-open|--no-all-open]",
+          "                       [--all-open|--no-all-open] [--out-dir DIR]",
       );
       process.exit(0);
     } else {
@@ -717,21 +729,74 @@ function sinceToISO(since: string): string | null {
   return new Date(Date.now() - sec * 1000).toISOString().replace(/\.\d+Z$/, "Z");
 }
 
+/**
+ * Build a GitHub search query string from DigestArgs.
+ * repos: optional subset of repos to use (for chunking). If null, uses a.repos.
+ * opts.stateOverride: override a.state (used by --all-open split).
+ * opts.skipSince: omit the since filter (used by --all-open open query).
+ */
 function buildSearchQ(
   a: DigestArgs,
+  repos?: string[],
   opts?: { stateOverride?: DigestArgs["state"]; skipSince?: boolean },
 ): string {
+  const repoList = repos ?? a.repos;
   const state = opts?.stateOverride ?? a.state;
   const parts: string[] = ["is:pr"];
   for (const o of a.orgs) parts.push(`org:${o}`);
   for (const u of a.authors) parts.push(`author:${u}`);
-  for (const r of a.repos) parts.push(`repo:${r}`);
+  for (const r of repoList) parts.push(`repo:${r}`);
   if (state !== "all") parts.push(`is:${state}`);
   if (!opts?.skipSince) {
     const iso = sinceToISO(a.since);
     if (iso) parts.push(`${a.by}:>=${iso}`);
   }
   return parts.join(" ");
+}
+
+/**
+ * Split a list of repos into chunks where each chunk's repo: qualifiers
+ * (combined with the base query prefix) stay under maxQueryLen chars.
+ */
+export function chunkReposForQuery(
+  repos: string[],
+  baseQ: string,
+  maxQueryLen = 230,
+): string[][] {
+  if (repos.length === 0) return [];
+  const chunks: string[][] = [];
+  let current: string[] = [];
+  let currentLen = baseQ.length;
+
+  for (const r of repos) {
+    const qualifier = ` repo:${r}`;
+    if (current.length > 0 && currentLen + qualifier.length > maxQueryLen) {
+      chunks.push(current);
+      current = [];
+      currentLen = baseQ.length;
+    }
+    current.push(r);
+    currentLen += qualifier.length;
+  }
+  if (current.length > 0) chunks.push(current);
+  return chunks;
+}
+
+/**
+ * Bucket a flat list of refs by "owner/repo" slug.
+ */
+export function bucketByRepo(refs: Ref[]): Map<string, Ref[]> {
+  const map = new Map<string, Ref[]>();
+  for (const r of refs) {
+    const slug = `${r.owner}/${r.repo}`;
+    const existing = map.get(slug);
+    if (existing) {
+      existing.push(r);
+    } else {
+      map.set(slug, [r]);
+    }
+  }
+  return map;
 }
 
 const SEARCH_GQL = `
@@ -763,15 +828,11 @@ async function ghGraphqlVars(query: string, vars: Record<string, unknown>): Prom
   return JSON.parse(out);
 }
 
-/** Page through a single GitHub search query, appending into `refs`/`seen` up to `limit`. */
-async function collectSearchRefs(
-  q: string,
-  refs: Ref[],
-  seen: Set<string>,
-  limit: number,
-): Promise<void> {
-  const pageSize = 100;
+async function discoverRefsForQuery(q: string, limit: number): Promise<Ref[]> {
+  const refs: Ref[] = [];
+  const seen = new Set<string>();
   let after: string | null = null;
+  const pageSize = 100;
   while (refs.length < limit) {
     const first = Math.min(pageSize, limit - refs.length);
     const resp = await ghGraphqlVars(SEARCH_GQL, { q, first, after });
@@ -795,6 +856,19 @@ async function collectSearchRefs(
     if (!page?.hasNextPage || !page.endCursor) break;
     after = page.endCursor;
   }
+  return refs;
+}
+
+/** Merge refs from `src` into `dest`/`seen`, respecting `limit`. */
+function mergeRefs(src: Ref[], dest: Ref[], seen: Set<string>, limit: number): void {
+  for (const r of src) {
+    if (dest.length >= limit) break;
+    const key = `${r.owner}/${r.repo}#${r.number}`;
+    if (!seen.has(key)) {
+      seen.add(key);
+      dest.push(r);
+    }
+  }
 }
 
 async function discoverRefs(a: DigestArgs): Promise<Ref[]> {
@@ -804,25 +878,74 @@ async function discoverRefs(a: DigestArgs): Promise<Ref[]> {
   const hasSince = sinceToISO(a.since) !== null;
   const needsSplit = a.allOpen && a.state === "all" && hasSince;
 
-  const refs: Ref[] = [];
+  // If we have --repo flags and they could exceed the GH search query length,
+  // chunk them into multiple queries and merge results.
+  if (a.repos.length > 0) {
+    // Build the base query without repo: qualifiers to measure its length
+    const baseArgs = { ...a, repos: [] };
+    const baseQ = buildSearchQ(baseArgs, []);
+    const chunks = chunkReposForQuery(a.repos, baseQ);
+
+    if (chunks.length > 1) {
+      console.error(`digest query: splitting ${a.repos.length} repos into ${chunks.length} chunks`);
+    }
+
+    const allRefs: Ref[] = [];
+    const seen = new Set<string>();
+    for (let ci = 0; ci < chunks.length; ci++) {
+      if (allRefs.length >= a.limit) break;
+      if (needsSplit) {
+        // 1. Open PRs — no since filter (always show all open PRs).
+        const openQ = buildSearchQ(a, chunks[ci], { stateOverride: "open", skipSince: true });
+        // 2. Closed PRs (merged + unmerged-closed) — since filter applies.
+        const closedQ = buildSearchQ(a, chunks[ci], { stateOverride: "closed" });
+        if (chunks.length > 1) {
+          console.error(`digest queries [${ci + 1}/${chunks.length}] (--all-open): open=${openQ}  closed=${closedQ}`);
+        } else {
+          console.error(`digest queries (--all-open): open=${openQ}  closed=${closedQ}`);
+        }
+        const openRefs = await discoverRefsForQuery(openQ, a.limit - allRefs.length);
+        mergeRefs(openRefs, allRefs, seen, a.limit);
+        const closedRefs = await discoverRefsForQuery(closedQ, a.limit - allRefs.length);
+        mergeRefs(closedRefs, allRefs, seen, a.limit);
+      } else {
+        const q = buildSearchQ(a, chunks[ci]);
+        if (chunks.length > 1) {
+          console.error(`digest query [${ci + 1}/${chunks.length}]: ${q}`);
+        } else {
+          console.error(`digest query: ${q}`);
+        }
+        const chunkRefs = await discoverRefsForQuery(q, a.limit - allRefs.length);
+        mergeRefs(chunkRefs, allRefs, seen, a.limit);
+      }
+    }
+    console.error(`discovered ${allRefs.length} ref(s)`);
+    return allRefs;
+  }
+
+  // No --repo flags: single query (with optional allOpen split)
+  const allRefs: Ref[] = [];
   const seen = new Set<string>();
 
   if (needsSplit) {
     // 1. Open PRs — no since filter (always show all open PRs).
-    const openQ = buildSearchQ(a, { stateOverride: "open", skipSince: true });
+    const openQ = buildSearchQ(a, undefined, { stateOverride: "open", skipSince: true });
     // 2. Closed PRs (merged + unmerged-closed) — since filter applies.
-    const closedQ = buildSearchQ(a, { stateOverride: "closed" });
+    const closedQ = buildSearchQ(a, undefined, { stateOverride: "closed" });
     console.error(`digest queries (--all-open): open=${openQ}  closed=${closedQ}`);
-    await collectSearchRefs(openQ, refs, seen, a.limit);
-    await collectSearchRefs(closedQ, refs, seen, a.limit);
+    const openRefs = await discoverRefsForQuery(openQ, a.limit);
+    mergeRefs(openRefs, allRefs, seen, a.limit);
+    const closedRefs = await discoverRefsForQuery(closedQ, a.limit - allRefs.length);
+    mergeRefs(closedRefs, allRefs, seen, a.limit);
   } else {
     const q = buildSearchQ(a);
     console.error(`digest query: ${q}`);
-    await collectSearchRefs(q, refs, seen, a.limit);
+    const refs = await discoverRefsForQuery(q, a.limit);
+    mergeRefs(refs, allRefs, seen, a.limit);
   }
 
-  console.error(`discovered ${refs.length} ref(s)`);
-  return refs;
+  console.error(`discovered ${allRefs.length} ref(s)`);
+  return allRefs;
 }
 
 // ---- main ----
@@ -834,6 +957,7 @@ async function main() {
       "usage:\n" +
         "  pr-status <ref> [<ref> ...]            (ref = URL | owner/repo#N | @file)\n" +
         "  pr-status digest [--org ...] [--author ...] [--since ...] [--refs-only]\n" +
+        "                   [--out-dir DIR]\n" +
         "  pr-status patch-event [--event-file <path>] [--digest-dir <dir>]",
     );
     process.exit(2);
@@ -847,6 +971,8 @@ async function main() {
   let refs: Ref[];
   let refsOnly = false;
   let sortDigest = false;
+  let outDir: string | null = null;
+  let digestArgs: DigestArgs | null = null;
 
   if (argv[0] === "digest") {
     const dargs = parseDigestArgs(argv.slice(1));
@@ -857,13 +983,16 @@ async function main() {
     refs = await discoverRefs(dargs);
     refsOnly = dargs.refsOnly;
     sortDigest = true;
+    outDir = dargs.outDir;
+    digestArgs = dargs;
   } else {
     refs = collectRefs(argv);
   }
 
   if (refs.length === 0) {
     console.error("no refs to query");
-    process.exit(refsOnly ? 0 : 2);
+    // exit 0 in digest mode: no PRs is a valid empty result, not an error
+    process.exit(argv[0] === "digest" ? 0 : 2);
   }
 
   if (refsOnly) {
@@ -877,12 +1006,14 @@ async function main() {
   let anySuccess = false;
   let failCount = 0;
 
-  // In digest mode: collect (slug, sortKey, line) so we can sort per-repo before
-  // emitting.  In ref mode: print immediately (preserve caller-specified order).
+  // In digest mode: collect (slug, sortKey, line, ref) so we can sort per-repo
+  // before emitting and bucket by repo for --out-dir.
+  // In ref mode: print immediately (preserve caller-specified order).
   type CollectedLine = {
     slug: string;
     sortKey: [number, number, number, number, number, number];
     line: string;
+    ref: Ref;
   };
   const collected: CollectedLine[] = [];
 
@@ -911,7 +1042,7 @@ async function main() {
         const line = `⚠️⚠️⚠️ [[${ref.owner}/${ref.repo}#${ref.number}] (not found)](https://github.com/${ref.owner}/${ref.repo}/pull/${ref.number})`;
         if (sortDigest) {
           const slug = `${ref.owner}/${ref.repo}`;
-          collected.push({ slug, sortKey: [4, 0, 4, 5, -ref.number, 0], line });
+          collected.push({ slug, sortKey: [4, 0, 4, 5, -ref.number, 0], line, ref });
         } else {
           console.log(line);
         }
@@ -920,7 +1051,7 @@ async function main() {
       const line = formatLine(ref, pr);
       if (sortDigest) {
         const slug = pr.baseRepository?.nameWithOwner ?? `${ref.owner}/${ref.repo}`;
-        collected.push({ slug, sortKey: digestSortKey(pr), line });
+        collected.push({ slug, sortKey: digestSortKey(pr), line, ref });
       } else {
         console.log(line);
       }
@@ -941,13 +1072,81 @@ async function main() {
     for (const { line } of collected) console.log(line);
   }
 
+  // --out-dir: write per-repo files (uses the already-sorted `collected` if digest mode)
+  if (outDir && (anySuccess || refs.length === 0)) {
+    const ts = new Date().toISOString().replace(/:\d+\.\d+Z$/, "Z");
+    mkdirSync(outDir, { recursive: true });
+
+    // Build the set of repos we were asked about (for the --repo flag list).
+    // Even repos with 0 PRs should get a (possibly empty) file.
+    const requestedRepos = new Set<string>(digestArgs?.repos ?? []);
+    const bucketed = bucketByRepo(collected.map((cl) => cl.ref));
+
+    // Ensure all requested repos appear in the map (even if empty).
+    for (const r of requestedRepos) {
+      if (!bucketed.has(r)) bucketed.set(r, []);
+    }
+
+    // Summary stats per repo (for GITHUB_STEP_SUMMARY / job log).
+    const summaryLines: string[] = [];
+
+    for (const [slug] of bucketed) {
+      const repoLines = collected
+        .filter((cl) => cl.slug === slug)
+        .map((cl) => cl.line);
+
+      // Count stats for summary
+      const total = repoLines.length;
+      const open = repoLines.filter((l) => !l.includes("~~")).length;
+      const merged = repoLines.filter((l) => l.includes("🟣")).length;
+      const closed = repoLines.filter((l) => l.includes("❌") && l.includes("~~")).length;
+      summaryLines.push(`- **${slug}**: ${total} total — ${open} open / ${merged} merged 🟣 / ${closed} closed ❌`);
+      console.error(`summary: ${slug}: ${total} total (${open} open, ${merged} merged, ${closed} closed)`);
+
+      const fileName = `${slug.replace("/", "--")}.md`;
+      const filePath = join(outDir, fileName);
+      const header = [
+        `# PR Status — ${slug}`,
+        "",
+        `_Generated ${ts} · scope: this repo · open + merged 🟣 only (closed-no-merge ❌ excluded)._`,
+        "",
+      ].join("\n");
+      // Exclude closed-no-merge lines (marked by both "~~" strikethrough and "❌" state).
+      const body = repoLines.filter((l) => !(l.includes("~~") && l.includes("❌"))).join("\n");
+      writeFileSync(filePath, header + (body ? body + "\n" : ""));
+    }
+
+    // Write totals summary to GITHUB_STEP_SUMMARY if available
+    const stepSummaryPath = process.env.GITHUB_STEP_SUMMARY;
+    if (stepSummaryPath) {
+      const totalPRs = collected.length;
+      const totalOpen = collected.filter((cl) => !cl.line.includes("~~")).length;
+      const totalMerged = collected.filter((cl) => cl.line.includes("🟣")).length;
+
+      const summaryContent = [
+        `## PR Status Digest — ${ts}`,
+        "",
+        `**Total:** ${totalPRs} PRs across ${bucketed.size} repos — ${totalOpen} open / ${totalMerged} merged`,
+        "",
+        "### Per-repo breakdown",
+        "",
+        ...summaryLines,
+      ].join("\n") + "\n";
+
+      appendFileSync(stepSummaryPath, summaryContent);
+    }
+  }
+
   if (!anySuccess && failCount > 0) {
     process.exit(1);
   }
   // partial failures: exit 0 — warnings already emitted to stderr
 }
 
-main().catch((e) => {
-  console.error(e);
-  process.exit(1);
-});
+// Only run main() when executed directly, not when imported for testing.
+if (import.meta.main) {
+  main().catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
+}

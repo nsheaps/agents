@@ -5,6 +5,11 @@ name: PR Status Digest
 # combined doc at docs/pr-status/all.md. Commits + pushes any changes back to
 # main via the github-app-auth composite (no user PAT).
 #
+# Query efficiency: a SINGLE GraphQL search query (chunked only if the repo list
+# exceeds ~230 chars of repo: qualifiers) discovers all open PRs across all repos
+# in one round-trip. Results are bucketed locally into per-repo files.
+# Before: N+1 queries (N per-repo + 1 combined) — After: 1 query (+ optional chunks).
+#
 # Triggers:
 #   - schedule:           every 12h          → full regen
 #   - workflow_dispatch:  manual via UI       → full regen
@@ -153,47 +158,35 @@ jobs:
         env:
           GH_TOKEN: ${{ steps.auth.outputs.token }}
           GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
-          # Mirror Nate's default: open + closed-merged only (no closed-no-merge).
-          # `pr-status digest` itself doesn't filter post-hoc — we filter via
-          # `--state=all` then drop ❌ lines (closed-no-merge) below.
         run: |
           set -euo pipefail
           mkdir -p docs/pr-status/per-repo
           CLI="apps/pr-status-cli/src/index.ts"
           TS=$(date -u +%Y-%m-%dT%H:%MZ)
-          REPO_ARGS=()
 
-          # --- per-repo ---
+          # Build --repo flag list from resolved scope
+          REPO_ARGS=()
           while IFS= read -r slug; do
             [[ -z "$slug" ]] && continue
             REPO_ARGS+=(--repo "$slug")
-            out="docs/pr-status/per-repo/${slug//\//--}.md"
-            echo "::group::digest for $slug → $out"
-            {
-              echo "# PR Status — $slug"
-              echo
-              echo "_Generated $TS · scope: this repo · open + merged 🟣 only (closed-no-merge ❌ excluded)._"
-              echo
-              # --state=all returns everything; drop ❌ closed-no-merge lines.
-              bun run "$CLI" digest --repo "$slug" --state=all --since=all --limit=500 2>&1 \
-                | { grep -vE '^digest query:|^discovered ' || true; } \
-                | { grep -vE '^❌' || true; }
-            } > "$out"
-            echo "::endgroup::"
           done <<< "${{ steps.scope.outputs.slugs }}"
 
-          # --- combined ---
-          out="docs/pr-status/all.md"
-          echo "::group::combined digest → $out"
+          # --- single query → per-repo files + combined stdout ---
+          # --out-dir writes one file per repo inside docs/pr-status/per-repo/.
+          # stdout contains ALL lines (combined); we also pipe to the all.md file.
+          # The CLI automatically chunks repo: qualifiers if they exceed ~230 chars.
+          # GITHUB_STEP_SUMMARY is set so the CLI also appends a per-repo summary table.
+          echo "::group::digest (single query, ${#REPO_ARGS[@]} --repo flags)"
           {
             echo "# PR Status — REPOS.md scope (combined)"
             echo
-            echo "_Generated $TS · scope: ${#REPO_ARGS[@]} flags (${REPO_ARGS[@]:1:1} …) · open + merged 🟣 only._"
+            echo "_Generated $TS · scope: ${#REPO_ARGS[@]} repo flags · open + merged 🟣 only (closed-no-merge ❌ excluded)._"
             echo
-            bun run "$CLI" digest "${REPO_ARGS[@]}" --state=all --since=all --limit=2000 2>&1 \
-              | { grep -vE '^digest query:|^discovered ' || true; } \
-              | { grep -vE '^❌' || true; }
-          } > "$out"
+            bun run "$CLI" digest "${REPO_ARGS[@]}" --state=all --since=all --limit=2000 \
+              --out-dir docs/pr-status/per-repo 2>&1 \
+              | { grep -vE '^digest query:|^discovered |^summary:' || true; } \
+              | { grep -vE '~~.*❌' || true; }
+          } > docs/pr-status/all.md
           echo "::endgroup::"
 
       - name: Configure git identity (github-app bot)
@@ -233,3 +226,11 @@ jobs:
             echo "::error::push failed after rebase retry"
             exit 1
           fi
+
+      - name: Upload digest artifacts
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: pr-status-digests
+          path: docs/pr-status/
+          retention-days: 5
