@@ -1,5 +1,11 @@
 name: PR Status Digest
 
+# DISABLED 2026-05-28 (GSD-101): docs/pr-status/ moved to nsheaps/.org. This
+# workflow needs to be reworked to push cross-repo (or migrated entirely to
+# .org). Until that lands, the schedule/dispatch triggers are inert (gated by
+# `if: false`) so we don't write to a path that's about to be deleted from
+# this repo. Tracking: https://github.com/nsheaps/.org/blob/main/docs/project-tracking/projects/GSD/tickets/GSD-101-move-tickets-pr-digests-to-nsheaps-org.md
+#
 # Generates emoji-bucketed PR-status digests for every repo in REPOS.md scope:
 # one doc per repo at docs/pr-status/per-repo/<owner>--<repo>.md, plus one
 # combined doc at docs/pr-status/all.md. Commits + pushes any changes back to
@@ -43,7 +49,8 @@ jobs:
   # and commits if anything changed.
   patch:
     runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    # GSD-101: disabled until rework targets nsheaps/.org cross-repo.
+    if: false && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     steps:
       - name: Checkout main
         uses: actions/checkout@v6
@@ -118,7 +125,8 @@ jobs:
   # pull_request — those are handled by the patch job above).
   digest:
     runs-on: ubuntu-latest
-    if: github.event_name != 'pull_request'
+    # GSD-101: disabled until rework targets nsheaps/.org cross-repo.
+    if: false && github.event_name != 'pull_request'
     steps:
       - name: Checkout main
         uses: actions/checkout@v6
