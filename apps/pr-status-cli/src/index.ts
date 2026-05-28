@@ -295,24 +295,34 @@ function formatLine(ref: Ref, pr: any): string {
 }
 
 /**
- * Per-repo sort key for digest mode.
+ * Global sort key for digest mode.
  *
- * Bucket order:
- *   0 open  — sub-sorted by mergeability: CLEAN(0) > UNSTABLE(1) > BEHIND(2) > anything-else(3)
- *   1 merged 🟣 — descending PR number
- *   2 closed-no-merge ❌ — descending PR number
+ * Sort order (ascending, lower = appears first):
+ *   1. stateBucket:  0 open → 1 merged → 2 closed-no-merge
+ *   2. mergeRank:    0 CLEAN → 1 UNSTABLE → 2 BEHIND → 3 other (open PRs only)
+ *   3. ciRank:       0 ✅/🟢 (pass) → 1 🔵 (running) → 2 🔴 (partial) → 3 🟠 (partial-running) → 4 ❌/⛔️ (fail/blocked)
+ *   4. reviewRank:   0 ✅ (codeowner-approved) → 1 🟢 (approved) → 2 🟠 (approved-not-met) → 3 💬 (commented) → 4 🔵 (no reviews) → 5 ❌ (changes-req)
+ *   5. -prNumber:    higher PR number first (newer first) within the same bucket
  *
- * Returns [repoBucket, mergeabilityRank, -prNumber] for lexicographic comparison.
+ * PRs are sorted globally across all repos — no per-repo grouping.
  */
-function digestSortKey(pr: any): [number, number, number, number] {
+function digestSortKey(pr: any): [number, number, number, number, number, number] {
   const s = stateEmoji(pr);
   // Bucket 0 = open, 1 = merged, 2 = closed-no-merge
-  const repoBucket = s === "🟣" ? 1 : s === "❌" ? 2 : 0;
+  const stateBucket = s === "🟣" ? 1 : s === "❌" ? 2 : 0;
   // Mergeability rank (lower = more mergeable); only relevant for open PRs
   const mss: string = pr.mergeStateStatus ?? "";
   const mergeRank =
     mss === "CLEAN" ? 0 : mss === "UNSTABLE" ? 1 : mss === "BEHIND" ? 2 : 3;
-  return [repoBucket, mergeRank, -pr.number, 0];
+  // CI rank: best CI state first
+  const ci = ciEmoji(pr);
+  const ciRank =
+    ci === "✅" || ci === "🟢" ? 0 : ci === "🔵" ? 1 : ci === "🔴" ? 2 : ci === "🟠" ? 3 : 4; // ❌ or ⛔️
+  // Review rank: most-approved first
+  const rv = reviewEmoji(pr);
+  const reviewRank =
+    rv === "✅" ? 0 : rv === "🟢" ? 1 : rv === "🟠" ? 2 : rv === "💬" ? 3 : rv === "🔵" ? 4 : 5; // ❌ = changes-req
+  return [stateBucket, mergeRank, ciRank, reviewRank, -pr.number, 0];
 }
 
 // ---- digest subcommand: discover refs via GraphQL search ----
@@ -552,9 +562,9 @@ async function main() {
   let anySuccess = false;
   let failCount = 0;
 
-  // In digest mode: collect (slug, sortKey, line) so we can sort per-repo before
+  // In digest mode: collect (sortKey, line) so we can sort globally before
   // emitting.  In ref mode: print immediately (preserve caller-specified order).
-  type CollectedLine = { slug: string; sortKey: [number, number, number, number]; line: string };
+  type CollectedLine = { slug: string; sortKey: [number, number, number, number, number, number]; line: string };
   const collected: CollectedLine[] = [];
 
   for (let start = 0; start < refs.length; start += BATCH_SIZE) {
@@ -582,7 +592,7 @@ async function main() {
         const line = `⚠️⚠️⚠️ [[${ref.owner}/${ref.repo}#${ref.number}] (not found)](https://github.com/${ref.owner}/${ref.repo}/pull/${ref.number})`;
         if (sortDigest) {
           const slug = `${ref.owner}/${ref.repo}`;
-          collected.push({ slug, sortKey: [4, 0, -ref.number, 0], line });
+          collected.push({ slug, sortKey: [4, 0, 4, 5, -ref.number, 0], line });
         } else {
           console.log(line);
         }
@@ -598,11 +608,10 @@ async function main() {
     });
   }
 
-  // Digest mode: sort per-repo (open by mergeability → merged → closed) then emit.
+  // Digest mode: global sort (open→merged→closed, then mergeability→CI→review→number desc).
+  // No per-repo grouping — PRs from all repos are sorted together.
   if (sortDigest && collected.length > 0) {
     collected.sort((a, b) => {
-      if (a.slug < b.slug) return -1;
-      if (a.slug > b.slug) return 1;
       for (let k = 0; k < a.sortKey.length; k++) {
         if (a.sortKey[k] !== b.sortKey[k]) return a.sortKey[k] - b.sortKey[k];
       }
