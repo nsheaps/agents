@@ -9,12 +9,13 @@ related:
   - agent-directory
 owner: jack
 created: 2026-04-07
-updated: 2026-04-07
+updated: 2026-04-09
 tags:
   - auth
   - credentials
   - github
   - security
+  - discord
 ---
 
 # Auth & Credentials
@@ -83,14 +84,79 @@ identity with no visible error.
    must be present in the host environment or injected by the orchestration layer before
    the agent launcher starts. Source: `docs/research/1pass-opexec-injection.md`.
 
+10. **Discord bot invite MUST request both `bot` and `applications.commands` scopes**:
+    An invite URL with only `scope=applications.commands` installs the slash-command
+    surface but does NOT add the bot user to the guild, leaving the agent with no
+    member entry (no roles, no permissions, no presence). Every Discord invite URL
+    MUST include `scope=bot%20applications.commands`. Source: audit of Jack's existing
+    installation on 2026-04-09, which had `install_params.scopes = ['applications.commands']`
+    only; the bot was in the guild from an earlier invite, but any re-invite from the
+    current config would have broken it.
+
+## Discord Bot Permissions
+
+Each agent's Discord bot needs a specific permission set to fully function. These
+are documented at the design level here; for the HOW (OAuth2 URL Generator, invite
+flow, and verification commands), see `docs/runbooks/create-discord-bot.md`.
+
+### Baseline permissions (14) — required for core function
+
+The agent cannot operate on Discord without all fourteen of these. They cover the
+minimum capability surface: seeing channels, reading history, posting replies,
+opening threads, reacting to messages, and registering slash commands.
+
+`VIEW_CHANNEL`, `VIEW_AUDIT_LOG`, `READ_MESSAGE_HISTORY`, `SEND_MESSAGES`,
+`SEND_MESSAGES_IN_THREADS`, `EMBED_LINKS`, `ATTACH_FILES`, `ADD_REACTIONS`,
+`USE_EXTERNAL_EMOJIS`, `USE_EXTERNAL_STICKERS`, `USE_APPLICATION_COMMANDS`,
+`CREATE_PUBLIC_THREADS`, `CREATE_PRIVATE_THREADS`, `MENTION_EVERYONE`.
+
+`MENTION_EVERYONE` is gated to baseline only for agents whose handler explicitly
+wants role-mention support (e.g. pinging `@reviewers` when a PR opens). This same
+permission also enables `@everyone`/`@here`, which can spam an entire server, so
+the agent must never send those unprompted. If the agent has no concrete
+role-mention use case, omit `MENTION_EVERYONE` from baseline and move it to
+recommended extras.
+
+Rationale: these were derived from an API audit of Jack's role in the dev guild
+on 2026-04-09. They are granted on Jack's existing installation and are working.
+
+### Recommended extras (6) — enable advanced operations
+
+Without these, the bot cannot perform channel/role/webhook/thread management
+operations. Each missing permission blocks a concrete class of agent work:
+
+| Permission                | Blocks                                                                                              | Why the bot needs it                                                                                                                     |
+| :------------------------ | :-------------------------------------------------------------------------------------------------- | :--------------------------------------------------------------------------------------------------------------------------------------- |
+| `MANAGE_CHANNELS`         | Opening work channels (e.g. `#mergeathon`), modifying channel topics, adjusting channel permissions | Agents need to spin up and tear down work channels as part of multi-agent coordination flows                                             |
+| `MANAGE_MESSAGES`         | Pinning handler instructions, cross-posting announcements, moderating stale bot messages            | Agents manage their own message lifecycle and surface important content                                                                  |
+| `MANAGE_ROLES`            | Self-service permission grants (temporary access to a work channel)                                 | Future flows where the agent grants another user limited access on request                                                               |
+| `MANAGE_WEBHOOKS`         | Routing GitHub/external webhooks into Discord channels                                              | Webhook CRUD for integrations is an agent-owned operation, not a handler-owned one                                                       |
+| `MANAGE_THREADS`          | Renaming, archiving, or locking threads owned by other users                                        | Bots can manage their own threads without this, but cannot manage handler-opened threads (e.g. renaming a forum post after scope change) |
+| `USE_EMBEDDED_ACTIVITIES` | Launching embedded voice/video activities in a channel                                              | Text-only agents do not need this; grant only for a concrete activity-launching use case                                                 |
+
+### Per-agent scoping
+
+Each agent gets its own bot application and its own permission grant. Agents do
+NOT share bot identities. Permission bitfields should be identical across agents
+unless a specific agent has a reason to need a narrower or broader set (none
+currently do).
+
 ## Open Questions
 
-- What is the process for provisioning a new GitHub App installation for a new agent
-  (Henry, Pamela)? Is this documented anywhere?
 - Should `bin/generate-token.sh` be called automatically at some interval, or only
   on-demand when a `gh` command fails auth?
 - Should the agents GitHub App secrets be stored in a shared vault item or separate
   items per agent?
+
+## Resolved Questions
+
+- **What is the process for provisioning a new GitHub App installation for a new
+  agent (Henry, Pamela)?** Documented in `docs/runbooks/create-github-app.md`.
+  Related runbooks cover Discord, Telegram, and 1Password provisioning.
+- **What Discord bot permissions does an agent need to be fully functional?**
+  Answered in the "Discord Bot Permissions" section above: 14 baseline + 6
+  recommended-extra permissions. HOW to grant them is in
+  `docs/runbooks/create-discord-bot.md`.
 
 ## References
 
@@ -102,3 +168,7 @@ identity with no visible error.
 - nsheaps/agents issue #116 (CLAUDE_SETTINGS_DIR isolation)
 - nsheaps/.ai-agent-jack issue: existing GitHub App auth working (noted in vision-architecture.md)
 - [Existing spec: agent-github-auth.md](agent-github-auth.md) — earlier research on user OAuth vs bot OAuth
+- [Runbook: create-discord-bot.md](../runbooks/create-discord-bot.md) — HOW to grant Discord bot permissions
+- [Runbook: create-telegram-bot.md](../runbooks/create-telegram-bot.md) — Telegram bot provisioning flow
+- [Runbook: create-github-app.md](../runbooks/create-github-app.md) — GitHub App provisioning flow
+- [Runbook: create-1password-vault-and-service-account.md](../runbooks/create-1password-vault-and-service-account.md) — 1Password vault/service account bootstrap
