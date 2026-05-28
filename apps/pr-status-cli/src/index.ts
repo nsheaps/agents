@@ -1111,7 +1111,8 @@ async function main() {
         `_Generated ${ts} · scope: this repo · open + merged 🟣 only (closed-no-merge ❌ excluded)._`,
         "",
       ].join("\n");
-      const body = repoLines.filter((l) => !l.includes("❌") || !l.includes("~~")).join("\n");
+      // Exclude closed-no-merge lines (marked by both "~~" strikethrough and "❌" state).
+      const body = repoLines.filter((l) => !(l.includes("~~") && l.includes("❌"))).join("\n");
       writeFileSync(filePath, header + (body ? body + "\n" : ""));
     }
 

@@ -189,14 +189,6 @@ jobs:
           } > docs/pr-status/all.md
           echo "::endgroup::"
 
-          # Strip ❌ closed-no-merge lines from per-repo files (the CLI writes them;
-          # we post-filter to keep the file output consistent with the combined view).
-          find docs/pr-status/per-repo -name "*.md" -print0 | while IFS= read -r -d '' f; do
-            tmpf="$(mktemp)"
-            { grep -vE '~~.*❌' "$f" || true; } > "$tmpf"
-            mv "$tmpf" "$f"
-          done
-
       - name: Configure git identity (github-app bot)
         env:
           BOT_USER_ID: ${{ steps.auth.outputs.user-id }}
