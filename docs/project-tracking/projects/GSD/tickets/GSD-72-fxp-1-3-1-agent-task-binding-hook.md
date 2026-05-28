@@ -6,7 +6,7 @@ legacy_ids:
 aliases:
   - "FXP/1.3.1"
 created: 2026-05-28T03:15:00Z
-state: in-progress
+state: done
 project: GSD
 priority: 3
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -27,6 +27,11 @@ events:
       by: alex,
       change: "backfilled — PR #21 OPEN with CI green but Henry CHANGES_REQUESTED, ticket created retroactively per Nate Discord 02:30Z directive to GSD-link existing Phase-1 items",
     }
+  - {
+      ts: 2026-05-28T05:08:41Z,
+      by: alex,
+      change: "PR #21 merged — state updated to done per dashboard reconcile 2026-05-28T21:20Z",
+    }
 ---
 
 # FXP/1.3.1 — agent-task-binding hook
@@ -37,14 +42,7 @@ Extension of FXP/1.3 ([GSD-71](./GSD-71-fxp-1-3-task-tool-sync-hook.md)): Add a 
 
 ## Status
 
-**state=in-progress** — [PR #21][^pr-21] OPEN in `nsheaps/.ai-agent-alex`. CI is green. Henry has posted CHANGES_REQUESTED review; address required before merge.
-
-## Remaining
-
-- Address Henry's CHANGES_REQUESTED review feedback on [PR #21][^pr-21]
-- Re-request review after changes
-- Handler approval to merge
-- Merge → flip state to `done`
+**state=done** — [PR #21][^pr-21] MERGED 2026-05-28T05:08:41Z in `nsheaps/.ai-agent-alex`.
 
 ## Related
 
