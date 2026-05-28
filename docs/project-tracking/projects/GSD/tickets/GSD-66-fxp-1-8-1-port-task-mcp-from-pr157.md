@@ -19,7 +19,11 @@ references:
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1509383543116271616
 events:
-  - { ts: 2026-05-28T02:50:00Z, by: alex, change: "created from Nate Discord 2026-05-28 02:31Z scope-expansion of FXP/1.8" }
+  - {
+      ts: 2026-05-28T02:50:00Z,
+      by: alex,
+      change: "created from Nate Discord 2026-05-28 02:31Z scope-expansion of FXP/1.8",
+    }
 ---
 
 # FXP/1.8.1 — port task-MCP server from nsheaps/agents#157 (under current rules)
@@ -84,5 +88,7 @@ Out:
 - [GSD-63](./GSD-63-fxp-1-9-skill-tools-hook.md) — FXP/1.9 skill-tools-hook (independent).
 
 [^source-pr-157]: https://github.com/nsheaps/agents/pull/157
+
 [^gsd-62-parent]: ./GSD-62-fxp-1-8-bun-ts-mcp-ticket-server.md
+
 [^discord-scope-expansion]: https://discord.com/channels/1490863845252665415/1497431286661517353/1509383543116271616
