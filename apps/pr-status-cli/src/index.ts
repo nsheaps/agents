@@ -241,6 +241,7 @@ function formatLine(ref: Ref, pr: any): string {
 type DigestArgs = {
   orgs: string[];
   authors: string[];
+  repos: string[]; // owner/repo slugs
   since: string;
   state: "open" | "closed" | "merged" | "all";
   by: "created" | "updated";
@@ -252,6 +253,7 @@ function parseDigestArgs(argv: string[]): DigestArgs {
   const a: DigestArgs = {
     orgs: [],
     authors: [],
+    repos: [],
     since: "12hr",
     state: "all",
     by: "updated",
@@ -273,6 +275,7 @@ function parseDigestArgs(argv: string[]): DigestArgs {
       v.startsWith("--user=")
     )
       a.authors.push(take());
+    else if (v === "--repo" || v.startsWith("--repo=")) a.repos.push(take());
     else if (v === "--since" || v.startsWith("--since=")) a.since = take();
     else if (v === "--state" || v.startsWith("--state=")) a.state = take() as DigestArgs["state"];
     else if (v === "--by" || v.startsWith("--by=")) a.by = take() as DigestArgs["by"];
@@ -280,9 +283,9 @@ function parseDigestArgs(argv: string[]): DigestArgs {
     else if (v === "--refs-only") a.refsOnly = true;
     else if (v === "-h" || v === "--help") {
       console.error(
-        "usage: pr-status digest [--org N...] [--author U...] [--since DUR|ISO]\n" +
-          "                       [--state open|closed|merged|all] [--by created|updated]\n" +
-          "                       [--limit N] [--refs-only]",
+        "usage: pr-status digest [--org N...] [--author U...] [--repo OWNER/REPO...]\n" +
+          "                       [--since DUR|ISO] [--state open|closed|merged|all]\n" +
+          "                       [--by created|updated] [--limit N] [--refs-only]",
       );
       process.exit(0);
     } else {
@@ -312,6 +315,7 @@ function buildSearchQ(a: DigestArgs): string {
   const parts: string[] = ["is:pr"];
   for (const o of a.orgs) parts.push(`org:${o}`);
   for (const u of a.authors) parts.push(`author:${u}`);
+  for (const r of a.repos) parts.push(`repo:${r}`);
   if (a.state !== "all") parts.push(`is:${a.state}`);
   const iso = sinceToISO(a.since);
   if (iso) parts.push(`${a.by}:>=${iso}`);
@@ -399,8 +403,8 @@ async function main() {
 
   if (argv[0] === "digest") {
     const dargs = parseDigestArgs(argv.slice(1));
-    if (dargs.orgs.length === 0 && dargs.authors.length === 0) {
-      console.error("digest: at least one of --org or --author is required");
+    if (dargs.orgs.length === 0 && dargs.authors.length === 0 && dargs.repos.length === 0) {
+      console.error("digest: at least one of --org, --author, or --repo is required");
       process.exit(2);
     }
     refs = await discoverRefs(dargs);
