@@ -12,7 +12,7 @@
     "test": "bun test src/"
   },
   "devDependencies": {
-    "@types/node": "^24.12.2",
+    "@types/node": "^25.0.0",
     "typescript": "^5.9.3"
   }
 }
