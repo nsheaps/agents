@@ -11,8 +11,8 @@ requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: originating-task
     type: alex-task
-    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20"
-    note: "missing — no originating task found; ticket created without ticket-first discipline (bad job — task should be filed retroactively)"
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-688"
+    note: "#688: [RETRO/GSD-55] Move/Delete tools for agent — retro-filed 2026-05-28 per Nate 20:04Z"
   - id: discord-ask
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1779912331

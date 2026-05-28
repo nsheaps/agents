@@ -11,8 +11,8 @@ requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: originating-task
     type: alex-task
-    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20"
-    note: "missing — no originating task found; ticket created without ticket-first discipline (bad job — task should be filed retroactively)"
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-685"
+    note: "#685: [RETRO/GSD-52] Task hierarchy blocking relaxation — retro-filed 2026-05-28 per Nate 20:04Z"
 events:
   - {
       ts: 2026-05-28T02:01:38Z,
