@@ -76,7 +76,7 @@ skills (from claude.ai):
 
 - doc coauthoring (part of doc-utils)
 - internal comms (part of comm-utils)
-- mcp builder (part of plugin-dev)
+- mcp builder (part of plugin-utils)
 - prompt engineer (part of agent-utils)
 - skill-creator (part of skill-utils, but will be merged into our arch)
 - slack-gif-creator (part of comm-utils)
@@ -89,7 +89,7 @@ skills (from claude.ai):
 - sprint retro facilitator (part of job-utils)
 - data-analyst (maybe data-utils?)
   Plugins
-- plugin-dev (covered earlier)
+- plugin-utils (covered earlier, formerly plugin-dev)
 - ...
 
 Also help decide: at some point I mentioned project-utils. Do you think that should be ticket-utils or are there other things project-management(/ownership?)-wise that are worth keeping that plugin for in the future? And project-manager role vs product-manager role? should we just assume product- is always -owner and project- is always -manager?

@@ -134,7 +134,7 @@ _(I38 moved to M6 — see [dreaming section](#dreaming))_
 
 ## 🆕 [M11](milestones/M11.md): improve plugin + skill writing + metric tracking
 
-- 🆕 `I36`: do the plugin-dev plugin and skill-utils plugin work now
+- 🆕 `I36`: do the plugin-utils plugin and skill-utils plugin work now
 - 🆕 `C4`: make skill-utils plugin, more to come later but for now, just toss a super quick post-tool-use hook on skill use. In `$AGENT_HOME_DIR/.metrics/skills.yaml` I want to track skill use. Make sure it's installed in each agent. Add TODO that this will be up to agent-controller in the future. In the file:
 
   ```yaml
@@ -162,7 +162,7 @@ _(I38 moved to M6 — see [dreaming section](#dreaming))_
   ```
 
 - 🆕 `I41`: skill-writing skill must teach `context: fork` frontmatter — when to use it (forked subagent context, no parent conversation history), the documented full 15-field frontmatter schema ([code.claude.com/docs/en/skills.md](https://code.claude.com/docs/en/skills.md)), and a default-set recommendation (research at [`docs/research/skill-frontmatter.md`](https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/research/skill-frontmatter.md)). Per Nate Discord [1508293612880920627](https://discord.com/channels/1490863845252665415/1497431286661517353/1508293612880920627) (02:20Z).
-- 🆕 `I42`: plugin-dev skills should describe **MCP-server-channel pattern** for cross-platform event surfacing — _instead of_ throttled-check hooks (current github-app throttle pattern is an anti-example). MCP server resource subscription pushes events; agents subscribe to a resource and the system tells them when it changes (PR CI green, new comment, issue update). Saves time, programmatic, no polling, fewer tokens.
+- 🆕 `I42`: plugin-utils skills should describe **MCP-server-channel pattern** for cross-platform event surfacing — _instead of_ throttled-check hooks (current github-app throttle pattern is an anti-example). MCP server resource subscription pushes events; agents subscribe to a resource and the system tells them when it changes (PR CI green, new comment, issue update). Saves time, programmatic, no polling, fewer tokens.
 - 🆕 `I43`: github plugin → expose an MCP server with subscribe/unsubscribe tools for resources (PRs, issues, check-runs, etc.). Agents subscribe → events arrive via the MCP channel rather than alex looping `gh pr checks` or polling for review state. Replaces the current github-app throttle pattern. Pairs with `I42`.
 
 ## 🆕 [M8](milestones/M8.md): fix compaction
@@ -223,7 +223,7 @@ _(I38 moved to M6 — see [dreaming section](#dreaming))_
       7. Really really emphasize skill use in the system prompt addendum. Remind the agent that it doesn't hurt to use too many skills, and it's better to use one and not need it than not use one and fail at the task. Failing at the task without checking for appropriate skills will be punished. Failing at the task because a task doesn't exist, but writing a skill or more to help will be rewarded. Succeeding at a task while using a skill will be rewared more than that. And Succeeding at a task but still updating skills to make them better for next time will yield the best reward. Updating skills while using skill-maintenance skills like skill-writing-good-skills, skill-development get an additional bonus. Skills can be used at any time, in or out of tasks, but just after ending a task and just after beginning a task is a great time to check and see which skills you have/might need in conjunction with your planning process. If the task ahead needs a skill that you don't have already, make an empty skill to use while you execute the whole task (which obviously guides you to do nothing), and when you finish using the task take everything you've learned to make the task as it should be. Keeping tasks updated is the difference between abilities and capabilities. Continual practice, update, development, and creation of skills helps keep them sharp and ensures that your ability to do a task now, coincides with your capability of doing it later, even if conditions change.
       8. the conversation is it's conscious and unconscious mind. Thoughts and statements can't be seen by a user and they must be responded to using the original communication method
       9. Replace handler w operator, an operator has direct access to the console to see conscious and unconscous thoughts and statements. They may send messages directly in there, but encourage to use a chat platform
-   2. lets make sure theres a plugin-dev plugin and there's a skill-utils plugin, with a skill for creating and updating plugins and skills (with plugins delegating to the skill plugin's skills.). Make sure there's also a skill-learning, which references back to plugin creation to capture skills. Keep these super brief, just a basic outline. For the crud/ skill-development skill (Create/update), link out to skill-writing-good-skills. Again all basic outlines. also skill-updating-in-plugins-and-marketplaces. Nothing more than a few sentences or 5 bullets. All must link to docs for source of truth and suggest using claude-code-guide agent with opus
+   2. lets make sure theres a plugin-utils plugin and there's a skill-utils plugin, with a skill for creating and updating plugins and skills (with plugins delegating to the skill plugin's skills.). Make sure there's also a skill-learning, which references back to plugin creation to capture skills. Keep these super brief, just a basic outline. For the crud/ skill-development skill (Create/update), link out to skill-writing-good-skills. Again all basic outlines. also skill-updating-in-plugins-and-marketplaces. Nothing more than a few sentences or 5 bullets. All must link to docs for source of truth and suggest using claude-code-guide agent with opus
       1. writing good skills
          1. Don't write more than you need. Always start with a few bullets. The less in each skill the better. The more narrow skills the better. Narrow skills can be used within other skills to make parts of processes and subroutines easier to repeat between different complex tasks.
          2. always have examples, great! NEVER have them in the skill. skills use context too and examples aren't always useful. add a post-tool-use hook to remind about checking against expected inputs/outputs
@@ -264,7 +264,7 @@ _(I38 moved to M6 — see [dreaming section](#dreaming))_
             4. forming hypotheses and testing them, and learning from those
             5. creating and understanding high level ideas from lower level conclusions
             6. applying the higher level ideas to solve more complex things and draw more complex conclusions (think like proving a math theorem.)
-      4. plugin-dev-making-changes
+      4. plugin-utils-making-changes
          1. check out the marketplace to `~/src/$repoOrg/$repoName`
          2. checkout a worktree to `~/src/$repoOrg/$repoName.worktrees/descriptive-name`
          3. Marketplaces can't be a branch on git but they can be a local dir. Add the worktree as a new marketplace in your config for `$marketplaceName-local`

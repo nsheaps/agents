@@ -80,6 +80,13 @@ harness configuration needs to be codified so new agents can be set up consisten
    `plugin-dev@claude-plugins-official` (substring match on `@claude`) caused a false
    positive trigger. Source: `docs/research/pr390-critical-investigation.md`.
 
+## Plugin Consolidation History
+
+- **`plugin-dev` merged into `plugin-utils`** (2026-05): The original `plugin-dev` plugin
+  (plugin and skill development tooling) was consolidated into `plugin-utils`. There is no
+  longer a separate `plugin-dev` plugin. Any references to `plugin-dev` in older documents
+  should be read as `plugin-utils`. The `skill-utils` plugin remains separate.
+
 ## Open Questions
 
 - Should agent-specific plugin configurations (e.g., which Telegram bot to use per
