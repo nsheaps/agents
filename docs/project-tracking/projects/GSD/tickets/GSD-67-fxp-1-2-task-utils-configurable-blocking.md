@@ -19,7 +19,11 @@ references:
     type: github-issue
     url: https://github.com/nsheaps/.ai-agent-alex/issues/20
 events:
-  - { ts: 2026-05-28T03:10:00Z, by: alex, change: "backfilled — work shipped 2026-05-26 in PR #178, ticket created retroactively per Nate Discord 02:30Z scope-link directive" }
+  - {
+      ts: 2026-05-28T03:10:00Z,
+      by: alex,
+      change: "backfilled — work shipped 2026-05-26 in PR #178, ticket created retroactively per Nate Discord 02:30Z scope-link directive",
+    }
 ---
 
 # FXP/1.2 — task-utils: configurable single-task blocking (PDITID)
@@ -40,5 +44,7 @@ From [fixprompt.md L18][^fixprompt-source]:
 - [Fixprompt dashboard][^fixprompt-dashboard] (issue #20)
 
 [^fixprompt-source]: https://github.com/nsheaps/.ai-agent-alex/blob/main/docs/journal/2026/05/25/fixprompt.md#L18
+
 [^pr-178]: https://github.com/nsheaps/agents/pull/178
+
 [^fixprompt-dashboard]: https://github.com/nsheaps/.ai-agent-alex/issues/20
