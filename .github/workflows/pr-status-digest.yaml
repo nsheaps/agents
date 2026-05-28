@@ -28,7 +28,7 @@ permissions:
   contents: write
 
 concurrency:
-  group: pr-status-digest
+  group: pr-status-digest-update
   cancel-in-progress: false
 
 jobs:
@@ -80,6 +80,11 @@ jobs:
           PR_ACTION: ${{ github.event.action }}
         run: |
           set -euo pipefail
+          # patch-event seeds the dir when missing; guard in case it was a no-op
+          if [[ ! -d docs/pr-status ]]; then
+            echo "No digest changes — docs/pr-status/ not created, nothing to commit."
+            exit 0
+          fi
           git add docs/pr-status/
           if git diff --cached --quiet; then
             echo "No digest changes — nothing to commit."
@@ -87,7 +92,21 @@ jobs:
           fi
           git commit -m "chore(pr-status): patch ${PR_REPO}#${PR_NUM} (${PR_ACTION})"
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin HEAD:main
+          # Push with rebase-retry: if push fails (someone else pushed to main
+          # between our checkout and now), pull --rebase and try again.
+          pushed=false
+          for attempt in 1 2; do
+            if git push origin HEAD:main; then
+              pushed=true
+              break
+            fi
+            echo "::warning::push attempt $attempt failed; pulling --rebase and retrying"
+            git pull --rebase origin main || true
+          done
+          if [[ "$pushed" != "true" ]]; then
+            echo "::error::push failed after rebase retry"
+            exit 1
+          fi
 
   # ── Full regeneration ─────────────────────────────────────────────────────
   # Runs on schedule, workflow_dispatch, and repository_dispatch (not on
@@ -199,4 +218,18 @@ jobs:
           git commit -m "chore(pr-status): regenerate REPOS.md digest (trigger: ${TRIGGER})"
           # Set remote URL with token in git config (kept out of the command string)
           git remote set-url origin "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
-          git push origin HEAD:main
+          # Push with rebase-retry: if push fails (someone else pushed to main
+          # between our checkout and now), pull --rebase and try again.
+          pushed=false
+          for attempt in 1 2; do
+            if git push origin HEAD:main; then
+              pushed=true
+              break
+            fi
+            echo "::warning::push attempt $attempt failed; pulling --rebase and retrying"
+            git pull --rebase origin main || true
+          done
+          if [[ "$pushed" != "true" ]]; then
+            echo "::error::push failed after rebase retry"
+            exit 1
+          fi
