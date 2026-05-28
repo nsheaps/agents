@@ -21,6 +21,12 @@ events:
   - ts: "2026-05-28T19:46:53Z"
     by: "contacts://nsheaps-org/byAgentName/alex"
     change: "created; state=in-progress; PRs filed: nsheaps/.ai-agent-alex#26, nsheaps/agents#192"
+  - ts: "2026-05-28T19:48:00Z"
+    by: "contacts://nsheaps-org/byGithubUsername/nsheaps"
+    change: "review comment on PR #192 — add Step 0 determine-project callout before triage"
+  - ts: "2026-05-28T20:00:00Z"
+    by: "contacts://nsheaps-org/byAgentName/alex"
+    change: "addressed review comment; commit ef3c575 on nsheaps/agents#192; PR comment https://github.com/nsheaps/agents/pull/192#issuecomment-4567779361"
 ---
 
 ## Goal
@@ -68,6 +74,7 @@ Per Nate Discord [2026-05-28T19:40Z][nate-discord-2026-05-28]:
 - [ ] `ticket-updater.md` example path references `projects/GSD/tickets/`
 - [ ] `docs/project-tracking/CLAUDE.md` marks `to-triage/` as legacy
 - [ ] `to-triage/CLAUDE.md` has clear "New intake flow" section
+- [x] Step 0 "determine project (default GSD)" added before triage step in both CLAUDE.md files (commit [`ef3c575`](https://github.com/nsheaps/agents/commit/ef3c575))
 - [ ] Both PRs merged
 
 [nate-discord-2026-05-28]: https://discord.com/channels/1490863845252665415/1497431286661517353/1509642468315103233
