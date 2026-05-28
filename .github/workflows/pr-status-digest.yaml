@@ -51,16 +51,15 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
     steps:
-      - name: Checkout self (for composite action + apps/)
+      - name: Checkout self (CLI + composite action + REPOS.md)
         uses: actions/checkout@v6
         with:
           ref: main
           fetch-depth: 0
-          path: self
 
       - name: Authenticate as GitHub App (for nsheaps/.org)
         id: auth
-        uses: ./self/.github/actions/github-app-auth
+        uses: ./.github/actions/github-app-auth
         with:
           app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
           private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
@@ -79,13 +78,12 @@ jobs:
         uses: jdx/mise-action@v4
 
       - name: Patch digest from PR event payload
-        working-directory: self
         run: |
           set -euo pipefail
           CLI="apps/pr-status-cli/src/index.ts"
           bun run "$CLI" patch-event \
             --event-file "$GITHUB_EVENT_PATH" \
-            --digest-dir  ../org/docs/pr-status
+            --digest-dir  org/docs/pr-status
 
       - name: Configure git identity (github-app bot)
         working-directory: org
@@ -166,7 +164,6 @@ jobs:
 
       - name: Resolve scope from REPOS.md
         id: scope
-        working-directory: self
         run: |
           set -euo pipefail
           mapfile -t SLUGS < <(scripts/parse-repos-md.sh REPOS.md)
@@ -184,13 +181,12 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: Generate per-repo digests + combined
-        working-directory: self
         env:
           GH_TOKEN: ${{ steps.auth.outputs.token }}
           GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
           set -euo pipefail
-          mkdir -p ../org/docs/pr-status/per-repo
+          mkdir -p org/docs/pr-status/per-repo
           CLI="apps/pr-status-cli/src/index.ts"
           TS=$(date -u +%Y-%m-%dT%H:%MZ)
 
@@ -213,10 +209,10 @@ jobs:
             echo "_Generated $TS · scope: ${#REPO_ARGS[@]} repo flags · open + merged 🟣 only (closed-no-merge ❌ excluded)._"
             echo
             bun run "$CLI" digest "${REPO_ARGS[@]}" --state=all --since=all --limit=2000 \
-              --out-dir ../org/docs/pr-status/per-repo 2>&1 \
+              --out-dir org/docs/pr-status/per-repo 2>&1 \
               | { grep -vE '^digest query:|^discovered |^summary:' || true; } \
               | { grep -vE '~~.*❌' || true; }
-          } > ../org/docs/pr-status/all.md
+          } > org/docs/pr-status/all.md
           echo "::endgroup::"
 
       - name: Configure git identity (github-app bot)
