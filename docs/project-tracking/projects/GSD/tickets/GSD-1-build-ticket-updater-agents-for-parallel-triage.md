@@ -10,6 +10,10 @@ priority: 1
 assignee: contacts://heaps-group/byGithubAppUrl/https://github.com/apps/alex-nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-550"
+    note: "#550: Create 2 priority triage tickets + dispatch ticket-updater agent"
   - id: discord-ask
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508561371275722812

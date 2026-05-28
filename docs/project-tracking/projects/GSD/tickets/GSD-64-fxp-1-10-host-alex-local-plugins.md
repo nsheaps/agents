@@ -3,12 +3,18 @@ type: feature
 id: GSD-64
 legacy_ids:
   - FXP/1.10
+aliases:
+  - "FXP/1.10"
 created: 2026-05-28T02:30:00Z
 state: triage
 project: GSD
 priority: 2
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-633"
+    note: "#633: FXP/1.10: host alex-local hooks/skills into nsheaps/agents plugins (design call "
   - id: task-633
     type: task
     url: alex-task://633

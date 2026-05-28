@@ -3,12 +3,18 @@ type: feature
 id: GSD-66
 legacy_ids:
   - FXP/1.8.1
+aliases:
+  - "FXP/1.8.1"
 created: 2026-05-28T02:50:00Z
 state: triage
 project: GSD
 priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-642"
+    note: "#642: FXP/1.12 PARENT pr-status-cli + skill (broken down — see #643+)"
   - id: source-pr-157
     type: github-pr
     url: https://github.com/nsheaps/agents/pull/157
