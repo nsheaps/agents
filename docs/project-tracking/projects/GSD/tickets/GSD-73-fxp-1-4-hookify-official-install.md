@@ -33,6 +33,7 @@ events:
 From [fixprompt.md L21][^fixprompt-source]:
 
 > PDITID add hookify from the claude-plugin-official marketplace
+>
 > - set it up so any edit to skills gets committed and pushed after
 > - same for anything put in the journal folder
 > - also prevent the main checkout in ~/src/nsheaps/\* from not being the main branch, journal entries, ticket tracking, and skill auto-committing etc to the default branch relies on there being a consistent checkout. If an agent tries to switch it, remind them to use worktrees
