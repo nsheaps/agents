@@ -39,7 +39,9 @@ function readRefsFile(path: string): Ref[] {
   const out: Ref[] = [];
   const lines = readFileSync(path, "utf8").split("\n");
   for (const raw of lines) {
-    const line = raw.replace(/\s*#.*$/, "").trim();
+    // Strip line-comments (`#` at start of line or preceded by whitespace),
+    // but NOT the `#N` PR-number suffix in `owner/repo#N`.
+    const line = raw.replace(/(?:^|\s)#.*$/, "").trim();
     if (!line) continue;
     const r = parseRef(line);
     if (!r) {
@@ -140,12 +142,12 @@ async function ghGraphql(query: string): Promise<any> {
   return JSON.parse(out);
 }
 
-type StateEmoji = "🔵" | "🟠" | "🟢" | "✅" | "❌";
+type StateEmoji = "🔵" | "🟠" | "🟢" | "🟣" | "❌";
 type CiEmoji = "⛔️" | "🟠" | "🔵" | "🔴" | "❌" | "🟢" | "✅";
 type ReviewEmoji = "🔵" | "❌" | "🟠" | "🟢" | "✅" | "💬";
 
 function stateEmoji(pr: any): StateEmoji {
-  if (pr.merged) return "✅";
+  if (pr.merged) return "🟣";
   if (pr.state === "CLOSED") return "❌";
   if (pr.isDraft) return "🔵";
   if (pr.mergeable === "CONFLICTING") return "🟠";

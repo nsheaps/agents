@@ -32,7 +32,7 @@ State (1st):
 - 🔵 draft
 - 🟠 merge-conflicted
 - 🟢 open
-- ✅ merged
+- 🟣 merged
 - ❌ closed without merge
 
 CI (2nd):
@@ -63,6 +63,6 @@ Review (3rd):
 
 ```bash
 $ bun run apps/pr-status-cli/src/index.ts nsheaps/agents#178 nsheaps/agents#157
-✅🟢✅ [[nsheaps/agents#178] feat(task-utils): ...](https://github.com/nsheaps/agents/pull/178)
+🟣🟢✅ [[nsheaps/agents#178] feat(task-utils): ...](https://github.com/nsheaps/agents/pull/178)
 🔵❌🔵 [[nsheaps/agents#157] Add opt-out for ...](https://github.com/nsheaps/agents/pull/157)
 ```
