@@ -6,7 +6,7 @@
  *   pr-status <ref> [<ref> ...]
  *   pr-status digest [--org <name>...] [--author <user>...] [--since <dur|iso>]
  *                    [--state open|closed|merged|all] [--by created|updated]
- *                    [--limit N] [--refs-only]
+ *                    [--limit N] [--refs-only] [--all-open|--no-all-open]
  *
  * Ref forms (ref mode):
  *   https://github.com/<owner>/<repo>/pull/<n>
@@ -294,6 +294,27 @@ function formatLine(ref: Ref, pr: any): string {
   return body;
 }
 
+/**
+ * Per-repo sort key for digest mode.
+ *
+ * Bucket order:
+ *   0 open  — sub-sorted by mergeability: CLEAN(0) > UNSTABLE(1) > BEHIND(2) > anything-else(3)
+ *   1 merged 🟣 — descending PR number
+ *   2 closed-no-merge ❌ — descending PR number
+ *
+ * Returns [repoBucket, mergeabilityRank, -prNumber] for lexicographic comparison.
+ */
+function digestSortKey(pr: any): [number, number, number, number] {
+  const s = stateEmoji(pr);
+  // Bucket 0 = open, 1 = merged, 2 = closed-no-merge
+  const repoBucket = s === "🟣" ? 1 : s === "❌" ? 2 : 0;
+  // Mergeability rank (lower = more mergeable); only relevant for open PRs
+  const mss: string = pr.mergeStateStatus ?? "";
+  const mergeRank =
+    mss === "CLEAN" ? 0 : mss === "UNSTABLE" ? 1 : mss === "BEHIND" ? 2 : 3;
+  return [repoBucket, mergeRank, -pr.number, 0];
+}
+
 // ---- digest subcommand: discover refs via GraphQL search ----
 
 type DigestArgs = {
@@ -305,6 +326,10 @@ type DigestArgs = {
   by: "created" | "updated";
   limit: number;
   refsOnly: boolean;
+  /** When true (default), open PRs are shown regardless of --since; --since only
+   *  filters the closed/merged bucket.  Pass --no-all-open to restore the old
+   *  behaviour where --since trims every bucket uniformly. */
+  allOpen: boolean;
 };
 
 function parseDigestArgs(argv: string[]): DigestArgs {
@@ -317,6 +342,7 @@ function parseDigestArgs(argv: string[]): DigestArgs {
     by: "updated",
     limit: 500,
     refsOnly: false,
+    allOpen: true,
   };
   for (let i = 0; i < argv.length; i++) {
     const v = argv[i];
@@ -339,11 +365,14 @@ function parseDigestArgs(argv: string[]): DigestArgs {
     else if (v === "--by" || v.startsWith("--by=")) a.by = take() as DigestArgs["by"];
     else if (v === "--limit" || v.startsWith("--limit=")) a.limit = Number(take());
     else if (v === "--refs-only") a.refsOnly = true;
+    else if (v === "--all-open") a.allOpen = true;
+    else if (v === "--no-all-open") a.allOpen = false;
     else if (v === "-h" || v === "--help") {
       console.error(
         "usage: pr-status digest [--org N...] [--author U...] [--repo OWNER/REPO...]\n" +
           "                       [--since DUR|ISO] [--state open|closed|merged|all]\n" +
-          "                       [--by created|updated] [--limit N] [--refs-only]",
+          "                       [--by created|updated] [--limit N] [--refs-only]\n" +
+          "                       [--all-open|--no-all-open]",
       );
       process.exit(0);
     } else {
@@ -369,14 +398,20 @@ function sinceToISO(since: string): string | null {
   return new Date(Date.now() - sec * 1000).toISOString().replace(/\.\d+Z$/, "Z");
 }
 
-function buildSearchQ(a: DigestArgs): string {
+function buildSearchQ(
+  a: DigestArgs,
+  opts?: { stateOverride?: DigestArgs["state"]; skipSince?: boolean },
+): string {
+  const state = opts?.stateOverride ?? a.state;
   const parts: string[] = ["is:pr"];
   for (const o of a.orgs) parts.push(`org:${o}`);
   for (const u of a.authors) parts.push(`author:${u}`);
   for (const r of a.repos) parts.push(`repo:${r}`);
-  if (a.state !== "all") parts.push(`is:${a.state}`);
-  const iso = sinceToISO(a.since);
-  if (iso) parts.push(`${a.by}:>=${iso}`);
+  if (state !== "all") parts.push(`is:${state}`);
+  if (!opts?.skipSince) {
+    const iso = sinceToISO(a.since);
+    if (iso) parts.push(`${a.by}:>=${iso}`);
+  }
   return parts.join(" ");
 }
 
@@ -409,15 +444,17 @@ async function ghGraphqlVars(query: string, vars: Record<string, unknown>): Prom
   return JSON.parse(out);
 }
 
-async function discoverRefs(a: DigestArgs): Promise<Ref[]> {
-  const q = buildSearchQ(a);
-  console.error(`digest query: ${q}`);
-  const refs: Ref[] = [];
-  const seen = new Set<string>();
-  let after: string | null = null;
+/** Page through a single GitHub search query, appending into `refs`/`seen` up to `limit`. */
+async function collectSearchRefs(
+  q: string,
+  refs: Ref[],
+  seen: Set<string>,
+  limit: number,
+): Promise<void> {
   const pageSize = 100;
-  while (refs.length < a.limit) {
-    const first = Math.min(pageSize, a.limit - refs.length);
+  let after: string | null = null;
+  while (refs.length < limit) {
+    const first = Math.min(pageSize, limit - refs.length);
     const resp = await ghGraphqlVars(SEARCH_GQL, { q, first, after });
     if (resp.errors) {
       console.error("search GraphQL errors:");
@@ -433,12 +470,38 @@ async function discoverRefs(a: DigestArgs): Promise<Ref[]> {
       seen.add(key);
       const [owner, repo] = slug.split("/");
       refs.push({ owner, repo, number: n.number });
-      if (refs.length >= a.limit) break;
+      if (refs.length >= limit) break;
     }
     const page = search?.pageInfo;
     if (!page?.hasNextPage || !page.endCursor) break;
     after = page.endCursor;
   }
+}
+
+async function discoverRefs(a: DigestArgs): Promise<Ref[]> {
+  // When --all-open (default true): open PRs are returned regardless of --since;
+  // only the closed/merged bucket respects the time filter.  This requires two
+  // separate search queries when state=all and a time-bounded --since is active.
+  const hasSince = sinceToISO(a.since) !== null;
+  const needsSplit = a.allOpen && a.state === "all" && hasSince;
+
+  const refs: Ref[] = [];
+  const seen = new Set<string>();
+
+  if (needsSplit) {
+    // 1. Open PRs — no since filter (always show all open PRs).
+    const openQ = buildSearchQ(a, { stateOverride: "open", skipSince: true });
+    // 2. Closed PRs (merged + unmerged-closed) — since filter applies.
+    const closedQ = buildSearchQ(a, { stateOverride: "closed" });
+    console.error(`digest queries (--all-open): open=${openQ}  closed=${closedQ}`);
+    await collectSearchRefs(openQ, refs, seen, a.limit);
+    await collectSearchRefs(closedQ, refs, seen, a.limit);
+  } else {
+    const q = buildSearchQ(a);
+    console.error(`digest query: ${q}`);
+    await collectSearchRefs(q, refs, seen, a.limit);
+  }
+
   console.error(`discovered ${refs.length} ref(s)`);
   return refs;
 }
@@ -458,6 +521,7 @@ async function main() {
 
   let refs: Ref[];
   let refsOnly = false;
+  let sortDigest = false;
 
   if (argv[0] === "digest") {
     const dargs = parseDigestArgs(argv.slice(1));
@@ -467,6 +531,7 @@ async function main() {
     }
     refs = await discoverRefs(dargs);
     refsOnly = dargs.refsOnly;
+    sortDigest = true;
   } else {
     refs = collectRefs(argv);
   }
@@ -486,6 +551,11 @@ async function main() {
   const BATCH_SIZE = 25;
   let anySuccess = false;
   let failCount = 0;
+
+  // In digest mode: collect (slug, sortKey, line) so we can sort per-repo before
+  // emitting.  In ref mode: print immediately (preserve caller-specified order).
+  type CollectedLine = { slug: string; sortKey: [number, number, number, number]; line: string };
+  const collected: CollectedLine[] = [];
 
   for (let start = 0; start < refs.length; start += BATCH_SIZE) {
     const chunk = refs.slice(start, start + BATCH_SIZE);
@@ -509,13 +579,36 @@ async function main() {
       const slot = data.data?.[`pr${i}`];
       const pr = slot?.pullRequest;
       if (!pr) {
-        console.log(
-          `⚠️⚠️⚠️ [[${ref.owner}/${ref.repo}#${ref.number}] (not found)](https://github.com/${ref.owner}/${ref.repo}/pull/${ref.number})`,
-        );
+        const line = `⚠️⚠️⚠️ [[${ref.owner}/${ref.repo}#${ref.number}] (not found)](https://github.com/${ref.owner}/${ref.repo}/pull/${ref.number})`;
+        if (sortDigest) {
+          const slug = `${ref.owner}/${ref.repo}`;
+          collected.push({ slug, sortKey: [4, 0, -ref.number, 0], line });
+        } else {
+          console.log(line);
+        }
         return;
       }
-      console.log(formatLine(ref, pr));
+      const line = formatLine(ref, pr);
+      if (sortDigest) {
+        const slug = pr.baseRepository?.nameWithOwner ?? `${ref.owner}/${ref.repo}`;
+        collected.push({ slug, sortKey: digestSortKey(pr), line });
+      } else {
+        console.log(line);
+      }
     });
+  }
+
+  // Digest mode: sort per-repo (open by mergeability → merged → closed) then emit.
+  if (sortDigest && collected.length > 0) {
+    collected.sort((a, b) => {
+      if (a.slug < b.slug) return -1;
+      if (a.slug > b.slug) return 1;
+      for (let k = 0; k < a.sortKey.length; k++) {
+        if (a.sortKey[k] !== b.sortKey[k]) return a.sortKey[k] - b.sortKey[k];
+      }
+      return 0;
+    });
+    for (const { line } of collected) console.log(line);
   }
 
   if (!anySuccess && failCount > 0) {
