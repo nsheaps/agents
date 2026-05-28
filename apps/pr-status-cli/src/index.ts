@@ -7,6 +7,7 @@
  *   pr-status digest [--org <name>...] [--author <user>...] [--since <dur|iso>]
  *                    [--state open|closed|merged|all] [--by created|updated]
  *                    [--limit N] [--refs-only]
+ *   pr-status patch-event [--event-file <path>] [--digest-dir <dir>]
  *
  * Ref forms (ref mode):
  *   https://github.com/<owner>/<repo>/pull/<n>
@@ -17,6 +18,10 @@
  * since-time), then emit the same emoji-bucketed status lines. Pass `--refs-only`
  * to emit `owner/repo#N` refs instead of formatted lines.
  *
+ * Patch-event mode: read a GitHub pull_request webhook event (from
+ * $GITHUB_EVENT_PATH or --event-file), patch ONLY the matching line in the
+ * per-repo digest file, and update the combined all.md — no API calls.
+ *
  * Output (one line per PR):
  *   <state><ci><review> [[owner/repo#N] title](url)
  *
@@ -25,7 +30,7 @@
  * up to --limit (default 500), then runs the same batched status query.
  */
 
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync, existsSync } from "node:fs";
 
 type Ref = { owner: string; repo: string; number: number };
 
@@ -294,6 +299,280 @@ function formatLine(ref: Ref, pr: any): string {
   return body;
 }
 
+// ---- patch-event subcommand: update a single PR line from webhook payload ----
+
+/**
+ * GitHub pull_request event payload shape (relevant fields only).
+ * https://docs.github.com/en/webhooks/webhook-events-and-payloads#pull_request
+ */
+type GhPrEvent = {
+  action: string;
+  pull_request: {
+    number: number;
+    title: string;
+    html_url: string;
+    state: "open" | "closed";
+    draft: boolean;
+    merged: boolean;
+    mergeable: boolean | null;
+    user: { login: string; html_url: string };
+    base: { repo: { full_name: string } };
+    labels: Array<{ name: string }>;
+  };
+  repository: { full_name: string };
+};
+
+/**
+ * Derive state emoji from raw webhook payload (no GraphQL).
+ *
+ * The REST/webhook `mergeable` is a tri-state boolean|null (null = GitHub hasn't
+ * computed it yet). We map null → treat as unknown (open/🟢) rather than
+ * CONFLICTING, to avoid false-orange flashes.
+ */
+function stateEmojiFromEvent(pr: GhPrEvent["pull_request"]): StateEmoji {
+  if (pr.merged) return "🟣";
+  if (pr.state === "closed") return "❌";
+  if (pr.draft) return "🔵";
+  if (pr.mergeable === false) return "🟠";
+  return "🟢";
+}
+
+type PatchEventArgs = {
+  eventFile: string;
+  digestDir: string;
+};
+
+function parsePatchEventArgs(argv: string[]): PatchEventArgs {
+  const a: PatchEventArgs = {
+    eventFile: process.env.GITHUB_EVENT_PATH ?? "",
+    digestDir: "docs/pr-status",
+  };
+  for (let i = 0; i < argv.length; i++) {
+    const v = argv[i];
+    const take = (): string => {
+      const eq = v.indexOf("=");
+      if (eq >= 0) return v.slice(eq + 1);
+      return argv[++i];
+    };
+    if (v === "--event-file" || v.startsWith("--event-file=")) a.eventFile = take();
+    else if (v === "--digest-dir" || v.startsWith("--digest-dir=")) a.digestDir = take();
+    else if (v === "-h" || v === "--help") {
+      console.error(
+        "usage: pr-status patch-event [--event-file <path>] [--digest-dir <dir>]\n" +
+          "  --event-file  path to GitHub event JSON (default: $GITHUB_EVENT_PATH)\n" +
+          "  --digest-dir  root of digest docs (default: docs/pr-status)",
+      );
+      process.exit(0);
+    } else {
+      console.error(`unknown patch-event arg: ${v}`);
+      process.exit(2);
+    }
+  }
+  return a;
+}
+
+/**
+ * Build a formatted digest line using event-derived state emoji but
+ * preserving existing CI/review emojis from the old line if available.
+ *
+ * Line format used by formatLine():
+ *   [stateEmoji](# "title")[ciEmoji](# "title")[reviewEmoji](# "title") [[slug#N] title](url) by [@login](url)
+ *   (strikethrough wraps the whole thing for terminal states)
+ *
+ * When preserving, we extract the ciEmoji and reviewEmoji link-title tokens
+ * from the existing line so we don't lose CI/review context.
+ */
+const EMOJI_TIP_RE = /\[([^[\]]+)\]\(#\s*"([^"]+)"\)/g;
+
+function extractEmojiTips(line: string): Array<{ emoji: string; title: string }> {
+  const results: Array<{ emoji: string; title: string }> = [];
+  // Strip strikethrough wrapper if present
+  const stripped = line.replace(/^~~(.+)~~$/, "$1");
+  let m: RegExpExecArray | null;
+  EMOJI_TIP_RE.lastIndex = 0;
+  while ((m = EMOJI_TIP_RE.exec(stripped)) !== null) {
+    results.push({ emoji: m[1], title: m[2] });
+  }
+  return results;
+}
+
+function buildPatchedLine(
+  ref: Ref,
+  pr: GhPrEvent["pull_request"],
+  existingLine: string | null,
+): string {
+  const slug = pr.base.repo.full_name;
+  const title = pr.title;
+  const url = pr.html_url;
+  const s = stateEmojiFromEvent(pr);
+
+  // Try to preserve existing CI and review emojis from the old line.
+  // The first tip-emoji = state, second = CI, third = review.
+  let ciTip: string;
+  let reviewTip: string;
+
+  if (existingLine) {
+    const tips = extractEmojiTips(existingLine);
+    // tips[0] = old state (we replace), tips[1] = CI, tips[2] = review
+    const oldCi = tips[1];
+    const oldReview = tips[2];
+    ciTip = oldCi
+      ? `[${oldCi.emoji}](# "${oldCi.title.replace(/"/g, '\\"')}")`
+      : tip("🟢", CI_TITLES["🟢"]);
+    reviewTip = oldReview
+      ? `[${oldReview.emoji}](# "${oldReview.title.replace(/"/g, '\\"')}")`
+      : tip("🔵", REVIEW_TITLES["🔵"]);
+  } else {
+    // New PR — no prior line; use defaults (no checks, no reviews yet)
+    ciTip = tip("🟢", CI_TITLES["🟢"]);
+    reviewTip = tip("🔵", REVIEW_TITLES["🔵"]);
+  }
+
+  const stateTip = tip(s, STATE_TITLES[s]);
+  const authorLogin = pr.user.login;
+  const authorUrl = pr.user.html_url;
+  const author = ` by [@${authorLogin}](${authorUrl})`;
+
+  const body = `${stateTip}${ciTip}${reviewTip} [[${slug}#${ref.number}] ${title}](${url})${author}`;
+  if (s === "🟣" || s === "❌") return `~~${body}~~`;
+  return body;
+}
+
+/**
+ * Returns true if a digest line refers to the given PR.
+ * Lines look like (optionally prefixed with ~~):
+ *   [emoji](# "...")... [[owner/repo#N] title](url) ...
+ * We match on the `[[slug#N]` substring anywhere in the line.
+ */
+function lineMatchesPr(line: string, slug: string, number: number): boolean {
+  // Strip strikethrough wrapper then check for [[slug#N] anywhere in line
+  const stripped = line.replace(/^~~(.+)~~$/, "$1");
+  return stripped.includes(`[[${slug}#${number}]`);
+}
+
+/**
+ * Patch a single per-repo digest file: find the line for this PR number,
+ * replace it with the new line. If no line found, append at end of content
+ * (before blank trailer lines). Returns true if the file was changed.
+ */
+function patchDigestFile(filePath: string, ref: Ref, newLine: string): boolean {
+  if (!existsSync(filePath)) {
+    console.error(`patch-event: digest file not found: ${filePath} — skipping`);
+    return false;
+  }
+
+  const slug = `${ref.owner}/${ref.repo}`;
+  const content = readFileSync(filePath, "utf8");
+  const lines = content.split("\n");
+
+  let matchIdx = -1;
+  for (let i = 0; i < lines.length; i++) {
+    if (lineMatchesPr(lines[i], slug, ref.number)) {
+      matchIdx = i;
+      break;
+    }
+  }
+
+  let newLines: string[];
+  if (matchIdx >= 0) {
+    // Replace existing line
+    newLines = [...lines];
+    newLines[matchIdx] = newLine;
+  } else {
+    // Append before trailing blank lines
+    let insertAt = lines.length;
+    while (insertAt > 0 && lines[insertAt - 1].trim() === "") {
+      insertAt--;
+    }
+    newLines = [...lines.slice(0, insertAt), newLine, ...lines.slice(insertAt)];
+  }
+
+  const newContent = newLines.join("\n");
+  if (newContent === content) return false;
+  writeFileSync(filePath, newContent, "utf8");
+  console.error(
+    matchIdx >= 0
+      ? `patch-event: updated line for ${slug}#${ref.number} in ${filePath}`
+      : `patch-event: appended new line for ${slug}#${ref.number} in ${filePath}`,
+  );
+  return true;
+}
+
+function escapeRegex(s: string): string {
+  return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+/**
+ * Patch the combined all.md the same way.
+ */
+function patchAllDigest(allPath: string, ref: Ref, newLine: string): boolean {
+  return patchDigestFile(allPath, ref, newLine);
+}
+
+async function runPatchEvent(argv: string[]): Promise<void> {
+  const args = parsePatchEventArgs(argv);
+
+  if (!args.eventFile) {
+    console.error(
+      "patch-event: no event file path — set $GITHUB_EVENT_PATH or pass --event-file",
+    );
+    process.exit(2);
+  }
+
+  let event: GhPrEvent;
+  try {
+    event = JSON.parse(readFileSync(args.eventFile, "utf8")) as GhPrEvent;
+  } catch (e) {
+    console.error(`patch-event: failed to read event file ${args.eventFile}: ${e}`);
+    process.exit(1);
+  }
+
+  const pr = event.pull_request;
+  if (!pr) {
+    console.error(`patch-event: event has no pull_request field (action: ${event.action})`);
+    process.exit(2);
+  }
+
+  const fullName = pr.base.repo.full_name ?? event.repository?.full_name;
+  if (!fullName || !fullName.includes("/")) {
+    console.error(`patch-event: could not determine repo full_name from event`);
+    process.exit(2);
+  }
+
+  const [owner, repo] = fullName.split("/");
+  const ref: Ref = { owner, repo, number: pr.number };
+
+  // Determine digest file paths
+  const perRepoSlug = fullName.replace("/", "--");
+  const perRepoPath = `${args.digestDir}/per-repo/${perRepoSlug}.md`;
+  const allPath = `${args.digestDir}/all.md`;
+
+  console.error(`patch-event: action=${event.action} pr=${fullName}#${pr.number} (${pr.title})`);
+
+  // Read existing per-repo line (for CI/review preservation)
+  let existingLine: string | null = null;
+  if (existsSync(perRepoPath)) {
+    const lines = readFileSync(perRepoPath, "utf8").split("\n");
+    for (const l of lines) {
+      if (lineMatchesPr(l, fullName, pr.number)) {
+        existingLine = l;
+        break;
+      }
+    }
+  }
+
+  const newLine = buildPatchedLine(ref, pr, existingLine);
+
+  let changed = false;
+  changed = patchDigestFile(perRepoPath, ref, newLine) || changed;
+  changed = patchAllDigest(allPath, ref, newLine) || changed;
+
+  if (!changed) {
+    console.error(`patch-event: no changes — digest already up to date`);
+  }
+  // Always exit 0; caller (workflow) decides whether to commit
+}
+
 // ---- digest subcommand: discover refs via GraphQL search ----
 
 type DigestArgs = {
@@ -451,9 +730,15 @@ async function main() {
     console.error(
       "usage:\n" +
         "  pr-status <ref> [<ref> ...]            (ref = URL | owner/repo#N | @file)\n" +
-        "  pr-status digest [--org ...] [--author ...] [--since ...] [--refs-only]",
+        "  pr-status digest [--org ...] [--author ...] [--since ...] [--refs-only]\n" +
+        "  pr-status patch-event [--event-file <path>] [--digest-dir <dir>]",
     );
     process.exit(2);
+  }
+
+  if (argv[0] === "patch-event") {
+    await runPatchEvent(argv.slice(1));
+    return;
   }
 
   let refs: Ref[];
