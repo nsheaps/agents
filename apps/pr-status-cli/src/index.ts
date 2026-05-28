@@ -4,17 +4,25 @@
  *
  * Usage:
  *   pr-status <ref> [<ref> ...]
+ *   pr-status digest [--org <name>...] [--author <user>...] [--since <dur|iso>]
+ *                    [--state open|closed|merged|all] [--by created|updated]
+ *                    [--limit N] [--refs-only]
  *
- * Ref forms:
+ * Ref forms (ref mode):
  *   https://github.com/<owner>/<repo>/pull/<n>
  *   <owner>/<repo>#<n>
  *   @<path>            (read refs from file; one per line; '#' line-comment)
  *
- * Output (one line per PR, in input order):
+ * Digest mode: discover PRs via GitHub GraphQL `search` (filter by org, author,
+ * since-time), then emit the same emoji-bucketed status lines. Pass `--refs-only`
+ * to emit `owner/repo#N` refs instead of formatted lines.
+ *
+ * Output (one line per PR):
  *   <state><ci><review> [[owner/repo#N] title](url)
  *
- * Requires `gh` on PATH and authenticated. Issues ONE `gh api graphql` call
- * for the whole batch (aliased queries).
+ * Requires `gh` on PATH and authenticated. Ref mode issues ONE `gh api graphql`
+ * call for the whole batch (aliased queries). Digest mode pages the search API
+ * up to --limit (default 500), then runs the same batched status query.
  */
 
 import { readFileSync } from "node:fs";
@@ -228,29 +236,202 @@ function formatLine(ref: Ref, pr: any): string {
   return `${s}${c}${r} [[${slug}#${pr.number}] ${title}](${url})`;
 }
 
+// ---- digest subcommand: discover refs via GraphQL search ----
+
+type DigestArgs = {
+  orgs: string[];
+  authors: string[];
+  since: string;
+  state: "open" | "closed" | "merged" | "all";
+  by: "created" | "updated";
+  limit: number;
+  refsOnly: boolean;
+};
+
+function parseDigestArgs(argv: string[]): DigestArgs {
+  const a: DigestArgs = {
+    orgs: [],
+    authors: [],
+    since: "12hr",
+    state: "all",
+    by: "updated",
+    limit: 500,
+    refsOnly: false,
+  };
+  for (let i = 0; i < argv.length; i++) {
+    const v = argv[i];
+    const take = (): string => {
+      const eq = v.indexOf("=");
+      if (eq >= 0) return v.slice(eq + 1);
+      return argv[++i];
+    };
+    if (v === "--org" || v.startsWith("--org=")) a.orgs.push(take());
+    else if (
+      v === "--author" ||
+      v.startsWith("--author=") ||
+      v === "--user" ||
+      v.startsWith("--user=")
+    )
+      a.authors.push(take());
+    else if (v === "--since" || v.startsWith("--since=")) a.since = take();
+    else if (v === "--state" || v.startsWith("--state=")) a.state = take() as DigestArgs["state"];
+    else if (v === "--by" || v.startsWith("--by=")) a.by = take() as DigestArgs["by"];
+    else if (v === "--limit" || v.startsWith("--limit=")) a.limit = Number(take());
+    else if (v === "--refs-only") a.refsOnly = true;
+    else if (v === "-h" || v === "--help") {
+      console.error(
+        "usage: pr-status digest [--org N...] [--author U...] [--since DUR|ISO]\n" +
+          "                       [--state open|closed|merged|all] [--by created|updated]\n" +
+          "                       [--limit N] [--refs-only]",
+      );
+      process.exit(0);
+    } else {
+      console.error(`unknown digest arg: ${v}`);
+      process.exit(2);
+    }
+  }
+  return a;
+}
+
+function sinceToISO(since: string): string | null {
+  if (since === "all") return null;
+  if (/^\d{4}-\d{2}-\d{2}T/.test(since)) return since;
+  const m = /^(\d+)(m|hr|h|d|w)$/.exec(since);
+  if (!m) {
+    console.error(`bad --since: ${since}`);
+    process.exit(2);
+  }
+  const n = Number(m[1]);
+  const u = m[2];
+  const sec =
+    u === "m" ? n * 60 : u === "h" || u === "hr" ? n * 3600 : u === "d" ? n * 86400 : n * 604800;
+  return new Date(Date.now() - sec * 1000).toISOString().replace(/\.\d+Z$/, "Z");
+}
+
+function buildSearchQ(a: DigestArgs): string {
+  const parts: string[] = ["is:pr"];
+  for (const o of a.orgs) parts.push(`org:${o}`);
+  for (const u of a.authors) parts.push(`author:${u}`);
+  if (a.state !== "all") parts.push(`is:${a.state}`);
+  const iso = sinceToISO(a.since);
+  if (iso) parts.push(`${a.by}:>=${iso}`);
+  return parts.join(" ");
+}
+
+const SEARCH_GQL = `
+query($q: String!, $first: Int!, $after: String) {
+  search(query: $q, type: ISSUE, first: $first, after: $after) {
+    pageInfo { hasNextPage endCursor }
+    nodes {
+      ... on PullRequest {
+        number
+        baseRepository { nameWithOwner }
+      }
+    }
+  }
+}
+`;
+
+async function ghGraphqlVars(query: string, vars: Record<string, unknown>): Promise<any> {
+  const argv = ["gh", "api", "graphql", "-f", `query=${query}`];
+  for (const [k, v] of Object.entries(vars)) {
+    if (v === null || v === undefined) continue;
+    if (typeof v === "number") argv.push("-F", `${k}=${v}`);
+    else argv.push("-f", `${k}=${v}`);
+  }
+  const proc = Bun.spawn(argv, { stdout: "pipe", stderr: "pipe" });
+  const out = await new Response(proc.stdout).text();
+  const err = await new Response(proc.stderr).text();
+  const code = await proc.exited;
+  if (code !== 0) throw new Error(`gh api graphql exited ${code}: ${err}`);
+  return JSON.parse(out);
+}
+
+async function discoverRefs(a: DigestArgs): Promise<Ref[]> {
+  const q = buildSearchQ(a);
+  console.error(`digest query: ${q}`);
+  const refs: Ref[] = [];
+  const seen = new Set<string>();
+  let after: string | null = null;
+  const pageSize = 100;
+  while (refs.length < a.limit) {
+    const first = Math.min(pageSize, a.limit - refs.length);
+    const resp = await ghGraphqlVars(SEARCH_GQL, { q, first, after });
+    if (resp.errors) {
+      console.error("search GraphQL errors:");
+      console.error(JSON.stringify(resp.errors, null, 2));
+    }
+    const search = resp.data?.search;
+    const nodes: any[] = search?.nodes ?? [];
+    for (const n of nodes) {
+      if (!n?.baseRepository?.nameWithOwner || typeof n.number !== "number") continue;
+      const slug = n.baseRepository.nameWithOwner as string;
+      const key = `${slug}#${n.number}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const [owner, repo] = slug.split("/");
+      refs.push({ owner, repo, number: n.number });
+      if (refs.length >= a.limit) break;
+    }
+    const page = search?.pageInfo;
+    if (!page?.hasNextPage || !page.endCursor) break;
+    after = page.endCursor;
+  }
+  console.error(`discovered ${refs.length} ref(s)`);
+  return refs;
+}
+
+// ---- main ----
+
 async function main() {
-  const args = process.argv.slice(2);
-  if (args.length === 0) {
-    console.error("usage: pr-status <ref> [<ref> ...]  (ref = URL | owner/repo#N | @file)");
+  const argv = process.argv.slice(2);
+  if (argv.length === 0) {
+    console.error(
+      "usage:\n" +
+        "  pr-status <ref> [<ref> ...]            (ref = URL | owner/repo#N | @file)\n" +
+        "  pr-status digest [--org ...] [--author ...] [--since ...] [--refs-only]",
+    );
     process.exit(2);
   }
-  const refs = collectRefs(args);
+
+  let refs: Ref[];
+  let refsOnly = false;
+
+  if (argv[0] === "digest") {
+    const dargs = parseDigestArgs(argv.slice(1));
+    if (dargs.orgs.length === 0 && dargs.authors.length === 0) {
+      console.error("digest: at least one of --org or --author is required");
+      process.exit(2);
+    }
+    refs = await discoverRefs(dargs);
+    refsOnly = dargs.refsOnly;
+  } else {
+    refs = collectRefs(argv);
+  }
+
   if (refs.length === 0) {
-    console.error("no refs parsed");
-    process.exit(2);
+    console.error("no refs to query");
+    process.exit(refsOnly ? 0 : 2);
   }
+
+  if (refsOnly) {
+    for (const r of refs) console.log(`${r.owner}/${r.repo}#${r.number}`);
+    return;
+  }
+
   const query = buildQuery(refs);
   const data = await ghGraphql(query);
   if (data.errors) {
     console.error("GraphQL errors:");
     console.error(JSON.stringify(data.errors, null, 2));
-    // continue with partial data if present
   }
   refs.forEach((ref, i) => {
     const slot = data.data?.[`pr${i}`];
     const pr = slot?.pullRequest;
     if (!pr) {
-      console.log(`⚠️⚠️⚠️ [[${ref.owner}/${ref.repo}#${ref.number}] (not found)](https://github.com/${ref.owner}/${ref.repo}/pull/${ref.number})`);
+      console.log(
+        `⚠️⚠️⚠️ [[${ref.owner}/${ref.repo}#${ref.number}] (not found)](https://github.com/${ref.owner}/${ref.repo}/pull/${ref.number})`,
+      );
       return;
     }
     console.log(formatLine(ref, pr));
