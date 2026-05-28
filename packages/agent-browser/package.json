@@ -1,6 +1,7 @@
 {
   "name": "@nsheaps/agent-browser",
   "version": "0.0.0",
+  "private": true,
   "description": "Browser-side helpers for the agent-team monorepo.",
   "type": "module",
   "main": "./dist/index.js",

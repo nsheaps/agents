@@ -89,6 +89,8 @@ nx auto-detects these scripts from `package.json`. No per-package `project.json`
 }
 ```
 
+> **`private: true` until there are real exports.** New library packages should be created with `"private": true` even when they declare `publishConfig`. Keep them private while `src/index.ts` is only `export {};` — that way an accidental publish step can't ship an empty package to npm. When the package has real exports, drop `private` and the `publishConfig` registry/access already declared takes over.
+
 ### `package.json` template (service — private)
 
 Same as the library template, but:
@@ -135,7 +137,7 @@ The root project has only `format` and `lint`. Workspace packages add `build` (T
 
 - `format`: `prettier --write . --ignore-path ../.prettierignore` (the plugins' own README/JSON/yaml files).
 - `lint`: `prettier --check . --ignore-path ../.prettierignore`.
-- `test`: `cd .. && mise run validate` — runs `claude plugin validate` over every `plugins/claude-code/*/.claude-plugin/plugin.json`. This is the canonical plugin gate; failures mean a plugin manifest is wrong or a referenced asset is missing.
+- `test`: `bash ./test.sh` — runs `claude plugin validate` over every `plugins/claude-code/*/.claude-plugin/plugin.json`. This is the canonical plugin gate; failures mean a plugin manifest is wrong or a referenced asset is missing. The script defers to `mise run validate` when mise is on PATH (CI does this via `jdx/mise-action`); otherwise it falls back to a direct sweep with `claude plugin validate`, so `bunx nx run @nsheaps/agents-plugins:test` works in any environment that has `claude` available — no implicit mise dependency.
 
 There's no `build` target — plugins ship via the marketplace pipeline in `cd.yaml`, not via tsc.
 

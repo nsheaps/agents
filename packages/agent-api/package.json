@@ -1,6 +1,7 @@
 {
   "name": "@nsheaps/agent-api",
   "version": "0.0.0",
+  "private": true,
   "description": "Shared API contracts and clients for the agent-team monorepo.",
   "type": "module",
   "main": "./dist/index.js",

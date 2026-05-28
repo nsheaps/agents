@@ -1,6 +1,7 @@
 {
   "name": "@nsheaps/agents-pg-utils",
   "version": "0.0.0",
+  "private": true,
   "description": "Postgres utilities for the agent-team monorepo.",
   "type": "module",
   "main": "./dist/index.js",
