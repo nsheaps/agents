@@ -66,5 +66,7 @@ From alex-task #637 (Nate Discord 2026-05-27 18:56Z)[^task-637]:
 Same as GSD-64 — `fixprompt.md` source caps at bullet 9; FXP/1.10+ were Discord additions never folded back into the dashboard. This ticket closes that gap.
 
 [^task-637]: alex-task://637 — local agent task, see also Nate Discord 2026-05-27 18:56Z
+
 [^pr-22]: https://github.com/nsheaps/.ai-agent-alex/pull/22
+
 [^commit-430fca0]: https://github.com/nsheaps/.ai-agent-alex/commit/430fca0
