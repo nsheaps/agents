@@ -40,6 +40,7 @@ Per Nate Discord [2026-05-28T19:40Z][nate-discord-2026-05-28]:
 ## Scope
 
 **In:**
+
 - `project-tracking-workflow` SKILL.md in `.ai-agent-alex` — replace the
   IDs-at-INTAKE/TRIAGE rule with a direct-to-tickets/ rule.
 - `ticket-updater.md` agent prompt in `.ai-agent-alex` — remove stale
@@ -49,6 +50,7 @@ Per Nate Discord [2026-05-28T19:40Z][nate-discord-2026-05-28]:
   deprecated-folder doc; add "New intake flow" section.
 
 **Out:**
+
 - Cleaning up existing `to-triage/` backlog files (separate sweep).
 - schema-ticket.yaml changes (schema already has `state: triage` as initial
   state — no changes needed).
