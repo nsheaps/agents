@@ -1,9 +1,13 @@
 ---
 type: feature
+id: GSD-77
+legacy_ids:
+  - "1779997042-bash-pipe-head-tail-rewrite"
 state: triage
 created: 2026-05-28T19:37:22Z
 project: GSD
 priority: 1
+requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
   - id: nate-discord-1509641003160699121
     type: discord-message
@@ -12,9 +16,12 @@ events:
   - ts: 2026-05-28T19:37:22Z
     by: alex
     change: "created from Nate Discord message 2026-05-28T19:34:22Z"
+  - ts: 2026-05-28T19:39:01Z
+    by: alex
+    change: "promoted to-triage → GSD-77 (state=triage) per Nate Discord 1509642169932316742"
 ---
 
-# Bash | head / tail — rewrite to redirect-to-file
+# GSD-77 — Bash | head / tail — rewrite to redirect-to-file
 
 ## Origin
 
@@ -25,6 +32,15 @@ Nate Discord 2026-05-28T19:34:22Z[^nate-discord-1509641003160699121]:
 ## Goal
 
 Add a **PreToolUse hook on the Bash tool** that detects when a command contains `| head` or `| tail` (with optional flags/args), rewrites the command to redirect full output to a temp file, then tails that file to surface the requested lines — and injects `additionalContext` coaching text so the agent understands the transformation.
+
+## User story
+
+As **an agent using Bash**, I want commands with `| head` or `| tail` to automatically redirect full output to a temp file and show only the requested lines, so that I retain the full output for follow-up queries without losing it to piped truncation.
+
+## Stakeholders
+
+- **Nate** (handler) — directive source
+- **Alex** (subject) — hook lives in alex's repo first
 
 ## Desired transformation
 
