@@ -1,4 +1,4 @@
-Generate a mermaid dependency-graph markdown file from the task system (task-utils plugin or a Task* hook in alex's repo), showing all tasks and their dependencies, colored by status, filtered to actionable leaf nodes.
+Generate a mermaid dependency-graph markdown file from the task system (task-utils plugin or a Task\* hook in alex's repo), showing all tasks and their dependencies, colored by status, filtered to actionable leaf nodes.
 
 ## What was asked
 
@@ -34,7 +34,7 @@ The output file location is TBD at triage — candidates include `.claude/task-g
 1. **Scope** — alex's repo only, or ship in the task-utils plugin for all agents?
 2. **Trigger** — every task state change (PostToolUse), or on-demand command, or both?
 3. **Output file** — committed to the repo, or written to `.claude/tmp/` as a scratch artifact?
-4. **Filter depth** — should *completed* parent tasks be shown (as "done" ancestry context) or fully hidden? Nate's ask says omit parents of pending/in-progress tasks, but completed parents of completed leaves may add useful context.
+4. **Filter depth** — should _completed_ parent tasks be shown (as "done" ancestry context) or fully hidden? Nate's ask says omit parents of pending/in-progress tasks, but completed parents of completed leaves may add useful context.
 5. **Plugin home** — task-utils is the logical home; if so, this needs a PR against `ai-mktpl`. Alternatively, prototype locally in `.claude/skills/task-graph/` first (per skill-resolution-order rules) and upstream later.
 
 ## Priority
