@@ -43,6 +43,7 @@ From [fixprompt.md L26][^fixprompt-source]:
 ## Status
 
 **state=done** — shipped 2026-05-26 in two commits:
+
 - [commit `6b8df10`][^commit-6b8df10] — initial skill creation as `plugin-dev`
 - [commit `b10bb8f`][^commit-b10bb8f] — renamed to `developing-plugins-locally` per naming convention
 

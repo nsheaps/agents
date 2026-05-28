@@ -44,6 +44,7 @@ From [fixprompt.md L19][^fixprompt-source]:
 ## Status
 
 **state=done** — shipped 2026-05-26 in two commits:
+
 - [commit `418ebb1`][^commit-418ebb1] — hook implementation + config wiring at [`.claude/hooks/task-sync.sh`][^hook-task-sync]
 - [commit `5e6769b`][^commit-5e6769b] — bulk sync of all 2599 existing tasks into the alex repo
 
