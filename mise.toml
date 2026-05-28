@@ -14,66 +14,39 @@ node = "24.15.0"
 "pipx:litellm" = { version = "1.83.14", extras = "proxy" }
 tilt = "0.37.3"
 
-# TODO Add nx? or install nx through bun? + migrate mise tasks to scripts in folder + scripts should delegate to nx in this repo
+# nx is installed via bun (root devDependency). Every fan-out task below is
+# a pure `bunx nx run-many --target=<name>` invocation — no inline prettier,
+# no inline shell-syntax check, no `bun run` fallbacks. The root project
+# (registered via the `nx` block in package.json) owns repo-level concerns;
+# workspace packages own their own. `.prettierignore-root` keeps the root
+# target from touching files the workspace targets handle.
+#
+# format vs lint semantics:
+#   lint   — run ALL checks read-only (prettier --check + tsc --noEmit +
+#            shell-syntax + …). Never writes. Safe for CI gates.
+#   format — run all auto-fixers (prettier --write, etc.), THEN run the same
+#            check suite as lint. So `format` can write files AND still
+#            fail when a non-fixable check (tsc, plugin validate, etc.)
+#            fails. The autofix CI workflow uses `mise run format` and
+#            commits any writes; the validate gate uses `mise run lint`.
+# See docs/MONOREPO.md for the full pattern.
 
 [tasks.format]
-description = "Format markdown files with prettier"
-# todo: this needs to come from mise, not bun
-run = "bun run prettier --write '**/*.md'"
-
-[tasks.format-check]
-description = "Check markdown formatting with prettier"
-run = "bun run prettier --check '**/*.md'"
+description = "Auto-fix every project via nx (root + each workspace package), then re-verify with the same checks lint runs"
+run = "bunx nx run-many --target=format"
 
 [tasks.lint]
-description = "Auto-fix lint issues (prettier --write) + shell syntax check"
-depends = ["format"]
-run = """
-# Shell script syntax check (skip non-shell files: .ts, .js, .py, .rb, .go)
-for script in bin/*; do
-  [ -d "$script" ] && continue
-  [ -f "$script" ] || continue
-  case "$script" in
-    *.ts|*.js|*.py|*.rb|*.go) continue ;;
-  esac
-  echo "Checking $script..."
-  bash -n "$script"
-done
-for lib in bin/lib/*.sh; do
-  [ -f "$lib" ] || continue
-  echo "Checking $lib..."
-  bash -n "$lib"
-done
-echo "All lint checks passed."
-"""
+description = "Read-only lint every project via nx (no writes)"
+run = "bunx nx run-many --target=lint"
 
-[tasks.lint-check]
-description = "Check-only linting (no auto-fix) — for read-only CI gates"
-depends = ["format-check"]
-run = """
-# Shell script syntax check (skip non-shell files: .ts, .js, .py, .rb, .go)
-for script in bin/*; do
-  [ -d "$script" ] && continue
-  [ -f "$script" ] || continue
-  case "$script" in
-    *.ts|*.js|*.py|*.rb|*.go) continue ;;
-  esac
-  echo "Checking $script..."
-  bash -n "$script"
-done
-for lib in bin/lib/*.sh; do
-  [ -f "$lib" ] || continue
-  echo "Checking $lib..."
-  bash -n "$lib"
-done
-echo "All lint checks passed."
-"""
+[tasks.build]
+description = "Build every workspace package via nx (root and the plugins package have no build target and are skipped)"
+run = "bunx nx run-many --target=build"
 
 [tasks.test]
-description = "Run tests"
-run = "bun test"
+description = "Test every workspace package via nx (TS packages: bun test; @nsheaps/agents-plugins: claude plugin validate)"
+run = "bunx nx run-many --target=test"
 
 [tasks.check]
-description = "Run all checks (format + lint + test)"
-depends = ["lint", "test"]
-run = "echo 'All checks passed'"
+description = "Lint + build + test, every project via nx run-many in one pass (parallel, cached)"
+run = "bunx nx run-many --target=lint --target=build --target=test"

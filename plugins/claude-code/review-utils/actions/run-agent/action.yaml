@@ -25,26 +25,26 @@ inputs:
   github-token:
     description: GitHub token. If unset, app-id and private-key are required.
     required: false
-    default: ""
+    default: ''
   app-id:
     description: GitHub App ID for authentication.
     required: false
-    default: ""
+    default: ''
   private-key:
     description: GitHub App private key for authentication.
     required: false
-    default: ""
+    default: ''
   anthropic-api-key:
     description: Anthropic API key for Claude Code. Mutually exclusive with claude-code-oauth-token.
     required: false
-    default: ""
+    default: ''
   claude-code-oauth-token:
     description: Claude Code OAuth token. Alternative to anthropic-api-key.
     required: false
-    default: ""
+    default: ''
 
 runs:
-  using: "composite"
+  using: 'composite'
   steps:
     - name: Get additional job context
       uses: qoomon/actions--context@v5

@@ -1,0 +1,17 @@
+{
+  "name": "@nsheaps/agents-plugins",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Claude Code + opencode plugins shipped from the agents repo. Registered as a workspace so nx can fan format / lint / test (= plugin-manifest validation) over it alongside the TS packages.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nsheaps/agent-team.git",
+    "directory": "plugins"
+  },
+  "license": "UNLICENSED",
+  "scripts": {
+    "format": "prettier --write . --ignore-path ../.prettierignore",
+    "lint": "prettier --check . --ignore-path ../.prettierignore",
+    "test": "bash ./test.sh"
+  }
+}
