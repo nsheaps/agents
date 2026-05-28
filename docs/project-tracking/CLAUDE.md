@@ -8,7 +8,7 @@ We're currently setting up project management. Relevant resources:
 - `task-summary/` — legacy summaries to triage into tickets (project-setup step 5).
 - `projects/<project>/` — per-project artifacts. Tickets live in `projects/<P>/tickets/$id-$slug.md` (flat under the `tickets/` subfolder). State in frontmatter, not in folders. Non-ticket artifacts (PROJECT.md, milestone summaries) sit at the project root.
 - `milestones/` — milestone objects (state in frontmatter; siblings to `projects/` since milestones may span projects).
-- `to-triage/` — incoming items waiting to be mapped to a project + assigned a canonical id.
+- `to-triage/` — **legacy staging folder; do not use for new items.** New asks go directly to `projects/<P>/tickets/<id>-<slug>.md` with `state: triage`. Existing files remain for backlog sweep.
 - `.metadata/` — JSON Schema files for the doc types defined here (`schema-ticket.yaml`, `schema-milestone.yaml`).
 
 Use ticket and project management plugins (`ticket-utils`, `project-utils`) when they exist — until then, the file flow + git history is the system of record. Each state transition = a commit (so `git log` reconstructs the events log).

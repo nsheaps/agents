@@ -1,20 +1,20 @@
-Incoming items awaiting triage into a project + canonical id. CLAUDE.md is included recursively — keep it short.
+**DEPRECATED for new items.** This folder is no longer the intake path for new asks. New asks are filed DIRECTLY into `projects/<P>/tickets/<id>-<slug>.md` with `state: triage` — no staging step. Files already present here are backlog; process them by promoting to tickets/ in a separate sweep. CLAUDE.md is included recursively — keep it short.
 
-## Naming
+## Legacy naming (for existing files only)
 
 - `$epoch-$slug.md` where `$epoch` = unix seconds at file creation (`date +%s`).
 - Slug = short kebab-case description (e.g. `1779766960-task-hierarchy-blocking-relaxation.md`).
 - Existing files starting with an `I<N>` legacy MASTER.md ID are grandfathered.
 
-## Body
+## New intake flow (use this going forward)
 
-- Free-form handler brain-dump or refined ask. No required frontmatter at this stage (schema lives in `.metadata/schema-ticket.yaml` and applies after promotion).
-- Refinements appended to the same file (don't open new ones) until the item is triaged.
+1. Determine the next-free ticket ID: scan `projects/GSD/tickets/` for the highest `GSD-N`, increment by 1.
+2. Create `projects/GSD/tickets/GSD-<N>-<slug>.md` directly, with frontmatter `state: triage`.
+3. Commit immediately — one ticket = one commit.
 
-## Triage lifecycle
+## Legacy triage lifecycle (for existing files in this folder)
 
-- File enters here when a new ask is captured.
-- Triage promotes it to `projects/<P>/tickets/GSD-<N>-$slug.md` (or merges into an existing ticket), and the source file is removed in the SAME commit as the promotion (`git mv` preferred so history follows).
+- Triage promotes to `projects/<P>/tickets/GSD-<N>-$slug.md` (or merges into an existing ticket), source file removed in the SAME commit (`git mv` preferred so history follows).
 - Each promotion = its own commit (one ticket event = one commit; see [`feedback_one_commit_per_ticket_event.md`](https://github.com/nsheaps/.ai-agent-alex/blob/main/memory/feedback_one_commit_per_ticket_event.md)).
 
 ## Do not
