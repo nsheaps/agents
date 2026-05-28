@@ -104,25 +104,43 @@ Same as the library template, but:
 
 For browser packages, add `"lib": ["ESNext", "DOM"]` to `compilerOptions`.
 
+## The root project
+
+The repo root is itself registered as an nx project (named `root`) via the `nx` block in the top-level `package.json`. Its job is the repo-level slice of work that doesn't belong to any workspace package:
+
+- repo-root markdown (`README.md`, `ARCHITECTURE_DRAFT.md`, `docs/**`, `plugins/**`, `agents/**`, `apps/**`, `templates/**`, `.claude/**`, etc.)
+- shell-script syntax sweep (`bin/*`, `bin/lib/*.sh` via `scripts/lint-shell.sh`)
+
+To keep `nx run-many` parallelisation safe, the root project's prettier scripts pass **both** ignore files:
+
+```
+prettier --check "**/*.md" --ignore-path .prettierignore --ignore-path .prettierignore-root
+```
+
+`.prettierignore-root` contains `packages/`, `services/`, `lib/` — so the root target never touches files that a workspace-package target will also format. Each workspace package's prettier runs from its own directory and uses only `.prettierignore` (without `-root`), so it formats its own files without exclusion. The result: zero overlap between root and per-package targets, and nx can fan them out in parallel.
+
+The root project has `format`, `format-check`, `lint`, `lint-check` targets only — no `build` or `test`. Workspace packages have all five. When `nx run-many --target=build` runs, root is silently skipped (no target).
+
 ## How tasks flow
 
 ```
-mise run <task>          (the user-facing entry point)
+mise run <task>          (developer / CI entry point)
    └── bunx nx run-many --target=<task>
-          └── per-package `bun run <task>` (defined in each package.json)
+          ├── root → bun run <task> in repo root (root project's scripts)
+          └── per-package → bun run <task> in each workspace package
 ```
 
 The three layers are stable contracts:
 
-- **mise** is the developer's everyday command surface. It also runs in CI. Every task that fans out to packages is one `bunx nx run-many` call.
-- **nx** owns orchestration: parallelism, caching, task graph (`build` depends on `^build`), and affected-detection. nx is installed as a root devDependency (`bunx nx ...`), not via mise.
-- **package scripts** own the actual work. They use the standard tools directly (prettier, tsc, bun test) so a single package can be operated on without nx (`cd packages/agent-api && bun run build`).
+- **mise** is a thin entry point. Every task body is a single `bunx nx run-many --target=<name>` call — no inline prettier, no inline shell-syntax check, no fallback bun invocations. 100% delegation to nx.
+- **nx** owns orchestration: parallelism, caching, task graph (`build` depends on `^build`), affected-detection, and which projects implement a given target.
+- **package scripts** own the actual work. They use the standard tools directly (prettier, tsc, bun test) so a single project can be operated on without nx (`bun run build` inside `packages/agent-api`, or `bun run lint` at the repo root).
 
-This means:
+Adding a new task that fans out across the monorepo is three steps:
 
-- Adding a new mise command that fans out to packages requires only an `nx run-many --target=<new-target>` line and a matching script in each `package.json`.
-- CI uses the same `bunx nx run-many` calls — see `.github/workflows/test.yaml`. No CI-only paths.
-- The mise `format` task also handles repo-level markdown (root-only concern) before delegating to nx for workspace packages.
+1. Add a matching script in `package.json` for each project that should participate (root and/or workspace packages).
+2. Add `[tasks.<name>]` to `mise.toml` with body `run = "bunx nx run-many --target=<name>"`.
+3. If root participates, add the script name to `nx.includedScripts` in the root `package.json` so nx exposes it as a target.
 
 ## CI
 
@@ -132,7 +150,7 @@ This means:
 2. `bunx nx run-many --target=build`
 3. `bunx nx run-many --target=test`
 
-The lint job uses the existing `lint-files` action, which calls `mise run lint` — `mise run lint` now delegates to nx, so this single entry point covers both shell scripts (mise-native) and workspace packages (nx-orchestrated).
+The lint job uses the existing `lint-files` action, which calls `mise run lint`. `mise run lint` is now itself a single `bunx nx run-many --target=lint` call, so CI and local-dev go through the exact same chain.
 
 `.github/workflows/cd.yaml` is plugin-specific (Claude Code plugin marketplace) and is intentionally separate from the nx pipeline.
 
@@ -142,6 +160,7 @@ The lint job uses the existing `lint-files` action, which calls `mise run lint` 
 - `build` declares `dependsOn: ["^build"]` so dependent packages build first.
 - `defaultBase: "main"` — used by `nx affected`.
 - nx cache lives in `.nx/cache` and is gitignored.
+- The root project is registered via `nx.name = "root"` + `nx.includedScripts = ["format", "format-check", "lint", "lint-check"]` in the root `package.json`. `includedScripts` restricts which package.json scripts become nx targets — without it, every script (including helper scripts that shouldn't be fanned out) would be exposed.
 
 ## When to use `nx affected` vs `nx run-many`
 

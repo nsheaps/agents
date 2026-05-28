@@ -14,76 +14,38 @@ node = "24.15.0"
 "pipx:litellm" = { version = "1.83.14", extras = "proxy" }
 tilt = "0.37.3"
 
-# nx is installed via bun (root devDependency). Invoke as `bunx nx`.
+# nx is installed via bun (root devDependency). Every task below is a pure
+# `bunx nx run-many --target=<name>` invocation — no inline prettier, no
+# inline shell-syntax check. The root project (registered via the `nx`
+# block in package.json) owns repo-level concerns (root markdown,
+# bin/ shell-syntax) and excludes workspace dirs via .prettierignore-root,
+# so nx can parallelize root + per-package targets with no overlap.
 # See docs/MONOREPO.md for the full pattern.
 
 [tasks.format]
-description = "Format all files (root markdown + each workspace package via nx)"
-run = """
-bun run format
-bunx nx run-many --target=format
-"""
+description = "Format every project via nx (root + each workspace package)"
+run = "bunx nx run-many --target=format"
 
 [tasks.format-check]
-description = "Check formatting (root markdown + each workspace package via nx)"
-run = """
-bun run format-check
-bunx nx run-many --target=format-check
-"""
+description = "Check formatting for every project via nx"
+run = "bunx nx run-many --target=format-check"
 
 [tasks.lint]
-description = "Lint all packages via nx, plus shell-script syntax check"
-depends = ["format"]
-run = """
-bunx nx run-many --target=lint
-for script in bin/*; do
-  [ -d "$script" ] && continue
-  [ -f "$script" ] || continue
-  case "$script" in
-    *.ts|*.js|*.py|*.rb|*.go) continue ;;
-  esac
-  echo "Checking $script..."
-  bash -n "$script"
-done
-for lib in bin/lib/*.sh; do
-  [ -f "$lib" ] || continue
-  echo "Checking $lib..."
-  bash -n "$lib"
-done
-echo "All lint checks passed."
-"""
+description = "Lint every project via nx (root project runs prettier --check + shell-syntax sweep; workspace packages run prettier --check + tsc --noEmit)"
+run = "bunx nx run-many --target=lint"
 
 [tasks.lint-check]
-description = "Check-only linting (no auto-fix) — for read-only CI gates"
-depends = ["format-check"]
-run = """
-bunx nx run-many --target=lint
-for script in bin/*; do
-  [ -d "$script" ] && continue
-  [ -f "$script" ] || continue
-  case "$script" in
-    *.ts|*.js|*.py|*.rb|*.go) continue ;;
-  esac
-  echo "Checking $script..."
-  bash -n "$script"
-done
-for lib in bin/lib/*.sh; do
-  [ -f "$lib" ] || continue
-  echo "Checking $lib..."
-  bash -n "$lib"
-done
-echo "All lint checks passed."
-"""
+description = "Lint-check (no auto-fix) every project via nx — read-only CI gate"
+run = "bunx nx run-many --target=lint-check"
 
 [tasks.build]
-description = "Build all workspace packages via nx"
+description = "Build every workspace package via nx (root has no build target and is skipped)"
 run = "bunx nx run-many --target=build"
 
 [tasks.test]
-description = "Run tests across all workspace packages via nx"
+description = "Test every workspace package via nx (root has no test target and is skipped)"
 run = "bunx nx run-many --target=test"
 
 [tasks.check]
-description = "Run all checks (format + lint + build + test)"
-depends = ["lint", "build", "test"]
-run = "echo 'All checks passed'"
+description = "Lint + build + test, every project via nx run-many in one pass (parallel, cached)"
+run = "bunx nx run-many --target=lint --target=build --target=test"

@@ -1,0 +1,10 @@
+# Additional prettier ignores used ONLY by the root project's format /
+# format-check / lint scripts (passed as a second --ignore-path alongside
+# .prettierignore). Workspace packages format their own files via their
+# own per-package nx targets; excluding them here keeps the root project's
+# nx target from overlapping with the workspace packages' targets so
+# `nx run-many` can parallelize without two projects touching the same file.
+
+packages/
+services/
+lib/

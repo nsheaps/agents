@@ -38,3 +38,11 @@ github:
 mise:
   autoInstallTools: true
   autoTrust: true
+
+# This repo is operated directly by Nate via Claude Code on web, not by an
+# autonomous agent — disable task-utils' in-progress-task gate so writes
+# aren't blocked. Agent repos (.ai-agent-{alex,jack,henry}) keep the gate
+# on because their work is supposed to be Task-tracked.
+task-utils:
+  enabled: false
+  requireInProgress: false
