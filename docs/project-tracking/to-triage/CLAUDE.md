@@ -8,8 +8,9 @@
 
 ## New intake flow (use this going forward)
 
-1. Determine the next-free ticket ID: scan `projects/GSD/tickets/` for the highest `GSD-N`, increment by 1.
-2. Create `projects/GSD/tickets/GSD-<N>-<slug>.md` directly, with frontmatter `state: triage`.
+0. **Determine the correct project.** Default: `GSD` (general sprint-driven work). Use a different project only when the ask clearly belongs to one (e.g. a dedicated product project already exists). When in doubt, use `GSD`.
+1. Determine the next-free ticket ID: scan `projects/<P>/tickets/` for the highest `<P>-N`, increment by 1.
+2. Create `projects/<P>/tickets/<P>-<N>-<slug>.md` directly, with frontmatter `state: triage`.
 3. Commit immediately — one ticket = one commit.
 
 ## Legacy triage lifecycle (for existing files in this folder)
