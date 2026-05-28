@@ -1,7 +1,11 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "enabledPlugins": {
+    "agent-utils@agents": true,
+    "agent-tab-titles@nsheaps-claude-plugins": true
+  },
   "extraKnownMarketplaces": {
-    "nsheaps-agent-team": {
+    "agents": {
       "source": {
         "source": "directory",
         "path": "."
@@ -13,9 +17,5 @@
         "path": "/Users/nathan.heaps/src/nsheaps/ai-mktpl"
       }
     }
-  },
-  "enabledPlugins": {
-    "agent-utils@nsheaps-agent-team": true,
-    "agent-tab-titles@nsheaps-claude-plugins": true
   }
 }
