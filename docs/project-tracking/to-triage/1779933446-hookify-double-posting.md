@@ -9,7 +9,7 @@ Hookify-driven Discord/Telegram notifications appear to fire twice for the same 
 - Is the hookify plugin registering its hook twice (e.g. both project-scope and user-scope `settings.json` enabling the same plugin → duplicate matcher entries in the merged hook set)?
 - Is there overlap between hookify's built-in notify hook and a separately-configured local hook for the same event (PostToolUse, Stop, etc.)? See sibling ticket `1779933446-hookify-notify-consolidation.md` — these may share a root cause.
 - Does the duplicate manifest on every fire, or only after a `/reload-plugins` / launcher restart?
-- Which event matchers are affected — Stop, PostToolUse(*), SubagentStop, all of them?
+- Which event matchers are affected — Stop, PostToolUse(\*), SubagentStop, all of them?
 - Are the two posts identical (suggesting same hook firing twice) or differently-formatted (suggesting two different code paths producing similar output)?
 
 ## Reproduction notes (TBD)
