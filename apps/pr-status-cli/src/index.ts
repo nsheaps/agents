@@ -89,6 +89,15 @@ const PR_FRAGMENT = `
   mergeStateStatus
   reviewDecision
   baseRepository { nameWithOwner }
+  author {
+    __typename
+    login
+    ... on User { url }
+    ... on Bot { url }
+    ... on Organization { url }
+    ... on Mannequin { url }
+    ... on EnterpriseUserAccount { user { login url } }
+  }
   reviews(last: 50) {
     nodes {
       state
@@ -226,6 +235,50 @@ function reviewEmoji(pr: any): ReviewEmoji {
   return "🔵";
 }
 
+// Hover-tooltip titles for each emoji (plain English). Rendered via the
+// markdown link-title trick: `[emoji](# "title")` — works on github.com.
+const STATE_TITLES: Record<StateEmoji, string> = {
+  "🔵": "draft PR",
+  "🟠": "open with merge conflicts",
+  "🟢": "open",
+  "🟣": "merged",
+  "❌": "closed without merge",
+};
+const CI_TITLES: Record<CiEmoji, string> = {
+  "⛔️": "CI ignored (merge conflict — needs another run)",
+  "🟠": "required check still running, other checks failed",
+  "🔵": "some checks still running",
+  "🔴": "required passed, other checks failed (all complete)",
+  "❌": "all checks finished, some failed",
+  "🟢": "all checks passed (no required checks)",
+  "✅": "all checks passed (including required)",
+};
+const REVIEW_TITLES: Record<ReviewEmoji, string> = {
+  "🔵": "no reviews yet",
+  "❌": "changes requested",
+  "🟠": "approved but criteria still not met",
+  "🟢": "approved, ready to merge",
+  "✅": "approved by codeowner, ready to merge",
+  "💬": "commented (no approvals or rejections)",
+};
+
+function tip(emoji: string, title: string): string {
+  // Escape double quotes inside the title to keep markdown valid.
+  const t = title.replace(/"/g, '\\"');
+  return `[${emoji}](# "${t}")`;
+}
+
+function authorLink(pr: any): string {
+  const a = pr.author;
+  if (!a) return "";
+  const login: string = a.login ?? "(unknown)";
+  // GraphQL .url on User/Bot/Organization is the canonical profile URL
+  // (e.g. https://github.com/apps/renovate for Bot, https://github.com/<login>
+  // for User). EnterpriseUserAccount nests user.url.
+  const url: string = a.url ?? a.user?.url ?? `https://github.com/${login}`;
+  return ` by [@${login}](${url})`;
+}
+
 function formatLine(ref: Ref, pr: any): string {
   const slug = pr.baseRepository?.nameWithOwner ?? `${ref.owner}/${ref.repo}`;
   const title = pr.title ?? "(no title)";
@@ -233,7 +286,12 @@ function formatLine(ref: Ref, pr: any): string {
   const s = stateEmoji(pr);
   const c = ciEmoji(pr);
   const r = reviewEmoji(pr);
-  return `${s}${c}${r} [[${slug}#${pr.number}] ${title}](${url})`;
+  const emojis = `${tip(s, STATE_TITLES[s])}${tip(c, CI_TITLES[c])}${tip(r, REVIEW_TITLES[r])}`;
+  const author = authorLink(pr);
+  const body = `${emojis} [[${slug}#${pr.number}] ${title}](${url})${author}`;
+  // Strikethrough merged 🟣 OR closed-no-merge ❌ — both terminal states.
+  if (s === "🟣" || s === "❌") return `~~${body}~~`;
+  return body;
 }
 
 // ---- digest subcommand: discover refs via GraphQL search ----
