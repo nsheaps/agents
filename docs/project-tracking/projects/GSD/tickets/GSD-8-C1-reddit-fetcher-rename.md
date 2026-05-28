@@ -1,14 +1,21 @@
 ---
 type: feature
 id: GSD-8
+<<<<<<<< Updated upstream:docs/project-tracking/projects/GSD/tickets/GSD-8-C1-reddit-fetcher-rename.md
 priority: 4
+========
+>>>>>>>> Stashed changes:docs/project-tracking/projects/GSD/GSD-8-C1-reddit-fetcher-rename.md
 state: done
 created: 2026-05-25T19:39:00Z
 completed: 2026-05-25T20:30:00Z
 project: GSD
 assignee: contacts://heaps-group/byGithubUsername/nsheaps
 requester: contacts://heaps-group/byGithubUsername/nsheaps
+<<<<<<<< Updated upstream:docs/project-tracking/projects/GSD/tickets/GSD-8-C1-reddit-fetcher-rename.md
 milestone: ../../../milestones/M5.md
+========
+milestone: ../../milestones/M5.md
+>>>>>>>> Stashed changes:docs/project-tracking/projects/GSD/GSD-8-C1-reddit-fetcher-rename.md
 references:
   - id: pr-166
     type: github-pr
@@ -17,11 +24,15 @@ references:
     type: doc
     url: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md
 events:
+<<<<<<<< Updated upstream:docs/project-tracking/projects/GSD/tickets/GSD-8-C1-reddit-fetcher-rename.md
   - {
       ts: 2026-05-25T23:18:00Z,
       by: alex,
       change: "promoted from to-triage/C1-reddit-fetcher-rename to GSD-8 (state=done)",
     }
+========
+  - { ts: 2026-05-25T23:18:00Z, by: alex, change: "promoted from to-triage/C1-reddit-fetcher-rename to GSD-8 (state=done)" }
+>>>>>>>> Stashed changes:docs/project-tracking/projects/GSD/GSD-8-C1-reddit-fetcher-rename.md
 ---
 
 # [old C1] rename reddit-fetcher plugin to reddit + merge + install on all agents
@@ -30,7 +41,11 @@ events:
 
 From [MASTER.md `## defining scope and cleaning git state` bullet `C1`][^master-c1]:
 
+<<<<<<<< Updated upstream:docs/project-tracking/projects/GSD/tickets/GSD-8-C1-reddit-fetcher-rename.md
 > `C1`: rename this plugin to `reddit` from reddit-fetcher [PR #166][^pr-166] (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
+========
+> 🆕 `C1`: rename this plugin to `reddit` from reddit-fetcher [PR #166][^pr-166] (OPEN) — get it merged, and added to all agents. This is the current checkout branch and there's pending changes to commit, but they should go to main
+>>>>>>>> Stashed changes:docs/project-tracking/projects/GSD/GSD-8-C1-reddit-fetcher-rename.md
 
 ## PR state (snapshot 2026-05-25 04:55Z)
 
@@ -130,5 +145,8 @@ PR is by Jack. I shouldn't unilaterally force-push to a peer's branch. Three app
 - 2026-05-25 04:55Z: doc created. Awaiting Nate's pick on Q1 (approach) before executing.
 
 [^pr-166]: https://github.com/nsheaps/agents/pull/166
+<<<<<<<< Updated upstream:docs/project-tracking/projects/GSD/tickets/GSD-8-C1-reddit-fetcher-rename.md
 
+========
+>>>>>>>> Stashed changes:docs/project-tracking/projects/GSD/GSD-8-C1-reddit-fetcher-rename.md
 [^master-c1]: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md
