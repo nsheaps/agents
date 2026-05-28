@@ -16,23 +16,28 @@ Run this behavior when you detect a new Claude Code version via any of:
 1. **Identify the new version number** from the trigger source
 
 2. **Check if already extracted**:
+
    ```bash
    ls docs/research/prompts-<version>.md
    ```
+
    If file exists, skip — already captured.
 
 3. **Run cchistory** (see `.claude/skills/cchistory.md` for full details):
+
    ```bash
    cd /Users/nathan.heaps/src/nsheaps/agent-team
    CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1 cchistory <version> --claude-args '--dangerously-skip-permissions'
    ```
 
 4. **Move output to permanent location**:
+
    ```bash
    mv prompts-<version>.md docs/research/prompts-<version>.md
    ```
 
 5. **Diff against previous version** (if one exists):
+
    ```bash
    diff docs/research/prompts-<previous-version>.md docs/research/prompts-<version>.md > .claude/tmp/prompt-diff-<previous>-to-<version>.md
    ```
@@ -50,11 +55,11 @@ Run this behavior when you detect a new Claude Code version via any of:
 
 ## Output Location
 
-| Artifact | Location |
-|----------|----------|
-| Raw prompt extraction | `docs/research/prompts-<version>.md` |
+| Artifact              | Location                                    |
+| --------------------- | ------------------------------------------- |
+| Raw prompt extraction | `docs/research/prompts-<version>.md`        |
 | Diff between versions | `.claude/tmp/prompt-diff-<old>-to-<new>.md` |
-| Change analysis | `docs/research/prompt-changes-<version>.md` |
+| Change analysis       | `docs/research/prompt-changes-<version>.md` |
 
 ## Why This Matters
 
