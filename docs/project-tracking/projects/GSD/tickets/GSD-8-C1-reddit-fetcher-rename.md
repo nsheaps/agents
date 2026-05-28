@@ -2,7 +2,13 @@
 type: feature
 id: GSD-8
 priority: 4
+aliases:
+  - "C1"
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-571"
+    note: "#571: Round 1 — promote 10 done-bucket to-triage → GSD-N tickets"
   - id: pr-166
     type: github-pr
     url: https://github.com/nsheaps/agents/pull/166

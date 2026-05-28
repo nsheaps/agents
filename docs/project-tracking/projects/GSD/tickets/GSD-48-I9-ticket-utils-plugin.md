@@ -3,12 +3,18 @@ type: feature
 id: GSD-48
 legacy_ids:
   - I9
+aliases:
+  - "I9"
 created: 2026-05-25T02:00:00Z
 state: triage
 project: GSD
 priority: 2
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-611"
+    note: "#611: AGENT(triager-v2): Process to-triage chronologically per new spec (14 items)"
   - id: master-md-bullet
     type: doc
     url: https://github.com/nsheaps/agents/blob/main/docs/project-tracking/MASTER.md

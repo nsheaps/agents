@@ -31,6 +31,17 @@ properties:
     description: Old identifiers (e.g. epoch IDs from the inbox phase, or I-IDs from MASTER.md). Preserves searchability.
     items:
       type: string
+  aliases:
+    type: array
+    description: |
+      Human-readable previous names/IDs that should also return this ticket when searched.
+      Add when: ticket moves projects (old project's ID), legacy MASTER.md IDs (I7, I32, C1),
+      FXP phase tags (FXP/1.8, FXP/SU.3), or any human-memorable name superseded by the canonical id.
+      Most-recent name first, oldest last. Complements `legacy_ids` (which captures raw numeric
+      epoch IDs for system traceability) — `aliases` captures human-readable old names for discoverability.
+      Required by ticket-first discipline: see project-tracking-workflow skill.
+    items:
+      type: string
   state:
     enum: [triage, in-progress, done, will-not-do]
     description: Lifecycle state. Source of truth — tickets live at `projects/<P>/tickets/$id-$slug.md` regardless of state. Was previously a folder; folder convention dropped 2026-05-25 per Nate Discord 1508572570239242382.
@@ -57,7 +68,18 @@ properties:
     description: contacts:// URL for who asked for the work.
   references:
     type: array
-    description: External resources (PRs, issues, Discord messages, docs). Each gets a footnote-ref in the body.
+    description: |
+      External resources (PRs, issues, Discord messages, docs, agent tasks). Each gets a footnote-ref in the body.
+      REQUIRED ENTRY: every ticket MUST include an entry of type `alex-task` (or `jack-task`/`henry-task`)
+      pointing back to the originating agent task that triggered this ticket's creation.
+      If no originating task exists, that is "bad job — created without ticket-first discipline."
+      File the missing task retroactively before filing the ticket, then reference it here.
+      Format for originating task reference:
+        - id: originating-task
+          type: alex-task
+          id: "#NNN"
+          url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-NNN"
+      Source: Nate Discord 2026-05-28 19:50Z (msg 1509645015234908415).
     items:
       type: object
       required: [id, type, url]
@@ -66,7 +88,7 @@ properties:
           type: string
           description: Footnote-ref id used in body (`[^id]`).
         type:
-          enum: [discord-message, telegram-message, github-pr, github-issue, github-commit, doc, ticket, url]
+          enum: [discord-message, telegram-message, github-pr, github-issue, github-commit, doc, ticket, url, alex-task, jack-task, henry-task]
         url:
           type: string
   milestone:

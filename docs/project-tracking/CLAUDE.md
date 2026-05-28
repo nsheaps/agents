@@ -12,3 +12,5 @@ We're currently setting up project management. Relevant resources:
 - `.metadata/` — JSON Schema files for the doc types defined here (`schema-ticket.yaml`, `schema-milestone.yaml`).
 
 Use ticket and project management plugins (`ticket-utils`, `project-utils`) when they exist — until then, the file flow + git history is the system of record. Each state transition = a commit (so `git log` reconstructs the events log).
+
+**Ticket-first discipline** (enforced): every ticket frontmatter `references:` MUST include an `alex-task` (or `jack-task`/`henry-task`) entry pointing back to the originating agent task. No originating task = bad job. File the task retroactively first. Every ticket SHOULD also have an `aliases:` array listing previous human-readable names (FXP/1.8, I14, C1, etc.) so old names still return the ticket in search. See `.metadata/schema-ticket.yaml` for field shapes.

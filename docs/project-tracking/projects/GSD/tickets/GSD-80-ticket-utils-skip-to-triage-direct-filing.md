@@ -8,6 +8,10 @@ priority: 2
 assignee: "contacts://nsheaps-org/byAgentName/alex"
 requester: "contacts://nsheaps-org/byGithubUsername/nsheaps"
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-678"
+    note: "#678: AGENT(fix-ticket-utils-no-to-triage): Skip to-triage step in ticket-utils"
   - id: nate-discord-2026-05-28
     type: discord-message
     url: "https://discord.com/channels/1490863845252665415/1497431286661517353/1509642468315103233"

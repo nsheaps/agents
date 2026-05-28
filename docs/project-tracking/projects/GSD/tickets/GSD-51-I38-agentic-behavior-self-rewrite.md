@@ -3,12 +3,18 @@ type: feature
 id: GSD-51
 legacy_ids:
   - I38
+aliases:
+  - "I38"
 created: 2026-05-25T01:50:00Z
 state: triage
 project: GSD
 priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-611"
+    note: "#611: AGENT(triager-v2): Process to-triage chronologically per new spec (14 items)"
   - id: discord-ask
     type: discord-message
     url: https://discord.com/channels/1490863845252665415/1497431286661517353/1508284806859849889

@@ -3,12 +3,18 @@ type: feature
 id: GSD-65
 legacy_ids:
   - FXP/1.11
+aliases:
+  - "FXP/1.11"
 created: 2026-05-28T02:30:00Z
 state: in-progress
 project: GSD
 priority: 3
 requester: contacts://heaps-group/byGithubUsername/nsheaps
 references:
+  - id: originating-task
+    type: alex-task
+    url: "https://github.com/nsheaps/.ai-agent-alex/issues/20#task-637"
+    note: "#637: AGENT(ws-dream-hook): FXP/1.11 SubagentStop reflection hook (feeds dreaming plug"
   - id: task-637
     type: task
     url: alex-task://637
