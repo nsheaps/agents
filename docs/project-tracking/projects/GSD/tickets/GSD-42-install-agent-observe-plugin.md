@@ -3,8 +3,10 @@ type: chore
 id: GSD-42
 legacy_ids:
   - "1779755957"
+aliases:
+  - "FXP/1.5"
 created: 2026-05-26T00:51:24Z
-state: triage
+state: done
 project: GSD
 priority: 0
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -26,6 +28,11 @@ events:
       ts: 2026-05-26T01:40:00Z,
       by: alex-triager,
       change: "promoted to-triage → GSD-42 (state=triage) per triager-v2 workflow",
+    }
+  - {
+      ts: 2026-05-26T00:00:00Z,
+      by: alex,
+      change: "agents-observe marketplace added + plugin enabled (commit 56431c9); state updated to done per FXP dashboard reconcile 2026-05-28T21:20Z; aliases FXP/1.5 added",
     }
 ---
 

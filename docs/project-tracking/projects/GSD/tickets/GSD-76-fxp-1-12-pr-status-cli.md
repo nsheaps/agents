@@ -6,7 +6,7 @@ legacy_ids:
 aliases:
   - "FXP/1.12"
 created: 2026-05-28T03:30:00Z
-state: in-progress
+state: done
 project: GSD
 priority: 1
 requester: contacts://heaps-group/byGithubUsername/nsheaps
@@ -32,6 +32,11 @@ events:
       ts: 2026-05-28T03:30:00Z,
       by: alex,
       change: "created from Nate Discord 03:16Z — pr-status CLI spec + skill capture",
+    }
+  - {
+      ts: 2026-05-28T05:19:46Z,
+      by: alex,
+      change: "PR #183 merged (Henry APPROVED) — state updated to done per dashboard reconcile 2026-05-28T21:20Z",
     }
 ---
 
@@ -77,8 +82,19 @@ Out:
 - PR opened on nsheaps/agents named after GSD-76, CI green, Henry-reviewed, merged.
 - Per-repo Discord digest posted from the 119-PR list.
 
+## Status
+
+**state=done** — [PR #183](https://github.com/nsheaps/agents/pull/183) MERGED 2026-05-28T05:19:46Z. Henry APPROVED. Sub-items (1.12.1, 1.12.1a, 1.12.2, 1.12.2a, 1.12.3) tracked in GSD-83 through GSD-87.
+
 ## Related
 
+- [GSD-83](./GSD-83-fxp-1-12-1-rename-digest-subcmd.md) — FXP/1.12.1
+- [GSD-84](./GSD-84-fxp-1-12-1a-fix-closed-semantics.md) — FXP/1.12.1a
+- [GSD-85](./GSD-85-fxp-1-12-2-pr-status-digest-workflow.md) — FXP/1.12.2
+- [GSD-86](./GSD-86-fxp-1-12-2a-parse-repos-md.md) — FXP/1.12.2a
+- [GSD-87](./GSD-87-fxp-1-12-3-regenerate-digest.md) — FXP/1.12.3
+- [GSD-89](./GSD-89-fxp-1-12-publish-binary-releases.md) — FXP/1.12-publish (blocked)
+- [GSD-90](./GSD-90-fxp-1-12-v02-polish.md) — FXP/1.12 v0.2 (open)
 - [Fixprompt dashboard][^fxp-dashboard] (#20) — entry FXP/1.12.
 
 [^discord-spec]: https://discord.com/channels/1490863845252665415/1497431286661517353/1509394824468631666
