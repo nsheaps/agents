@@ -4,23 +4,23 @@ This repository is an nx + bun + TypeScript monorepo. nx orchestrates per-packag
 
 ## Layout
 
-| Directory     | Purpose                                                                   | Publish target                                                                                |
-| ------------- | ------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
-| `packages/*`  | Shared libraries consumed by other workspace packages and external users. | npm public registry as `@nsheaps/<name>`                                                      |
-| `lib/*`       | Internal utility libraries used across the monorepo.                      | npm public registry as `@nsheaps/<name>`                                                      |
-| `services/*`  | Deployable services (daemons, web servers, controllers).                  | Container images at `ghcr.io/nsheaps/<name>`. Marked `"private": true` to block npm publish.  |
-| `apps/*`      | CLI apps and other end-user-facing binaries.                              | Distribution varies (homebrew, ghcr.io, npm CLI bin) — declared per app.                      |
-| `plugins/*`   | Claude Code plugins. Versioned and published via the plugin marketplace.  | Not part of the nx workspace — managed by the existing `cd.yaml` workflow.                    |
+| Directory    | Purpose                                                                   | Publish target                                                                               |
+| ------------ | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `packages/*` | Shared libraries consumed by other workspace packages and external users. | npm public registry as `@nsheaps/<name>`                                                     |
+| `lib/*`      | Internal utility libraries used across the monorepo.                      | npm public registry as `@nsheaps/<name>`                                                     |
+| `services/*` | Deployable services (daemons, web servers, controllers).                  | Container images at `ghcr.io/nsheaps/<name>`. Marked `"private": true` to block npm publish. |
+| `apps/*`     | CLI apps and other end-user-facing binaries.                              | Distribution varies (homebrew, ghcr.io, npm CLI bin) — declared per app.                     |
+| `plugins/*`  | Claude Code plugins. Versioned and published via the plugin marketplace.  | Not part of the nx workspace — managed by the existing `cd.yaml` workflow.                   |
 
 Only `packages/`, `services/`, and `lib/` are workspace globs in the root `package.json`. `apps/`, `plugins/`, `agents/`, `templates/`, and the rest are managed outside nx.
 
 ## Naming
 
-| Aspect              | Rule                                                                                                       |
-| ------------------- | ---------------------------------------------------------------------------------------------------------- |
-| npm name            | `@nsheaps/<package-dir-basename>` — the directory name and the unscoped npm name must match.               |
-| Container image     | `ghcr.io/nsheaps/<package-dir-basename>` — same basename, no scope.                                        |
-| Directory name      | Kebab-case. Library packages start with the role noun (`agent-api`, `agent-ui`). Internal libs may use any descriptive name (`agents-pg-utils`). |
+| Aspect          | Rule                                                                                                                                             |
+| --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| npm name        | `@nsheaps/<package-dir-basename>` — the directory name and the unscoped npm name must match.                                                     |
+| Container image | `ghcr.io/nsheaps/<package-dir-basename>` — same basename, no scope.                                                                              |
+| Directory name  | Kebab-case. Library packages start with the role noun (`agent-api`, `agent-ui`). Internal libs may use any descriptive name (`agents-pg-utils`). |
 
 This 1-to-1 mapping between directory basename, npm name, and container image is intentional — it makes publishing scripts and CI lookups trivial.
 
@@ -28,13 +28,13 @@ This 1-to-1 mapping between directory basename, npm name, and container image is
 
 Every workspace package must define these scripts in its `package.json` so that nx can orchestrate them uniformly:
 
-| Script         | Behavior                                                                                                 |
-| -------------- | -------------------------------------------------------------------------------------------------------- |
-| `format`       | Auto-fix formatting (currently `prettier --write . --ignore-path ../../.prettierignore`).                |
-| `format-check` | Check-only formatting (`prettier --check`).                                                              |
-| `lint`         | `format-check` + `tsc --noEmit`. Read-only. Safe for CI gates.                                           |
-| `build`        | Type-check and emit. `tsc -b` against the package's `tsconfig.json`.                                     |
-| `test`         | `bun test`.                                                                                              |
+| Script         | Behavior                                                                                  |
+| -------------- | ----------------------------------------------------------------------------------------- |
+| `format`       | Auto-fix formatting (currently `prettier --write . --ignore-path ../../.prettierignore`). |
+| `format-check` | Check-only formatting (`prettier --check`).                                               |
+| `lint`         | `format-check` + `tsc --noEmit`. Read-only. Safe for CI gates.                            |
+| `build`        | Type-check and emit. `tsc -b` against the package's `tsconfig.json`.                      |
+| `test`         | `bun test`.                                                                               |
 
 nx auto-detects these scripts from `package.json` — no per-package `project.json` is required. Add a `project.json` only when a package needs nx-specific configuration (custom inputs, tags, implicit dependencies, etc.).
 
@@ -58,17 +58,17 @@ nx auto-detects these scripts from `package.json` — no per-package `project.js
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {
-    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" }
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
   },
   "files": ["dist", "src", "README.md"],
   "publishConfig": {
     "access": "public",
-    "registry": "https://registry.npmjs.org/"
+    "registry": "https://registry.npmjs.org/",
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/nsheaps/agent-team.git",
-    "directory": "packages/<basename>"
+    "directory": "packages/<basename>",
   },
   "license": "UNLICENSED",
   "scripts": {
@@ -76,8 +76,8 @@ nx auto-detects these scripts from `package.json` — no per-package `project.js
     "format-check": "prettier --check . --ignore-path ../../.prettierignore",
     "lint": "bun run format-check && tsc --noEmit",
     "build": "tsc -b",
-    "test": "bun test"
-  }
+    "test": "bun test",
+  },
 }
 ```
 
@@ -96,9 +96,9 @@ Same as the library template, but:
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "./src",
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*"],
 }
 ```
 
