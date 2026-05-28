@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.0](https://github.com/nsheaps/agents/compare/v0.0.3...v0.1.0) (2026-05-28)
+
+### Features
+
+* **tickets:** file FXP-coverage GSD tickets (GSD-81–GSD-99) ([#201](https://github.com/nsheaps/agents/issues/201)) ([ffba97b](https://github.com/nsheaps/agents/commit/ffba97baac8db292d932d2c2fe8af8afb8817c8f))
+
 ## [0.0.3](https://github.com/nsheaps/agents/compare/v0.0.2...v0.0.3) (2026-05-28)
 
 ### Maintenance
