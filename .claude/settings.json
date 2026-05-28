@@ -2,7 +2,11 @@
   "$schema": "https://json.schemastore.org/claude-code-settings.json",
   "enabledPlugins": {
     "agent-utils@agents": true,
-    "agent-tab-titles@nsheaps-claude-plugins": true
+    "agent-tab-titles@nsheaps-claude-plugins": true,
+    "shared-lib@ai-mktpl": true,
+    "1pass@ai-mktpl": true,
+    "github-app@ai-mktpl": true,
+    "mise@ai-mktpl": true
   },
   "extraKnownMarketplaces": {
     "agents": {
@@ -15,6 +19,12 @@
       "source": {
         "source": "directory",
         "path": "/Users/nathan.heaps/src/nsheaps/ai-mktpl"
+      }
+    },
+    "ai-mktpl": {
+      "source": {
+        "source": "github",
+        "repo": "nsheaps/ai-mktpl"
       }
     }
   }
