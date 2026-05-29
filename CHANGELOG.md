@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.2](https://github.com/nsheaps/agents/compare/v0.3.1...v0.3.2) (2026-05-29)
+
+### Maintenance
+
+* **deps:** update dependency typescript to v6 ([#185](https://github.com/nsheaps/agents/issues/185)) ([3d3d0ca](https://github.com/nsheaps/agents/commit/3d3d0caa4eb6ffac6d84d9f7f43c74fc6b5b93cb))
+
 ## [0.3.1](https://github.com/nsheaps/agents/compare/v0.3.0...v0.3.1) (2026-05-29)
 
 ### Maintenance
