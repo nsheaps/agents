@@ -41,10 +41,35 @@ run = "bunx nx run-many --target=lint"
 
 [tasks.build]
 description = "Build every workspace package via nx (root and the plugins package have no build target and are skipped)"
+depends = ["build-task-mcp"]
 run = "bunx nx run-many --target=build"
 
+# The task-utils MCP server lives under plugins/claude-code/task-utils/mcp and is
+# NOT a workspace package (it ships as source and builds on-device via mcp/build.sh).
+# These dedicated tasks let CI compile + test it without registering it in the
+# root bun workspace. The base scaffolding (store/git-helper/server bootstrap +
+# build/launch/prewarm scripts) is intended to back a future ticket-utils MCP
+# server too — see plugins/claude-code/task-utils/docs/mcp-base-reuse.md.
+[tasks.build-task-mcp]
+description = "Compile the task-utils MCP server native binary (mcp/dist/task-mcp) — local-dev/CI check; end users build on-device via mcp/build.sh"
+dir = "plugins/claude-code/task-utils/mcp"
+run = """
+bun install
+bun build --compile --outfile dist/task-mcp src/server.ts
+echo "Built plugins/claude-code/task-utils/mcp/dist/task-mcp"
+"""
+
+[tasks.test-task-mcp]
+description = "Run the task-utils MCP server unit + integration tests + the hook write-gate integration test"
+depends = ["build-task-mcp"]
+run = """
+cd plugins/claude-code/task-utils/mcp && bun test
+cd "$MISE_PROJECT_ROOT" && bash plugins/claude-code/task-utils/mcp/test/hook-integration.test.sh
+"""
+
 [tasks.test]
-description = "Test every workspace package via nx (TS packages: bun test; @nsheaps/agents-plugins: claude plugin validate)"
+description = "Test every workspace package via nx (TS packages: bun test; @nsheaps/agents-plugins: claude plugin validate) + the task-utils MCP server"
+depends = ["test-task-mcp"]
 run = "bunx nx run-many --target=test"
 
 [tasks.check]
