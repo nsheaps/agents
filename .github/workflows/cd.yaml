@@ -63,6 +63,17 @@ jobs:
           app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
           private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
 
+      # github-app-auth's internal actions/checkout@v6 (no ref) defaults to
+      # the PR merge commit on pull_request events, which leaves HEAD on a
+      # SHA that isn't an ancestor of head_ref. Restore HEAD here so the
+      # later auto-bump commit lands on the PR branch and pushes fast-forward.
+      - name: Restore HEAD to PR head_ref
+        env:
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          git fetch origin "$BRANCH"
+          git checkout -B "$BRANCH" "origin/$BRANCH"
+
       - name: Check if latest commit is auto-bump (loop prevention)
         id: check-skip
         run: |
@@ -121,13 +132,23 @@ jobs:
             echo "REPORT_MD_EOF"
           } >> $GITHUB_OUTPUT
 
+      # Replaces stefanzweifel/git-auto-commit-action@v7. v7 added a
+      # `git checkout <branch>` step on detached HEAD which fails here:
+      # actions/checkout@v6 + ref:github.head_ref leaves HEAD detached, and
+      # the auto-bump produces uncommitted marketplace.json that v7's
+      # pre-checkout refuses to overwrite. Manual commit+push avoids it.
       - name: Commit and push all changes at once
         if: steps.check-skip.outputs.skip != 'true' && steps.bump.outputs.has-changes == 'true'
-        uses: stefanzweifel/git-auto-commit-action@v7
-        with:
-          commit_message: ${{ env.AUTO_BUMP_COMMIT_MSG }}
-          commit_user_name: ${{ steps.auth.outputs.user-name }}
-          commit_user_email: ${{ steps.auth.outputs.user-id }}+${{ steps.auth.outputs.user-name }}@users.noreply.github.com
+        env:
+          BRANCH: ${{ github.head_ref }}
+          GIT_USER_NAME: ${{ steps.auth.outputs.user-name }}
+          GIT_USER_EMAIL: ${{ steps.auth.outputs.user-id }}+${{ steps.auth.outputs.user-name }}@users.noreply.github.com
+        run: |
+          git config user.name "$GIT_USER_NAME"
+          git config user.email "$GIT_USER_EMAIL"
+          git add -A
+          git commit -m "$AUTO_BUMP_COMMIT_MSG"
+          git push origin "HEAD:refs/heads/$BRANCH"
 
       - name: Post version status comment
         if: steps.check-skip.outputs.skip != 'true'

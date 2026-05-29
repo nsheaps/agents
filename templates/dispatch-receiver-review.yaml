@@ -1,0 +1,56 @@
+# Receives a repository_dispatch event from the review-dispatch decider in
+# nsheaps/agents and runs the AI code review under THIS agent's identity.
+#
+# Install this file as `.github/workflows/dispatch-receiver-review.yaml` in
+# the target agent repo (e.g. nsheaps/.ai-agent-henry). Synced via
+# `nsheaps/.github` CI automation when configured.
+#
+# Spec: https://github.com/nsheaps/agents/blob/main/plugins/claude-code/review-utils/specs/review-dispatch.md
+#       §Receiver-side-flow + §Final-CI-side-check-update
+#
+# Requirements (provisioned via nsheaps/.github/secret-sync.yaml):
+#   - REVIEW_GITHUB_APP_ID
+#   - REVIEW_GITHUB_APP_PRIVATE_KEY  (App installed on the consumer repo so
+#                                     this receiver can post checks/reviews
+#                                     back to the consumer's PR)
+#   - REVIEW_ANTHROPIC_API_KEY       (LLM auth — pick one)
+#   - CLAUDE_CODE_OAUTH_TOKEN        (LLM auth — pick one)
+# Exactly ONE of the two LLM-auth secrets must be set.
+
+name: Dispatch Receiver — PR Review
+
+on:
+  repository_dispatch:
+    # Matches review-dispatch.yaml's `inputs.event-type` (default `pr-review`).
+    types: [pr-review]
+
+jobs:
+  receive:
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    # @main = rolling updates: any change merged to nsheaps/agents takes effect
+    # on the next repository_dispatch in repos using this template. This is
+    # intentional — operators who need pinned stability should replace @main
+    # with a commit SHA and update it in lock-step with plugin version bumps.
+    # NOTE: If a breaking update lands, the check-run may get stuck in_progress
+    # until this template is re-deployed. Pin to a SHA if you need hard stability.
+    uses: nsheaps/agents/.github/workflows/review-receiver.yaml@main
+    with:
+      source-repo: ${{ github.event.client_payload.source.repo }}
+      source-pr-number: ${{ github.event.client_payload.source.pr_number }}
+      source-head-sha: ${{ github.event.client_payload.source.head_sha }}
+      source-head-ref: ${{ github.event.client_payload.source.head_ref }}
+      source-base-ref: ${{ github.event.client_payload.source.base_ref }}
+      check-run-id: ${{ github.event.client_payload.check_run_id }}
+      consumer-workflow-run-url: ${{ github.event.client_payload.consumer_workflow_run_url }}
+      # Forward the consumer PR's event action so the receiver can short-circuit
+      # on `converted_to_draft` (posts neutral check + exits, no review run).
+      trigger-event-action: ${{ github.event.client_payload.trigger.action }}
+      # plugin-ref: main  # default — pin if you want to lock to a specific revision
+    secrets:
+      REVIEW_GITHUB_APP_ID: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+      REVIEW_GITHUB_APP_PRIVATE_KEY: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+      REVIEW_ANTHROPIC_API_KEY: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
+      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}

@@ -1,0 +1,285 @@
+name: Review Receiver (reusable)
+
+# Reusable receiver workflow invoked from a target agent repo's
+# `dispatch-receiver-review.yaml` after a repository_dispatch from the
+# review-dispatch decider workflow.
+#
+# Executes the review under the TARGET AGENT'S identity (this workflow runs
+# in the target's repo's CI), but updates check-runs on the CONSUMER repo
+# via the same review App token.
+#
+# Spec: plugins/claude-code/review-utils/specs/review-dispatch.md
+#       §Receiver-side-flow + §Final-CI-side-check-update
+#
+# 2026-05-23 redesign (Nate 18:08Z):
+#   - The receiver MUST NOT remove the trigger label. The label stays so
+#     subsequent PR events keep re-firing the dispatch.
+#   - `converted_to_draft` is a first-class event — handled by the `skip`
+#     job below: posts a `neutral` check + early-exits. The `review` job
+#     runs only for non-draft transitions.
+#   - Shell scripts >3 lines extracted to .github/scripts/review-receiver/.
+#
+# Flow (review job):
+#   1. Checkout the plugin contents (nsheaps/agents@plugin-ref) — must happen
+#      early so .github/scripts/review-receiver/ is available.
+#   2. Generate review App token (used to call back into consumer repo).
+#   3. Update the consumer-side check-run to in_progress "Review agent
+#      running...".
+#   4. Dismiss prior APPROVED reviews from this bot on the PR.
+#   5. Invoke the plugin's `run-agent` composite action.
+#   6. Read metrics yaml/json file emitted by the agent; fail if absent.
+#   7. Update the consumer-side check to terminal state (success/neutral/failure)
+#      based on agent verdict + follow-up count.
+#   8. `if: failure()` final guard: post "review agent failed to run" check.
+
+on:
+  workflow_call:
+    inputs:
+      source-repo:
+        description: 'Consumer repo where the PR + check_run live (owner/name).'
+        required: true
+        type: string
+      source-pr-number:
+        description: 'PR number on the consumer repo.'
+        required: true
+        type: number
+      source-head-sha:
+        description: 'Head SHA of the consumer PR.'
+        required: true
+        type: string
+      source-head-ref:
+        description: 'Head ref (branch) of the consumer PR.'
+        required: true
+        type: string
+      source-base-ref:
+        description: 'Base ref of the consumer PR.'
+        required: true
+        type: string
+      check-run-id:
+        description: 'Check-run id created by the decider on the consumer head SHA. The receiver updates this id rather than creating a new one.'
+        required: true
+        type: string
+      consumer-workflow-run-url:
+        description: 'URL to the consumer-side decider workflow run (for cross-linking).'
+        required: false
+        default: ''
+        type: string
+      plugin-ref:
+        description: 'Git ref of nsheaps/agents to check out for the plugin contents. Default: main.'
+        required: false
+        default: 'main'
+        type: string
+      trigger-event-action:
+        description: |
+          The `action` field from the consumer PR event that triggered the
+          dispatch (e.g. `opened`, `synchronize`, `labeled`,
+          `converted_to_draft`). The receiver short-circuits on
+          `converted_to_draft` — posts a `neutral` check and skips the
+          review. Empty string is treated as "review normally".
+        required: false
+        default: ''
+        type: string
+    secrets:
+      REVIEW_GITHUB_APP_ID:
+        required: true
+      REVIEW_GITHUB_APP_PRIVATE_KEY:
+        required: true
+      REVIEW_ANTHROPIC_API_KEY:
+        required: false
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+
+jobs:
+  # converted_to_draft path — the PR is no longer ready for review.
+  # Post a `neutral` check on the consumer PR and exit early. We DO NOT
+  # touch the trigger label here (or anywhere) — label stays for the next
+  # PR event to re-fire the dispatch.
+  skip:
+    if: inputs.trigger-event-action == 'converted_to_draft'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
+      checks: write
+    concurrency:
+      group: review-receiver-${{ inputs.source-repo }}-${{ inputs.source-pr-number }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Build details_url
+        id: ctx
+        run: echo "details_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+
+      - name: Parse consumer owner
+        id: consumer
+        run: echo "owner=$(echo '${{ inputs.source-repo }}' | cut -d/ -f1)" >> "$GITHUB_OUTPUT"
+
+      - name: Generate review App token
+        id: auth
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ steps.consumer.outputs.owner }}
+
+      - name: Update check (neutral — PR converted to draft)
+        uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ inputs.source-repo }}
+          check_id: ${{ inputs.check-run-id }}
+          status: completed
+          conclusion: neutral
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"PR converted to draft — review skipped","summary":"The PR moved back to draft state. The review agent will re-evaluate when the PR is marked ready for review again."}
+
+  # Normal review path. Runs for every dispatch EXCEPT converted_to_draft.
+  review:
+    if: inputs.trigger-event-action != 'converted_to_draft'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      checks: write
+    concurrency:
+      group: review-receiver-${{ inputs.source-repo }}-${{ inputs.source-pr-number }}
+      cancel-in-progress: false
+
+    steps:
+      - name: Build details_url
+        id: ctx
+        run: echo "details_url=${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}" >> "$GITHUB_OUTPUT"
+
+      - name: Parse consumer owner
+        id: consumer
+        run: echo "owner=$(echo '${{ inputs.source-repo }}' | cut -d/ -f1)" >> "$GITHUB_OUTPUT"
+
+      # Checkout the plugin contents from nsheaps/agents@plugin-ref so we
+      # can invoke (a) its composite action and (b) the extracted scripts
+      # under .github/scripts/review-receiver/.
+      - name: Checkout plugin (nsheaps/agents)
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
+        with:
+          repository: nsheaps/agents
+          ref: ${{ inputs.plugin-ref }}
+          path: agent-repo
+
+      - name: Generate review App token
+        id: auth
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ steps.consumer.outputs.owner }}
+
+      # Update check-run on consumer to in_progress.
+      - name: Update check (in_progress)
+        uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ inputs.source-repo }}
+          check_id: ${{ inputs.check-run-id }}
+          status: in_progress
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"Review agent running...","summary":"Reviewing on ${{ github.repository }} runners."}
+
+      # Dismiss prior APPROVED reviews from this bot so the PR can't merge
+      # on a stale approval. Keep REQUEST_CHANGES + COMMENT reviews intact.
+      # Logic in .github/scripts/review-receiver/dismiss-prior-approvals.sh.
+      - name: Dismiss prior approval reviews
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+          SOURCE_REPO: ${{ inputs.source-repo }}
+          PR_NUMBER: ${{ inputs.source-pr-number }}
+        run: bash agent-repo/.github/scripts/review-receiver/dismiss-prior-approvals.sh
+
+      # Invoke the plugin's run-agent composite. It owns the actual review:
+      # auth, checkout consumer repo, claude-code-action with plugins, finalize.
+      # The composite accepts a check-run-id and skips its internal check
+      # creation when we pass one — see run-agent/action.yaml.
+      - name: Run review agent
+        id: agent
+        uses: ./agent-repo/plugins/claude-code/review-utils/actions/run-agent
+        with:
+          trigger: |
+            {
+              "referer": "${{ github.repository }}/${{ github.workflow_ref }}",
+              "source": {
+                "repo": "${{ inputs.source-repo }}",
+                "pr_number": ${{ inputs.source-pr-number }},
+                "head_sha": "${{ inputs.source-head-sha }}",
+                "head_ref": "${{ inputs.source-head-ref }}",
+                "base_ref": "${{ inputs.source-base-ref }}"
+              },
+              "check_run_id": "${{ inputs.check-run-id }}",
+              "consumer_workflow_run_url": "${{ inputs.consumer-workflow-run-url }}"
+            }
+          trigger-repo: ${{ inputs.source-repo }}
+          trigger-ref: ${{ inputs.source-head-sha }}
+          event-name: pull_request/synchronize
+          # Pass the decider-created check-run-id so run-agent skips its own
+          # check creation/finalization — we own the lifecycle here.
+          check-run-id: ${{ inputs.check-run-id }}
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          anthropic-api-key: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
+          claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+
+      # Read the metrics file the agent must emit + compute the check_run
+      # conclusion + title. Spec §Receiver-side-flow bullet 6: stop is
+      # rejected if data not written. Logic in
+      # .github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh.
+      - name: Read metrics + compute conclusion
+        id: conclusion
+        env:
+          METRICS_PATH: ${{ runner.temp }}/review-metrics.yaml
+        run: bash agent-repo/.github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh
+
+      - name: Update check (terminal)
+        if: success()
+        uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ inputs.source-repo }}
+          check_id: ${{ inputs.check-run-id }}
+          status: completed
+          conclusion: ${{ steps.conclusion.outputs.conclusion }}
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"${{ steps.conclusion.outputs.title }}","summary":"Review posted as PR review. See agent's review for findings."}
+
+      # if: failure() guard — covers any earlier failure (run-agent crash,
+      # metrics-read error, etc.). Posts the safety-net check.
+      # Known gap: if the "Generate review App token" step itself fails (bad
+      # credentials, App not installed on consumer repo), steps.auth.outputs.token
+      # is empty and this LouisBrunner step will also fail — leaving the check
+      # stuck in_progress. There is no clean cross-repo fallback since
+      # github.token cannot write checks to the consumer repo. In that case,
+      # the explicit log step below surfaces the failure in the workflow run.
+      # continue-on-error: true ensures the log step always fires.
+      - name: Update check (agent failed)
+        id: check-fail
+        if: failure()
+        continue-on-error: true
+        uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
+        with:
+          token: ${{ steps.auth.outputs.token }}
+          repo: ${{ inputs.source-repo }}
+          check_id: ${{ inputs.check-run-id }}
+          status: completed
+          conclusion: failure
+          details_url: ${{ steps.ctx.outputs.details_url }}
+          output: |
+            {"title":"The review agent failed to run","summary":"See workflow run for details."}
+
+      # Always-fires log step: surfaces errors even when the check-update above
+      # cannot post (e.g. auth failure left the token empty). This ensures the
+      # workflow run shows a clear failure rather than silently exiting.
+      - name: Log failure reason
+        if: failure()
+        shell: bash
+        run: |
+          echo "::error::Receiver pipeline failed. Auth token present: ${{ steps.auth.outputs.token != '' }}. Check update posted: ${{ steps.check-fail.outcome }}."
+          echo "If auth token was empty, verify REVIEW_GITHUB_APP_ID and REVIEW_GITHUB_APP_PRIVATE_KEY secrets are set and the App is installed on the consumer repo."
