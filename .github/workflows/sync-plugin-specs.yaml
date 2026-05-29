@@ -1,18 +1,6 @@
 name: Sync Plugin Specs
 
 on:
-  workflow_call:
-    inputs:
-      plugins-dir:
-        description: 'Path to plugins directory'
-        type: string
-        required: false
-        default: 'plugins'
-      commit-message:
-        description: 'Auto-commit message'
-        type: string
-        required: false
-        default: 'chore(specs): auto-sync plugin SPEC.md files'
   push:
     branches: [main]
     paths:
@@ -28,16 +16,8 @@ on:
 
 jobs:
   sync-specs:
-    runs-on: ubuntu-latest
+    uses: nsheaps/github-actions/.github/workflows/sync-plugin-specs.yaml@main
     permissions:
       contents: write
-    steps:
-      - uses: actions/checkout@v6
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - uses: nsheaps/agents/.github/actions/sync-plugin-specs@main
-        with:
-          plugins-dir: ${{ inputs.plugins-dir || 'plugins' }}
-          commit: 'true'
-          commit-message: ${{ inputs.commit-message || 'chore(specs): auto-sync plugin SPEC.md files' }}
+    with:
+      plugins-dir: plugins
