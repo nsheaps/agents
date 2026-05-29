@@ -222,8 +222,8 @@ runs:
         plugin_marketplaces: |
           https://github.com/nsheaps/ai-mktpl.git
         plugins: |
-          github@nsheaps-ai-mktpl
-          review-changes@nsheaps-ai-mktpl
+          github@ai-mktpl
+          review-changes@ai-mktpl
         settings: |
           {
             "permissions": {
