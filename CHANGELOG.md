@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.14](https://github.com/nsheaps/agents/compare/v0.1.13...v0.1.14) (2026-05-29)
+
+### Bug Fixes
+
+* **review-utils:** add allowed_bots to run-agent action ([#212](https://github.com/nsheaps/agents/issues/212)) ([a15976e](https://github.com/nsheaps/agents/commit/a15976ef2d4d7cac6e6641d98d65a77fc5459d59))
+
 ## [0.1.13](https://github.com/nsheaps/agents/compare/v0.1.12...v0.1.13) (2026-05-29)
 
 ## [0.1.12](https://github.com/nsheaps/agents/compare/v0.1.11...v0.1.12) (2026-05-28)
