@@ -1,6 +1,6 @@
 # task-utils
 
-Task discipline hooks and the `manage-tasks` skill — packages the workflow originally proven out in [nsheaps/.ai-agent-alex](https://github.com/nsheaps/.ai-agent-alex).
+Task discipline hooks and the `task-manage` skill — packages the workflow originally proven out in [nsheaps/.ai-agent-alex](https://github.com/nsheaps/.ai-agent-alex).
 
 ## What it provides
 
@@ -34,12 +34,12 @@ Task discipline hooks and the `manage-tasks` skill — packages the workflow ori
 
 - A bundled stdio MCP server exposing four tools — `task_create`, `task_update`, `task_list`, `task_get` — that mirror the built-in Claude Code Task tools. It is the **fallback** for contexts where the built-in Task tools are unavailable (notably Claude Code on the web), so the `require-task-in-progress.sh` write-gate stays satisfiable without resorting to `TASK_UTILS_REQUIRE_TASK=0`.
 - The server re-implements the `task-invariant.sh` lifecycle invariants in-process (no born-`in_progress`, 0-or-1 `in_progress`, validation-steps required for `pending→in_progress`, `RESULT` lines required for `in_progress→completed`) — the PreToolUse hook does not match MCP tool names, so the server polices itself.
-- See the `mcp-task-tools` skill for correct usage.
+- See the `tool-task-mcp` skill for correct usage.
 
 **Skill**:
 
-- **`manage-tasks`** — doctrine for the atomicity check, breakdown pattern, status-transition table, validation-steps mechanism, background-subagent (`AGENT(<n>)`) prefix, MONITORING(<monitor-id>) prefix, and behavior-changing-jumps-the-queue rule. Forks into an isolated context via `context: fork` so the parent's window stays lean and returns a ≤5-sentence imperative instruction.
-- **`mcp-task-tools`** — guides correct use of the `task-mcp` MCP tools when the built-in Task tools are unavailable.
+- **`task-manage`** — doctrine for the atomicity check, breakdown pattern, status-transition table, validation-steps mechanism, background-subagent (`AGENT(<n>)`) prefix, MONITORING(<monitor-id>) prefix, and behavior-changing-jumps-the-queue rule. Forks into an isolated context via `context: fork` so the parent's window stays lean and returns a ≤5-sentence imperative instruction.
+- **`tool-task-mcp`** — guides correct use of the `task-mcp` MCP tools when the built-in Task tools are unavailable.
 
 ## Task storage
 
@@ -110,7 +110,7 @@ Then in a fresh session:
 claude plugin install task-utils@agents
 ```
 
-The two PreToolUse hooks register automatically; the skills are available as `Skill(manage-tasks)` and `Skill(mcp-task-tools)`. The `task-mcp` MCP server connects automatically when the plugin is enabled — verify with `/mcp`, and run `/reload-plugins` if you enabled the plugin mid-session.
+The two PreToolUse hooks register automatically; the skills are available as `Skill(task-manage)` and `Skill(tool-task-mcp)`. The `task-mcp` MCP server connects automatically when the plugin is enabled — verify with `/mcp`, and run `/reload-plugins` if you enabled the plugin mid-session.
 
 ### How the MCP server is built (on-device, on first use)
 
@@ -123,7 +123,7 @@ The MCP server is shipped as TypeScript **source only** (`mcp/src/`). The runnab
 
 For local development / CI, `mise run build-task-mcp` compiles the binary to `mcp/dist/task-mcp` (gitignored — not shipped); `mise run test-task-mcp` builds it and runs the full test suite against it.
 
-See [`docs/research/native-build-strategy.md`](docs/research/native-build-strategy.md) for the rationale and design.
+See the build scripts (`mcp/build.sh`, `mcp/launch.sh`) for implementation details.
 
 ## Design
 

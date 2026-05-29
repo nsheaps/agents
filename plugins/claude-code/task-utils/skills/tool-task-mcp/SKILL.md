@@ -1,9 +1,9 @@
 ---
-name: mcp-task-tools
+name: tool-task-mcp
 description: This skill should be used when the built-in Claude Code Task tools (TaskCreate / TaskUpdate / TaskList / TaskGet) are unavailable — notably Claude Code on the web — and task tracking must instead go through the task-utils `task-mcp` MCP server. Trigger phrases — "TaskCreate is not available", "there are no Task tools", "the write-gate keeps denying my edits and I can't create a task", "how do I track tasks on Claude Code web", "use the MCP task tools", "task_create / task_update / task_list / task_get".
 ---
 
-# mcp-task-tools
+# tool-task-mcp
 
 The `task-utils` plugin bundles an MCP server, `task-mcp`, that exposes four
 task-management tools — `task_create`, `task_update`, `task_list`, `task_get` —
@@ -12,7 +12,7 @@ as a **fallback** for contexts where the built-in `TaskCreate` / `TaskUpdate` /
 
 Use this skill to drive the MCP task tools correctly. The task-management
 _doctrine_ (atomicity, breakdown, validation-steps, 0-or-1 in_progress) is
-unchanged — see `Skill(manage-tasks)`. This skill covers only the MCP tool
+unchanged — see `Skill(task-manage)`. This skill covers only the MCP tool
 mechanics.
 
 ## When to use the MCP tools instead of the built-ins
