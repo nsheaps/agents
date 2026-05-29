@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.0](https://github.com/nsheaps/agents/compare/v0.1.16...v0.2.0) (2026-05-29)
+
+### Features
+
+* **review-dispatch:** full pipeline — spec + impl + per-agent-identity rearchitect ([#165](https://github.com/nsheaps/agents/issues/165)) ([d48970c](https://github.com/nsheaps/agents/commit/d48970cd462c4e6f2087d20f4926f1ec4cf488d1))
+
 ## [0.1.16](https://github.com/nsheaps/agents/compare/v0.1.15...v0.1.16) (2026-05-29)
 
 ### Maintenance
