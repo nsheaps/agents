@@ -1,15 +1,15 @@
 ---
-name: task-manage
+name: manage-tasks
 description: Use at every task-lifecycle decision point (before TaskCreate, before TaskUpdate→in_progress, after TaskUpdate→completed) when you need help applying the task-management doctrine — atomicity check, breakdown planning, status-transition validity, or follow-up capture. Forks into an isolated context so the parent's window stays lean. Returns a ≤5-sentence imperative instruction the parent should execute. Trigger phrases — "is this task atomic?", "should I break this down?", "what task should I start next?", "I just completed a task, what now?", "plan my next move on the task list", "audit my task list discipline".
 context: fork
 model: sonnet
 allowed-tools: Read, Grep, Glob, TaskList, TaskGet
 ---
 
-<!-- SOURCE: ported from nsheaps/.ai-agent-alex (private) .claude/skills/task-manage/SKILL.md — keep this file as the upstream-of-record. Local copies in agent repos should be marked UPSTREAM: task-utils to track that they need to migrate here. Renamed manage-tasks → task-manage 2026-05-25 per Nate's noun-verb naming convention. -->
+<!-- SOURCE: ported from nsheaps/.ai-agent-alex (private) .claude/skills/manage-tasks/SKILL.md — keep this file as the upstream-of-record. Local copies in agent repos should be marked UPSTREAM: task-utils to track that they need to migrate here. -->
 <!-- SEE-ALSO: hooks/task-invariant.sh (lifecycle coach), hooks/require-task-in-progress.sh (write gating), both in this plugin -->
 
-# task-manage
+# manage-tasks
 
 You are forked into an isolated context to make a task-management decision on the parent's behalf. The parent does NOT see your reasoning — only the final instruction you return. Be deliberate, then concise.
 
@@ -86,7 +86,7 @@ This rule is enforced by a `BEHAVIOR_CHANGING_COACH` line in the TaskCreate path
 
 ## 4. Doctrine — breakdown pattern (the worked example)
 
-Canonical reference: `nsheaps/agents/docs/journal/2026/05/16/entry002-managing-tasks-example.md`. Excerpt:
+Canonical reference: `nsheaps/agents/docs/journal/2026/05/16/managing-tasks-example.md`. Excerpt:
 
 ```
 phase 1: [ ] Jack upgrade
@@ -127,6 +127,15 @@ Key transitions:
 | `pending → in_progress` requires atomicity check                                 | STARTED coach in `task-invariant.sh`                                                          |
 | `* → completed` requires follow-up capture                                       | COMPLETED coach in `task-invariant.sh`                                                        |
 | Status transitions logged via dated event-log line in description                | Convention; reminded by coach text                                                            |
+
+**MCP server is the primary task path (R1 redesign, 2026-05-24).** Hooks scan ONLY the flat MCP YAML store (`<repo>/.claude/tasks/<id>.yaml`). They no longer cross-check the legacy per-session JSON store (`~/.claude/tasks/<session_id>/<id>.json`). This means:
+
+- An `in_progress` task in the MCP store satisfies `require-task-in-progress.sh` and `task-invariant.sh`.
+- A native Task tool `in_progress` task does NOT satisfy the write-gate unless it is synced into the flat store by the `task-sync-from-legacy.sh` PostToolUse hook (which fires automatically after each `TaskCreate`/`TaskUpdate` when built-in tasks are enabled).
+
+**MCP fallback (and primary recommendation).** Use the `task-utils` plugin's bundled `task-mcp` MCP server: tools `task_create`, `task_update`, `task_list`, `task_get`. They enforce all the same invariants in-process. The MCP server writes directly to `<repo>/.claude/tasks/<id>.yaml` and the write-gate is satisfied immediately without a PostToolUse sync step. See `Skill(mcp-task-tools)` for tool-call details.
+
+**Native Task tool advisory.** When the built-in `TaskCreate`/`TaskUpdate` tools are used alongside the MCP server, the `task-native-warning.sh` PreToolUse hook fires an advisory (or denial) depending on `nativeTaskMode` in `plugins.settings.yaml` (default: `warn`). Options: `silent` (no advisory), `warn` (advisory in `additionalContext`), `block` (deny with `permissionDecisionReason`). Set at `$CLAUDE_PROJECT_DIR/.claude/plugins.settings.yaml` under `task-utils:` block.
 
 ---
 
@@ -296,7 +305,7 @@ This skill is designed to self-correct over time. If during this invocation you 
 - A repeated question from the parent that the doctrine should answer up front → add to the relevant section.
 - A new lifecycle decision point the parent should know to invoke you on → add to §2.
 
-**How to apply:** edit THIS file (the `SKILL.md` you were just dispatched from — resolve via `$CLAUDE_PLUGIN_ROOT/skills/task-manage/SKILL.md` or the path your invocation surfaced) using the Read + Edit tools. Append a one-line entry to §13 "Change log" noting what you changed and why (include the date in ISO-8601 UTC). Then return your decision to the parent as normal — the parent doesn't need to know you updated the skill (your edit persists for future runs). NOTE: when this skill lives in an installed plugin (e.g. `task-utils@agents`), edits to the cached plugin copy will be overwritten on the next plugin update — for persistent doctrine changes, open a PR against the upstream plugin repo.
+**How to apply:** edit THIS file (the `SKILL.md` you were just dispatched from — resolve via `$CLAUDE_PLUGIN_ROOT/skills/manage-tasks/SKILL.md` or the path your invocation surfaced) using the Read + Edit tools. Append a one-line entry to §13 "Change log" noting what you changed and why (include the date in ISO-8601 UTC). Then return your decision to the parent as normal — the parent doesn't need to know you updated the skill (your edit persists for future runs). NOTE: when this skill lives in an installed plugin (e.g. `task-utils@agents`), edits to the cached plugin copy will be overwritten on the next plugin update — for persistent doctrine changes, open a PR against the upstream plugin repo.
 
 If your insight is too speculative to commit (single observation, might not generalize), DON'T edit the skill — note the observation in your reply for the parent to consider raising with the handler.
 
@@ -307,6 +316,8 @@ If your insight is too speculative to commit (single observation, might not gene
 - **2026-05-17** — initial unified version, collapsing prior 3-component architecture (dispatcher + doctrine + task-resolver agent) into one `context: fork` skill per Nate Discord 2026-05-17 03:31Z. Self-correction §10 added.
 - **2026-05-17** — added §10 "Parallelism via background subagents" covering the `Agent(run_in_background)` + `AGENT(<n>): ` prefix + `SendMessage` resume protocol; renumbered self-correction → §11, change log → §12, worked example → §13. Per Nate Discord 2026-05-17 (post-compact directive).
 - **2026-05-17 04:13Z** — added `model: sonnet` to frontmatter (per Nate Discord [`1505422965800439919`](https://discord.com/channels/1490863845252665415/1497431286661517353/1505422965800439919)) so the forked decision-context runs on sonnet rather than inheriting the parent's opus. Inserted new §10 "Doctrine — validation-steps mechanism" describing the `<validation-steps>` block format, lifecycle interactions table, same-call merge semantics, practical guidance + anti-patterns. Added block-graph inheritance bullet to §4 (per Nate Discord [`1505421767760543745`](https://discord.com/channels/1490863845252665415/1497431286661517353/1505421767760543745)). Renumbered: parallelism §10→§11, self-correction §11→§12, change log §12→§13, worked example §13→§14. Updated three cross-refs.
+- **2026-05-21** — added an "MCP fallback" note to §5 pointing at the new `task-mcp` MCP server (`task_create`/`task_update`/`task_list`/`task_get`) for contexts without the built-in Task tools. The doctrine is unchanged — the MCP tools enforce the same invariants. See the companion `mcp-task-tools` skill.
+- **2026-05-24** — updated §5 to reflect R1 redesign: hooks now scan ONLY the flat MCP YAML store (legacy per-session JSON is no longer consulted); native-task advisory (`task-native-warning.sh`) and PostToolUse sync (`task-sync-from-legacy.sh`) added; `nativeTaskMode` setting documented. MCP server is now the primary (not just fallback) task path.
 
 ---
 
