@@ -30,6 +30,12 @@ jobs:
       contents: read
       pull-requests: write
       checks: write
+    # @main = rolling updates: any change merged to nsheaps/agents takes effect
+    # on the next repository_dispatch in repos using this template. This is
+    # intentional — operators who need pinned stability should replace @main
+    # with a commit SHA and update it in lock-step with plugin version bumps.
+    # NOTE: If a breaking update lands, the check-run may get stuck in_progress
+    # until this template is re-deployed. Pin to a SHA if you need hard stability.
     uses: nsheaps/agents/.github/workflows/review-receiver.yaml@main
     with:
       source-repo: ${{ github.event.client_payload.source.repo }}

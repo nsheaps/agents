@@ -250,10 +250,19 @@ jobs:
           output: |
             {"title":"${{ steps.conclusion.outputs.title }}","summary":"Review posted as PR review. See agent's review for findings."}
 
-      # if: failure() guard — covers any earlier failure (token, dismissal,
-      # run-agent crash, metrics-read error). Posts the safety-net check.
+      # if: failure() guard — covers any earlier failure (run-agent crash,
+      # metrics-read error, etc.). Posts the safety-net check.
+      # Known gap: if the "Generate review App token" step itself fails (bad
+      # credentials, App not installed on consumer repo), steps.auth.outputs.token
+      # is empty and this LouisBrunner step will also fail — leaving the check
+      # stuck in_progress. There is no clean cross-repo fallback since
+      # github.token cannot write checks to the consumer repo. In that case,
+      # the explicit log step below surfaces the failure in the workflow run.
+      # continue-on-error: true ensures the log step always fires.
       - name: Update check (agent failed)
+        id: check-fail
         if: failure()
+        continue-on-error: true
         uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
         with:
           token: ${{ steps.auth.outputs.token }}
@@ -264,3 +273,13 @@ jobs:
           details_url: ${{ steps.ctx.outputs.details_url }}
           output: |
             {"title":"The review agent failed to run","summary":"See workflow run for details."}
+
+      # Always-fires log step: surfaces errors even when the check-update above
+      # cannot post (e.g. auth failure left the token empty). This ensures the
+      # workflow run shows a clear failure rather than silently exiting.
+      - name: Log failure reason
+        if: failure()
+        shell: bash
+        run: |
+          echo "::error::Receiver pipeline failed. Auth token present: ${{ steps.auth.outputs.token != '' }}. Check update posted: ${{ steps.check-fail.outcome }}."
+          echo "If auth token was empty, verify REVIEW_GITHUB_APP_ID and REVIEW_GITHUB_APP_PRIVATE_KEY secrets are set and the App is installed on the consumer repo."
