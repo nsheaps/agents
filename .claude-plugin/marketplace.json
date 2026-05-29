@@ -54,6 +54,29 @@
       ]
     },
     {
+      "name": "plugin-utils",
+      "description": "Skills for plugin and tool development: data storage conventions, file format selection, sync patterns, and storage architecture for Claude Code plugins and MCP servers.",
+      "version": "0.1.1",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/plugin-utils",
+      "category": "utility",
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "plugin-development",
+        "data-storage",
+        "yaml",
+        "file-formats",
+        "mcp",
+        "hooks",
+        "claude-code"
+      ]
+    },
+    {
       "name": "reddit",
       "description": "Fetch Reddit posts, comments, and subreddit listings via Reddit's public JSON API. Returns markdown-formatted content suitable for LLM consumption. No authentication required.",
       "version": "0.1.1",
