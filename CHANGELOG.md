@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.0](https://github.com/nsheaps/agents/compare/v0.2.2...v0.3.0) (2026-05-29)
+
+### Features
+
+* **plugin-utils:** extract data-storage skill into new plugin (from [#157](https://github.com/nsheaps/agents/issues/157)) ([#215](https://github.com/nsheaps/agents/issues/215)) ([228506b](https://github.com/nsheaps/agents/commit/228506b652adc969e3ac493c7a0340aee5856514))
+
 ## [0.2.2](https://github.com/nsheaps/agents/compare/v0.2.1...v0.2.2) (2026-05-29)
 
 ### Maintenance
