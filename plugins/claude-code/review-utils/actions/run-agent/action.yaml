@@ -42,6 +42,13 @@ inputs:
     description: Claude Code OAuth token. Alternative to anthropic-api-key.
     required: false
     default: ''
+  allowed-bots:
+    description: |
+      Comma-separated list of bot logins allowed to trigger the review.
+      Bots not in this list will be rejected by claude-code-action.
+      Default covers the nsheaps org automation bots.
+    required: false
+    default: 'github-actions[bot],renovate[bot],claude[bot],automation-nsheaps[bot],jack-nsheaps[bot],henry-nsheaps[bot],alex-nsheaps[bot]'
 
 runs:
   using: 'composite'
@@ -207,6 +214,7 @@ runs:
         claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
         show_full_output: false
         github_token: ${{ steps.github-token.outputs.token }}
+        allowed_bots: ${{ inputs.allowed-bots }}
         additional_permissions: |
           actions: read
           checks: write
