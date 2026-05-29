@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.1.16](https://github.com/nsheaps/agents/compare/v0.1.15...v0.1.16) (2026-05-29)
+
+### Maintenance
+
+* **deps:** update actions/checkout action to v6 ([#208](https://github.com/nsheaps/agents/issues/208)) ([278a6fb](https://github.com/nsheaps/agents/commit/278a6fbe6982444b764e8fbd4b84ddbe073c428a))
+
 ## [0.1.15](https://github.com/nsheaps/agents/compare/v0.1.14...v0.1.15) (2026-05-29)
 
 ### Bug Fixes
