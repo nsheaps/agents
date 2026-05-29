@@ -99,7 +99,7 @@
     },
     {
       "name": "task-utils",
-      "description": "Task discipline hooks (0-or-1 in_progress invariant on flat YAML store, write-tool gating, validation-steps + RESULT cites, PostToolUse legacy-sync, native-task advisory/block, pull sync) + manage-tasks skill + MCP task server (primary task path)",
+      "description": "Task discipline hooks (0-or-1 in_progress invariant on flat YAML store, write-tool gating, validation-steps + RESULT cites, PostToolUse legacy-sync, native-task advisory/block, pull sync) + task-manage skill + MCP task server (primary task path)",
       "version": "0.4.0",
       "author": {
         "name": "Nathan Heaps"
