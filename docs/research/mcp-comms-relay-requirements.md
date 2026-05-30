@@ -6,7 +6,7 @@
 relay must satisfy to be addable to claude.ai as a custom connector. The chosen
 deployment is a **self-hosted Docker container behind a `cloudflared` (Cloudflare
 Tunnel) sidecar**, authored in `nsheaps/agents`. A Cloudflare Workers + Durable
-Objects deployment was *considered and not chosen* (notes at the end) — but its
+Objects deployment was _considered and not chosen_ (notes at the end) — but its
 OAuth/MCP findings are deployment-independent and apply here too.
 
 ---
@@ -29,6 +29,7 @@ OAuth/MCP findings are deployment-independent and apply here too.
   **2025-11-25** for new builds (requires RFC 9728 Protected Resource Metadata).
 
 Sources:
+
 - [Get started with custom connectors — Claude Help Center](https://support.claude.com/en/articles/11175166-get-started-with-custom-connectors-using-remote-mcp)
 - [Building custom connectors — Claude docs](https://claude.com/docs/connectors/building)
 - [Authentication for connectors — Claude docs](https://claude.com/docs/connectors/building/authentication)
@@ -40,7 +41,7 @@ Sources:
 
 Post-June-2025 spec: **the MCP server is a resource server only**; a separate
 authorization server (AS) issues tokens. For a single self-hosted relay we can
-co-locate both roles in one container, but the *endpoints* below must exist.
+co-locate both roles in one container, but the _endpoints_ below must exist.
 
 1. Unauthenticated MCP request → server returns **HTTP 401** with a
    `WWW-Authenticate` header pointing at the Protected Resource Metadata URL.
@@ -65,6 +66,7 @@ never in query string, exact redirect-URI matching, validate `Origin`
 (DNS-rebinding protection).
 
 Sources:
+
 - [Authorization — MCP spec 2025-03-26](https://modelcontextprotocol.io/specification/2025-03-26/basic/authorization)
 - [Authorization for MCP: OAuth 2.1, PRMs — OSO](https://www.osohq.com/learn/authorization-for-ai-agents-mcp-oauth-21)
 - [Diving into the MCP Authorization Spec — Descope](https://www.descope.com/blog/post/mcp-auth-spec)
@@ -73,12 +75,12 @@ Sources:
 
 ## 3. Practical limits that shape the relay tools
 
-| Constraint | Limit | Implication |
-|---|---|---|
-| Max tool result (claude.ai / Desktop) | ~150,000 chars | Keep message/peer-list payloads small; paginate |
-| Max tool result (Claude Code) | 25,000 tokens (`MAX_MCP_OUTPUT_TOKENS`) | Same |
-| Tool handler timeout (claude.ai / Desktop) | 300 s | Enables long-poll `receive`/`wait_for_message` up to ~300 s |
-| Tool handler timeout (Claude Code) | `MCP_TOOL_TIMEOUT` | Same |
+| Constraint                                 | Limit                                   | Implication                                                 |
+| ------------------------------------------ | --------------------------------------- | ----------------------------------------------------------- |
+| Max tool result (claude.ai / Desktop)      | ~150,000 chars                          | Keep message/peer-list payloads small; paginate             |
+| Max tool result (Claude Code)              | 25,000 tokens (`MAX_MCP_OUTPUT_TOKENS`) | Same                                                        |
+| Tool handler timeout (claude.ai / Desktop) | 300 s                                   | Enables long-poll `receive`/`wait_for_message` up to ~300 s |
+| Tool handler timeout (Claude Code)         | `MCP_TOOL_TIMEOUT`                      | Same                                                        |
 
 **Receive model:** claude.ai's agent only acts when it calls a tool, so async
 server→client notifications are unreliable for driving the model. Design
@@ -99,6 +101,7 @@ return immediately when a message is queued).
 - **stdout is reserved for JSON-RPC on stdio transports — log to stderr only.**
 
 Sources:
+
 - [modelcontextprotocol/typescript-sdk (GitHub)](https://github.com/modelcontextprotocol/typescript-sdk)
 - [npm: @modelcontextprotocol/sdk](https://www.npmjs.com/package/@modelcontextprotocol/sdk)
 - [Build an MCP server — modelcontextprotocol.io](https://modelcontextprotocol.io/docs/develop/build-server)
@@ -108,9 +111,10 @@ Sources:
 ## 5. Deployment decision
 
 **Chosen:** self-hosted Node/Bun container running the MCP relay (Streamable HTTP
-+ OAuth endpoints + broker state), with a `cloudflared` sidecar providing the
-public HTTPS hostname. Docker-compose-droppable, authored in `nsheaps/agents`,
-mirroring the `cloudflared` pattern from `nsheaps/portainer-stacks`.
+
+- OAuth endpoints + broker state), with a `cloudflared` sidecar providing the
+  public HTTPS hostname. Docker-compose-droppable, authored in `nsheaps/agents`,
+  mirroring the `cloudflared` pattern from `nsheaps/portainer-stacks`.
 
 **Considered, not chosen — Cloudflare Workers + Durable Objects:** viable
 (`workers-oauth-provider` + `McpAgent`, DO-per-session, 32 MiB WS messages), but
@@ -118,6 +122,7 @@ the handler wants a container they can drop into compose with cloudflared rather
 than a Workers deployment. Relevant if we ever want a serverless variant.
 
 Sources:
+
 - [Build a Remote MCP server — Cloudflare Agents docs](https://developers.cloudflare.com/agents/guides/remote-mcp-server/)
 - [Building an MCP server with OAuth and Cloudflare Workers — Stytch](https://stytch.com/blog/building-an-mcp-server-oauth-cloudflare-workers/)
 
@@ -125,7 +130,7 @@ Sources:
 
 ## 6. Open design questions (to resolve in the spec)
 
-- **Symmetry:** the handler wants *both* agent sides to connect, advertise,
+- **Symmetry:** the handler wants _both_ agent sides to connect, advertise,
   discover peers, and handshake. Simplest model: **both sides are MCP clients of
   the same relay** (claude.ai via custom connector; a local Claude Code agent via
   a remote-MCP entry). No local stdio bridge needed — only the relay is public

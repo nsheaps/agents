@@ -24,11 +24,11 @@ The handler wants to exchange messages (and later, files) between two AI agents
 that sit on opposite sides of a network boundary — e.g. an agent on **claude.ai**
 (web) and a **local Claude Code** agent — without either side running a publicly
 reachable server. claude.ai can only talk to a remote MCP server registered as a
-**custom connector**, which *requires* a public HTTPS endpoint with OAuth. The
+**custom connector**, which _requires_ a public HTTPS endpoint with OAuth. The
 handler does not want to expose their local machine, and has no signaling server.
 
-The need: a single, small, **publicly reachable relay** that both agents *dial
-out to*, advertise themselves on, discover each other, handshake, and then
+The need: a single, small, **publicly reachable relay** that both agents _dial
+out to_, advertise themselves on, discover each other, handshake, and then
 exchange messages through. The relay is the only public component; both agents
 are clients. Public reach is provided by **`cloudflared`** (Cloudflare Tunnel),
 so no inbound ports or public IP are needed on the host running the relay.
@@ -79,11 +79,11 @@ earlier design; with a central dial-out relay it is unnecessary.
 
 ### Components (all authored in `nsheaps/agents`)
 
-| Component | Location | Purpose |
-|---|---|---|
-| Relay service | `services/mcp-comms-relay/` | TS service: MCP-over-Streamable-HTTP + OAuth + broker. Image → `ghcr.io/nsheaps/mcp-comms-relay`. |
-| Deploy stack | `services/mcp-comms-relay/deploy/docker-compose.yaml` | Droppable compose: relay + `cloudflared` + `init-secrets`. |
-| Connector plugin *(Phase 4, optional)* | `plugins/mcp-comms/` | Thin helper so a local Claude Code agent adds the relay as a remote MCP server (config/skill). |
+| Component                              | Location                                              | Purpose                                                                                           |
+| -------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| Relay service                          | `services/mcp-comms-relay/`                           | TS service: MCP-over-Streamable-HTTP + OAuth + broker. Image → `ghcr.io/nsheaps/mcp-comms-relay`. |
+| Deploy stack                           | `services/mcp-comms-relay/deploy/docker-compose.yaml` | Droppable compose: relay + `cloudflared` + `init-secrets`.                                        |
+| Connector plugin _(Phase 4, optional)_ | `plugins/mcp-comms/`                                  | Thin helper so a local Claude Code agent adds the relay as a remote MCP server (config/skill).    |
 
 Tooling: Bun + TypeScript + `tsc`/Nx per repo convention; `@modelcontextprotocol/sdk`
 (v1.x) for the MCP server (`StreamableHTTPServerTransport`, `McpServer`); `zod`
@@ -91,15 +91,16 @@ for tool input schemas.
 
 ### MCP tools (the relay protocol)
 
-| Tool | Input | Behavior |
-|---|---|---|
-| `advertise` | `{ name, capabilities?, room? }` | Register the caller as a peer in a room (default `"default"`). Returns `{ peer_id, room }`. Refreshes presence (heartbeat). |
-| `discover` | `{ room? }` | List currently-advertised peers in the room: `{ peer_id, name, capabilities, last_seen, pending_handshakes }`. |
-| `handshake` | `{ to_peer_id }` or `{ accept_peer_id }` | Initiate or accept a pairing. On mutual acceptance returns a `channel_id`. |
-| `send` | `{ channel_id, text }` | Enqueue a text message to the peer on that channel. Returns `{ message_id }`. |
-| `receive` | `{ channel_id?, wait_seconds? }` | **Long-poll** (default ~25s, max ~280s to stay under the 300s tool timeout). Returns queued messages, draining the caller's inbox. |
+| Tool        | Input                                    | Behavior                                                                                                                           |
+| ----------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `advertise` | `{ name, capabilities?, room? }`         | Register the caller as a peer in a room (default `"default"`). Returns `{ peer_id, room }`. Refreshes presence (heartbeat).        |
+| `discover`  | `{ room? }`                              | List currently-advertised peers in the room: `{ peer_id, name, capabilities, last_seen, pending_handshakes }`.                     |
+| `handshake` | `{ to_peer_id }` or `{ accept_peer_id }` | Initiate or accept a pairing. On mutual acceptance returns a `channel_id`.                                                         |
+| `send`      | `{ channel_id, text }`                   | Enqueue a text message to the peer on that channel. Returns `{ message_id }`.                                                      |
+| `receive`   | `{ channel_id?, wait_seconds? }`         | **Long-poll** (default ~25s, max ~280s to stay under the 300s tool timeout). Returns queued messages, draining the caller's inbox. |
 
 Notes:
+
 - Identity = OAuth subject + MCP session id. A peer entry is bound to a session;
   presence expires after a TTL if not refreshed (handles disconnects).
 - `receive` is long-poll because claude.ai's model only acts when it calls a
@@ -110,6 +111,7 @@ Notes:
 ### OAuth (MVP)
 
 A minimal built-in **single-user** authorization server co-located in the relay:
+
 - Endpoints: `/.well-known/oauth-protected-resource` (RFC 9728),
   `/.well-known/oauth-authorization-server` (RFC 8414), `/authorize`, `/token`,
   `/register` (DCR, RFC 7591).
@@ -130,7 +132,7 @@ A minimal built-in **single-user** authorization server co-located in the relay:
   token and the relay's OAuth secret from `op://heapsinfra/<deployer>--<host>--mcp-comms-relay/<field>`
   into a named volume; app containers mount it read-only.
 - `restart: unless-stopped` on the relay; `depends_on init-secrets:
-  service_completed_successfully`; healthcheck hitting the relay's `/healthz`.
+service_completed_successfully`; healthcheck hitting the relay's `/healthz`.
 - The droppable compose ships **in `agents`** with the service. **Open item:**
   production deploy infra (Arcane auto-discovery, `OP_SERVICE_ACCOUNT_TOKEN` as a
   global var) currently lives in `nsheaps/iac` (`arcane/hosts/<host>/...`). If/when
@@ -222,7 +224,7 @@ passes its healthcheck, and the public hostname serves the MCP endpoint.
 - **Phase 3 — Containerize + deploy.** Dockerfile → ghcr; droppable compose with
   `cloudflared` + `init-secrets`. Verified end-to-end: claude.ai ↔ local agent
   handshake + message exchange over the public tunnel.
-- **Phase 4 *(optional)* — Connector helper plugin.** `plugins/mcp-comms/` to
+- **Phase 4 _(optional)_ — Connector helper plugin.** `plugins/mcp-comms/` to
   make local Claude Code agents add the relay in one step.
 - **Deferred:** file sharing; multi-user/multi-room; persistence (SQLite/Redis);
   Arcane production wiring in `iac`.
