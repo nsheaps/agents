@@ -20,5 +20,15 @@
     "settings-merge",
     "hook",
     "multi-project"
+  ],
+  "dependencies": [
+    {
+      "name": "shared-lib",
+      "version": "^1.0"
+    },
+    {
+      "name": "github-app",
+      "version": "^0.5"
+    }
   ]
 }

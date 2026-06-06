@@ -233,40 +233,81 @@ def load_upstream(sources_dir: str, token: str | None) -> dict:
     return {}
 
 
+def load_lib_config() -> dict:
+    """Config resolved by the shared-lib in the hook (passed as JSON).
+
+    Scalars use "" sentinels and lists use [] to mean "unset" so that
+    upstream/defaults can still apply. Returns a cleaned dict with unset keys
+    removed."""
+    raw = os.environ.get("SHARED_CONFIG_LIB_JSON", "").strip()
+    if not raw:
+        return {}
+    try:
+        data = json.loads(raw)
+    except Exception as exc:  # noqa: BLE001
+        log(f"could not parse SHARED_CONFIG_LIB_JSON: {exc}")
+        return {}
+    if not isinstance(data, dict):
+        return {}
+    cleaned: dict = {}
+    for key, val in data.items():
+        if val in ("", None):
+            continue
+        if isinstance(val, list) and not val:
+            continue
+        cleaned[key] = val
+    return cleaned
+
+
+def load_standalone(path: str) -> dict:
+    """Read a standalone shared-config.settings.yaml overlay (top-level or
+    nested under `shared-config:`)."""
+    for cand in (path, path[:-5] + ".yml" if path.endswith(".yaml") else path):
+        data = read_yaml(cand)
+        if data is not None:
+            return _unwrap_settings(data)
+    return {}
+
+
+def _coerce(key: str, val):
+    """Coerce string-typed scalars coming from the shared-lib to the right type."""
+    if key in ("enabled", "mergeSettings") and isinstance(val, str):
+        return val.strip().lower() not in ("false", "0", "no", "")
+    if key == "waitForTokenTimeoutSeconds" and isinstance(val, str):
+        try:
+            return int(val)
+        except ValueError:
+            return DEFAULTS[key]
+    return val
+
+
 def resolve_settings(project_dir: str, sources_dir: str, token: str | None) -> dict:
     home = os.path.expanduser("~")
-    # (path, key-in-plugins-settings) — None key means standalone file.
-    layer_specs = [
-        (os.path.join(home, ".claude", "plugins.settings.yaml"), "shared-config"),
-        (os.path.join(home, ".claude", "shared-config.settings.yaml"), None),
-        (os.path.join(project_dir, ".claude", "plugins.settings.yaml"), "shared-config"),
-        (os.path.join(project_dir, ".claude", "shared-config.settings.yaml"), None),
+    # Low -> high precedence. `sources` are UNIONed across every layer; other
+    # keys are last-wins. The repo's plugins.settings.yaml is provided by the
+    # shared-lib (load_lib_config); upstream + standalone are overlays handled
+    # here because they fall outside the lib's plugins.settings.yaml scope.
+    layers = [
+        load_upstream(sources_dir, token),                                   # org bootstrap
+        load_standalone(os.path.join(home, ".claude", "shared-config.settings.yaml")),
+        load_lib_config(),                                                   # repo plugins.settings (shared-lib)
+        load_standalone(os.path.join(project_dir, ".claude", "shared-config.settings.yaml")),
     ]
 
     result = json.loads(json.dumps(DEFAULTS))  # deep copy
-    all_sources: list = []
+    all_sources: list = list(DEFAULTS.get("sources", []))
 
-    def absorb(layer: dict):
+    for layer in layers:
         if not isinstance(layer, dict):
-            return
-        layer = dict(layer)  # shallow copy so we can pop
+            continue
+        layer = dict(layer)
         srcs = layer.pop("sources", None)
         if isinstance(srcs, list):
             all_sources.extend(srcs)
-        deep_update(result, layer)
-
-    # Upstream is the lowest-precedence layer (org defaults).
-    absorb(load_upstream(sources_dir, token))
-
-    for path, key in layer_specs:
-        data = read_yaml(path)
-        if data is None:
-            continue
-        if key is not None:
-            section = data.get(key) if isinstance(data, dict) else None
-            absorb(section if isinstance(section, dict) else {})
-        else:
-            absorb(_unwrap_settings(data))
+        for key, val in layer.items():
+            if val in ("", None):
+                continue
+            result[key] = _coerce(key, val)
 
     result["sources"] = dedup_sources(all_sources)
     return result

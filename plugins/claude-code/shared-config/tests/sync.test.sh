@@ -116,6 +116,23 @@ SHARED_CONFIG_TEST_GIT_BASE="$GIT_BASE" CLAUDE_PROJECT_DIR="$PROJ_C" CLAUDE_PLUG
   "$PYBIN" "$PY" >/dev/null 2>"$PROJ_C/.stderr" || { echo "projC failed"; cat "$PROJ_C/.stderr"; }
 check "projC subpath beta rule reachable" test -f "$PROJ_C/.claude/rules/.shared/acme__shared-b__.claude/beta.md"
 
+# shared-lib boundary: SHARED_CONFIG_LIB_JSON (what the hook passes from
+# plugin-config-read.sh) is honored, and its sources UNION with a standalone
+# overlay. Also checks scalar coercion (mergeSettings as a string).
+PROJ_D="${WORK}/projD"; mkdir -p "$PROJ_D/.claude"
+cat > "$PROJ_D/.claude/shared-config.settings.yaml" <<'YAML'
+sources:
+  - acme/shared-b
+YAML
+SHARED_CONFIG_TEST_GIT_BASE="$GIT_BASE" \
+SHARED_CONFIG_LIB_JSON='{"enabled":"true","mergeSettings":"false","resourceTypes":["rules"],"sources":["acme/shared-a"]}' \
+CLAUDE_PROJECT_DIR="$PROJ_D" CLAUDE_PLUGIN_DATA="$DATA" \
+  "$PYBIN" "$PY" >/dev/null 2>"$PROJ_D/.stderr" || { echo "projD failed"; cat "$PROJ_D/.stderr"; }
+check "projD lib-json source (shared-a) linked" test -f "$PROJ_D/.claude/rules/.shared/acme__shared-a/alpha.md"
+check "projD standalone source (shared-b) unioned" test -f "$PROJ_D/.claude/rules/.shared/acme__shared-b/beta.md"
+# resourceTypes from lib limited to rules -> no skills link created
+check "projD resourceTypes honored (no skills .shared)" test ! -e "$PROJ_D/.claude/skills/.shared"
+
 echo ""
 echo "passed=$pass failed=$fail"
 [ "$fail" -eq 0 ]

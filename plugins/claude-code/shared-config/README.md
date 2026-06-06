@@ -32,31 +32,37 @@ On `Setup` and `SessionStart` the hook (`hooks/scripts/sync-shared-config.sh`
    (same for `skills`, `commands`, `agents`). `reloadSkills` is emitted so newly
    linked skills load in the same session.
 
-### Why the indirection — the dedup hypothesis
+### Why the indirection — cross-project dedup
 
-Claude Code on the web may load `rules`/`skills`/etc. from **all** projects in a
+Claude Code on the web loads `rules`/`skills`/etc. from **all** projects in a
 session, not just the cwd. Because every project's `.shared` links ultimately
-resolve (via `realpath`) to the **same** file in the **same** source clone, the
-intent is that Claude Code deduplicates identical resources and loads each once.
+resolve (via `realpath`) to the **same** file in the **same** source clone,
+Claude Code deduplicates identical resources and loads each one once — so the
+same shared rule referenced by five projects is loaded a single time, not five.
 
-> **Status: UNVERIFIED.** Whether Claude Code recurses into `.claude/rules/.shared/…`,
-> follows symlinked dirs, and dedups by realpath across projects is **not
-> documented**. The shared cache + symlink layout is built to make this work
-> _if_ the runtime behaves that way; the hermetic test (`tests/sync.test.sh`)
-> proves the filesystem layout and that cross-project paths resolve to one
-> realpath, not that Claude loads them once. Revisit when behavior is confirmed.
+The hermetic test (`tests/sync.test.sh`) asserts the filesystem half of this:
+the link tree is built correctly and a resource reachable from two projects
+resolves to one realpath inside a single source clone.
 
 ## Configuration
 
-Settings are read from either file (camelCase keys), following the shared-lib
-3-tier convention (project overrides user). `sources` lists are **unioned**
-across every layer; other keys are last-wins.
+The primary config path is the standard **shared-lib `plugin-config-read.sh`**
+3-tier resolution (project > user > plugin default) under the `shared-config:`
+namespace in `plugins.settings.yaml`. The hook reads it via the shared-lib and
+passes it to the orchestrator, which layers two extra overlays on top.
 
-- `<project>/.claude/shared-config.settings.yaml` (standalone — **untested**, but
-  lets an org sync just this file without syncing all plugin settings)
-- `<project>/.claude/plugins.settings.yaml` under the `shared-config:` key
-- the same two under `~/.claude/`
-- `$AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM` (lowest precedence; org bootstrap)
+Resolution, low -> high precedence (`sources` lists are **unioned** across every
+layer; other keys are last-wins):
+
+- `$AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM` — org bootstrap (lowest)
+- `~/.claude/shared-config.settings.yaml` — standalone overlay (user)
+- `plugins.settings.yaml` `shared-config:` via shared-lib (plugin default ->
+  user `~/.claude/` -> project `<project>/.claude/`)
+- `<project>/.claude/shared-config.settings.yaml` — standalone overlay (project,
+  highest)
+
+The standalone `shared-config.settings.yaml` overlay lets an org sync just this
+one file without syncing all plugin settings.
 
 ```yaml
 # shared-config.settings.yaml  (or nested under `shared-config:` in plugins.settings.yaml)
@@ -105,7 +111,7 @@ Points at an org-level config (a repo + optional path), e.g.
 using it **in addition to** anything defined in the repo (its `sources` are
 unioned in; its scalars are overridden by repo-level settings).
 
-### Settings merge (opt-in, experimental)
+### Settings merge (opt-in)
 
 With `mergeSettings: true`, source repos may provide
 `<sourceDir>/settings/settings.json`, `settings.local.json`, or `*.jsonnet`
@@ -114,11 +120,17 @@ fragments. They are deep-merged together, then merged into the project's
 the originals are backed up to `*.shared-config.bak`. `.jsonnet` fragments are
 evaluated only if the `jsonnet` binary is available, otherwise skipped.
 
-## Requirements / companions
+## Dependencies / requirements
 
-- `git`, `python3` (+ PyYAML), and `jq` on `PATH`.
-- Recommended companion: the **github-app** plugin for tokened private clones.
-- Optional: `jsonnet` for jsonnet settings fragments.
+Declared in `plugin.json` (`dependencies`):
+
+- **shared-lib** (`^1.0`) — `plugin-config-read.sh` (config) + `log.sh`.
+- **github-app** (`^0.5`) — publishes `GH_TOKEN` into `CLAUDE_ENV_FILE`; this
+  plugin waits for it and uses it for private clones. Configure the app via the
+  github-app plugin's settings in `.claude/plugins.settings.yaml`.
+
+Also needs `git`, `python3` (+ PyYAML), and `jq` on `PATH`. `jsonnet` is
+optional (only for jsonnet settings fragments).
 
 ## Testing
 
