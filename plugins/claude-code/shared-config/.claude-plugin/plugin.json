@@ -1,0 +1,24 @@
+{
+  "name": "shared-config",
+  "version": "0.1.0",
+  "description": "Setup/SessionStart hook that clones shared-config source repos and symlinks their rules/skills/commands/agents into the project (deduped across projects via a shared cache), optionally merges settings files, and bootstraps from an org-level upstream config via $AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM. Prefers the github-app token when available.",
+  "author": {
+    "name": "Nathan Heaps",
+    "email": "nsheaps@gmail.com",
+    "url": "https://github.com/nsheaps"
+  },
+  "homepage": "https://github.com/nsheaps/agents/tree/main/plugins/claude-code/shared-config",
+  "repository": "https://github.com/nsheaps/agents",
+  "keywords": [
+    "claude-code",
+    "shared-config",
+    "symlink",
+    "rules",
+    "skills",
+    "commands",
+    "agents",
+    "settings-merge",
+    "hook",
+    "multi-project"
+  ]
+}
