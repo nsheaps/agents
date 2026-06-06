@@ -1,6 +1,6 @@
 # shared-config plugin — default settings (3rd tier).
 #
-# Resolved via the shared-lib `plugin-config-read.sh` 3-tier mechanism:
+# Resolved via the standard 3-tier plugins.settings.yaml mechanism:
 #   1. project: ${CLAUDE_PROJECT_DIR}/.claude/plugins.settings.yaml
 #   2. user:    ~/.claude/plugins.settings.yaml
 #   3. plugin:  this file

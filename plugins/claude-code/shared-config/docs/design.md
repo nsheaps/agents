@@ -6,20 +6,26 @@ Share Claude Code config (rules, skills, commands, agents, and select
 settings files) across repositories, with cross-project deduplication, so an
 org can maintain one source of truth and have it appear in every project.
 
+## Implementation
+
+Single Bun/TypeScript entrypoint `src/index.ts`, invoked directly by `bun` from
+the hook (`hooks.json` → `bun "${CLAUDE_PLUGIN_ROOT}/src/index.ts"`). No build
+step and zero external deps — it uses `Bun.YAML.parse`, `node:fs`/`node:crypto`,
+and spawns the `git` binary. Functions are exported so `bun test` can drive them.
+
 ## Hook process (Setup + SessionStart)
 
-1. Source the **shared-lib** (`plugin-config-read.sh`, `log.sh`) from its
-   dependency data dir and resolve the repo-level `shared-config:` settings via
-   the standard 3-tier mechanism (`plugin_get_config` / `plugin_get_config_json`,
-   with `""`/`[]` sentinels so the Python layer can tell "unset" from "set").
-2. Wait (bounded by `waitForTokenTimeoutSeconds`, default 15, `0` disables) for
-   the **github-app** plugin to publish `GH_TOKEN` into `CLAUDE_ENV_FILE`,
-   preferring it (via the `GITHUB_TOKEN_FILE` signal) over ambient creds.
-3. Pass the resolved config (JSON) to `shared_config_sync.py`, which layers in
-   the remaining overlays (low → high): `$AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM`
-   bootstrap → user standalone `shared-config.settings.yaml` → shared-lib config
-   → project standalone `shared-config.settings.yaml`. `sources` are unioned;
-   other keys last-wins.
+1. Resolve the local config layers (no network) to learn
+   `waitForTokenTimeoutSeconds`.
+2. Wait (bounded by that timeout; default 15, `0` disables) for the
+   **github-app** plugin to publish `GH_TOKEN` into `CLAUDE_ENV_FILE`, preferring
+   it (via the `GITHUB_TOKEN_FILE` signal) over ambient creds. The env file is
+   parsed in TS (`export K=V` + recursive `source` lines).
+3. Resolve settings across layers (low → high): `$AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM`
+   bootstrap → plugin defaults (`${CLAUDE_PLUGIN_ROOT}/shared-config.settings.yaml`)
+   → user `plugins.settings.yaml` → user standalone → project
+   `plugins.settings.yaml` → project standalone. `sources` are unioned; other
+   keys last-wins (with string→type coercion).
 4. Clone/update each source into `…/shared-configs/sources/<org>/<repo>/`
    (one clone per repo; fetch + hard reset each run; tokened via the github-app
    token using `http.extraheader`, never persisted to the repo config).
@@ -31,8 +37,12 @@ org can maintain one source of truth and have it appear in every project.
    into the project's settings (project wins; backups written).
 8. Emit SessionStart JSON with `reloadSkills: true`.
 
-Setup/SessionStart hooks must never break the session: the bash wrapper traps
-`EXIT` and always emits JSON; the Python entrypoint swallows all exceptions.
+Setup/SessionStart hooks must never break the session: `main()` wraps the run in
+try/catch and always emits JSON to stdout, exiting 0 even on error.
+
+> Config is read directly in TypeScript (replicating the standard 3-tier
+> `plugins.settings.yaml` semantics) rather than sourcing the shared-lib bash
+> `plugin-config-read.sh`, because the entrypoint is pure Bun/TS with no shell.
 
 ## Cross-project dedup
 
@@ -46,16 +56,17 @@ linked dirs, follows the symlinks, and dedups by realpath, so a rule shared by
 both projects loads exactly once. The shared cache + indirection exist to make
 every project resolve identical resources to one realpath inside a single clone.
 
-`tests/sync.test.sh` asserts the filesystem layer: link-tree construction,
-source-side `sourceDir` override, `uses:`-style subpath selection, settings
-merge precedence, idempotency, the shared-lib JSON boundary + source union, and
-that the same shared file resolves to a single realpath from multiple projects.
+`tests/sync.test.ts` (`bun test`) asserts the filesystem layer: ref parsing,
+source normalization/dedup, env-file parsing, link-tree construction, source-side
+`sourceDir` override, `uses:`-style subpath selection, source union,
+`resourceTypes` honoring, idempotency, and that the same shared file resolves to
+a single realpath from multiple projects.
 
 ## Dependencies
 
-Declared in `plugin.json`: `shared-lib ^1.0` and `github-app ^0.5` (both from
-the ai-mktpl marketplace today; the repos are expected to consolidate under
-`nsheaps/agents` long term).
+Declared in `plugin.json`: `github-app ^0.5` (from the ai-mktpl marketplace
+today; the repos are expected to consolidate under `nsheaps/agents` long term).
+Runtime needs `bun` and `git`; `jsonnet` is optional.
 
 ## Open questions / follow-ups
 
