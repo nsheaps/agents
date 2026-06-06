@@ -14,7 +14,10 @@
       },
       "source": "./plugins/claude-code/agent-utils",
       "category": "utility",
-      "tags": ["utility", "skill"],
+      "tags": [
+        "utility",
+        "skill"
+      ],
       "keywords": [
         "agent-team",
         "orchestration",
@@ -37,8 +40,18 @@
       },
       "source": "./plugins/claude-code/cron-utils",
       "category": "utility",
-      "tags": ["utility", "skill"],
-      "keywords": ["scheduling", "cron", "idle", "claude-code", "agent-discipline", "self-poll"]
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "scheduling",
+        "cron",
+        "idle",
+        "claude-code",
+        "agent-discipline",
+        "self-poll"
+      ]
     },
     {
       "name": "plugin-utils",
@@ -49,7 +62,10 @@
       },
       "source": "./plugins/claude-code/plugin-utils",
       "category": "utility",
-      "tags": ["utility", "skill"],
+      "tags": [
+        "utility",
+        "skill"
+      ],
       "keywords": [
         "plugin-development",
         "data-storage",
@@ -69,8 +85,18 @@
       },
       "source": "./plugins/claude-code/reddit",
       "category": "utility",
-      "tags": ["utility", "skill"],
-      "keywords": ["reddit", "fetcher", "research", "community", "social-media", "api"]
+      "tags": [
+        "utility",
+        "skill"
+      ],
+      "keywords": [
+        "reddit",
+        "fetcher",
+        "research",
+        "community",
+        "social-media",
+        "api"
+      ]
     },
     {
       "name": "review-utils",
@@ -81,7 +107,10 @@
       },
       "source": "./plugins/claude-code/review-utils",
       "category": "utility",
-      "tags": ["utility", "skill"],
+      "tags": [
+        "utility",
+        "skill"
+      ],
       "keywords": [
         "claude-code",
         "code-review",
@@ -94,13 +123,15 @@
     {
       "name": "shared-config",
       "description": "Setup/SessionStart hook that clones shared-config source repos and symlinks their rules/skills/commands/agents into the project (deduped across projects via a shared cache), optionally merges settings files, and bootstraps from an org-level upstream config via $AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM. Prefers the github-app token when available.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": {
         "name": "Nathan Heaps"
       },
       "source": "./plugins/claude-code/shared-config",
       "category": "utility",
-      "tags": ["utility"],
+      "tags": [
+        "utility"
+      ],
       "keywords": [
         "claude-code",
         "shared-config",
@@ -123,7 +154,10 @@
       },
       "source": "./plugins/claude-code/task-utils",
       "category": "utility",
-      "tags": ["utility", "skill"],
+      "tags": [
+        "utility",
+        "skill"
+      ],
       "keywords": [
         "task-management",
         "hooks",
