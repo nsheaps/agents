@@ -339,6 +339,10 @@ def main(argv: list[str]) -> int:
                    help="Output jsonl path. For multi-file modes, a directory.")
     p.add_argument("-v", "--verbose", action="store_true")
     p.add_argument("--max-retries", type=int, default=8)
+    p.add_argument("--verify", action="store_true",
+                   help="After each dump, query the API with before=<min-msg-id> "
+                        "to confirm no older messages exist. For threads, also "
+                        "verify the starter id is present. Exits non-zero on FAIL.")
     args = p.parse_args(argv)
 
     token = os.environ.get(args.token_env)
@@ -420,6 +424,7 @@ def main(argv: list[str]) -> int:
                         targets.append((t, jsonl_path_for(t, parent_slug="threads")))
 
     total = 0
+    any_fail = False
     for ch, path in targets:
         is_thread = ch.get("type") in THREAD_TYPES
         log(f"dumping channel {ch['id']} ({ch.get('name','?')}, type={ch.get('type')}) → {path}",
@@ -430,10 +435,54 @@ def main(argv: list[str]) -> int:
                          is_thread=is_thread)
         log(f"  wrote {n} messages", verbose=True)
         total += n
+        if args.verify:
+            ok = verify_dump(client, ch, path, is_thread=is_thread)
+            if not ok:
+                any_fail = True
 
     log(f"done: {total} messages across {len(targets)} channel(s)/thread(s)",
         verbose=True)
-    return 0
+    return 1 if any_fail else 0
+
+
+def verify_dump(client: DiscordClient, ch: dict, path: Path,
+                *, is_thread: bool) -> bool:
+    """Sanity-check a dump for completeness. Returns True on PASS."""
+    min_id = None
+    ids = set()
+    with path.open("r", encoding="utf-8") as fh:
+        for line in fh:
+            try:
+                m = json.loads(line)
+            except Exception:
+                continue
+            mid = int(m["id"])
+            ids.add(str(m["id"]))
+            if min_id is None or mid < min_id:
+                min_id = mid
+    if min_id is None:
+        print(f"[verify] {ch['id']}: FAIL — dump is empty", file=sys.stderr)
+        return False
+    older = client.get(f"/channels/{ch['id']}/messages",
+                      {"before": str(min_id), "limit": 100}) or []
+    older_count = len(older)
+    starter_ok = (not is_thread) or (str(ch["id"]) in ids)
+    min_ts = snowflake_timestamp(min_id).isoformat()
+    if older_count == 0 and starter_ok:
+        print(f"[verify] {ch['id']} ({ch.get('name','?')}): PASS — "
+              f"oldest msg {min_id} @ {min_ts}, no older messages, "
+              f"starter {'present' if not is_thread else 'present'}",
+              file=sys.stderr)
+        return True
+    if older_count > 0:
+        sample = sorted(older, key=lambda m: int(m["id"]))[:3]
+        sample_str = ", ".join(f"{m['id']}@{m['timestamp']}" for m in sample)
+        print(f"[verify] {ch['id']}: FAIL — {older_count} older message(s) "
+              f"found before {min_id}; sample: {sample_str}", file=sys.stderr)
+    if is_thread and not starter_ok:
+        print(f"[verify] {ch['id']}: FAIL — thread starter (id=={ch['id']}) "
+              f"missing from dump", file=sys.stderr)
+    return False
 
 
 if __name__ == "__main__":
