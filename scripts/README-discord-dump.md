@@ -17,13 +17,13 @@ every channel/thread you want to dump.
 
 ## Modes
 
-| Flag | What it does |
-|---|---|
-| _(default)_ | Dump one channel to one jsonl file. |
+| Flag             | What it does                                                                                                                  |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| _(default)_      | Dump one channel to one jsonl file.                                                                                           |
 | `--with-threads` | Also dump every active+archived public thread under the channel; output becomes a directory with one file per channel/thread. |
-| `--forum` | Like `--with-threads` but explicit — required when `--channel` is a forum (type 15) or media channel (type 16). |
-| `--thread <id>` | Dump only that thread. |
-| `--all` | Dump every textual channel in the guild (skips voice/category/stage). Combine with `--with-threads` to also grab threads. |
+| `--forum`        | Like `--with-threads` but explicit — required when `--channel` is a forum (type 15) or media channel (type 16).               |
+| `--thread <id>`  | Dump only that thread.                                                                                                        |
+| `--all`          | Dump every textual channel in the guild (skips voice/category/stage). Combine with `--with-threads` to also grab threads.     |
 
 ## Filters
 
