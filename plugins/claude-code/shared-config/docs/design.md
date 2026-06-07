@@ -62,11 +62,17 @@ source normalization/dedup, env-file parsing, link-tree construction, source-sid
 `resourceTypes` honoring, idempotency, and that the same shared file resolves to
 a single realpath from multiple projects.
 
-## Dependencies
+## Dependencies & tool resolution
 
 Declared in `plugin.json`: `github-app ^0.5` (from the ai-mktpl marketplace
 today; the repos are expected to consolidate under `nsheaps/agents` long term).
-Runtime needs `bun` and `git`; `jsonnet` is optional.
+
+`bun` runs the hook and is provided via `mise` (pinned in the repo `mise.toml`),
+like the other bun-based plugins. External binaries the code spawns are resolved
+by `toolArgv()`: used directly if on `PATH`, else delegated to `mise exec
+<tool>@latest -- <tool>` so they auto-install/run through mise. This covers
+`git` (always needed) and `jsonnet` (only for jsonnet settings fragments, which
+otherwise skip gracefully).
 
 ## Open questions / follow-ups
 

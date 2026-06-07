@@ -117,7 +117,8 @@ With `mergeSettings: true`, source repos may provide
 fragments. They are deep-merged together, then merged into the project's
 `.claude/settings.json` / `settings.local.json` with **project values winning**;
 the originals are backed up to `*.shared-config.bak`. `.jsonnet` fragments are
-evaluated only if the `jsonnet` binary is available, otherwise skipped.
+evaluated only if `jsonnet` is available (on `PATH` or via `mise`), otherwise
+skipped.
 
 ## Dependencies / requirements
 
@@ -127,8 +128,13 @@ Declared in `plugin.json` (`dependencies`):
   plugin waits for it and uses it for private clones. Configure the app via the
   github-app plugin's settings in `.claude/plugins.settings.yaml`.
 
-Also needs `bun` and `git` on `PATH`. `jsonnet` is optional (only for jsonnet
-settings fragments).
+Runtime tools:
+
+- **bun** runs the hook — provided via `mise` (the repo's `mise.toml` pins it),
+  matching the other bun-based plugins.
+- **git** (and **jsonnet**, only for jsonnet settings fragments) are resolved at
+  runtime: used directly if on `PATH`, otherwise auto-run via `mise exec
+<tool>@latest` so they're installed/delegated through mise rather than failing.
 
 ## Testing
 
