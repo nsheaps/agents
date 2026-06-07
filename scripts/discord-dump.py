@@ -175,11 +175,17 @@ def iter_channel_messages(
     end: datetime | None,
     users: set[str] | None,
     exclude_users: set[str] | None,
+    is_thread: bool = False,
 ):
     """Yield messages oldest→newest within [start, end], filtered by users.
 
     Walks newest→oldest via `before=`, then reverses per page so output is
     chronological. Stops once we cross `start`.
+
+    Thread starter quirk: Discord's GET /channels/{id}/messages does NOT
+    include a thread's starter message (the one with msg-id == thread-id).
+    When `is_thread=True`, fetch it explicitly and yield it last (after the
+    pagination walk reaches the oldest paginated page).
     """
     before = str(snowflake_for(end)) if end else None
     while True:
@@ -212,6 +218,8 @@ def iter_channel_messages(
         before = str(min(int(m["id"]) for m in page))
         if crossed_start:
             return
+    # unreachable — loop returns above; placeholder for thread-starter fetch
+    return
 
 
 def list_channel_threads(client: DiscordClient, channel_id: str) -> list[dict]:
@@ -257,6 +265,7 @@ def dump_to_file(
     end: datetime | None,
     users: set[str] | None,
     exclude_users: set[str] | None,
+    is_thread: bool = False,
 ) -> int:
     out_path.parent.mkdir(parents=True, exist_ok=True)
     n = 0
@@ -268,6 +277,26 @@ def dump_to_file(
             fh.write(json.dumps(msg, ensure_ascii=False, separators=(",", ":")))
             fh.write("\n")
             n += 1
+        # Thread starter has msg-id == thread-id and isn't returned by
+        # /channels/{id}/messages. Fetch explicitly and append (it's the
+        # oldest message — chronologically last in our newest-first walk).
+        if is_thread:
+            try:
+                starter = client.get(f"/channels/{channel_id}/messages/{channel_id}")
+            except Exception as e:
+                log(f"  starter fetch failed for thread {channel_id}: {e}", verbose=True)
+                starter = None
+            if starter:
+                ts = snowflake_timestamp(starter["id"])
+                in_range = (not start or ts >= start) and (not end or ts <= end)
+                author_id = (starter.get("author") or {}).get("id")
+                allowed = (not users or author_id in users) and \
+                          (not exclude_users or author_id not in exclude_users)
+                if in_range and allowed:
+                    fh.write(json.dumps(starter, ensure_ascii=False,
+                                         separators=(",", ":")))
+                    fh.write("\n")
+                    n += 1
     return n
 
 
@@ -392,11 +421,13 @@ def main(argv: list[str]) -> int:
 
     total = 0
     for ch, path in targets:
-        log(f"dumping channel {ch['id']} ({ch.get('name','?')}) → {path}",
+        is_thread = ch.get("type") in THREAD_TYPES
+        log(f"dumping channel {ch['id']} ({ch.get('name','?')}, type={ch.get('type')}) → {path}",
             verbose=True)
         n = dump_to_file(client, ch["id"], path,
                          start=args.start, end=args.end,
-                         users=users, exclude_users=excl)
+                         users=users, exclude_users=excl,
+                         is_thread=is_thread)
         log(f"  wrote {n} messages", verbose=True)
         total += n
 
