@@ -267,37 +267,40 @@ def dump_to_file(
     exclude_users: set[str] | None,
     is_thread: bool = False,
 ) -> int:
+    """Accumulate messages, sort by snowflake id (== chronological), write.
+
+    Output is one Message JSON per line, **oldest at top** to match how the
+    channel is displayed in Discord. Accumulation in memory is acceptable for
+    typical Discord channels (Discord caps channels at single-digit-million
+    messages and this script is meant for ad-hoc dumps).
+    """
     out_path.parent.mkdir(parents=True, exist_ok=True)
-    n = 0
+    msgs: list[dict] = list(iter_channel_messages(
+        client, channel_id,
+        start=start, end=end, users=users, exclude_users=exclude_users,
+    ))
+    # Thread starter has msg-id == thread-id and isn't returned by
+    # /channels/{id}/messages. Fetch explicitly and add it (id will sort first).
+    if is_thread:
+        try:
+            starter = client.get(f"/channels/{channel_id}/messages/{channel_id}")
+        except Exception as e:
+            log(f"  starter fetch failed for thread {channel_id}: {e}", verbose=True)
+            starter = None
+        if starter:
+            ts = snowflake_timestamp(starter["id"])
+            in_range = (not start or ts >= start) and (not end or ts <= end)
+            author_id = (starter.get("author") or {}).get("id")
+            allowed = (not users or author_id in users) and \
+                      (not exclude_users or author_id not in exclude_users)
+            if in_range and allowed:
+                msgs.append(starter)
+    msgs.sort(key=lambda m: int(m["id"]))  # oldest → newest, display order
     with out_path.open("w", encoding="utf-8") as fh:
-        for msg in iter_channel_messages(
-            client, channel_id,
-            start=start, end=end, users=users, exclude_users=exclude_users,
-        ):
+        for msg in msgs:
             fh.write(json.dumps(msg, ensure_ascii=False, separators=(",", ":")))
             fh.write("\n")
-            n += 1
-        # Thread starter has msg-id == thread-id and isn't returned by
-        # /channels/{id}/messages. Fetch explicitly and append (it's the
-        # oldest message — chronologically last in our newest-first walk).
-        if is_thread:
-            try:
-                starter = client.get(f"/channels/{channel_id}/messages/{channel_id}")
-            except Exception as e:
-                log(f"  starter fetch failed for thread {channel_id}: {e}", verbose=True)
-                starter = None
-            if starter:
-                ts = snowflake_timestamp(starter["id"])
-                in_range = (not start or ts >= start) and (not end or ts <= end)
-                author_id = (starter.get("author") or {}).get("id")
-                allowed = (not users or author_id in users) and \
-                          (not exclude_users or author_id not in exclude_users)
-                if in_range and allowed:
-                    fh.write(json.dumps(starter, ensure_ascii=False,
-                                         separators=(",", ":")))
-                    fh.write("\n")
-                    n += 1
-    return n
+    return len(msgs)
 
 
 def safe_slug(s: str) -> str:
