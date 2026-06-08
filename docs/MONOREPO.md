@@ -177,7 +177,7 @@ Adding a new fan-out task is three steps:
 
 `mise run lint` / `mise run format` / `mise run build` / `mise run test` are each a single `bunx nx run-many --target=<name>` call, so CI and local-dev go through the exact same chain.
 
-`.github/workflows/cd.yaml` is plugin-version + marketplace-specific (handles the auto-bump + marketplace.json regen) and is intentionally separate from the nx pipeline.
+`.github/workflows/cd.yaml` is plugin-version + marketplace-specific and is intentionally separate from the nx pipeline. The auto-bump + `marketplace.json` regen is committed **on merge to `main`** only; on PRs the workflow runs a preview-only `version-preview` job (sticky comment + `::notice` annotations on each affected `plugin.json`) and never pushes to the PR branch, which avoids cross-PR `marketplace.json` conflicts.
 
 ## nx configuration notes
 
