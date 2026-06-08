@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.3.24](https://github.com/nsheaps/agents/compare/v0.3.23...v0.3.24) (2026-06-08)
+
 ## [0.3.23](https://github.com/nsheaps/agents/compare/v0.3.22...v0.3.23) (2026-06-08)
 
 ### Maintenance
