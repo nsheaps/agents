@@ -1,0 +1,16 @@
+# Prometheus configuration for the Reddit proxy stack.
+# Scrapes APISIX metrics on port 9091.
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+
+scrape_configs:
+  - job_name: apisix
+    metrics_path: /apisix/prometheus/metrics
+    static_configs:
+      - targets:
+          - "apisix:9091"
+    # All metrics from this job carry per-consumer labels (consumer, route, code)
+    # set by APISIX's prometheus plugin. Key PromQL:
+    #   sum(rate(apisix_http_status[5m])) by (consumer)

@@ -1,0 +1,44 @@
+# cloudflared tunnel configuration — EXAMPLE FILE
+# Copy to config.yml and replace <PLACEHOLDERS> before running.
+#
+# This file is the ingress routing map for the Cloudflare Tunnel.
+# Two hostnames are exposed:
+#
+#   proxy-ui.<domain>      →  APISIX Admin/UI port 9180  (CF Access: Allow, owner email)
+#   proxy-grafana.<domain> →  Grafana port 3000          (CF Access: Allow, owner email)
+#   proxy-api.<domain>     →  APISIX proxy port 9080     (CF Access: Bypass, Everyone)
+#
+# The cloudflared container in docker-compose mounts ./cloudflared:/etc/cloudflared:ro
+# Place both this file (renamed config.yml) and credentials.json in that directory.
+# credentials.json is obtained via: cloudflared tunnel create <tunnel-name>
+# DO NOT commit credentials.json to version control.
+
+tunnel: <YOUR_TUNNEL_ID>
+credentials-file: /etc/cloudflared/credentials.json
+
+ingress:
+  # Dashboard + APISIX embedded UI — protected by CF Access Allow (owner email only)
+  - hostname: proxy-ui.example.com
+    service: http://apisix:9180
+    originRequest:
+      httpHostHeader: proxy-ui.example.com
+      # Do NOT add an 'access:' block here unless using Service Auth.
+      # For the Allow policy, CF handles auth at the edge; cloudflared just proxies.
+
+  # Proxy API endpoint — CF Access Bypass; APISIX key-auth validates per-agent keys
+  - hostname: proxy-api.example.com
+    service: http://apisix:9080
+    originRequest:
+      httpHostHeader: proxy-api.example.com
+      # IMPORTANT: Do NOT add an 'access:' block here.
+      # A Bypass policy with an 'access:' block in cloudflared may cause
+      # AccessJWTValidator to reject requests. Leave this section as-is.
+
+  # Grafana (per-consumer usage graphs) — protected by CF Access Allow (owner email only)
+  - hostname: proxy-grafana.example.com
+    service: http://grafana:3000
+    originRequest:
+      httpHostHeader: proxy-grafana.example.com
+
+  # Required catch-all rule. Must be last.
+  - service: http_status:404
