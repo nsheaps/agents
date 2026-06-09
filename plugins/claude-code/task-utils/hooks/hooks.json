@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "bash ${CLAUDE_PLUGIN_ROOT}/mcp/prewarm.sh",
+            "command": "bash ${CLAUDE_PLUGIN_ROOT}/services/task-mcp-service/prewarm.sh",
             "timeout": 10
           }
         ]
