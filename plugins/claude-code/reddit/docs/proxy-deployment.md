@@ -29,14 +29,14 @@ The proxy solves both problems:
 
 ### Components
 
-| Component        | Image                         | Role                                                           |
-|------------------|-------------------------------|----------------------------------------------------------------|
-| APISIX 3.9       | `apache/apisix:3.9.0-debian`  | API gateway: key-auth, proxy-rewrite, prometheus, embedded UI  |
-| etcd             | `bitnami/etcd:3.5`            | APISIX configuration store                                     |
-| Prometheus       | `prom/prometheus:latest`      | Scrapes APISIX metrics on port 9091                            |
-| Grafana          | `grafana/grafana:latest`      | Per-consumer usage dashboards                                  |
-| cloudflared      | `cloudflare/cloudflared:latest` | Cloudflare Tunnel daemon (connects proxy host to CF edge)    |
-| token-refresher  | `alpine` + curl/jq            | Hourly Reddit OAuth token refresh → APISIX Admin API           |
+| Component       | Image                           | Role                                                          |
+| --------------- | ------------------------------- | ------------------------------------------------------------- |
+| APISIX 3.9      | `apache/apisix:3.9.0-debian`    | API gateway: key-auth, proxy-rewrite, prometheus, embedded UI |
+| etcd            | `bitnami/etcd:3.5`              | APISIX configuration store                                    |
+| Prometheus      | `prom/prometheus:latest`        | Scrapes APISIX metrics on port 9091                           |
+| Grafana         | `grafana/grafana:latest`        | Per-consumer usage dashboards                                 |
+| cloudflared     | `cloudflare/cloudflared:latest` | Cloudflare Tunnel daemon (connects proxy host to CF edge)     |
+| token-refresher | `alpine` + curl/jq              | Hourly Reddit OAuth token refresh → APISIX Admin API          |
 
 ### End-to-End Request Flow
 
@@ -81,14 +81,14 @@ The full stack lives in `deploy/docker-compose.yaml`.
 
 **Service summary:**
 
-| Service          | Purpose                                                                 |
-|------------------|-------------------------------------------------------------------------|
-| `etcd`           | APISIX's config/discovery store. Uses named volume for persistence.     |
-| `apisix`         | The gateway. Exposes `:9080` (proxy), `:9180` (Admin API + embedded UI), `:9091` (Prometheus metrics). Mounts `apisix/config.yaml`. |
-| `prometheus`     | Scrapes APISIX metrics. Mounts `prometheus/prometheus.yml`.             |
-| `grafana`        | Dashboard UI on `:3000`. Provisioned from `grafana/provisioning/`.      |
-| `cloudflared`    | Runs the CF Tunnel daemon; connects the host to Cloudflare edge.        |
-| `token-refresher`| Alpine sidecar; refreshes Reddit OAuth token and patches APISIX route.  |
+| Service           | Purpose                                                                                                                             |
+| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| `etcd`            | APISIX's config/discovery store. Uses named volume for persistence.                                                                 |
+| `apisix`          | The gateway. Exposes `:9080` (proxy), `:9180` (Admin API + embedded UI), `:9091` (Prometheus metrics). Mounts `apisix/config.yaml`. |
+| `prometheus`      | Scrapes APISIX metrics. Mounts `prometheus/prometheus.yml`.                                                                         |
+| `grafana`         | Dashboard UI on `:3000`. Provisioned from `grafana/provisioning/`.                                                                  |
+| `cloudflared`     | Runs the CF Tunnel daemon; connects the host to Cloudflare edge.                                                                    |
+| `token-refresher` | Alpine sidecar; refreshes Reddit OAuth token and patches APISIX route.                                                              |
 
 All secrets (admin key, Reddit credentials, Grafana password) are injected via the `.env`
 file. **Never commit `.env`** — only `.env.example` is in version control.
@@ -120,11 +120,11 @@ See `deploy/bootstrap/bootstrap.sh` for full usage.
 
 The tunnel connects the Docker host to Cloudflare's edge. Two hostnames are exposed:
 
-| Hostname                      | Backend port | Purpose                                   |
-|-------------------------------|-------------|-------------------------------------------|
-| `proxy-ui.example.com`        | 9180        | APISIX embedded dashboard (Admin UI)      |
-| `proxy-grafana.example.com`   | 3000        | Grafana — per-consumer usage graphs       |
-| `proxy-api.example.com`       | 9080        | APISIX proxy endpoint for agent requests  |
+| Hostname                    | Backend port | Purpose                                  |
+| --------------------------- | ------------ | ---------------------------------------- |
+| `proxy-ui.example.com`      | 9180         | APISIX embedded dashboard (Admin UI)     |
+| `proxy-grafana.example.com` | 3000         | Grafana — per-consumer usage graphs      |
+| `proxy-api.example.com`     | 9080         | APISIX proxy endpoint for agent requests |
 
 The example config is at `deploy/cloudflared/config.example.yml`.
 
@@ -276,11 +276,11 @@ format: `<platform>:<app-id>/<version> by u/<reddit-username>`.
 The APISIX Prometheus plugin emits metrics on port 9091 at
 `/apisix/prometheus/metrics`. Key metrics for per-consumer monitoring:
 
-| Metric                    | Labels                        | Use                              |
-|---------------------------|-------------------------------|----------------------------------|
-| `apisix_http_status`      | `consumer`, `route`, `code`   | Request counts per agent and code |
-| `apisix_http_latency`     | `consumer`, `route`, `type`   | Latency percentiles per agent    |
-| `apisix_bandwidth`        | `consumer`, `route`, `type`   | Bytes transferred per agent      |
+| Metric                | Labels                      | Use                               |
+| --------------------- | --------------------------- | --------------------------------- |
+| `apisix_http_status`  | `consumer`, `route`, `code` | Request counts per agent and code |
+| `apisix_http_latency` | `consumer`, `route`, `type` | Latency percentiles per agent     |
+| `apisix_bandwidth`    | `consumer`, `route`, `type` | Bytes transferred per agent       |
 
 **PromQL for per-agent request rate:**
 
@@ -360,9 +360,9 @@ workflow is assumed to be a GitHub Actions workflow that:
 - `TODO(nate): How is the compose stack wired to cloudflared?` (cloudflared is a container
   in the same compose network, or a host-level daemon with a separate config path?)
 - `TODO(nate): Is there an existing cloudflared tunnel for this host, or must a new tunnel
-  be created?`
+be created?`
 - `TODO(nate): Does the arcane workflow handle the APISIX bootstrap step, or must it be run
-  manually after first deploy?`
+manually after first deploy?`
 
 **Provisional deploy steps (to be verified against iac/arcane docs):**
 
@@ -378,13 +378,13 @@ workflow is assumed to be a GitHub Actions workflow that:
 
 ## Security Notes and Open Risks
 
-| Risk | Severity | Mitigation |
-|------|----------|------------|
-| Reddit OAuth approval gating | HIGH | Apply early via Responsible Builder Policy; ensure use-case description is compliant |
-| 100 QPM rate limit shared across all agents | MEDIUM | Use APISIX `limit-count` per consumer; register additional Reddit apps if volume grows |
-| Bypass policy leaves API unguarded at CF layer | MEDIUM | Accept (APISIX config is controlled) or switch to CF Service Auth for defense-in-depth |
-| token-refresher SPOF | LOW-MEDIUM | Add health-check alerting; implement retry/backoff (included in the script); consider two-token rotation |
-| cloudflared Bypass + AccessJWTValidator conflict | LOW | Do not add `access:` block to API ingress rule; validate in staging; fallback: Service Auth |
+| Risk                                             | Severity   | Mitigation                                                                                               |
+| ------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------- |
+| Reddit OAuth approval gating                     | HIGH       | Apply early via Responsible Builder Policy; ensure use-case description is compliant                     |
+| 100 QPM rate limit shared across all agents      | MEDIUM     | Use APISIX `limit-count` per consumer; register additional Reddit apps if volume grows                   |
+| Bypass policy leaves API unguarded at CF layer   | MEDIUM     | Accept (APISIX config is controlled) or switch to CF Service Auth for defense-in-depth                   |
+| token-refresher SPOF                             | LOW-MEDIUM | Add health-check alerting; implement retry/backoff (included in the script); consider two-token rotation |
+| cloudflared Bypass + AccessJWTValidator conflict | LOW        | Do not add `access:` block to API ingress rule; validate in staging; fallback: Service Auth              |
 
 ---
 

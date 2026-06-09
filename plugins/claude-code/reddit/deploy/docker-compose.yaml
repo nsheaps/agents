@@ -1,20 +1,19 @@
-version: "3.8"
+version: '3.8'
 # Reddit proxy stack: APISIX + etcd + Prometheus + Grafana + cloudflared + token-refresher
 # See docs/proxy-deployment.md for full operator guide.
 # Copy .env.example to .env and fill in real values before starting.
 
 services:
-
   # APISIX configuration store. Must start before apisix.
   etcd:
     image: bitnami/etcd:3.5
     environment:
-      ALLOW_NONE_AUTHENTICATION: "yes"
+      ALLOW_NONE_AUTHENTICATION: 'yes'
       ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
     volumes:
       - etcd_data:/bitnami/etcd
     healthcheck:
-      test: ["CMD", "etcdctl", "endpoint", "health"]
+      test: ['CMD', 'etcdctl', 'endpoint', 'health']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -27,20 +26,27 @@ services:
   apisix:
     image: apache/apisix:3.9.0-debian
     ports:
-      - "9080:9080"   # proxy ingress
-      - "9180:9180"   # Admin API / embedded UI
-      - "9091:9091"   # Prometheus metrics
+      - '9080:9080' # proxy ingress
+      - '9180:9180' # Admin API / embedded UI
+      - '9091:9091' # Prometheus metrics
     volumes:
       - ./apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
     environment:
       # Admin key injected from .env; used by bootstrap and token-refresher
-      APISIX_ADMIN_KEY: "${APISIX_ADMIN_KEY}"
+      APISIX_ADMIN_KEY: '${APISIX_ADMIN_KEY}'
     depends_on:
       etcd:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-sf", "http://localhost:9180/apisix/admin/routes",
-             "-H", "X-API-KEY: ${APISIX_ADMIN_KEY}"]
+      test:
+        [
+          'CMD',
+          'curl',
+          '-sf',
+          'http://localhost:9180/apisix/admin/routes',
+          '-H',
+          'X-API-KEY: ${APISIX_ADMIN_KEY}',
+        ]
       interval: 15s
       timeout: 5s
       retries: 5
@@ -53,9 +59,9 @@ services:
       - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
       - prometheus_data:/prometheus
     command:
-      - "--config.file=/etc/prometheus/prometheus.yml"
-      - "--storage.tsdb.path=/prometheus"
-      - "--storage.tsdb.retention.time=15d"
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
     restart: unless-stopped
 
   # Grafana for per-consumer dashboards.
@@ -63,10 +69,10 @@ services:
   grafana:
     image: grafana/grafana:latest
     ports:
-      - "3000:3000"
+      - '3000:3000'
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
-      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_ADMIN_PASSWORD}'
+      GF_USERS_ALLOW_SIGN_UP: 'false'
     volumes:
       - grafana_data:/var/lib/grafana
       - ./grafana/provisioning:/etc/grafana/provisioning:ro
@@ -93,15 +99,15 @@ services:
   token-refresher:
     image: alpine:latest
     environment:
-      REDDIT_CLIENT_ID: "${REDDIT_CLIENT_ID}"
-      REDDIT_CLIENT_SECRET: "${REDDIT_CLIENT_SECRET}"
-      REDDIT_USER_AGENT: "${REDDIT_USER_AGENT}"
-      APISIX_ADMIN_URL: "http://apisix:9180"
-      APISIX_ADMIN_KEY: "${APISIX_ADMIN_KEY}"
-      APISIX_ROUTE_ID: "${APISIX_ROUTE_ID:-reddit-route}"
+      REDDIT_CLIENT_ID: '${REDDIT_CLIENT_ID}'
+      REDDIT_CLIENT_SECRET: '${REDDIT_CLIENT_SECRET}'
+      REDDIT_USER_AGENT: '${REDDIT_USER_AGENT}'
+      APISIX_ADMIN_URL: 'http://apisix:9180'
+      APISIX_ADMIN_KEY: '${APISIX_ADMIN_KEY}'
+      APISIX_ROUTE_ID: '${APISIX_ROUTE_ID:-reddit-route}'
     volumes:
       - ./token-refresher/refresh.sh:/refresh.sh:ro
-    command: ["sh", "-c", "apk add --no-cache bash curl jq && bash /refresh.sh"]
+    command: ['sh', '-c', 'apk add --no-cache bash curl jq && bash /refresh.sh']
     depends_on:
       apisix:
         condition: service_healthy
@@ -112,13 +118,13 @@ services:
   #   docker compose run --rm bootstrap
   bootstrap:
     image: alpine:latest
-    profiles: ["bootstrap"]
-    env_file: .env                       # passes APISIX_ADMIN_KEY, AGENT_KEYS, route/upstream IDs
+    profiles: ['bootstrap']
+    env_file: .env # passes APISIX_ADMIN_KEY, AGENT_KEYS, route/upstream IDs
     environment:
-      APISIX_ADMIN_URL: "http://apisix:9180"   # in-compose-network address
+      APISIX_ADMIN_URL: 'http://apisix:9180' # in-compose-network address
     volumes:
       - ./bootstrap/bootstrap.sh:/bootstrap.sh:ro
-    command: ["sh", "-c", "apk add --no-cache bash curl jq && bash /bootstrap.sh"]
+    command: ['sh', '-c', 'apk add --no-cache bash curl jq && bash /bootstrap.sh']
     depends_on:
       apisix:
         condition: service_healthy

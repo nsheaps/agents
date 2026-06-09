@@ -10,7 +10,7 @@ scrape_configs:
     metrics_path: /apisix/prometheus/metrics
     static_configs:
       - targets:
-          - "apisix:9091"
+          - 'apisix:9091'
     # All metrics from this job carry per-consumer labels (consumer, route, code)
     # set by APISIX's prometheus plugin. Key PromQL:
     #   sum(rate(apisix_http_status[5m])) by (consumer)

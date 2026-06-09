@@ -63,11 +63,11 @@ By default the script fetches directly from `https://www.reddit.com`. In environ
 
 Set these environment variables before running the script:
 
-| Variable             | Description                                               | Default   |
-| -------------------- | --------------------------------------------------------- | --------- |
-| `REDDIT_PROXY_URL`   | Base URL of the proxy (e.g. `https://proxy-api.host.com`) | _(direct)_ |
-| `REDDIT_PROXY_TOKEN` | Per-agent authentication key issued by the proxy          | _(none)_  |
-| `REDDIT_PROXY_HEADER`| Header name used to send the token                        | `apikey`  |
+| Variable              | Description                                               | Default    |
+| --------------------- | --------------------------------------------------------- | ---------- |
+| `REDDIT_PROXY_URL`    | Base URL of the proxy (e.g. `https://proxy-api.host.com`) | _(direct)_ |
+| `REDDIT_PROXY_TOKEN`  | Per-agent authentication key issued by the proxy          | _(none)_   |
+| `REDDIT_PROXY_HEADER` | Header name used to send the token                        | `apikey`   |
 
 When `REDDIT_PROXY_URL` is set, all API requests go through the proxy. Output `**Link**:` lines always show canonical `www.reddit.com` URLs regardless of this setting, so links remain valid for humans browsing Reddit.
 

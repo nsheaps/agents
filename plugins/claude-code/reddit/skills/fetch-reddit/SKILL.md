@@ -133,11 +133,11 @@ All output is markdown. Posts include title, author, score, comment count, date,
 
 If the agent runs in an environment where outbound traffic to reddit.com is blocked, the script can route requests through the Reddit proxy stack. **The proxy is off by default** — set these environment variables to enable it:
 
-| Variable              | Purpose                                             | Default     |
-| --------------------- | --------------------------------------------------- | ----------- |
+| Variable              | Purpose                                                   | Default    |
+| --------------------- | --------------------------------------------------------- | ---------- |
 | `REDDIT_PROXY_URL`    | Base URL of the proxy (e.g. `https://proxy-api.host.com`) | _(direct)_ |
-| `REDDIT_PROXY_TOKEN`  | Per-agent key issued by the proxy operator          | _(none)_    |
-| `REDDIT_PROXY_HEADER` | Header name for the token                           | `apikey`    |
+| `REDDIT_PROXY_TOKEN`  | Per-agent key issued by the proxy operator                | _(none)_   |
+| `REDDIT_PROXY_HEADER` | Header name for the token                                 | `apikey`   |
 
 Output `**Link**:` lines always show canonical `www.reddit.com` URLs regardless of whether a proxy is in use.
 

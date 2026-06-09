@@ -7,6 +7,7 @@
 ## Section 1: Off-the-Shelf Gateway Selection
 
 ### Requirements Recap
+
 - Per-client API-key auth with a "consumer" concept
 - Own web UI showing per-key usage graphs and request logs
 - Reverse-proxy to https://www.reddit.com (path-preserving)
@@ -15,6 +16,7 @@
 ### Candidate Evaluation
 
 #### Apache APISIX (+ etcd + Prometheus + Grafana)
+
 **Verdict: WINNER**
 
 APISIX satisfies all three requirements natively:
@@ -34,6 +36,7 @@ APISIX satisfies all three requirements natively:
 **Caveat:** The old standalone APISIX Dashboard (v2.x) had reported high CPU usage on GitHub ([apisix-dashboard issue #2935](https://github.com/apache/apisix-dashboard/issues/2935)), but that image is deprecated. The embedded dashboard is a lightweight UI calling the Admin API directly.
 
 #### Kong Community (+ Kong Manager OSS + Prometheus + Grafana)
+
 **Verdict: SECOND CHOICE**
 
 - `key-auth` plugin + Consumer model is identical in concept to APISIX.
@@ -42,15 +45,19 @@ APISIX satisfies all three requirements natively:
 - **Disadvantages:** PostgreSQL dependency adds another container and ~200 MB base RAM overhead. Or use DB-less mode (declarative config via decK) but then runtime config changes require file edits + reload. ([Kong docker benchmark](https://api7.ai/blog/apisix-kong-3-0-performance-comparison))
 
 #### Tyk
+
 **Eliminated.** The analytics dashboard requires a commercial license. The open-source Gateway + Pump gives raw analytics to a data sink (MongoDB) but the visual Dashboard GUI is not open source. ([Tyk Open Source docs](https://tyk.io/docs/tyk-open-source))
 
 #### Traefik
+
 **Eliminated for this use case.** Traefik has no native per-client API key auth with consumer semantics. `forwardAuth` middleware requires a separate auth service. No built-in consumer-level usage UI. Would need Prometheus + Grafana but consumer labels must come from a custom auth service. Too much custom code.
 
 #### Caddy
+
 **Eliminated.** No native per-client API key auth or consumer management. Metrics via `metrics` module require external Grafana; no consumer-level labeling without custom middleware.
 
 #### nginx + njs/lua and mitmproxy
+
 **Eliminated.** nginx requires significant custom Lua/njs coding for per-consumer auth and metrics. mitmproxy is a debug/dev tool, not a production gateway.
 
 ---
@@ -70,9 +77,9 @@ services:
   apisix:
     image: apache/apisix:3.9.0-debian
     ports:
-      - "9080:9080"   # proxy
-      - "9180:9180"   # Admin API / UI
-      - "9091:9091"   # Prometheus metrics
+      - "9080:9080" # proxy
+      - "9180:9180" # Admin API / UI
+      - "9091:9091" # Prometheus metrics
     volumes:
       - ./apisix/config.yaml:/usr/local/apisix/conf/config.yaml:ro
     depends_on: [etcd]
@@ -101,6 +108,7 @@ volumes:
 ```
 
 Key APISIX `config.yaml` snippet for prometheus and upstream:
+
 ```yaml
 apisix:
   node_listen: 9080
@@ -129,21 +137,25 @@ plugin_attr:
 Register ONE Reddit app of type **"script"** (or "web app") at https://www.reddit.com/prefs/apps. Both types are confidential clients that can use the `client_credentials` grant.
 
 **Token acquisition** (POST from proxy at startup and every ~55 minutes):
+
 ```
 POST https://www.reddit.com/api/v1/access_token
 Authorization: Basic base64(client_id:client_secret)
 Content-Type: application/x-www-form-urlencoded
 Body: grant_type=client_credentials
 ```
+
 This returns `{"access_token": "...", "token_type": "bearer", "expires_in": 3600}`.
 There is no refresh token with `client_credentials` — re-request a new token when it expires. ([Reddit OAuth2 wiki](https://github.com/reddit-archive/reddit/wiki/oauth2))
 
 **API calls** use the token against `https://oauth.reddit.com` (not `www.reddit.com`):
+
 ```
 GET https://oauth.reddit.com/r/python.json
 Authorization: Bearer <access_token>
 User-Agent: <your-app-name>/1.0 by <reddit-username>
 ```
+
 Rate limit: **100 QPM per OAuth client_id**, averaged over a 10-minute window. ([Reddit API Rate Limits Guide](https://painonsocial.com/blog/reddit-api-rate-limits-guide))
 
 **NOTE (June 2026):** Reddit closed self-service app registration in November 2025. New OAuth apps require manual approval via Reddit's Developer Support form under the "Responsible Builder Policy." ([Wappkit: How to Get Reddit API Credentials in 2025](https://www.wappkit.com/blog/reddit-api-credentials-guide-2025)) Ensure your existing credentials or approved application are in place before deployment.
@@ -151,6 +163,7 @@ Rate limit: **100 QPM per OAuth client_id**, averaged over a 10-minute window. (
 ### Token injection in APISIX
 
 Use a `token-refresher` sidecar container (a small shell script or Python container) that:
+
 1. On startup and every 55 minutes, POSTs to Reddit's token endpoint
 2. Updates the APISIX route's upstream `headers` via the Admin API:
    ```
@@ -165,23 +178,25 @@ This keeps ONE Reddit credential on the proxy while each agent uses its OWN APIS
 ## Section 3: Cloudflare Zero Trust — Precise Mechanism
 
 ### User's Intent
+
 > "All app API endpoints bypass the Zero Trust check if an API token is present, deferring to the backend to validate the key."
 
 This means: CF should NOT perform its own token validation on API traffic; when a request carries a token, just pass it through and let APISIX handle auth.
 
 ### Comparison of CF ZT Primitives
 
-| Approach | CF validates token? | Per-agent granularity at CF level | Logging | Matches "defer to backend"? |
-|---|---|---|---|---|
-| **Bypass policy** for API hostname | No — passes through unconditionally | No | No CF logs | ✅ Yes — literally passes all traffic |
-| **Service Auth** for API hostname | Yes — validates CF-Access-Client-Id/Secret at edge | Yes — one CF service token per agent | Yes | ❌ CF validates, not backend |
-| **Bypass** (path-scoped under API app) | No | No | No | ✅ Yes |
+| Approach                               | CF validates token?                                | Per-agent granularity at CF level    | Logging    | Matches "defer to backend"?           |
+| -------------------------------------- | -------------------------------------------------- | ------------------------------------ | ---------- | ------------------------------------- |
+| **Bypass policy** for API hostname     | No — passes through unconditionally                | No                                   | No CF logs | ✅ Yes — literally passes all traffic |
+| **Service Auth** for API hostname      | Yes — validates CF-Access-Client-Id/Secret at edge | Yes — one CF service token per agent | Yes        | ❌ CF validates, not backend          |
+| **Bypass** (path-scoped under API app) | No                                                 | No                                   | No         | ✅ Yes                                |
 
 ### Recommendation: Split-Hostname with Bypass for API
 
 **Two separate CF Access Applications:**
 
 **Application 1 — Dashboard/UI**
+
 - Hostname: `proxy-ui.example.com`
 - cloudflared routes to APISIX admin UI (port 9180/ui/) + Grafana (port 3000)
   - (Or use path-based routing if you prefer one hostname)
@@ -189,6 +204,7 @@ This means: CF should NOT perform its own token validation on API traffic; when 
 - Requires interactive IdP login; only the owner can access
 
 **Application 2 — Proxy API**
+
 - Hostname: `proxy-api.example.com`
 - cloudflared routes to APISIX proxy port 9080
 - CF Access policy: **Bypass**, rule: `Everyone`
@@ -197,6 +213,7 @@ This means: CF should NOT perform its own token validation on API traffic; when 
 - Each agent gets its own APISIX consumer key (no CF service tokens needed at all)
 
 **Tradeoff vs. Service Auth:**
+
 - Bypass gives zero CF-level auth or per-request CF logging. If APISIX is misconfigured or the key-auth plugin is disabled, the endpoint is publicly exposed to the internet.
 - Service Auth adds a CF-level defense in depth layer (CF validates CF-Access-Client-Id/Secret before traffic reaches APISIX), plus CF access logs per agent. However, it means CF — not APISIX — validates the token, which contradicts "deferring to backend."
 - **For the stated intent ("defer to backend"), Bypass is the correct primitive.** If defense-in-depth is preferred, use Service Auth and accept that CF validates a CF token (agents send both CF-Access-Client-Id + CF-Access-Client-Secret AND the APISIX `apikey` header).
@@ -227,11 +244,13 @@ ingress:
 ### CF Access Application Setup (Dashboard)
 
 **For proxy-ui.example.com:**
+
 1. Zero Trust Dashboard → Access → Applications → Add application → Self-hosted
 2. Application name: `Reddit Proxy UI`; Application domain: `proxy-ui.example.com`
 3. Add policy: Action = **Allow**; Include rule: Emails = `owner@example.com`
 
 **For proxy-api.example.com:**
+
 1. Add application → Self-hosted
 2. Application name: `Reddit Proxy API`; Application domain: `proxy-api.example.com`
 3. Add policy: Action = **Bypass**; Include rule: **Everyone**
@@ -241,6 +260,7 @@ ingress:
 ### Per-Agent Token (APISIX Consumer Key)
 
 Each agent gets its own APISIX consumer key. Create via Admin API:
+
 ```bash
 curl -X PUT http://apisix:9180/apisix/admin/consumers \
   -H "X-API-KEY: <apisix-admin-key>" \
@@ -283,12 +303,14 @@ sequenceDiagram
 ```
 
 **What the agent-side plugin must send:**
+
 - Base URL: `https://proxy-api.example.com`
 - Auth header: `apikey: <per-agent APISIX consumer key>` (or `X-API-Key` if APISIX route is configured to read that header)
 - No CF service tokens required (Bypass policy)
 - No Reddit credentials in the agent (proxy holds them)
 
 **Token refresh loop (sidecar):**
+
 - `token-refresher` container POSTs to `https://www.reddit.com/api/v1/access_token` every 55 min
 - On success, PATCHes APISIX route via Admin API to update Bearer token in `proxy-rewrite` headers
 
@@ -296,14 +318,14 @@ sequenceDiagram
 
 ## Recommended Stack Summary
 
-| Component | Image | Role |
-|---|---|---|
-| APISIX 3.9 | `apache/apisix:3.9.0-debian` | Gateway: key-auth, proxy-rewrite, prometheus, embedded UI |
-| etcd | `bitnami/etcd:3.5` | APISIX config store |
-| Prometheus | `prom/prometheus:latest` | Scrape APISIX metrics on port 9091 |
-| Grafana | `grafana/grafana:latest` | Per-consumer dashboards (import ID 11719 + custom panels) |
-| cloudflared | `cloudflare/cloudflared:latest` | Tunnel to CF edge |
-| token-refresher | `alpine` + curl/jq script | Hourly Reddit OAuth token refresh → APISIX Admin API |
+| Component       | Image                           | Role                                                      |
+| --------------- | ------------------------------- | --------------------------------------------------------- |
+| APISIX 3.9      | `apache/apisix:3.9.0-debian`    | Gateway: key-auth, proxy-rewrite, prometheus, embedded UI |
+| etcd            | `bitnami/etcd:3.5`              | APISIX config store                                       |
+| Prometheus      | `prom/prometheus:latest`        | Scrape APISIX metrics on port 9091                        |
+| Grafana         | `grafana/grafana:latest`        | Per-consumer dashboards (import ID 11719 + custom panels) |
+| cloudflared     | `cloudflare/cloudflared:latest` | Tunnel to CF edge                                         |
+| token-refresher | `alpine` + curl/jq script       | Hourly Reddit OAuth token refresh → APISIX Admin API      |
 
 **Second choice:** Kong Community 3.x (Kong Manager OSS + Prometheus plugin + Grafana ID 11377). Heavier (PostgreSQL) but widely documented. Konga is deprecated for Kong 3.x; use Kong Manager OSS or DB-less mode with decK.
 

@@ -11,5 +11,5 @@ datasources:
     url: http://prometheus:9090
     isDefault: true
     jsonData:
-      timeInterval: "15s"
+      timeInterval: '15s'
     editable: false

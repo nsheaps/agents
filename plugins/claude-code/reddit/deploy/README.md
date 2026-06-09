@@ -66,7 +66,6 @@ For the full operator guide — architecture, Cloudflare Zero Trust setup, secur
    ```
 
 6. **Verify**
-
    - APISIX proxy: `curl -H "apikey: <an-agent-key>" http://localhost:9080/r/test/.json`
    - APISIX UI: `https://proxy-ui.<your-domain>/ui/` (protected by CF Access)
    - Grafana: `https://proxy-grafana.<your-domain>/` (CF Access protected) or `http://localhost:3000` locally (admin / `GRAFANA_ADMIN_PASSWORD`)
