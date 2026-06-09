@@ -11,10 +11,13 @@ import { spawnSync } from "node:child_process";
 import {
   chmodSync,
   existsSync,
+  lstatSync,
   mkdirSync,
   mkdtempSync,
+  readFileSync,
   realpathSync,
   rmSync,
+  symlinkSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -22,12 +25,22 @@ import { join } from "node:path";
 
 import {
   dedupSources,
+  ensureSymlink,
   normalizeSource,
   parseEnvFile,
   parseRepoRef,
+  resolveToken,
   runSync,
   toolArgv,
 } from "../src/index.ts";
+
+function isLink(p: string): boolean {
+  try {
+    return lstatSync(p).isSymbolicLink();
+  } catch {
+    return false;
+  }
+}
 
 let WORK: string;
 let GIT_BASE: string;
@@ -78,13 +91,22 @@ beforeAll(() => {
   mkdirSync(GIT_BASE, { recursive: true });
   mkdirSync(DATA, { recursive: true });
 
-  // Fixture A: resources at repo root.
+  // Fixture A: resources at repo root (+ a settings fragment for mergeSettings).
   const A = join(GIT_BASE, "acme", "shared-a");
   write(join(A, "rules", "alpha.md"), "# rule alpha\n");
   write(join(A, "skills", "demo-skill", "SKILL.md"), "---\nname: demo-skill\n---\ndemo\n");
   write(join(A, "commands", "do-thing.md"), "# cmd\n");
   write(join(A, "agents", "helper.md"), "# agent\n");
+  write(
+    join(A, "settings", "settings.json"),
+    JSON.stringify({ env: { FROM_SHARED: "1", SHARED_ONLY: "yes" } }),
+  );
   gitInit(A);
+
+  // Fixture: org-level bootstrap config repo (referenced via the upstream env).
+  const BOOT = join(GIT_BASE, "org", "bootstrap");
+  write(join(BOOT, "config", "shared-config.settings.yaml"), "sources:\n  - acme/shared-a\n");
+  gitInit(BOOT);
 
   // Fixture B: resources under .claude/ (source-side roots override).
   const B = join(GIT_BASE, "acme", "shared-b");
@@ -219,4 +241,96 @@ test("resourceTypes is honored (only linked types get a .shared)", () => {
   );
   expect(existsSync(join(projE, ".claude", "rules", ".shared"))).toBe(true);
   expect(existsSync(join(projE, ".claude", "skills", ".shared"))).toBe(false);
+});
+
+test("upstream bootstrap ($AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM) contributes sources", () => {
+  // Project declares no sources of its own; the upstream config supplies them.
+  const proj = runProject("projUp", "enabled: true\nwaitForTokenTimeoutSeconds: 0\n", {
+    AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM: "org/bootstrap/config",
+  });
+  expect(existsSync(join(proj, ".claude", "rules", ".shared", "acme__shared-a", "alpha.md"))).toBe(
+    true,
+  );
+});
+
+test("per-source targetDir overrides where .shared is placed", () => {
+  const proj = runProject(
+    "projTD",
+    "enabled: true\nwaitForTokenTimeoutSeconds: 0\nsources:\n  - repo: acme/shared-a\n    targetDir: .altclaude\n",
+  );
+  expect(
+    existsSync(join(proj, ".altclaude", "rules", ".shared", "acme__shared-a", "alpha.md")),
+  ).toBe(true);
+  expect(existsSync(join(proj, ".claude", "rules", ".shared"))).toBe(false);
+});
+
+test("mergeSettings merges source fragments with project winning + backup", () => {
+  const proj = join(WORK, "projMerge");
+  mkdirSync(join(proj, ".claude"), { recursive: true });
+  writeFileSync(
+    join(proj, ".claude", "settings.json"),
+    JSON.stringify({ env: { FROM_SHARED: "overridden", PROJECT_ONLY: "p" } }),
+  );
+  runProject(
+    "projMerge",
+    "enabled: true\nwaitForTokenTimeoutSeconds: 0\nmergeSettings: true\nsources:\n  - acme/shared-a\n",
+  );
+  const merged = JSON.parse(readFileSync(join(proj, ".claude", "settings.json"), "utf8"));
+  expect(merged.env.SHARED_ONLY).toBe("yes"); // contributed by the shared fragment
+  expect(merged.env.FROM_SHARED).toBe("overridden"); // project value wins on conflict
+  expect(merged.env.PROJECT_ONLY).toBe("p");
+  expect(existsSync(join(proj, ".claude", "settings.json.shared-config.bak"))).toBe(true);
+});
+
+test("removing a custom-targetDir source cleans up its orphaned .shared", () => {
+  const proj = runProject(
+    "projOrphan",
+    "enabled: true\nwaitForTokenTimeoutSeconds: 0\nsources:\n  - repo: acme/shared-a\n    targetDir: .orphanbase\n",
+  );
+  expect(isLink(join(proj, ".orphanbase", "rules", ".shared"))).toBe(true);
+  // Re-run without the custom-targetDir source: its orphaned link is removed.
+  runProject(
+    "projOrphan",
+    "enabled: true\nwaitForTokenTimeoutSeconds: 0\nsources:\n  - acme/shared-a\n",
+  );
+  expect(existsSync(join(proj, ".orphanbase", "rules", ".shared"))).toBe(false);
+  expect(isLink(join(proj, ".orphanbase", "rules", ".shared"))).toBe(false);
+});
+
+test("ensureSymlink replaces a dangling symlink instead of throwing EEXIST", () => {
+  const d = mkdtempSync(join(tmpdir(), "scfg-es-"));
+  const target = join(d, "realdir");
+  mkdirSync(target);
+  const link = join(d, "link");
+  symlinkSync(join(d, "missing-target"), link); // dangling
+  expect(existsSync(link)).toBe(false); // confirms dangling
+  expect(ensureSymlink(link, target)).toBe(true);
+  expect(realpathSync(link)).toBe(realpathSync(target));
+});
+
+test("resolveToken reads the github-app token from CLAUDE_ENV_FILE", () => {
+  const envF = join(WORK, "tok_env");
+  writeFileSync(envF, 'export GH_TOKEN="ghs_xyz"\nexport GITHUB_TOKEN_FILE=/run/tok\n');
+  const keys = ["GH_TOKEN", "GITHUB_TOKEN", "GITHUB_TOKEN_FILE", "CLAUDE_ENV_FILE"] as const;
+  const saved: Record<string, string | undefined> = {};
+  for (const k of keys) saved[k] = process.env[k];
+  try {
+    delete process.env.GH_TOKEN;
+    delete process.env.GITHUB_TOKEN;
+    delete process.env.GITHUB_TOKEN_FILE;
+    process.env.CLAUDE_ENV_FILE = envF;
+    expect(resolveToken(2)).toBe("ghs_xyz");
+    expect(process.env.GH_TOKEN).toBe("ghs_xyz");
+
+    // No env file + timeout 0 -> falls back to an ambient token.
+    delete process.env.GITHUB_TOKEN_FILE;
+    delete process.env.CLAUDE_ENV_FILE;
+    process.env.GH_TOKEN = "ambient";
+    expect(resolveToken(0)).toBe("ambient");
+  } finally {
+    for (const k of keys) {
+      if (saved[k] === undefined) delete process.env[k];
+      else process.env[k] = saved[k]!;
+    }
+  }
 });

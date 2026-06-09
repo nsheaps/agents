@@ -37,6 +37,8 @@ const PLUGIN_NAME = "shared-config";
 const GITHUB_HOST = "github.com";
 const RESOURCE_TYPES_DEFAULT = ["rules", "skills", "commands", "agents"] as const;
 
+/** Resolved settings — `sources` are normalized (raw entries only exist in the
+ *  YAML layers before merge). */
 export interface Settings {
   enabled: boolean;
   resourceTypes: string[];
@@ -44,7 +46,7 @@ export interface Settings {
   targetBaseDir: string;
   waitForTokenTimeoutSeconds: number;
   mergeSettings: boolean;
-  sources: SourceEntry[];
+  sources: NormalizedSource[];
 }
 
 export type SourceEntry =
@@ -132,10 +134,20 @@ function repoUrl(org: string, repo: string): string {
   return `https://${GITHUB_HOST}/${org}/${repo}.git`;
 }
 
-function authGitArgs(token: string | undefined): string[] {
-  if (!token) return [];
+/**
+ * Build the child env carrying the git auth header. Uses git's GIT_CONFIG_*
+ * env-var config (git ≥2.31) instead of `-c ...` on argv, so the token is not
+ * visible in `ps`. Appends to any pre-existing GIT_CONFIG_COUNT.
+ */
+function gitAuthEnv(token: string | undefined): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...process.env };
+  if (!token) return env;
   const basic = Buffer.from(`x-access-token:${token}`).toString("base64");
-  return ["-c", `http.https://${GITHUB_HOST}/.extraheader=AUTHORIZATION: basic ${basic}`];
+  const base = Number.parseInt(env.GIT_CONFIG_COUNT ?? "0", 10) || 0;
+  env[`GIT_CONFIG_KEY_${base}`] = `http.https://${GITHUB_HOST}/.extraheader`;
+  env[`GIT_CONFIG_VALUE_${base}`] = `AUTHORIZATION: basic ${basic}`;
+  env.GIT_CONFIG_COUNT = String(base + 1);
+  return env;
 }
 
 /**
@@ -161,8 +173,8 @@ function toolAvailable(name: string): boolean {
 }
 
 function git(args: string[], token?: string): { ok: boolean; stdout: string; stderr: string } {
-  const [cmd, argv] = toolArgv("git", [...authGitArgs(token), ...args]);
-  const res = spawnSync(cmd, argv, { encoding: "utf8" });
+  const [cmd, argv] = toolArgv("git", args);
+  const res = spawnSync(cmd, argv, { encoding: "utf8", env: gitAuthEnv(token) });
   return {
     ok: res.status === 0,
     stdout: (res.stdout ?? "").toString(),
@@ -276,19 +288,30 @@ export function resolveTypeDir(
 // --------------------------------------------------------------------------- //
 // symlink management
 // --------------------------------------------------------------------------- //
-function ensureSymlink(linkPath: string, target: string): boolean {
+export function ensureSymlink(linkPath: string, target: string): boolean {
   const abs = resolvePath(target);
+  let st: ReturnType<typeof lstatSync> | null = null;
   try {
-    const st = lstatSync(linkPath);
+    st = lstatSync(linkPath);
+  } catch {
+    /* does not exist */
+  }
+  if (st) {
     if (st.isSymbolicLink()) {
-      if (realpathSync(linkPath) === realpathSync(abs)) return true;
+      // A dangling symlink can't be realpath'd — treat as "not current" and
+      // replace it (otherwise the symlinkSync below would throw EEXIST).
+      let same = false;
+      try {
+        same = realpathSync(linkPath) === realpathSync(abs);
+      } catch {
+        same = false;
+      }
+      if (same) return true;
       unlinkSync(linkPath);
     } else {
       log(`WARNING: ${linkPath} exists as a real path; not replacing`);
       return false;
     }
-  } catch {
-    /* does not exist */
   }
   mkdirSync(dirname(linkPath), { recursive: true });
   symlinkSync(abs, linkPath);
@@ -380,7 +403,7 @@ function mergeLayers(layers: Record<string, unknown>[]): Settings {
       (result as Record<string, unknown>)[key] = coerceScalar(key, val);
     }
   }
-  result.sources = dedupSources(allSources) as unknown as SourceEntry[];
+  result.sources = dedupSources(allSources);
   return result;
 }
 
@@ -486,6 +509,18 @@ export function buildLinks(
   mkdirSync(sourcesDir, { recursive: true });
   if (existsSync(slugRoot)) rmSync(slugRoot, { recursive: true, force: true });
 
+  // Remember which targetBases we linked last run so we can clean up `.shared`
+  // links under a base that's no longer referenced (e.g. a removed source whose
+  // only reference used a custom targetDir).
+  const statePath = join(dataDir, "shared-configs", `${sanitize(slug)}.targetbases.json`);
+  let prevBases: string[] = [];
+  try {
+    const parsed = JSON.parse(readFileSync(statePath, "utf8"));
+    if (Array.isArray(parsed)) prevBases = parsed.filter((b): b is string => typeof b === "string");
+  } catch {
+    /* no prior state */
+  }
+
   const resourceTypes = settings.resourceTypes.length
     ? settings.resourceTypes
     : [...RESOURCE_TYPES_DEFAULT];
@@ -515,25 +550,31 @@ export function buildLinks(
   }
 
   const linked: string[] = [];
-  for (const targetBase of targetBases) {
+  // Iterate current + previously-used bases so orphaned `.shared` links are
+  // cleaned up even when their targetBase drops out of the current config.
+  for (const targetBase of new Set([...targetBases, ...prevBases])) {
     for (const rtype of resourceTypes) {
       const inter = join(slugRoot, sanitize(targetBase), rtype);
       const sharedLink = join(projectDir, targetBase, rtype, ".shared");
       if (populated.has(`${targetBase} ${rtype}`)) {
         if (ensureSymlink(sharedLink, inter)) linked.push(`${targetBase}/${rtype}`);
-      } else if (existsSync(sharedLink) || isSymlink(sharedLink)) {
+      } else if (isSymlink(sharedLink)) {
+        // Remove our own stale link (points into slugRoot, or is dangling).
+        let ours = false;
         try {
-          if (
-            isSymlink(sharedLink) &&
-            realpathSync(sharedLink).startsWith(realpathSync(slugRoot))
-          ) {
-            unlinkSync(sharedLink);
-          }
+          ours = realpathSync(sharedLink).startsWith(realpathSync(slugRoot) + "/");
         } catch {
-          if (isSymlink(sharedLink)) unlinkSync(sharedLink); // dangling
+          ours = true; // dangling — it was ours (slugRoot was wiped)
         }
+        if (ours) unlinkSync(sharedLink);
       }
     }
+  }
+
+  try {
+    writeFileSync(statePath, JSON.stringify([...targetBases]));
+  } catch {
+    /* best-effort state */
   }
   return linked;
 }
@@ -647,67 +688,113 @@ export interface SyncResult {
   summary: string;
 }
 
+const SYNC_LOCK_WAIT_MS = 30000;
+const SYNC_LOCK_STALE_MS = 180000;
+
+/**
+ * Best-effort cross-process lock via atomic `mkdir`, with stale-lock takeover.
+ * Serializes writes to the shared cache when Setup + SessionStart (or two
+ * projects) run concurrently. Returns null if the lock can't be acquired in
+ * time (the other run is doing the same work).
+ */
+function withLock<T>(dataDir: string, fn: () => T): T | null {
+  const lockDir = join(dataDir, "shared-configs", ".sync.lock");
+  const deadline = Date.now() + SYNC_LOCK_WAIT_MS;
+  for (;;) {
+    try {
+      mkdirSync(lockDir); // atomic: throws EEXIST if already held
+      break;
+    } catch {
+      try {
+        if (Date.now() - statSync(lockDir).mtimeMs > SYNC_LOCK_STALE_MS) {
+          rmSync(lockDir, { recursive: true, force: true });
+          continue; // take over a stale lock
+        }
+      } catch {
+        continue; // lock vanished between calls — retry immediately
+      }
+      if (Date.now() >= deadline) return null;
+      sleepSync(500);
+    }
+  }
+  try {
+    return fn();
+  } finally {
+    rmSync(lockDir, { recursive: true, force: true });
+  }
+}
+
 /** Full sync: resolve config (+upstream), clone sources, build links, merge. */
 export function runSync(projectDir: string, dataDir: string): SyncResult {
-  mkdirSync(dataDir, { recursive: true });
   const sourcesDir = join(dataDir, "shared-configs", "sources");
   mkdirSync(sourcesDir, { recursive: true });
 
-  // 1. Local layers first (no network) to learn the token-wait timeout.
+  // Local layers first (no network) to learn the token-wait timeout, then the
+  // token (waiting briefly). Neither step holds the shared-cache lock.
   const locals = localLayers(projectDir);
-  const preTimeout = mergeLayers(locals).waitForTokenTimeoutSeconds;
+  const token = resolveToken(mergeLayers(locals).waitForTokenTimeoutSeconds);
 
-  // 2. Resolve the github-app token (waiting briefly for it).
-  const token = resolveToken(preTimeout);
+  const result = withLock(dataDir, (): SyncResult => {
+    // Upstream (lowest precedence) layered under the local layers.
+    const settings = mergeLayers([loadUpstream(sourcesDir, token), ...locals]);
 
-  // 3. Layer upstream (lowest precedence) under the local layers.
-  const upstream = loadUpstream(sourcesDir, token);
-  const settings = mergeLayers([upstream, ...locals]);
+    if (!settings.enabled) {
+      return {
+        enabled: false,
+        sourceCount: 0,
+        linked: [],
+        merged: [],
+        summary: "shared-config: disabled via settings",
+      };
+    }
+    const sources = settings.sources;
+    if (!sources.length) {
+      return {
+        enabled: true,
+        sourceCount: 0,
+        linked: [],
+        merged: [],
+        summary: "shared-config: no sources configured",
+      };
+    }
 
-  if (!settings.enabled) {
+    const slug = computeSlug(projectDir);
+    log(`project slug: ${slug}; ${sources.length} source(s)`);
+
+    const linked = buildLinks(projectDir, dataDir, slug, settings, sources, token);
+    let merged: string[] = [];
+    if (settings.mergeSettings) {
+      try {
+        merged = mergeSettings(projectDir, settings, sources, dataDir);
+      } catch (err) {
+        log(`settings merge failed: ${(err as Error).message}`);
+      }
+    }
+
+    const parts = [
+      linked.length
+        ? `linked ${[...new Set(linked)].sort().join(", ")}`
+        : "no resource dirs linked",
+    ];
+    if (merged.length) parts.push(`merged ${merged.join(", ")}`);
     return {
-      enabled: false,
-      sourceCount: 0,
-      linked: [],
-      merged: [],
-      summary: "shared-config: disabled via settings",
+      enabled: true,
+      sourceCount: sources.length,
+      linked,
+      merged,
+      summary: `shared-config: ${sources.length} source(s); ${parts.join("; ")}`,
     };
-  }
-  const sources = settings.sources as unknown as NormalizedSource[];
-  if (!sources.length) {
-    return {
+  });
+
+  return (
+    result ?? {
       enabled: true,
       sourceCount: 0,
       linked: [],
       merged: [],
-      summary: "shared-config: no sources configured",
-    };
-  }
-
-  const slug = computeSlug(projectDir);
-  log(`project slug: ${slug}; ${sources.length} source(s)`);
-
-  const linked = buildLinks(projectDir, dataDir, slug, settings, sources, token);
-  let merged: string[] = [];
-  if (settings.mergeSettings) {
-    try {
-      merged = mergeSettings(projectDir, settings, sources, dataDir);
-    } catch (err) {
-      log(`settings merge failed: ${(err as Error).message}`);
+      summary: "shared-config: another sync is in progress; skipped",
     }
-  }
-
-  const parts = [
-    linked.length ? `linked ${[...new Set(linked)].sort().join(", ")}` : "no resource dirs linked",
-  ];
-  if (merged.length) parts.push(`merged ${merged.join(", ")}`);
-  return {
-    enabled: true,
-    sourceCount: sources.length,
-    linked,
-    merged,
-    summary: `shared-config: ${sources.length} source(s); ${parts.join("; ")}`,
-  };
+  );
 }
 
 async function readEventName(): Promise<string> {

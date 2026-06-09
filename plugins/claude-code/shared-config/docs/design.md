@@ -44,6 +44,23 @@ try/catch and always emits JSON to stdout, exiting 0 even on error.
 > `plugins.settings.yaml` semantics) rather than sourcing the shared-lib bash
 > `plugin-config-read.sh`, because the entrypoint is pure Bun/TS with no shell.
 
+### Concurrency & safety
+
+- **Cross-process lock** (`withLock`): the clone/build/merge phase runs under an
+  atomic `mkdir` lock at `…/shared-configs/.sync.lock` (stale-lock takeover after
+  3 min), so an overlapping `Setup` + `SessionStart` (or two projects) can't race
+  the shared cache. A run that can't get the lock in 30s skips (the other run
+  does the same work). The token wait happens _before_ the lock so it isn't held
+  during the wait.
+- **Token never on argv**: the github-app token is passed to `git` via
+  `GIT_CONFIG_COUNT`/`GIT_CONFIG_KEY_n`/`GIT_CONFIG_VALUE_n` env vars (git ≥2.31),
+  not `-c …` on the command line, so it isn't visible in `ps`. It's also never
+  persisted to a repo's `.git/config`.
+- **Orphan cleanup**: the set of `targetBase`s linked each run is persisted to
+  `…/shared-configs/<slug>.targetbases.json`; the next run cleans up `.shared`
+  links under any base no longer referenced (e.g. a removed custom-`targetDir`
+  source). `ensureSymlink` also replaces dangling links rather than throwing.
+
 ## Cross-project dedup
 
 ```
@@ -56,11 +73,13 @@ linked dirs, follows the symlinks, and dedups by realpath, so a rule shared by
 both projects loads exactly once. The shared cache + indirection exist to make
 every project resolve identical resources to one realpath inside a single clone.
 
-`tests/sync.test.ts` (`bun test`) asserts the filesystem layer: ref parsing,
-source normalization/dedup, env-file parsing, link-tree construction, source-side
-`sourceDir` override, `uses:`-style subpath selection, source union,
-`resourceTypes` honoring, idempotency, and that the same shared file resolves to
-a single realpath from multiple projects.
+`tests/sync.test.ts` (`bun test`, 13 tests) covers: ref parsing, source
+normalization/dedup, env-file parsing, `toolArgv` (PATH/mise/bare), link-tree
+construction, source-side `sourceDir` override, `uses:`-style subpath selection,
+source union, `resourceTypes` honoring, idempotency, single-realpath dedup across
+projects, the `$AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM` bootstrap, per-source
+`targetDir` override, `mergeSettings` (project-wins + backup), `resolveToken`
+reading `CLAUDE_ENV_FILE`, orphaned-link cleanup, and dangling-symlink handling.
 
 ## Dependencies & tool resolution
 
