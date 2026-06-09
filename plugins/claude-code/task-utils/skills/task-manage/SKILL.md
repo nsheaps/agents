@@ -86,7 +86,7 @@ This rule is enforced by a `BEHAVIOR_CHANGING_COACH` line in the TaskCreate path
 
 ## 4. Doctrine — breakdown pattern (the worked example)
 
-Canonical reference: `nsheaps/agents/docs/journal/2026/05/16/managing-tasks-example.md`. Excerpt:
+Example (worked breakdown):
 
 ```
 phase 1: [ ] Jack upgrade
