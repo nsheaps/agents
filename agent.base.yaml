@@ -1,0 +1,21 @@
+# Base agent config — the root of the agent.yaml `extends` chain.
+#
+# Declares what EVERY agent needs. The org config (nsheaps/.org) extends
+# this; each agent repo (e.g. nsheaps/.ai-agent-jack) extends the org
+# config and adds its role-specific delta. Layers are deep-merged
+# base -> org -> role by bin/setup-claude-web.
+#
+# Keep this minimal: only the universally-needed marketplace + plugins.
+# Org- and role-specific plugins, pluginSettings, and settings belong in
+# the org / role layers, not here.
+#
+# Schema + usage: docs/runbooks/setup-claude-code-web.md
+
+marketplaces:
+  ai-mktpl: nsheaps/ai-mktpl
+
+plugins:
+  - shared-lib@ai-mktpl # shared bash libs (dependency of 1pass + github-app)
+  - 1pass@ai-mktpl # 1Password CLI + secret injection
+  - github-app@ai-mktpl # GitHub App token lifecycle + git identity
+  - mise@ai-mktpl # tool version manager / installs

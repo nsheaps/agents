@@ -1,98 +1,136 @@
-# Runbook: Auto-configure Claude Code on the web
+# Runbook: Auto-configure Claude Code on the web from a layered agent config
 
 Bootstrap a [Claude Code on the web](https://code.claude.com/docs/en/claude-code-on-the-web)
-environment with a standard marketplace + plugin set so unattended sessions
-auto-configure permissions, secrets, git auth, and tool installs — no
-interactive prompts, no per-session manual setup.
+session to "initialize as if it were running from another agent's repo" —
+inheriting that agent's plugins, marketplaces, plugin config, and settings
+**without committing any of it into the repo you're working in**.
 
-The bootstrap lives in [`bin/setup-claude-web`](../../bin/setup-claude-web) and is
-designed to be `curl`-ed and run from the web environment's **Setup script**.
+The bootstrap is [`bin/setup-claude-web`](../../bin/setup-claude-web). It reads
+a layered `agent.yaml` from an upstream agent repo, deep-merges the `extends`
+chain, and applies the result.
 
 ## TL;DR
 
-In the cloud environment settings (**Cloud environment → Setup script**), paste:
+In the web environment's **Setup script** field (the environment preconfigures
+the 1Password service-account token), paste:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/nsheaps/agents/main/bin/setup-claude-web | bash
+curl -fsSL https://raw.githubusercontent.com/nsheaps/agents/main/bin/setup-claude-web | bash -s -- nsheaps/.ai-agent-jack
 ```
 
-That's it. On the next session the standard plugins are installed and enabled.
+On the next session, Jack's plugins are already installed (cache warmed in the
+snapshot), their SessionStart hooks run (1pass injects secrets via the preconfigured
+token, github-app mints a token, mise installs tools), and Jack's settings apply —
+all in a repo that contains none of that config.
 
-## What it configures
+## The config model: layered `agent.yaml`
 
-| Plugin             | Why it's in the standard set                                                                      |
-| ------------------ | ------------------------------------------------------------------------------------------------- |
-| `dangerous-bypass` | Auto-approves **all** permission requests (unattended web agent has no human to approve prompts). |
-| `1pass`            | Installs the 1Password CLI and injects secrets at session start.                                  |
-| `github-app`       | Generates + refreshes a GitHub App token, configures git identity.                                |
-| `shared-lib`       | Runtime bash libraries that `1pass` + `github-app` depend on.                                     |
-| `mise`             | Installs tools declared in `mise.toml` on session start.                                          |
+Each agent repo has an `agent.yaml`. It may `extends` a parent, forming a chain
+that is deep-merged **base → org → role** (leaf wins):
 
-All come from the [`nsheaps/ai-mktpl`](https://github.com/nsheaps/ai-mktpl) marketplace.
-
-## Why a setup script (not just settings.json)
-
-Claude Code's **Setup script** runs as root _before_ Claude Code launches, and its
-filesystem state — including `~/.claude` — is cached as a VM snapshot. Installing
-plugins here **warms the plugin cache** so the very first session already has them
-available. This is the recommended workaround for the known issue where plugins
-declared in `settings.json` are not installed on first launch but appear on later
-ones ([ai-mktpl#261](https://github.com/nsheaps/ai-mktpl/issues/261)).
-
-The script does both, belt-and-suspenders:
-
-1. `claude plugin marketplace add` + `claude plugin install` (warms the cache, writes scoped settings).
-2. A non-destructive `jq` merge of `enabledPlugins` + `extraKnownMarketplaces` into
-   the user `settings.json`, so the config is present even if the CLI isn't on PATH
-   at setup time.
-
-It is idempotent — safe to re-run, never clobbers unrelated settings.
-
-## Customizing
-
-Override the defaults with environment variables in the setup script before the
-`curl`. Examples:
-
-```bash
-# Only the three core plugins, no mise/shared-lib autoselect (deps still resolve):
-export CLAUDE_WEB_PLUGINS="dangerous-bypass@ai-mktpl 1pass@ai-mktpl github-app@ai-mktpl"
-curl -fsSL https://raw.githubusercontent.com/nsheaps/agents/main/bin/setup-claude-web | bash
+```
+nsheaps/agents : agent.base.yaml     base — what any agent needs
+        ▲ extends
+nsheaps/.org   : agent.yaml          org  — org specifics
+        ▲ extends
+nsheaps/.ai-agent-jack : agent.yaml  role — Jack's delta only
 ```
 
-```bash
-# Add a second marketplace and a plugin from it:
-export CLAUDE_WEB_MARKETPLACES="ai-mktpl=nsheaps/ai-mktpl agents=nsheaps/agents"
-export CLAUDE_WEB_PLUGINS="1pass@ai-mktpl github-app@ai-mktpl agent-utils@agents"
-curl -fsSL https://raw.githubusercontent.com/nsheaps/agents/main/bin/setup-claude-web | bash
+So each layer declares only its difference. Five agents share one base + org and
+override just what differs.
+
+### Schema
+
+```yaml
+name: jack # identity (informational)
+extends: nsheaps/.org # parent ref: owner/repo[:path][@ref] or a local path
+
+marketplaces: # → settings.extraKnownMarketplaces
+  ai-mktpl: nsheaps/ai-mktpl # string shorthand → github source
+  agents: # or an explicit source map
+    source: github
+    repo: nsheaps/agents
+
+plugins: # → settings.enabledPlugins + `claude plugin install`
+  - 1pass@ai-mktpl
+  - github-app@ai-mktpl
+
+pluginSettings: # → ~/.claude/plugins.settings.yaml (how plugins behave)
+  1pass:
+    opExec:
+      items: ["op://Agent-Jack/ENVIRONMENT"]
+  github-app:
+    ref: "op://Agent-Jack/github--app--jack"
+
+settings: # → deep-merged into the target settings.json/local.json
+  model: opus
+  permissions:
+    allow: ["Bash(git push)"]
 ```
 
-| Variable                  | Default                                                                                          | Meaning                                          |
-| ------------------------- | ------------------------------------------------------------------------------------------------ | ------------------------------------------------ |
-| `CLAUDE_WEB_MARKETPLACES` | `ai-mktpl=nsheaps/ai-mktpl`                                                                      | `<name>=<owner/repo>` tokens, whitespace-sep.    |
-| `CLAUDE_WEB_PLUGINS`      | `dangerous-bypass@ai-mktpl 1pass@ai-mktpl github-app@ai-mktpl shared-lib@ai-mktpl mise@ai-mktpl` | `<plugin>@<marketplace>` tokens, whitespace-sep. |
-| `CLAUDE_WEB_SCOPE`        | `user`                                                                                           | `user` \| `project` \| `local`.                  |
-| `CLAUDE_CONFIG_DIR`       | `$HOME/.claude`                                                                                  | Where the user `settings.json` is written.       |
+### `extends` reference format
 
-> ⚠️ **Security:** `dangerous-bypass` auto-approves _every_ tool call without
-> confirmation. That is intentional for an unattended web agent but means there is
-> no human-in-the-loop. Drop it from `CLAUDE_WEB_PLUGINS` (the narrower
-> `web-auto-approve@ai-mktpl` is an alternative) if you want prompts.
+`owner/repo[:path][@ref]` — `path` defaults to `agent.yaml`, `ref` to the repo's
+default branch. A value that looks like a path (`/…`, `./…`, `~/…`, or an existing
+file/dir) is read locally instead of cloned (used by the tests).
+
+### Merge semantics
+
+- **maps** (`marketplaces`, `pluginSettings`, `settings`): deep-merged; child wins on scalar conflicts.
+- **lists** (`plugins`, and any list such as `permissions.allow`): unioned in order, de-duplicated.
+- **scalars** (`name`, `model`, …): child wins.
+
+## Where it writes
+
+| Output                              | Web (`CLAUDE_CODE_REMOTE` set)       | Local (not web)                                                               |
+| ----------------------------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
+| marketplaces + plugins + `settings` | `~/.claude/settings.json`            | `~/.claude/settings.local.json` (your real `settings.json` is left untouched) |
+| `pluginSettings`                    | `~/.claude/plugins.settings.yaml`    | `~/.claude/plugins.settings.yaml`                                             |
+| plugin cache warm                   | `claude plugin install --scope user` | `--scope local` from a throwaway dir (warms the shared cache only)            |
+
+Merges are non-destructive — pre-existing keys are preserved — and idempotent.
+
+### Why warm the cache in the setup script?
+
+The setup script runs as root **before** Claude Code launches and its filesystem
+(including `~/.claude`) is snapshot-cached. Installing the plugins here means the
+first session already has them, so their SessionStart hooks run on turn one. This
+is the recommended workaround for the known "plugins in settings.json aren't
+installed on first launch" issue ([ai-mktpl#261](https://github.com/nsheaps/ai-mktpl/issues/261)).
+
+## Environment variables
+
+| Variable                  | Meaning                                                                |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `CLAUDE_WEB_UPSTREAM`     | Upstream ref, if not passed as the positional arg.                     |
+| `CLAUDE_CODE_REMOTE`      | Set by the web env → selects `settings.json` vs `settings.local.json`. |
+| `CLAUDE_CONFIG_DIR`       | Config dir to write into (default `~/.claude`).                        |
+| `CLAUDE_WEB_SKIP_INSTALL` | Skip the `claude plugin` calls — config-only mode (used by the tests). |
 
 ## Secrets
 
-This script only wires up the **plugins**. The `1pass` and `github-app` plugins
-still need their own configuration (an `OP_SERVICE_ACCOUNT_TOKEN` env var,
-`op://` references, and `GITHUB_APP_*` env) supplied by the environment and a
-`plugins.settings.yaml`. See those plugins' READMEs and the
+The script wires up plugins + their config; it does not handle secrets. The
+1Password service-account token comes from the web environment, and the
+`op://` references in the inherited `pluginSettings` resolve against it at session
+start (via the `1pass` plugin). See
 [create-1password-vault-and-service-account](./create-1password-vault-and-service-account.md)
-and [create-github-app](./create-github-app.md) runbooks.
+and [create-github-app](./create-github-app.md).
 
-## Verifying
-
-In a fresh session:
+## Testing
 
 ```bash
-claude plugin list
+bash tests/setup-claude-web.test.sh   # offline (CLAUDE_WEB_SKIP_INSTALL), no network
 ```
 
-The five plugins (or your custom set) should appear as installed + enabled.
+## Verifying a live session
+
+```bash
+claude plugin list   # the inherited plugins appear installed + enabled
+```
+
+## Current status / follow-ups
+
+- `agent.base.yaml` (base layer) lives in this repo.
+- The org layer (`nsheaps/.org : agent.yaml`) and each agent repo's role
+  `agent.yaml` (`extends`) are wired up separately — until then, point
+  `--upstream` at any repo whose `agent.yaml` chain resolves (or a local path).

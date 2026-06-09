@@ -1,152 +1,314 @@
 #!/usr/bin/env bash
 # setup-claude-web — curl-able bootstrap for Claude Code on the web.
 #
-# Configures a Claude Code web environment with a standard marketplace +
-# plugin set so unattended (no-human-in-the-loop) sessions auto-configure
-# permissions, secrets, git auth, and tool installs without interactive
-# prompts.
+# Resolves a layered `agent.yaml` config from an UPSTREAM agent repo and
+# applies it to the current Claude Code environment, so a brand-new repo's
+# web session can "initialize as if it were running from the Jack repo" —
+# inheriting that agent's plugins, marketplaces, plugin config, and
+# settings WITHOUT committing any of it into the new repo.
 #
-# INTENDED USE — paste this one line into the web environment's
-# "Setup script" field (Cloud environment settings → Setup script):
+# INTENDED USE — in the web environment's "Setup script" field (the env
+# preconfigures the 1Password service-account token), paste:
 #
-#   curl -fsSL https://raw.githubusercontent.com/nsheaps/agents/main/bin/setup-claude-web | bash
+#   curl -fsSL https://raw.githubusercontent.com/nsheaps/agents/main/bin/setup-claude-web | bash -s -- nsheaps/.ai-agent-jack
 #
-# The setup script runs as root BEFORE Claude Code launches, and its
-# filesystem state (including ~/.claude) is cached as a VM snapshot. By
-# installing plugins here we warm the plugin cache so the FIRST session
-# already has them available — this is the recommended workaround for the
-# known "plugins in settings.json are not installed on first launch"
-# issue (nsheaps/ai-mktpl#261). Refs:
-#   https://code.claude.com/docs/en/claude-code-on-the-web (setup scripts)
-#   https://code.claude.com/docs/en/plugin-marketplaces
+# (or set CLAUDE_WEB_UPSTREAM instead of the positional arg). The setup
+# script runs as root BEFORE Claude Code launches and its filesystem
+# (incl. ~/.claude) is snapshot-cached, so installing plugins here warms
+# the cache: the first session already has them, and the plugins' own
+# SessionStart hooks (1pass installs op + injects secrets, github-app
+# mints a token, mise installs tools) run normally.
 #
-# What it does (idempotent, safe to re-run):
-#   1. Registers the marketplace(s) at user scope.
-#   2. Enables + installs the standard plugin set (warms the cache).
-#   3. Merges enabledPlugins + extraKnownMarketplaces into the user
-#      settings.json as a declarative belt-and-suspenders, so the session
-#      has the config even if the CLI install is unavailable at setup time.
+# CONFIG MODEL — agent.yaml is layered via `extends`:
+#   base agent config (nsheaps/agents)   — what any agent needs
+#     ^ extended by org config (nsheaps/.org)  — org specifics
+#       ^ extended by the role/agent repo (e.g. nsheaps/.ai-agent-jack)
+# Each layer declares only its delta; they are deep-merged base -> leaf.
+# See docs/runbooks/setup-claude-code-web.md for the schema.
 #
-# Everything below is overridable via environment variables — see CONFIG.
-#
-# SECURITY NOTE: the default set includes `dangerous-bypass`, which
-# auto-approves ALL permission requests. That is intentional for an
-# unattended web agent, but it means every tool call runs without
-# confirmation in this environment. Drop it from CLAUDE_WEB_PLUGINS if you
-# want interactive prompts (web-auto-approve is a narrower alternative).
+# WRITE TARGET — web (CLAUDE_CODE_REMOTE set): ~/.claude/settings.json.
+# Otherwise: ~/.claude/settings.local.json (your real settings.json is
+# left untouched). plugins.settings.yaml -> ~/.claude/plugins.settings.yaml
+# in both. Nothing is hardcoded — the plugin/marketplace/setting choices
+# all come from the upstream agent.yaml chain.
 set -euo pipefail
 
-# ---- CONFIG (override via env) ----------------------------------------
-# Marketplaces to register, as "<name>=<github-owner/repo>" tokens,
-# whitespace-separated. <name> must match the marketplace.json "name".
-CLAUDE_WEB_MARKETPLACES="${CLAUDE_WEB_MARKETPLACES:-ai-mktpl=nsheaps/ai-mktpl}"
-
-# Standard plugin set, as "<plugin>@<marketplace>" tokens,
-# whitespace-separated. shared-lib is a runtime dependency of 1pass +
-# github-app; mise provides tool installs most sessions want.
-CLAUDE_WEB_PLUGINS="${CLAUDE_WEB_PLUGINS:-dangerous-bypass@ai-mktpl 1pass@ai-mktpl github-app@ai-mktpl shared-lib@ai-mktpl mise@ai-mktpl}"
-
-# Scope for marketplace/plugin registration: user | project | local.
-# user scope applies across every repo opened in this web environment.
-CLAUDE_WEB_SCOPE="${CLAUDE_WEB_SCOPE:-user}"
-
-# Config dir Claude reads settings from. Honour an explicit override,
-# else fall back to the conventional ~/.claude.
-CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
-# -----------------------------------------------------------------------
-
-SETTINGS_FILE="$CLAUDE_CONFIG_DIR/settings.json"
+UPSTREAM="${1:-${CLAUDE_WEB_UPSTREAM:-}}"
+if [ -z "$UPSTREAM" ]; then
+  cat >&2 <<'USAGE'
+[setup-claude-web] ERROR: no upstream agent config given.
+  usage: setup-claude-web <owner/repo[:path][@ref]>   (or a local path)
+  e.g.:  curl -fsSL .../bin/setup-claude-web | bash -s -- nsheaps/.ai-agent-jack
+         CLAUDE_WEB_UPSTREAM=nsheaps/.ai-agent-jack bash setup-claude-web
+USAGE
+  exit 2
+fi
+export CLAUDE_WEB_UPSTREAM="$UPSTREAM"
 
 log() { printf '[setup-claude-web] %s\n' "$*"; }
-warn() { printf '[setup-claude-web] WARNING: %s\n' "$*" >&2; }
 
-# --- Register marketplaces + install plugins via the claude CLI --------
-# Primary path: `claude plugin ...` both warms the on-disk cache AND
-# writes the requested-scope settings. Each call is non-fatal so one
-# unreachable marketplace or transient error never fails the whole setup.
-bootstrap_via_cli() {
-  local entry name repo plugin
+# --- Ensure interpreter + YAML support ---------------------------------
+if ! command -v python3 >/dev/null 2>&1; then
+  log "ERROR: python3 is required but not on PATH" >&2
+  exit 1
+fi
+if ! python3 -c 'import yaml' 2>/dev/null; then
+  log "PyYAML not found — attempting install"
+  python3 -m pip install --quiet --disable-pip-version-check pyyaml \
+    || { command -v apt-get >/dev/null 2>&1 && apt-get install -y -q python3-yaml; } \
+    || { log "ERROR: PyYAML required and could not be installed" >&2; exit 1; }
+fi
 
-  for entry in $CLAUDE_WEB_MARKETPLACES; do
-    name="${entry%%=*}"
-    repo="${entry#*=}"
-    log "registering marketplace ${name} (${repo}) [scope=${CLAUDE_WEB_SCOPE}]"
-    if ! claude plugin marketplace add "$repo" --scope "$CLAUDE_WEB_SCOPE"; then
-      warn "marketplace add failed for ${repo} (non-fatal; likely already registered)"
-    fi
-  done
+# Hand off to the Python resolver/applier. Inputs come from the
+# environment (CLAUDE_WEB_UPSTREAM, CLAUDE_CODE_REMOTE, CLAUDE_CONFIG_DIR,
+# HOME); the heredoc is single-quoted so bash performs no expansion inside.
+exec python3 - <<'PYEOF'
+import json
+import os
+import shutil
+import subprocess
+import sys
+import tempfile
 
-  for plugin in $CLAUDE_WEB_PLUGINS; do
-    log "installing plugin ${plugin} [scope=${CLAUDE_WEB_SCOPE}]"
-    if ! claude plugin install "$plugin" --scope "$CLAUDE_WEB_SCOPE"; then
-      warn "plugin install failed for ${plugin} (non-fatal)"
-    fi
-  done
-}
+import yaml
 
-# --- Declarative fallback / belt-and-suspenders ------------------------
-# Merge our marketplaces + enabledPlugins into the user settings.json
-# without clobbering anything already there. `existing * additions` deep
-# merges, so pre-existing keys are preserved and our entries are overlaid.
-# Only writes when scope is user (the settings.json this script owns);
-# project/local scope is left to the CLI, which targets the repo.
-merge_settings() {
-  if [ "$CLAUDE_WEB_SCOPE" != "user" ]; then
-    return 0
-  fi
-  if ! command -v jq >/dev/null 2>&1; then
-    warn "jq not found — skipping declarative settings merge (CLI install still applies)"
-    return 0
-  fi
+MAX_DEPTH = 16
 
-  mkdir -p "$CLAUDE_CONFIG_DIR"
-  [ -f "$SETTINGS_FILE" ] || printf '{}\n' >"$SETTINGS_FILE"
 
-  # Build additions JSON from the configured marketplaces + plugins.
-  local additions
-  additions="$(
-    jq -n \
-      --arg marketplaces "$CLAUDE_WEB_MARKETPLACES" \
-      --arg plugins "$CLAUDE_WEB_PLUGINS" '
-      {
-        extraKnownMarketplaces: (
-          [$marketplaces | split("\n") | join(" ") | splits("[[:space:]]+")]
-          | map(select(length > 0))
-          | map({ (sub("=.*";"")): { source: { source: "github", repo: sub("^[^=]*=";"") } } })
-          | add // {}
-        ),
-        enabledPlugins: (
-          [$plugins | split("\n") | join(" ") | splits("[[:space:]]+")]
-          | map(select(length > 0))
-          | map({ (.): true })
-          | add // {}
-        )
-      }'
-  )"
+def log(msg):
+    print(f"[setup-claude-web] {msg}", flush=True)
 
-  local tmp
-  tmp="$(mktemp)"
-  if jq -s '.[0] * .[1]' "$SETTINGS_FILE" <(printf '%s' "$additions") >"$tmp" 2>/dev/null; then
-    mv "$tmp" "$SETTINGS_FILE"
-    log "merged marketplaces + enabledPlugins into ${SETTINGS_FILE}"
-  else
-    rm -f "$tmp"
-    warn "settings merge failed — leaving ${SETTINGS_FILE} unchanged"
-  fi
-}
 
-main() {
-  log "marketplaces: ${CLAUDE_WEB_MARKETPLACES}"
-  log "plugins:      ${CLAUDE_WEB_PLUGINS}"
+def warn(msg):
+    print(f"[setup-claude-web] WARNING: {msg}", file=sys.stderr, flush=True)
 
-  if command -v claude >/dev/null 2>&1; then
-    bootstrap_via_cli
-  else
-    warn "claude CLI not on PATH — relying on declarative settings only (plugins will resolve on first session)"
-  fi
 
-  merge_settings
-  log "done — Claude Code web environment configured"
-}
+# --- upstream ref resolution -------------------------------------------
+_clone_cache = {}
 
-main "$@"
+
+def _looks_local(ref):
+    return ref.startswith(("/", "./", "../", "~")) or os.path.exists(
+        os.path.expanduser(ref)
+    )
+
+
+def _parse_remote(ref):
+    """owner/repo[:path][@gitref] -> (owner_repo, path, gitref)."""
+    gitref = None
+    if "@" in ref:
+        ref, gitref = ref.rsplit("@", 1)
+    path = "agent.yaml"
+    if ":" in ref:
+        ref, path = ref.split(":", 1)
+    return ref, path, gitref
+
+
+def _clone(owner_repo, gitref):
+    key = (owner_repo, gitref)
+    if key in _clone_cache:
+        return _clone_cache[key]
+    dest = tempfile.mkdtemp(prefix="agent-cfg-")
+    url = owner_repo if "://" in owner_repo else f"https://github.com/{owner_repo}"
+    cmd = ["git", "clone", "--depth", "1", "--quiet"]
+    if gitref:
+        cmd += ["--branch", gitref]
+    cmd += [url, dest]
+    subprocess.run(cmd, check=True)
+    _clone_cache[key] = dest
+    return dest
+
+
+def load_config(ref):
+    """Return the parsed agent.yaml dict for a ref (local path or remote)."""
+    if _looks_local(ref):
+        p = os.path.expanduser(ref)
+        if os.path.isdir(p):
+            p = os.path.join(p, "agent.yaml")
+        with open(p) as fh:
+            return yaml.safe_load(fh) or {}
+    owner_repo, path, gitref = _parse_remote(ref)
+    root = _clone(owner_repo, gitref)
+    with open(os.path.join(root, path)) as fh:
+        return yaml.safe_load(fh) or {}
+
+
+def resolve_chain(start):
+    """Walk `extends` from leaf to base; return configs base-first."""
+    chain, seen, ref, depth = [], set(), start, 0
+    while ref:
+        if ref in seen:
+            raise SystemExit(f"extends cycle detected at {ref}")
+        if depth > MAX_DEPTH:
+            raise SystemExit("extends chain too deep")
+        seen.add(ref)
+        cfg = load_config(ref)
+        chain.append((ref, cfg))
+        ref = cfg.get("extends")
+        depth += 1
+    chain.reverse()  # base first so the leaf wins on merge
+    return chain
+
+
+# --- merge --------------------------------------------------------------
+def deep_merge(a, b):
+    if isinstance(a, dict) and isinstance(b, dict):
+        out = dict(a)
+        for k, v in b.items():
+            out[k] = deep_merge(a[k], v) if k in a else v
+        return out
+    if isinstance(a, list) and isinstance(b, list):
+        out = list(a)  # union, preserve order, dedupe
+        for x in b:
+            if x not in out:
+                out.append(x)
+        return out
+    return b  # scalars / type mismatch: child (b) wins
+
+
+def merge_chain(chain):
+    merged = {}
+    for _ref, cfg in chain:
+        merged = deep_merge(merged, cfg)
+    return merged
+
+
+# --- translate merged config into settings shapes ----------------------
+def marketplace_entry(value):
+    """Normalize a marketplace value into an extraKnownMarketplaces entry."""
+    if isinstance(value, str):
+        return {"source": {"source": "github", "repo": value}}
+    if isinstance(value, dict):
+        if isinstance(value.get("source"), dict):
+            return value  # already a full {source: {...}} entry
+        return {"source": value}  # shorthand {source: github, repo: ...}
+    raise SystemExit(f"unsupported marketplace value: {value!r}")
+
+
+def marketplace_add_target(entry):
+    """The arg for `claude plugin marketplace add` (repo or directory path)."""
+    src = entry["source"]
+    return src.get("repo") or src.get("path")
+
+
+# --- settings file I/O --------------------------------------------------
+def read_json(path):
+    if os.path.isfile(path):
+        with open(path) as fh:
+            return json.load(fh) or {}
+    return {}
+
+
+def write_json(path, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as fh:
+        json.dump(data, fh, indent=2)
+        fh.write("\n")
+    os.replace(tmp, path)
+
+
+def read_yaml(path):
+    if os.path.isfile(path):
+        with open(path) as fh:
+            return yaml.safe_load(fh) or {}
+    return {}
+
+
+def write_yaml(path, data):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    tmp = path + ".tmp"
+    with open(tmp, "w") as fh:
+        yaml.safe_dump(data, fh, sort_keys=False, default_flow_style=False)
+    os.replace(tmp, path)
+
+
+# --- cache warming via the claude CLI ----------------------------------
+def warm_cache(marketplaces, plugins, web):
+    if os.environ.get("CLAUDE_WEB_SKIP_INSTALL"):
+        log("CLAUDE_WEB_SKIP_INSTALL set — skipping plugin install / cache warm")
+        return
+    if not shutil.which("claude"):
+        warn("claude CLI not on PATH — skipping cache warm (config still written)")
+        return
+    # web: --scope user writes ~/.claude/settings.json (== our target).
+    # else: --scope local from a throwaway cwd warms the shared cache
+    #       without touching the user's real settings.json.
+    scope = "user" if web else "local"
+    cwd = None if web else tempfile.mkdtemp(prefix="agent-cfg-warm-")
+    for name, entry in marketplaces.items():
+        target = marketplace_add_target(entry)
+        if not target:
+            continue
+        log(f"marketplace add {name} ({target}) [scope={scope}]")
+        if subprocess.run(
+            ["claude", "plugin", "marketplace", "add", target, "--scope", scope],
+            cwd=cwd,
+        ).returncode != 0:
+            warn(f"marketplace add failed for {target} (non-fatal)")
+    for plugin in plugins:
+        log(f"plugin install {plugin} [scope={scope}]")
+        if subprocess.run(
+            ["claude", "plugin", "install", plugin, "--scope", scope], cwd=cwd
+        ).returncode != 0:
+            warn(f"plugin install failed for {plugin} (non-fatal)")
+    if cwd:
+        shutil.rmtree(cwd, ignore_errors=True)
+
+
+# --- main ---------------------------------------------------------------
+def main():
+    upstream = os.environ["CLAUDE_WEB_UPSTREAM"]
+    web = bool(os.environ.get("CLAUDE_CODE_REMOTE"))
+    config_dir = os.environ.get("CLAUDE_CONFIG_DIR") or os.path.join(
+        os.path.expanduser("~"), ".claude"
+    )
+    target_name = "settings.json" if web else "settings.local.json"
+    target = os.path.join(config_dir, target_name)
+    ps_path = os.path.join(config_dir, "plugins.settings.yaml")
+
+    log(f"upstream: {upstream}")
+    log(f"environment: {'web (CLAUDE_CODE_REMOTE)' if web else 'local'}")
+
+    chain = resolve_chain(upstream)
+    log("config chain (base -> leaf): " + " -> ".join(ref for ref, _ in chain))
+    merged = merge_chain(chain)
+
+    marketplaces = {
+        name: marketplace_entry(val)
+        for name, val in (merged.get("marketplaces") or {}).items()
+    }
+    plugins = list(merged.get("plugins") or [])
+    plugin_settings = merged.get("pluginSettings") or {}
+    passthrough = merged.get("settings") or {}
+
+    if merged.get("name"):
+        log(f"agent: {merged['name']}")
+    log(f"marketplaces: {', '.join(marketplaces) or '(none)'}")
+    log(f"plugins: {', '.join(plugins) or '(none)'}")
+
+    # 1. Warm the plugin cache (and, in web, write enabledPlugins to the
+    #    target via --scope user) so the first session has them + hooks run.
+    warm_cache(marketplaces, plugins, web)
+
+    # 2. Materialize the merged plugin config at user scope so the plugins
+    #    read their settings (op:// refs, github-app ref, mise opts, ...).
+    if plugin_settings:
+        write_yaml(ps_path, deep_merge(read_yaml(ps_path), plugin_settings))
+        log(f"wrote {ps_path}")
+
+    # 3. Deep-merge marketplaces + enabledPlugins + settings passthrough
+    #    into the target settings file, preserving anything already there.
+    additions = {
+        "extraKnownMarketplaces": marketplaces,
+        "enabledPlugins": {p: True for p in plugins},
+    }
+    additions = deep_merge(additions, passthrough)
+    write_json(target, deep_merge(read_json(target), additions))
+    log(f"wrote {target}")
+    log("done")
+
+
+if __name__ == "__main__":
+    main()
+PYEOF
