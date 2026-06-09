@@ -1,0 +1,152 @@
+#!/usr/bin/env bash
+# setup-claude-web — curl-able bootstrap for Claude Code on the web.
+#
+# Configures a Claude Code web environment with a standard marketplace +
+# plugin set so unattended (no-human-in-the-loop) sessions auto-configure
+# permissions, secrets, git auth, and tool installs without interactive
+# prompts.
+#
+# INTENDED USE — paste this one line into the web environment's
+# "Setup script" field (Cloud environment settings → Setup script):
+#
+#   curl -fsSL https://raw.githubusercontent.com/nsheaps/agents/main/bin/setup-claude-web | bash
+#
+# The setup script runs as root BEFORE Claude Code launches, and its
+# filesystem state (including ~/.claude) is cached as a VM snapshot. By
+# installing plugins here we warm the plugin cache so the FIRST session
+# already has them available — this is the recommended workaround for the
+# known "plugins in settings.json are not installed on first launch"
+# issue (nsheaps/ai-mktpl#261). Refs:
+#   https://code.claude.com/docs/en/claude-code-on-the-web (setup scripts)
+#   https://code.claude.com/docs/en/plugin-marketplaces
+#
+# What it does (idempotent, safe to re-run):
+#   1. Registers the marketplace(s) at user scope.
+#   2. Enables + installs the standard plugin set (warms the cache).
+#   3. Merges enabledPlugins + extraKnownMarketplaces into the user
+#      settings.json as a declarative belt-and-suspenders, so the session
+#      has the config even if the CLI install is unavailable at setup time.
+#
+# Everything below is overridable via environment variables — see CONFIG.
+#
+# SECURITY NOTE: the default set includes `dangerous-bypass`, which
+# auto-approves ALL permission requests. That is intentional for an
+# unattended web agent, but it means every tool call runs without
+# confirmation in this environment. Drop it from CLAUDE_WEB_PLUGINS if you
+# want interactive prompts (web-auto-approve is a narrower alternative).
+set -euo pipefail
+
+# ---- CONFIG (override via env) ----------------------------------------
+# Marketplaces to register, as "<name>=<github-owner/repo>" tokens,
+# whitespace-separated. <name> must match the marketplace.json "name".
+CLAUDE_WEB_MARKETPLACES="${CLAUDE_WEB_MARKETPLACES:-ai-mktpl=nsheaps/ai-mktpl}"
+
+# Standard plugin set, as "<plugin>@<marketplace>" tokens,
+# whitespace-separated. shared-lib is a runtime dependency of 1pass +
+# github-app; mise provides tool installs most sessions want.
+CLAUDE_WEB_PLUGINS="${CLAUDE_WEB_PLUGINS:-dangerous-bypass@ai-mktpl 1pass@ai-mktpl github-app@ai-mktpl shared-lib@ai-mktpl mise@ai-mktpl}"
+
+# Scope for marketplace/plugin registration: user | project | local.
+# user scope applies across every repo opened in this web environment.
+CLAUDE_WEB_SCOPE="${CLAUDE_WEB_SCOPE:-user}"
+
+# Config dir Claude reads settings from. Honour an explicit override,
+# else fall back to the conventional ~/.claude.
+CLAUDE_CONFIG_DIR="${CLAUDE_CONFIG_DIR:-$HOME/.claude}"
+# -----------------------------------------------------------------------
+
+SETTINGS_FILE="$CLAUDE_CONFIG_DIR/settings.json"
+
+log() { printf '[setup-claude-web] %s\n' "$*"; }
+warn() { printf '[setup-claude-web] WARNING: %s\n' "$*" >&2; }
+
+# --- Register marketplaces + install plugins via the claude CLI --------
+# Primary path: `claude plugin ...` both warms the on-disk cache AND
+# writes the requested-scope settings. Each call is non-fatal so one
+# unreachable marketplace or transient error never fails the whole setup.
+bootstrap_via_cli() {
+  local entry name repo plugin
+
+  for entry in $CLAUDE_WEB_MARKETPLACES; do
+    name="${entry%%=*}"
+    repo="${entry#*=}"
+    log "registering marketplace ${name} (${repo}) [scope=${CLAUDE_WEB_SCOPE}]"
+    if ! claude plugin marketplace add "$repo" --scope "$CLAUDE_WEB_SCOPE"; then
+      warn "marketplace add failed for ${repo} (non-fatal; likely already registered)"
+    fi
+  done
+
+  for plugin in $CLAUDE_WEB_PLUGINS; do
+    log "installing plugin ${plugin} [scope=${CLAUDE_WEB_SCOPE}]"
+    if ! claude plugin install "$plugin" --scope "$CLAUDE_WEB_SCOPE"; then
+      warn "plugin install failed for ${plugin} (non-fatal)"
+    fi
+  done
+}
+
+# --- Declarative fallback / belt-and-suspenders ------------------------
+# Merge our marketplaces + enabledPlugins into the user settings.json
+# without clobbering anything already there. `existing * additions` deep
+# merges, so pre-existing keys are preserved and our entries are overlaid.
+# Only writes when scope is user (the settings.json this script owns);
+# project/local scope is left to the CLI, which targets the repo.
+merge_settings() {
+  if [ "$CLAUDE_WEB_SCOPE" != "user" ]; then
+    return 0
+  fi
+  if ! command -v jq >/dev/null 2>&1; then
+    warn "jq not found — skipping declarative settings merge (CLI install still applies)"
+    return 0
+  fi
+
+  mkdir -p "$CLAUDE_CONFIG_DIR"
+  [ -f "$SETTINGS_FILE" ] || printf '{}\n' >"$SETTINGS_FILE"
+
+  # Build additions JSON from the configured marketplaces + plugins.
+  local additions
+  additions="$(
+    jq -n \
+      --arg marketplaces "$CLAUDE_WEB_MARKETPLACES" \
+      --arg plugins "$CLAUDE_WEB_PLUGINS" '
+      {
+        extraKnownMarketplaces: (
+          [$marketplaces | split("\n") | join(" ") | splits("[[:space:]]+")]
+          | map(select(length > 0))
+          | map({ (sub("=.*";"")): { source: { source: "github", repo: sub("^[^=]*=";"") } } })
+          | add // {}
+        ),
+        enabledPlugins: (
+          [$plugins | split("\n") | join(" ") | splits("[[:space:]]+")]
+          | map(select(length > 0))
+          | map({ (.): true })
+          | add // {}
+        )
+      }'
+  )"
+
+  local tmp
+  tmp="$(mktemp)"
+  if jq -s '.[0] * .[1]' "$SETTINGS_FILE" <(printf '%s' "$additions") >"$tmp" 2>/dev/null; then
+    mv "$tmp" "$SETTINGS_FILE"
+    log "merged marketplaces + enabledPlugins into ${SETTINGS_FILE}"
+  else
+    rm -f "$tmp"
+    warn "settings merge failed — leaving ${SETTINGS_FILE} unchanged"
+  fi
+}
+
+main() {
+  log "marketplaces: ${CLAUDE_WEB_MARKETPLACES}"
+  log "plugins:      ${CLAUDE_WEB_PLUGINS}"
+
+  if command -v claude >/dev/null 2>&1; then
+    bootstrap_via_cli
+  else
+    warn "claude CLI not on PATH — relying on declarative settings only (plugins will resolve on first session)"
+  fi
+
+  merge_settings
+  log "done — Claude Code web environment configured"
+}
+
+main "$@"
