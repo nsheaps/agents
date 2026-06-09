@@ -8,7 +8,15 @@
  */
 import { afterAll, beforeAll, expect, test } from "bun:test";
 import { spawnSync } from "node:child_process";
-import { existsSync, mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  realpathSync,
+  rmSync,
+  writeFileSync,
+} from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -18,6 +26,7 @@ import {
   parseEnvFile,
   parseRepoRef,
   runSync,
+  toolArgv,
 } from "../src/index.ts";
 
 let WORK: string;
@@ -176,6 +185,31 @@ test("uses:-style subpath selects the source dir", () => {
   expect(
     existsSync(join(projC, ".claude", "rules", ".shared", "acme__shared-b__.claude", "beta.md")),
   ).toBe(true);
+});
+
+test("toolArgv: PATH first, mise delegation when absent, else bare", () => {
+  const dir = mkdtempSync(join(tmpdir(), "scfg-tool-"));
+  writeFileSync(join(dir, "mise"), "#!/bin/sh\n");
+  chmodSync(join(dir, "mise"), 0o755);
+  const orig = process.env.PATH;
+  try {
+    // git present on the real PATH -> use it directly
+    process.env.PATH = orig;
+    expect(toolArgv("git", ["clone", "x"])).toEqual(["git", ["clone", "x"]]);
+
+    // git absent, mise present in dir -> delegate to mise exec
+    process.env.PATH = dir;
+    expect(toolArgv("git", ["clone", "x"])).toEqual([
+      "mise",
+      ["exec", "git@latest", "--", "git", "clone", "x"],
+    ]);
+
+    // neither present -> bare name (fails loudly downstream)
+    process.env.PATH = join(dir, "nonexistent");
+    expect(toolArgv("jsonnet", ["f.jsonnet"])).toEqual(["jsonnet", ["f.jsonnet"]]);
+  } finally {
+    process.env.PATH = orig;
+  }
 });
 
 test("resourceTypes is honored (only linked types get a .shared)", () => {

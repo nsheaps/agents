@@ -144,14 +144,20 @@ function authGitArgs(token: string | undefined): string[] {
  * so the tool is auto-installed/run via mise (matching the ai-mktpl plugins).
  * Falls back to the bare name (which then fails loudly) if neither is present.
  */
+function onPath(name: string): boolean {
+  // Pass PATH explicitly: Bun.which() otherwise uses a startup snapshot and
+  // ignores live process.env.PATH (e.g. updates from CLAUDE_ENV_FILE).
+  return Boolean(Bun.which(name, { PATH: process.env.PATH ?? "" }));
+}
+
 export function toolArgv(name: string, args: string[]): [string, string[]] {
-  if (Bun.which(name)) return [name, args];
-  if (Bun.which("mise")) return ["mise", ["exec", `${name}@latest`, "--", name, ...args]];
+  if (onPath(name)) return [name, args];
+  if (onPath("mise")) return ["mise", ["exec", `${name}@latest`, "--", name, ...args]];
   return [name, args];
 }
 
 function toolAvailable(name: string): boolean {
-  return Boolean(Bun.which(name) || Bun.which("mise"));
+  return onPath(name) || onPath("mise");
 }
 
 function git(args: string[], token?: string): { ok: boolean; stdout: string; stderr: string } {
