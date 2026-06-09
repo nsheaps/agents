@@ -699,19 +699,25 @@ const SYNC_LOCK_STALE_MS = 180000;
  */
 function withLock<T>(dataDir: string, fn: () => T): T | null {
   const lockDir = join(dataDir, "shared-configs", ".sync.lock");
-  const deadline = Date.now() + SYNC_LOCK_WAIT_MS;
+  const waitMs = Number.parseInt(process.env.SHARED_CONFIG_LOCK_WAIT_MS ?? "", 10);
+  const deadline =
+    Date.now() + (Number.isFinite(waitMs) && waitMs >= 0 ? waitMs : SYNC_LOCK_WAIT_MS);
   for (;;) {
     try {
       mkdirSync(lockDir); // atomic: throws EEXIST if already held
       break;
     } catch {
+      // Couldn't create it — it's held. Take over only if clearly stale.
+      let stale = false;
       try {
-        if (Date.now() - statSync(lockDir).mtimeMs > SYNC_LOCK_STALE_MS) {
-          rmSync(lockDir, { recursive: true, force: true });
-          continue; // take over a stale lock
-        }
+        stale = Date.now() - statSync(lockDir).mtimeMs > SYNC_LOCK_STALE_MS;
       } catch {
-        continue; // lock vanished between calls — retry immediately
+        // stat failed (lock vanished, or transient) — fall through to backoff
+        // rather than spinning without a deadline check.
+      }
+      if (stale) {
+        rmSync(lockDir, { recursive: true, force: true });
+        continue; // retry immediately after clearing the stale lock
       }
       if (Date.now() >= deadline) return null;
       sleepSync(500);

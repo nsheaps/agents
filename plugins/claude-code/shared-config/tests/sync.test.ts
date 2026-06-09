@@ -18,6 +18,7 @@ import {
   realpathSync,
   rmSync,
   symlinkSync,
+  utimesSync,
   writeFileSync,
 } from "node:fs";
 import { tmpdir } from "node:os";
@@ -306,6 +307,37 @@ test("ensureSymlink replaces a dangling symlink instead of throwing EEXIST", () 
   expect(existsSync(link)).toBe(false); // confirms dangling
   expect(ensureSymlink(link, target)).toBe(true);
   expect(realpathSync(link)).toBe(realpathSync(target));
+});
+
+test("withLock takes over a stale lock and still syncs", () => {
+  const lockDir = join(DATA, "shared-configs", ".sync.lock");
+  mkdirSync(lockDir, { recursive: true });
+  const old = new Date(Date.now() - 10 * 60 * 1000); // 10 min ago (> 3 min stale)
+  utimesSync(lockDir, old, old);
+  const proj = runProject(
+    "projLockStale",
+    "enabled: true\nwaitForTokenTimeoutSeconds: 0\nsources:\n  - acme/shared-a\n",
+  );
+  expect(existsSync(join(proj, ".claude", "rules", ".shared", "acme__shared-a", "alpha.md"))).toBe(
+    true,
+  );
+  expect(existsSync(lockDir)).toBe(false); // released after the run
+});
+
+test("withLock skips the run when a fresh lock is held", () => {
+  const lockDir = join(DATA, "shared-configs", ".sync.lock");
+  mkdirSync(lockDir, { recursive: true }); // fresh (held by a "concurrent" run)
+  process.env.SHARED_CONFIG_LOCK_WAIT_MS = "300"; // don't wait the full 30s
+  try {
+    const proj = runProject(
+      "projLockHeld",
+      "enabled: true\nwaitForTokenTimeoutSeconds: 0\nsources:\n  - acme/shared-a\n",
+    );
+    expect(existsSync(join(proj, ".claude", "rules", ".shared"))).toBe(false); // skipped
+  } finally {
+    delete process.env.SHARED_CONFIG_LOCK_WAIT_MS;
+    rmSync(lockDir, { recursive: true, force: true });
+  }
 });
 
 test("resolveToken reads the github-app token from CLAUDE_ENV_FILE", () => {
