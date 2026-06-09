@@ -32,61 +32,31 @@ concurrency:
   group: ${{ github.ref == 'refs/heads/main' && 'ci-cd-main' || format('cd-{0}', github.ref) }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-env:
-  AUTO_BUMP_COMMIT_MSG: 'chore: auto-bump plugin versions and update marketplace'
-
 jobs:
-  # For PRs: Auto-bump versions and update marketplace in the PR branch.
-  # Pushes changes back to the PR branch (like lint auto-fix).
-  # Does NOT use [skip ci] so CI re-runs to validate the final state.
-  # Loop prevention: skips if latest commit is from a previous auto-bump.
-  auto-version-bump:
+  # For PRs: PREVIEW ONLY. Computes the version bumps + marketplace updates that
+  # WILL happen on merge, but does NOT commit or push anything to the PR branch.
+  # Bumping versions and regenerating the shared marketplace.json inside PR
+  # branches caused constant cross-PR merge conflicts; the real bump now happens
+  # exactly once on merge to main (see bump-and-update-marketplace below).
+  # The preview surfaces two ways:
+  #   1. A sticky PR comment with the version table.
+  #   2. ::notice annotations on each affected plugin.json showing the pending bump.
+  # The bump runs in the working tree only to compute next versions; nothing is
+  # committed, so the working tree is discarded when the job ends.
+  version-preview:
     runs-on: ubuntu-latest
     if: github.event_name == 'pull_request'
-    concurrency:
-      group: pr-autofix-${{ github.head_ref }}
-      cancel-in-progress: false
     permissions:
-      contents: write
+      contents: read
       pull-requests: write
     steps:
-      - name: Checkout code
+      - name: Checkout PR head
         uses: actions/checkout@v6
         with:
           ref: ${{ github.head_ref }}
           fetch-depth: 0
 
-      - name: Authenticate as GitHub App
-        id: auth
-        uses: ./.github/actions/github-app-auth
-        with:
-          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
-          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
-
-      # github-app-auth's internal actions/checkout@v6 (no ref) defaults to
-      # the PR merge commit on pull_request events, which leaves HEAD on a
-      # SHA that isn't an ancestor of head_ref. Restore HEAD here so the
-      # later auto-bump commit lands on the PR branch and pushes fast-forward.
-      - name: Restore HEAD to PR head_ref
-        env:
-          BRANCH: ${{ github.head_ref }}
-        run: |
-          git fetch origin "$BRANCH"
-          git checkout -B "$BRANCH" "origin/$BRANCH"
-
-      - name: Check if latest commit is auto-bump (loop prevention)
-        id: check-skip
-        run: |
-          LAST_MSG=$(git log -1 --format='%s')
-          if [[ "$LAST_MSG" == "$AUTO_BUMP_COMMIT_MSG" ]]; then
-            echo "skip=true" >> $GITHUB_OUTPUT
-            echo "Latest commit is from auto-bump, skipping to prevent loop"
-          else
-            echo "skip=false" >> $GITHUB_OUTPUT
-          fi
-
       - name: Fetch base branch and tags
-        if: steps.check-skip.outputs.skip != 'true'
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
@@ -94,76 +64,63 @@ jobs:
           git fetch origin --tags
 
       - name: Setup mise
-        if: steps.check-skip.outputs.skip != 'true'
         uses: jdx/mise-action@v4
 
       - name: Install dependencies
-        if: steps.check-skip.outputs.skip != 'true'
         run: bun install --frozen-lockfile
 
-      - name: Auto-bump changed plugins and update marketplace
-        if: steps.check-skip.outputs.skip != 'true'
+      - name: Compute version bump preview
         id: bump
         shell: bash
         env:
           BASE_REF: ${{ github.base_ref }}
         run: |
-          # For PRs, always diff against the base branch to detect only THIS PR's changes.
-          CHANGE_BASE="origin/$BASE_REF"
-          OUTPUT=$(mise run auto-bump-plugins "--change-base=$CHANGE_BASE" "--version-base=$CHANGE_BASE")
+          # Diff against the PR base branch so only THIS PR's changes are detected.
+          OUTPUT=$(mise run auto-bump-plugins "--change-base=origin/$BASE_REF" "--version-base=origin/$BASE_REF")
 
-          # Always regenerate marketplace (idempotent, picks up new plugins too)
-          mise run update-marketplace
+          echo "bumps=$(echo "$OUTPUT" | jq -c '.bumps')" >> "$GITHUB_OUTPUT"
 
-          # Lint/format everything
-          mise run format 2>/dev/null || true
-
-          # Check if any files changed
-          if [ -n "$(git status --porcelain)" ]; then
-            echo "has-changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "has-changes=false" >> $GITHUB_OUTPUT
-          fi
-
-          # Save report for PR comment
           {
             echo "report-md<<REPORT_MD_EOF"
             echo "$OUTPUT" | jq -r '.report_md'
             echo "REPORT_MD_EOF"
-          } >> $GITHUB_OUTPUT
+          } >> "$GITHUB_OUTPUT"
 
-      # Replaces stefanzweifel/git-auto-commit-action@v7. v7 added a
-      # `git checkout <branch>` step on detached HEAD which fails here:
-      # actions/checkout@v6 + ref:github.head_ref leaves HEAD detached, and
-      # the auto-bump produces uncommitted marketplace.json that v7's
-      # pre-checkout refuses to overwrite. Manual commit+push avoids it.
-      - name: Commit and push all changes at once
-        if: steps.check-skip.outputs.skip != 'true' && steps.bump.outputs.has-changes == 'true'
+      - name: Annotate plugin.json files with pending version bump
+        if: steps.bump.outputs.bumps != '' && steps.bump.outputs.bumps != '[]'
         env:
-          BRANCH: ${{ github.head_ref }}
-          GIT_USER_NAME: ${{ steps.auth.outputs.user-name }}
-          GIT_USER_EMAIL: ${{ steps.auth.outputs.user-id }}+${{ steps.auth.outputs.user-name }}@users.noreply.github.com
+          BUMPS: ${{ steps.bump.outputs.bumps }}
         run: |
-          git config user.name "$GIT_USER_NAME"
-          git config user.email "$GIT_USER_EMAIL"
-          git add -A
-          git commit -m "$AUTO_BUMP_COMMIT_MSG"
-          git push origin "HEAD:refs/heads/$BRANCH"
+          echo "$BUMPS" | jq -c '.[]' | while read -r row; do
+            name=$(echo "$row" | jq -r '.name')
+            path=$(echo "$row" | jq -r '.path')
+            base=$(echo "$row" | jq -r '.base')
+            new=$(echo "$row" | jq -r '.new')
+            action=$(echo "$row" | jq -r '.action')
+            line=$(grep -nE '"version"[[:space:]]*:' "$path" | head -1 | cut -d: -f1)
+            if [ "$action" = "already-bumped" ]; then
+              detail="already bumped to ${new} in this PR (kept on merge to main)"
+            else
+              detail="${base} → ${new} will be applied automatically when this PR merges to main"
+            fi
+            echo "::notice file=${path},line=${line:-1},title=Pending version bump::${name}: ${detail}"
+          done
 
-      - name: Post version status comment
-        if: steps.check-skip.outputs.skip != 'true'
+      - name: Post version preview comment
         uses: marocchino/sticky-pull-request-comment@v3.0.4
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           header: 'plugin-versions'
           message: |
-            ### Plugin Version Status
-            _Versions are auto-bumped in PRs. Manual bumps to higher versions are preserved._
+            ### Plugin Version Preview
+
+            _Preview only — plugin versions and `marketplace.json` are bumped automatically on merge to `main`, **not** in this PR. Manual bumps to higher versions are preserved. See the file annotations for the pending change on each `plugin.json`._
 
             ${{ steps.bump.outputs.report-md }}
 
-  # For main: Bump only plugins that weren't already bumped in the PR,
-  # then update marketplace metadata.
+  # For main: the SOLE place bumps + marketplace updates are committed.
+  # Auto-bumps each changed plugin (patch), preserving any manual bumps to a
+  # higher version, then regenerates and commits marketplace metadata.
   bump-and-update-marketplace:
     runs-on: ubuntu-latest
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'

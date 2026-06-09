@@ -1,5 +1,33 @@
 # Changelog
 
+## [0.3.24](https://github.com/nsheaps/agents/compare/v0.3.23...v0.3.24) (2026-06-08)
+
+## [0.3.23](https://github.com/nsheaps/agents/compare/v0.3.22...v0.3.23) (2026-06-08)
+
+### Maintenance
+
+* **deps:** update dependency npm:@anthropic-ai/claude-code to v2.1.138 ([#229](https://github.com/nsheaps/agents/issues/229)) ([ba01bdd](https://github.com/nsheaps/agents/commit/ba01bdd7df77892061e44c79f79b3f41ce1e21b2))
+
+## [0.3.22](https://github.com/nsheaps/agents/compare/v0.3.21...v0.3.22) (2026-06-08)
+
+### Maintenance
+
+* **deps:** update dependency npm:@anthropic-ai/claude-code to v2.1.137 ([#228](https://github.com/nsheaps/agents/issues/228)) ([dc04d83](https://github.com/nsheaps/agents/commit/dc04d8389a368c88a8cd5ce91337e1a73d49aea8))
+
+## [0.3.21](https://github.com/nsheaps/agents/compare/v0.3.20...v0.3.21) (2026-06-07)
+
+### Maintenance
+
+* **deps:** update dependency npm:@anthropic-ai/claude-code to v2.1.136 ([#227](https://github.com/nsheaps/agents/issues/227)) ([641eea3](https://github.com/nsheaps/agents/commit/641eea3b8aff11bc43e0922dee3efaa2558f7d41))
+
+## [0.3.20](https://github.com/nsheaps/agents/compare/v0.3.19...v0.3.20) (2026-06-07)
+
+### Maintenance
+
+* **deps:** update dependency npm:@anthropic-ai/claude-code to v2.1.133 ([#225](https://github.com/nsheaps/agents/issues/225)) ([421b173](https://github.com/nsheaps/agents/commit/421b17395cc82c26628e0c2cd55c03eb265d59da))
+
+## [0.3.19](https://github.com/nsheaps/agents/compare/v0.3.18...v0.3.19) (2026-06-06)
+
 ## [0.3.18](https://github.com/nsheaps/agents/compare/v0.3.17...v0.3.18) (2026-06-06)
 
 ## [0.3.17](https://github.com/nsheaps/agents/compare/v0.3.16...v0.3.17) (2026-06-06)
