@@ -29,7 +29,7 @@ All blocking behaviour is opt-in via `plugins.settings.yaml` in your project's `
 # .claude/plugins.settings.yaml
 task-utils:
   # Master switch — set false to disable all task-utils hooks entirely.
-  # Default: true
+  # Default: false
   enabled: true
 
   # Enforce the 0-or-1 in_progress invariant (task-invariant.sh).
@@ -44,11 +44,9 @@ task-utils:
 
   # Require at least one task in in_progress before Write/Edit/MultiEdit/NotebookEdit
   # tools are permitted (require-task-in-progress.sh).
-  # Default: true
+  # Default: false
   requireInProgress: true
 ```
-
-**Defaults are all `true`** — existing installs with no `task-utils:` section in their settings file continue to behave exactly as before. Agents that need to relax the rules can set any combination of the above to `false` without touching the plugin source.
 
 Example — disable all blocking while keeping coaching:
 
