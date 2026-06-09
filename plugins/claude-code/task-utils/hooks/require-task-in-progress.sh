@@ -1,20 +1,24 @@
 #!/usr/bin/env bash
 # require-task-in-progress.sh — PreToolUse hook
 #
-# Blocks Write / Edit / MultiEdit / NotebookEdit when NO task is
-# in_progress. The deny message instructs to start an existing task
-# via TaskUpdate, or create one via TaskCreate to encompass the work,
-# keeping the description up to date with dated event-log lines as
-# work proceeds.
+# When enabled (OPT-IN — off by default), blocks Write / Edit / MultiEdit /
+# NotebookEdit when NO task is in_progress. The deny message instructs to start
+# an existing task via TaskUpdate, or create one via TaskCreate to encompass the
+# work, keeping the description up to date with dated event-log lines as work
+# proceeds.
 #
-# Why: Nate Discord 2026-05-17 02:55Z — every write action should
-# correspond to an actively-tracked atomic task so progress is
-# observable and validatable.
+# Why (original): Nate Discord 2026-05-17 02:55Z — every write action should
+# correspond to an actively-tracked atomic task so progress is observable and
+# validatable.
+# Why opt-in (2026-06-09): the gate is disruptive when the harness does not
+# expose Task tools — it blocks every write with no way to create a task — so it
+# now defaults OFF and each agent opts in explicitly.
 #
 # Configuration (plugins.settings.yaml):
 #   task-utils:
 #     enabled: true               # master switch — false disables all task-utils hooks
-#     requireInProgress: true     # this hook — false allows writes without an in_progress task
+#     requireInProgress: true     # OPT-IN — set true to gate writes on an in_progress
+#                                  # task. Default false: writes allowed without one.
 #
 # Output contract (per claude-code docs hooks.md PreToolUse):
 #   - Exit 0 with JSON on STDOUT for policy decisions.
@@ -91,7 +95,9 @@ PYEOF
 
 # Check master switch and this hook's specific flag
 ENABLED="$(read_config enabled true)"
-REQUIRE_IN_PROGRESS="$(read_config requireInProgress true)"
+# OPT-IN: defaults false so the write-gate is inert unless an agent explicitly
+# sets `task-utils.requireInProgress: true` in its plugins.settings.yaml.
+REQUIRE_IN_PROGRESS="$(read_config requireInProgress false)"
 
 if [[ "$ENABLED" == "false" || "$REQUIRE_IN_PROGRESS" == "false" ]]; then
   log_fire "allow-config-disabled" "tool=${TOOL_NAME} enabled=${ENABLED} requireInProgress=${REQUIRE_IN_PROGRESS}"

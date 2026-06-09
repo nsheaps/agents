@@ -44,11 +44,14 @@ task-utils:
 
   # Require at least one task in in_progress before Write/Edit/MultiEdit/NotebookEdit
   # tools are permitted (require-task-in-progress.sh).
-  # Default: true
-  requireInProgress: true
+  # Default: false (OPT-IN) — set true to gate writes on an in_progress task.
+  requireInProgress: false
 ```
 
-**Defaults are all `true`** — existing installs with no `task-utils:` section in their settings file continue to behave exactly as before. Agents that need to relax the rules can set any combination of the above to `false` without touching the plugin source.
+**`requireInProgress` is opt-in (default `false`); the other knobs default `true`.** The write-gate
+ships off because it blocks every write when the harness doesn't expose Task tools (no way to create
+the required task) — so each agent enables it explicitly via `requireInProgress: true`. Agents that
+want to relax the other rules can set any of them to `false` without touching the plugin source.
 
 Example — disable all blocking while keeping coaching:
 
