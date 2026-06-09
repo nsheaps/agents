@@ -32,6 +32,10 @@
     },
     "format": {
       "cache": false
+    },
+    "release": {
+      "dependsOn": ["build", "test", "lint", "^release"],
+      "cache": false
     }
   },
   "defaultBase": "main"
