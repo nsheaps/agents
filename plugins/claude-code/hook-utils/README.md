@@ -10,10 +10,16 @@ without polluting the model's context.
 
 ## How it works
 
-Every documented hook event (`PreToolUse`, `PostToolUse`, `UserPromptSubmit`,
-`SessionStart`, `Stop`, `Notification`, … 30 events in total) is registered in
+Every hook event recognised by the pinned `claude-code` validator
+(`PreToolUse`, `PostToolUse`, `UserPromptSubmit`, `SessionStart`, `Stop`,
+`Notification`, … 29 events in total) is registered in
 [`hooks/hooks.json`](hooks/hooks.json) and routed to one script,
 [`hooks/hook-stream.sh`](hooks/hook-stream.sh).
+
+> **Note:** `MessageDisplay` is intentionally omitted — `claude plugin
+validate` (pinned to claude-code 2.1.138 in this repo's CI) rejects it as an
+> unknown hook key, and the pinned runtime doesn't fire it anyway. Add it back
+> once the repo bumps `claude-code` to a version that recognises it.
 
 The script:
 
