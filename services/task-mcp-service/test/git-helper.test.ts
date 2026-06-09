@@ -9,7 +9,8 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { buildCommitMessage, tryGitAutoCommit } from "../src/git-helper.js";
+import { tryGitAutoCommit } from "../lib/git-helper.js";
+import { buildCommitMessage } from "../src/store.js";
 
 let tmp: string;
 

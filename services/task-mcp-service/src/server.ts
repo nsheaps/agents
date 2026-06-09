@@ -1,5 +1,5 @@
 /**
- * server.ts — the task-utils MCP task server.
+ * src/server.ts — the task-mcp MCP task server entry point.
  *
  * Exposes four MCP tools — `task_create`, `task_update`, `task_list`,
  * `task_get` — that mirror the built-in Claude Code Task tools. This server is

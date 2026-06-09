@@ -37,8 +37,11 @@ die() {
 # CLAUDE_PLUGIN_ROOT is normally injected; fall back to this script's own dir
 # so the script also works when run by hand from a checkout.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$SCRIPT_DIR/.." && pwd)}"
-MCP_SRC_DIR="$PLUGIN_ROOT/mcp"
+# CLAUDE_PLUGIN_ROOT is injected by Claude Code; when running by hand from the
+# monorepo the script lives at services/task-mcp-service/ so we go up two
+# levels (services/ -> repo root) to reach the plugin root equivalent.
+PLUGIN_ROOT="${CLAUDE_PLUGIN_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
+MCP_SRC_DIR="$PLUGIN_ROOT/services/task-mcp-service"
 
 # CLAUDE_PLUGIN_DATA persists across plugin updates — the right home for a
 # built artifact. Fall back to a per-plugin dir under the user's claude config

@@ -1,15 +1,17 @@
 /**
- * git-helper.ts — best-effort git auto-commit + push for task files.
+ * lib/git-helper.ts — generic best-effort git auto-commit + push engine.
  *
- * When the MCP server creates, updates, or deletes a task file, it attempts to
- * `git add` + `git commit` + `git push` the change so task state is persisted
- * as a repo artifact.
+ * Generic: contains no task-specific assumptions. Reusable by any MCP server
+ * that writes files to a git repo (e.g. a future ticket-mcp-service).
+ *
+ * The CRUD operation type and tryGitAutoCommit() are fully decoupled from the
+ * commit-message format — callers supply their own commit message string
+ * (e.g. "chore(tasks): …" or "chore(tickets): …").
  *
  * Guarantees:
  *   - TEMPLATED conventional-commit messages — never an AI model call.
- *   - BEST-EFFORT — any git failure (not a repo, no remote, nothing staged,
- *     push rejected, network error, git not on PATH) is caught, logged, and
- *     the calling tool STILL succeeds. A task write must never fail on git.
+ *   - BEST-EFFORT — any git failure is caught, logged, and the calling tool
+ *     still succeeds. A store write must never fail on git.
  *   - Git is only attempted when the store is inside a git working tree.
  *
  * Errors are appended to `<storeRoot>/.git-auto-commit.log` for debugging.
@@ -19,7 +21,8 @@ import { execFileSync } from "node:child_process";
 import { appendFileSync } from "node:fs";
 import { join } from "node:path";
 
-export type TaskOperation = "create" | "update" | "delete";
+/** Generic CRUD operation type — valid for any flat-file store. */
+export type CrudOperation = "create" | "update" | "delete";
 
 export interface GitAutoCommitResult {
   /** true if a commit was produced */
@@ -32,32 +35,6 @@ export interface GitAutoCommitResult {
   stoppedAt: "not-a-repo" | "add" | "commit" | "push" | "done";
   /** human-readable note (error message or success) */
   detail: string;
-}
-
-/**
- * Build the templated conventional-commit message for a task operation.
- *
- *   create -> chore(tasks): add task <id> <subject>
- *   update -> chore(tasks): update task <id> (<status>)
- *   delete -> chore(tasks): remove task <id>
- */
-export function buildCommitMessage(
-  operation: TaskOperation,
-  id: string,
-  opts: { subject?: string; status?: string } = {},
-): string {
-  switch (operation) {
-    case "create": {
-      const subject = (opts.subject ?? "").trim();
-      return `chore(tasks): add task ${id}${subject ? ` ${subject}` : ""}`;
-    }
-    case "update": {
-      const status = (opts.status ?? "").trim();
-      return `chore(tasks): update task ${id}${status ? ` (${status})` : ""}`;
-    }
-    case "delete":
-      return `chore(tasks): remove task ${id}`;
-  }
 }
 
 function git(cwd: string, args: string[]): { ok: boolean; out: string } {
@@ -79,17 +56,17 @@ function git(cwd: string, args: string[]): { ok: boolean; out: string } {
 function logError(
   storeRoot: string,
   filePath: string,
-  operation: TaskOperation,
+  operation: CrudOperation,
   stage: string,
   detail: string,
 ): void {
   const line =
-    `[${new Date().toISOString()}] task-utils-mcp git auto-commit\n` +
+    `[${new Date().toISOString()}] mcp-service git auto-commit\n` +
     `  file: ${filePath}\n` +
     `  operation: ${operation}\n` +
     `  git-status: failed at ${stage} stage\n` +
     `  error: ${detail}\n` +
-    `  action: logged; task file written; commit + push abandoned\n`;
+    `  action: logged; store file written; commit + push abandoned\n`;
   try {
     appendFileSync(join(storeRoot, ".git-auto-commit.log"), line, "utf8");
   } catch {
@@ -98,17 +75,17 @@ function logError(
 }
 
 /**
- * Attempt to auto-commit and push a task file. Never throws.
+ * Attempt to auto-commit and push a store file. Never throws.
  *
- * @param storeRoot the task-store root directory (also the git cwd)
- * @param filePath  absolute path to the task file that changed
- * @param operation create | update | delete
- * @param commitMessage the templated commit message
+ * @param storeRoot    the store root directory (also the git cwd)
+ * @param filePath     absolute path to the file that changed
+ * @param operation    create | update | delete
+ * @param commitMessage  caller-supplied conventional-commit message
  */
 export function tryGitAutoCommit(
   storeRoot: string,
   filePath: string,
-  operation: TaskOperation,
+  operation: CrudOperation,
   commitMessage: string,
 ): GitAutoCommitResult {
   // 1. Only proceed inside a git working tree.

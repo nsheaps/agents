@@ -1,8 +1,8 @@
 {
-  "name": "task-utils-mcp",
+  "name": "task-mcp-service",
   "version": "0.1.4",
   "private": true,
-  "description": "MCP task server for the task-utils Claude Code plugin — fallback task-management tools where the built-in Task tools are unavailable",
+  "description": "MCP task server — fallback task-management tools where the built-in Task tools are unavailable. Service entry point for the task-utils Claude Code plugin.",
   "type": "module",
   "main": "dist/task-mcp",
   "scripts": {

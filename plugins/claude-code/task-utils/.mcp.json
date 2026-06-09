@@ -2,7 +2,7 @@
   "mcpServers": {
     "task-mcp": {
       "command": "bash",
-      "args": ["${CLAUDE_PLUGIN_ROOT}/mcp/launch.sh"],
+      "args": ["${CLAUDE_PLUGIN_ROOT}/services/task-mcp-service/launch.sh"],
       "env": {
         "CLAUDE_PLUGIN_ROOT": "${CLAUDE_PLUGIN_ROOT}",
         "CLAUDE_PLUGIN_DATA": "${CLAUDE_PLUGIN_DATA}",

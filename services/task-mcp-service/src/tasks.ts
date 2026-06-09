@@ -1,5 +1,5 @@
 /**
- * tasks.ts — task lifecycle logic for the MCP server.
+ * src/tasks.ts — task lifecycle logic for the task-mcp MCP server.
  *
  * Re-implements the invariants enforced by `hooks/task-invariant.sh` IN-PROCESS,
  * because the PreToolUse hook only matches the literal built-in tool names
@@ -21,10 +21,10 @@
  * agent — the prose mirrors the hook's deny text so coaching is identical.
  */
 
-import { buildCommitMessage, tryGitAutoCommit } from "./git-helper.js";
-import type { GitAutoCommitResult, TaskOperation } from "./git-helper.js";
-import { TaskStore } from "./store.js";
-import type { TaskRecord, TaskStatus } from "./store.js";
+import { buildCommitMessage, TaskStore } from "./store.js";
+import type { GitAutoCommitResult, TaskRecord, TaskStatus } from "./store.js";
+import type { CrudOperation } from "../lib/git-helper.js";
+import { tryGitAutoCommit } from "../lib/git-helper.js";
 import { parseValidationSteps } from "./validation-steps.js";
 
 /** A lifecycle-invariant violation — surfaced to the agent as `isError`. */
@@ -234,7 +234,7 @@ export class TaskManager {
 
   private autoCommit(
     filePath: string,
-    operation: TaskOperation,
+    operation: CrudOperation,
     opts: { id: string; subject?: string; status?: string },
   ): GitAutoCommitResult {
     const msg = buildCommitMessage(operation, opts.id, {
