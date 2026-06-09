@@ -1,6 +1,6 @@
 {
   "name": "hook-utils",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Observability plugin that maps every Claude Code hook event to a single renderer which prints the hook name, parameters, and (for post-events) the response + elapsed time to the USER only (never to Claude). Verbosity is configurable: quiet / normal / full. Output mirrors the claude-stream chatroom rendering style.",
   "author": {
     "name": "Nathan Heaps",

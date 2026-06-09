@@ -54,6 +54,28 @@
       ]
     },
     {
+      "name": "hook-utils",
+      "description": "Observability plugin that maps every Claude Code hook event to a single renderer which prints the hook name, parameters, and (for post-events) the response + elapsed time to the USER only (never to Claude). Verbosity is configurable: quiet / normal / full. Output mirrors the claude-stream chatroom rendering style.",
+      "version": "0.1.1",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/hook-utils",
+      "category": "utility",
+      "tags": [
+        "utility"
+      ],
+      "keywords": [
+        "hooks",
+        "observability",
+        "debugging",
+        "claude-code",
+        "claude-stream",
+        "hook-tracing",
+        "system-message"
+      ]
+    },
+    {
       "name": "plugin-utils",
       "description": "Skills for plugin and tool development: data storage conventions, file format selection, sync patterns, and storage architecture for Claude Code plugins and MCP servers.",
       "version": "0.1.1",
@@ -123,7 +145,7 @@
     {
       "name": "task-utils",
       "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + task-manage skill for atomic-task workflow. Blocking behaviour is configurable via plugins.settings.yaml.",
-      "version": "0.3.0",
+      "version": "0.3.1",
       "author": {
         "name": "Nathan Heaps"
       },

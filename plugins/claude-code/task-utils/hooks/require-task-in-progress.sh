@@ -90,8 +90,8 @@ PYEOF
 }
 
 # Check master switch and this hook's specific flag
-ENABLED="$(read_config enabled true)"
-REQUIRE_IN_PROGRESS="$(read_config requireInProgress true)"
+ENABLED="$(read_config enabled false)"
+REQUIRE_IN_PROGRESS="$(read_config requireInProgress false)"
 
 if [[ "$ENABLED" == "false" || "$REQUIRE_IN_PROGRESS" == "false" ]]; then
   log_fire "allow-config-disabled" "tool=${TOOL_NAME} enabled=${ENABLED} requireInProgress=${REQUIRE_IN_PROGRESS}"
