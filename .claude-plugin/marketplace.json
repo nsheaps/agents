@@ -122,8 +122,8 @@
     },
     {
       "name": "task-utils",
-      "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + task-manage skill for atomic-task workflow. Blocking behaviour is configurable via plugins.settings.yaml.",
-      "version": "0.3.0",
+      "description": "Task discipline hooks (0-or-1 in_progress invariant on flat YAML store, write-tool gating, validation-steps + RESULT cites, PostToolUse legacy-sync, native-task advisory/block, pull sync) + task-manage skill + MCP task server (primary task path)",
+      "version": "0.4.0",
       "author": {
         "name": "Nathan Heaps"
       },
@@ -139,7 +139,8 @@
         "claude-code",
         "agent-discipline",
         "validation-steps",
-        "in-progress-invariant"
+        "in-progress-invariant",
+        "mcp"
       ]
     }
   ]
