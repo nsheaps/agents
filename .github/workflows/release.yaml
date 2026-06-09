@@ -99,8 +99,11 @@ jobs:
         id: pre
         run: echo "tag=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo none)" >> "$GITHUB_OUTPUT"
 
-      # --parallel=1: release scripts push to main in the same working tree; serialize them.
-      # nx runs each module's build/test/lint (and ^release) first per the release dependsOn.
+      # Release affected modules via their own nx `release` target. Order matters: root's
+      # release-it pushes a commit to main and CANNOT tolerate main advancing under it,
+      # whereas every other module's release script resyncs to origin/main and retries. So
+      # release root FIRST (when affected), then the resilient rest. nx still runs each
+      # module's build/test/lint (and ^release) first per the release dependsOn.
       - name: Run affected releases
         if: steps.affected.outputs.projects != '[]'
         env:
@@ -108,7 +111,10 @@ jobs:
           RELEASE_BASE: ${{ steps.base.outputs.base }}
           GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
-          bunx nx affected --target=release --base="$BASE" --head=HEAD --parallel=1
+          if [ "${{ steps.affected.outputs.root }}" = "true" ]; then
+            bunx nx run root:release
+          fi
+          bunx nx affected --target=release --base="$BASE" --head=HEAD --exclude=root --parallel=1
 
       # Surface root's release for the Homebrew job — but only when release-it actually cut a
       # NEW v* tag. A root-affected change that produces no version bump (e.g. a docs-only
