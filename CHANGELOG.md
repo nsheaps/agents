@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.27](https://github.com/nsheaps/agents/compare/v0.3.26...v0.3.27) (2026-06-09)
+
+### Bug Fixes
+
+* **cd:** make bump-and-update-marketplace resilient to concurrent merges ([#234](https://github.com/nsheaps/agents/issues/234)) ([3935d56](https://github.com/nsheaps/agents/commit/3935d56b806920a396ac71ebd00e74a8b23b6266))
+
 ## [0.3.26](https://github.com/nsheaps/agents/compare/v0.3.25...v0.3.26) (2026-06-09)
 
 ## [0.3.25](https://github.com/nsheaps/agents/compare/v0.3.24...v0.3.25) (2026-06-09)
