@@ -29,6 +29,59 @@ claude_patch_resolve_bin() {
   printf '%s' "$bin"
 }
 
+# Ensure the resolved claude binary is a real ELF, not the npm error-stub.
+# claude-code ships its native binary via a postinstall (install.cjs) that
+# copies the platform ELF (from the optional-dep subpackage
+# @anthropic-ai/claude-code-linux-x64/claude) over bin/claude.exe. Under
+# mise's `npm:` install the postinstall sometimes does NOT run, leaving
+# claude.exe as an error-stub shell script ("Error: claude native binary not
+# installed."). The patcher correctly rejects non-ELF input — which would
+# otherwise silently fall back to a stale patched binary of an older version
+# (see alex-tracker #763 / 2026-06-09 diagnosis). Running the postinstall
+# materializes the ELF in place on the shared mise install path.
+#
+# Arg: $1 = the mise-resolved claude path (claude_patch_resolve_bin output).
+# Returns 0 if the binary is (now) a real ELF, 1 + error on stderr otherwise.
+# Idempotent: a no-op when the binary is already ELF.
+claude_patch_materialize_elf() {
+  local bin="$1"
+  local resolved
+  resolved="$(realpath "$bin" 2>/dev/null)" || resolved="$bin"
+  # ELF magic = 0x7f 'E' 'L' 'F'. Bash command substitution drops bytes after
+  # the first NUL, but ELF's first 4 bytes contain no NUL, so this compares
+  # cleanly against the error-stub (which begins with "echo").
+  if [[ "$(head -c4 "$resolved" 2>/dev/null)" == $'\x7fELF' ]]; then
+    return 0
+  fi
+  # Non-ELF stub: locate the npm package dir (parent of bin/, holds install.cjs)
+  # and run the postinstall to copy the platform ELF over claude.exe.
+  local pkgdir
+  pkgdir="$(cd "$(dirname "$resolved")/.." 2>/dev/null && pwd)" || {
+    echo "ERROR: claude_patch_materialize_elf: cannot derive package dir from $resolved" >&2
+    return 1
+  }
+  if [[ ! -f "$pkgdir/install.cjs" ]]; then
+    echo "ERROR: claude_patch_materialize_elf: $resolved is not ELF and no install.cjs at $pkgdir — cannot materialize native binary" >&2
+    return 1
+  fi
+  if ! command -v node >/dev/null 2>&1; then
+    echo "ERROR: claude_patch_materialize_elf: node not on PATH — cannot run $pkgdir/install.cjs" >&2
+    return 1
+  fi
+  echo "[claude-patch] $resolved is a non-ELF stub — running $pkgdir/install.cjs to materialize native binary" >&2
+  ( cd "$pkgdir" && node install.cjs ) >&2 || {
+    echo "ERROR: claude_patch_materialize_elf: install.cjs failed for $pkgdir" >&2
+    return 1
+  }
+  # Re-verify: the postinstall must have produced a real ELF.
+  if [[ "$(head -c4 "$resolved" 2>/dev/null)" == $'\x7fELF' ]]; then
+    echo "[claude-patch] native ELF materialized at $resolved" >&2
+    return 0
+  fi
+  echo "ERROR: claude_patch_materialize_elf: install.cjs ran but $resolved is still not ELF" >&2
+  return 1
+}
+
 # Extract the claude version from a mise-installed binary path.
 # Mise layout: <mise-data>/installs/<plugin>/<version>/bin/claude
 # Returns the version string (e.g. "2.1.128") or 1 on parse failure.
