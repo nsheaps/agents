@@ -81,6 +81,7 @@ jobs:
         uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
         with:
           token: ${{ steps.auth.outputs.token }}
+          event-type: ${{ github.event_name }}/${{ github.event.action }}
           repository: ${{ inputs.target-repo }}
           client-payload: |
             {
