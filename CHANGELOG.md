@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.41](https://github.com/nsheaps/agents/compare/v0.3.40...v0.3.41) (2026-06-10)
+
+### Bug Fixes
+
+* **agent-cli:** materialize claude ELF before patch + version-aware skip ([#239](https://github.com/nsheaps/agents/issues/239)) ([be7d980](https://github.com/nsheaps/agents/commit/be7d980b9254d69b585cb0a16221eebff25e5c5e))
+
 ## [0.3.40](https://github.com/nsheaps/agents/compare/v0.3.39...v0.3.40) (2026-06-10)
 
 ## [0.3.39](https://github.com/nsheaps/agents/compare/v0.3.38...v0.3.39) (2026-06-10)
