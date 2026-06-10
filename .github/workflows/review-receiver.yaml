@@ -156,6 +156,7 @@ jobs:
       contents: read
       pull-requests: write
       checks: write
+      actions: read
     concurrency:
       group: review-receiver-${{ inputs.source-repo }}-${{ inputs.source-pr-number }}
       cancel-in-progress: false
