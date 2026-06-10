@@ -1,6 +1,6 @@
 {
   "name": "review-utils",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Self-contained PR-review pipeline: composite GitHub Actions (agent-setup, run-agent), reusable workflow integration, and the review-code skill that drives the review methodology. Replaces the previous scattered setup across nsheaps/agents + nsheaps/.ai-agent-henry.",
   "author": {
     "name": "Nathan Heaps",
