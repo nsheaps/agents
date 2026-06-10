@@ -82,9 +82,9 @@ on:
     secrets:
       REVIEW_GITHUB_APP_ID:
         required: true
-      REVIEW_GITHUB_APP_PRIVATE_KEY:
+      AUTOMATION_GITHUB_APP_PRIVATE_KEY:
         required: true
-      REVIEW_ANTHROPIC_API_KEY:
+      AUTOMATION_ANTHROPIC_API_KEY:
         required: false
       CLAUDE_CODE_OAUTH_TOKEN:
         required: false
