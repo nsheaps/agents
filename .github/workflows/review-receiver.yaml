@@ -118,8 +118,8 @@ jobs:
         id: auth
         uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
-          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
-          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ steps.consumer.outputs.owner }}
 
       - name: Update check (neutral — PR converted to draft)
@@ -165,12 +165,12 @@ jobs:
           ref: ${{ inputs.plugin-ref }}
           path: agent-repo
 
-      - name: Generate review App token
+      - name: Generate App token for updating checks
         id: auth
         uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
         with:
-          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
-          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ steps.consumer.outputs.owner }}
 
       # Update check-run on consumer to in_progress.
