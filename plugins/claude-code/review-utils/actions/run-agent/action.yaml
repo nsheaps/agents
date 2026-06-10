@@ -216,7 +216,7 @@ runs:
       shell: bash
       run: |
         awk 'BEGIN{p=0} /^---$/{p++; next} p>=2' \
-          "${{ github.workspace }}/plugins/claude-code/review-utils/skills/review-code/SKILL.md" \
+          "./agent-repo/plugins/claude-code/review-utils/skills/review-code/SKILL.md" \
           > "$RUNNER_TEMP/review-prompt-template.md"
         echo "PROMPT_TEMPLATE=$RUNNER_TEMP/review-prompt-template.md" >> $GITHUB_ENV
 
