@@ -10,7 +10,7 @@
 
 set -euo pipefail
 
-bot_login=$(gh api user --jq '.login')
+bot_login="${APP_SLUG}[bot]"
 reviews_json=$(gh api "repos/${SOURCE_REPO}/pulls/${PR_NUMBER}/reviews?per_page=100")
 approval_ids=$(echo "$reviews_json" | jq -r --arg login "$bot_login" \
   '.[] | select(.user.login == $login and .state == "APPROVED") | .id')

@@ -215,6 +215,7 @@ jobs:
           GH_TOKEN: ${{ steps.review-auth.outputs.token }}
           SOURCE_REPO: ${{ inputs.source-repo }}
           PR_NUMBER: ${{ inputs.source-pr-number }}
+          APP_SLUG: ${{ steps.review-auth.outputs.app-slug }}
         run: bash agent-repo/.github/scripts/review-receiver/dismiss-prior-approvals.sh
 
       # Invoke the plugin's run-agent composite. It owns the actual review:
