@@ -122,11 +122,17 @@ skipped.
 
 ## Dependencies / requirements
 
-Declared in `plugin.json` (`dependencies`):
+This plugin has **no hard plugin dependencies** — it works on its own.
 
-- **github-app** (`^0.5`) — publishes `GH_TOKEN` into `CLAUDE_ENV_FILE`; this
-  plugin waits for it and uses it for private clones. Configure the app via the
-  github-app plugin's settings in `.claude/plugins.settings.yaml`.
+Optional companion:
+
+- **github-app** — if installed, it publishes `GH_TOKEN` into `CLAUDE_ENV_FILE`;
+  shared-config opportunistically reads that token (via the `GITHUB_TOKEN_FILE`
+  signal) to clone **private** source repos. It is _not_ required: shared-config
+  imports no github-app code and degrades gracefully (public repos, an ambient
+  `GH_TOKEN`, or tokenless). It is therefore intentionally not declared in
+  `plugin.json` `dependencies` — that would force installing a whole
+  cross-marketplace auth stack just to read an optional env var.
 
 Runtime tools:
 

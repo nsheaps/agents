@@ -83,8 +83,15 @@ reading `CLAUDE_ENV_FILE`, orphaned-link cleanup, and dangling-symlink handling.
 
 ## Dependencies & tool resolution
 
-Declared in `plugin.json`: `github-app ^0.5` (from the ai-mktpl marketplace
-today; the repos are expected to consolidate under `nsheaps/agents` long term).
+**No hard plugin dependencies.** `github-app` is an _optional_ companion, not a
+declared dependency: shared-config imports none of its code — it only reads the
+`GH_TOKEN`/`GITHUB_TOKEN_FILE` env vars github-app writes to `CLAUDE_ENV_FILE`,
+and degrades gracefully without a token (public repos / ambient token /
+tokenless). Declaring it would force a cross-marketplace auth stack
+(github-app → shared-lib, plus 1pass for creds) just to read an optional env
+var. The dependency graph would not be circular (`github-app → shared-lib`, with
+nothing pointing back at shared-config), but the coupling is simply too loose to
+model as a package dependency.
 
 `bun` runs the hook and is provided via `mise` (pinned in the repo `mise.toml`),
 like the other bun-based plugins. External binaries the code spawns are resolved

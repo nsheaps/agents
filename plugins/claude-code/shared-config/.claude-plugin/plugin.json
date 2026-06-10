@@ -20,11 +20,5 @@
     "settings-merge",
     "hook",
     "multi-project"
-  ],
-  "dependencies": [
-    {
-      "name": "github-app",
-      "version": "^0.5"
-    }
   ]
 }
