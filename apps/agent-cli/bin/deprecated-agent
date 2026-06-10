@@ -690,9 +690,30 @@ fi
 # bin/claude wrapper no longer auto-patches (Nate, Discord 2026-05-15 02:47Z) —
 # it only patches when called with --force. Decide whether to force a patch:
 #   FORCE_PATCH=true       → drop current symlink, then patch.
-#   PATCH_IF_UNTESTED=true → patch only if no valid patched symlink exists.
+#   PATCH_IF_UNTESTED=true → patch only if no valid patched symlink exists OR
+#                            the linked binary's version != the current claude
+#                            version (a stale-but-valid symlink masks a bump).
 # Once patched, the symlink is valid and any further `claude` calls in this
 # iteration re-use it (no sentinel needed — the symlink IS the state).
+#
+# Before any patch attempt, materialize the native ELF: under mise's `npm:`
+# install, claude-code's install.cjs postinstall sometimes does NOT run,
+# leaving bin/claude.exe as an error-stub. The patcher rejects non-ELF input
+# and we'd silently fall back to a stale patched binary of an older version
+# (alex-tracker #763, 2026-06-09 diagnosis). Running the postinstall here
+# writes the real ELF to the shared mise path, so bin/claude's subsequent
+# patcher invocation sees a valid binary.
+# shellcheck source=lib/claude-patch.sh
+source "$LIB_DIR/claude-patch.sh"
+if claude_bin_for_materialize="$(claude_patch_resolve_bin)"; then
+  if claude_patch_materialize_elf "$claude_bin_for_materialize"; then
+    log "[patch] native ELF present at $(realpath "$claude_bin_for_materialize" 2>/dev/null || echo "$claude_bin_for_materialize")"
+  else
+    warn "[patch] could not materialize native ELF — patch may fail; bin/claude will fall back to any existing patched symlink"
+  fi
+else
+  warn "[patch] mise could not resolve claude — skipping ELF materialization"
+fi
 launcher_should_patch_once() {
   local link_path="$REPO_DIR/bin/claude-patched"
   # FORCE_PATCH=true: invalidate the current symlink so the next check
@@ -703,6 +724,19 @@ launcher_should_patch_once() {
   # No valid patched symlink? Patch if either flag is on.
   if [[ ! -L "$link_path" || ! -e "$link_path" || ! -x "$link_path" ]]; then
     [[ "$FORCE_PATCH" == true || "$PATCH_IF_UNTESTED" == true ]] && return 0
+  fi
+  # Symlink valid but possibly stale: a linked OLD-version binary masks a
+  # version bump. With PATCH_IF_UNTESTED, re-patch when the linked binary's
+  # version differs from the current mise-resolved version. (alex-tracker #763)
+  if [[ "$PATCH_IF_UNTESTED" == true ]]; then
+    local cur_bin cur_ver linked_ver
+    if cur_bin="$(claude_patch_resolve_bin)" \
+      && cur_ver="$(claude_patch_extract_version "$cur_bin")" \
+      && linked_ver="$(claude_patch_version_from_target "$(readlink -f "$link_path")")" \
+      && [[ "$cur_ver" != "$linked_ver" ]]; then
+      log "[patch] version mismatch: linked=$linked_ver current=$cur_ver — re-patching"
+      return 0
+    fi
   fi
   return 1
 }
