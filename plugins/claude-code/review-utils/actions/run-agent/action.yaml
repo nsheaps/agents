@@ -173,7 +173,7 @@ runs:
       # how the caller checked out the plugin). Previously hard-coded to
       # `./agent-repo/.github/actions/agent-setup`, which broke whenever the
       # plugin checkout path differed from `agent-repo/`.
-      uses: ./plugins/claude-code/review-utils/actions/agent-setup
+      uses: ./agent-repo/plugins/claude-code/review-utils/actions/agent-setup
       with:
         github-token: ${{ steps.github-token.outputs.token }}
 
