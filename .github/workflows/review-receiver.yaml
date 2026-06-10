@@ -187,6 +187,14 @@ jobs:
           private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ steps.consumer.outputs.owner }}
 
+      - name: Generate App token for dismissing review
+        id: review-auth
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349 # v2
+        with:
+          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
+          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
+          owner: ${{ steps.consumer.outputs.owner }}
+
       # Update check-run on consumer to in_progress.
       - name: Update check (in_progress)
         uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
@@ -204,7 +212,7 @@ jobs:
       # Logic in .github/scripts/review-receiver/dismiss-prior-approvals.sh.
       - name: Dismiss prior approval reviews
         env:
-          GH_TOKEN: ${{ steps.auth.outputs.token }}
+          GH_TOKEN: ${{ steps.review-auth.outputs.token }}
           SOURCE_REPO: ${{ inputs.source-repo }}
           PR_NUMBER: ${{ inputs.source-pr-number }}
         run: bash agent-repo/.github/scripts/review-receiver/dismiss-prior-approvals.sh
