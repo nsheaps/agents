@@ -24,11 +24,6 @@ on:
         required: false
         default: 'nsheaps/.ai-agent-henry'
         type: string
-      event-type:
-        description: 'repository_dispatch event_type sent to the target repo.'
-        required: false
-        default: 'pr-review'
-        type: string
     # Gate uses automation-nsheaps[bot] creds — routing only (check_run
     # post, repository_dispatch fire). Reviewer identity
     # (REVIEW_GITHUB_APP_*) lives on the receiver side where the review
@@ -87,7 +82,6 @@ jobs:
         with:
           token: ${{ steps.auth.outputs.token }}
           repository: ${{ inputs.target-repo }}
-          event-type: ${{ inputs.event-type }}
           client-payload: |
             {
               "source": {
