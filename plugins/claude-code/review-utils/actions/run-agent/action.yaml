@@ -243,7 +243,7 @@ runs:
       with:
         anthropic_api_key: ${{ inputs.anthropic-api-key }}
         claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
-        show_full_output: false
+        show_full_output: true
         github_token: ${{ steps.github-token.outputs.token }}
         allowed_bots: ${{ inputs.allowed-bots }}
         additional_permissions: |
