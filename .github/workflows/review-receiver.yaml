@@ -80,11 +80,15 @@ on:
         default: ''
         type: string
     secrets:
-      REVIEW_GITHUB_APP_ID:
+      AUTOMATION_GITHUB_APP_ID:
         required: true
       AUTOMATION_GITHUB_APP_PRIVATE_KEY:
         required: true
-      AUTOMATION_ANTHROPIC_API_KEY:
+      REVIEW_GITHUB_APP_ID:
+        required: true
+      REVIEW_GITHUB_APP_PRIVATE_KEY:
+        required: true
+      ANTHROPIC_API_KEY:
         required: false
       CLAUDE_CODE_OAUTH_TOKEN:
         required: false
@@ -224,7 +228,7 @@ jobs:
           check-run-id: ${{ inputs.check-run-id }}
           app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
           private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
-          anthropic-api-key: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
+          anthropic-api-key: ${{ secrets.ANTHROPIC_API_KEY }}
           claude-code-oauth-token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
 
       # Read the metrics file the agent must emit + compute the check_run
