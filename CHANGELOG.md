@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.43](https://github.com/nsheaps/agents/compare/v0.3.42...v0.3.43) (2026-06-12)
+
+### Maintenance
+
+* **deps:** update dependency bun to v1.3.14 ([#242](https://github.com/nsheaps/agents/issues/242)) ([f954332](https://github.com/nsheaps/agents/commit/f95433266ec8698aca99cc6ed71030c123622c87))
+
 ## [0.3.42](https://github.com/nsheaps/agents/compare/v0.3.41...v0.3.42) (2026-06-12)
 
 ### Maintenance
