@@ -1,15 +1,10 @@
 name: cd
 
+# PREVIEW ONLY. The actual plugin version bump + marketplace.json regen now runs on merge
+# to main as the `@nsheaps/agents-plugins` module's nx `release` target, driven by
+# release.yaml's `nx affected --target=release`. This workflow only previews, on PRs, what
+# that release will do — so it never pushes to a branch and never races the release.
 'on':
-  push:
-    branches:
-      - main
-    paths:
-      - 'plugins/**'
-      - '.github/workflows/cd.yaml'
-      # Ignore version/marketplace files to prevent bump loops
-      - '!plugins/claude-code/*/.claude-plugin/plugin.json'
-      - '!.claude-plugin/marketplace.json'
   pull_request:
     paths:
       - 'plugins/**'
@@ -17,27 +12,16 @@ name: cd
       # Ignore version/marketplace files to prevent bump loops
       - '!plugins/claude-code/*/.claude-plugin/plugin.json'
       - '!.claude-plugin/marketplace.json'
-  workflow_dispatch:
-    inputs:
-      from_sha:
-        description: 'commit sha from...HEAD to determine what to bump (overrides tag-based detection)'
-        required: false
-        default: ''
-        type: string
 
 concurrency:
-  # On push to main, share concurrency group with CI to prevent races where
-  # both CI (lint auto-fix) and CD (version bump) try to push commits
-  # simultaneously. On PRs, use a separate group since CD only previews.
-  group: ${{ github.ref == 'refs/heads/main' && 'ci-cd-main' || format('cd-{0}', github.ref) }}
-  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+  group: cd-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
-  # For PRs: PREVIEW ONLY. Computes the version bumps + marketplace updates that
-  # WILL happen on merge, but does NOT commit or push anything to the PR branch.
-  # Bumping versions and regenerating the shared marketplace.json inside PR
-  # branches caused constant cross-PR merge conflicts; the real bump now happens
-  # exactly once on merge to main (see bump-and-update-marketplace below).
+  # PREVIEW ONLY. Computes the version bumps + marketplace updates that WILL happen when
+  # this PR merges to main (where they run as the plugins module's nx release target), but
+  # does NOT commit or push anything to the PR branch. Bumping versions and regenerating the
+  # shared marketplace.json inside PR branches caused constant cross-PR merge conflicts.
   # The preview surfaces two ways:
   #   1. A sticky PR comment with the version table.
   #   2. ::notice annotations on each affected plugin.json showing the pending bump.
@@ -117,115 +101,3 @@ jobs:
             _Preview only — plugin versions and `marketplace.json` are bumped automatically on merge to `main`, **not** in this PR. Manual bumps to higher versions are preserved. See the file annotations for the pending change on each `plugin.json`._
 
             ${{ steps.bump.outputs.report-md }}
-
-  # For main: the SOLE place bumps + marketplace updates are committed.
-  # Auto-bumps each changed plugin (patch), preserving any manual bumps to a
-  # higher version, then regenerates and commits marketplace metadata.
-  bump-and-update-marketplace:
-    runs-on: ubuntu-latest
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || github.event_name == 'workflow_dispatch'
-    concurrency:
-      group: cd-main
-      cancel-in-progress: false
-    permissions:
-      contents: write
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
-      - name: Authenticate as GitHub App
-        id: auth
-        uses: ./.github/actions/github-app-auth
-        with:
-          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
-          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
-
-      - name: Resolve base ref from release tag
-        id: resolve-base
-        env:
-          FROM_SHA: ${{ inputs.from_sha }}
-        run: |
-          TAG_NAME="cd/last-release"
-          git fetch origin --tags
-          # workflow_dispatch with explicit from_sha takes priority
-          if [ -n "$FROM_SHA" ]; then
-            echo "base-ref=$FROM_SHA" >> $GITHUB_OUTPUT
-            echo "Using workflow_dispatch override: $FROM_SHA"
-          elif git rev-parse "$TAG_NAME" >/dev/null 2>&1; then
-            echo "base-ref=$TAG_NAME" >> $GITHUB_OUTPUT
-            echo "Using release tag '$TAG_NAME' ($(git rev-parse --short $TAG_NAME)) as base ref"
-          else
-            echo "base-ref=HEAD~1" >> $GITHUB_OUTPUT
-            echo "Release tag '$TAG_NAME' not found, falling back to HEAD~1"
-          fi
-
-      - name: Setup mise
-        uses: jdx/mise-action@v4
-
-      - name: Install dependencies
-        run: bun install --frozen-lockfile
-
-      # Bump versions, regenerate marketplace, and push — resilient to main
-      # advancing under us. Feature PRs merge to main in rapid succession, so
-      # the SHA checked out at trigger time can be stale by the time we push;
-      # a bare `git push` then fails with "non-fast-forward" and the marketplace
-      # update is silently lost (see drift between plugin.json and
-      # marketplace.json). Both the version bumps and marketplace.json are
-      # fully DERIVED (bumps from the cd/last-release diff, marketplace from the
-      # plugin.json set), so on every attempt we resync to the latest origin/main
-      # and recompute from scratch. This is self-healing: if a concurrent run
-      # already bumped a plugin and advanced cd/last-release, our recompute
-      # simply produces no further changes.
-      - name: Bump versions, update marketplace, and push (sync + retry)
-        shell: bash
-        env:
-          BASE_REF: ${{ steps.resolve-base.outputs.base-ref }}
-        run: |
-          set -euo pipefail
-          MAX_ATTEMPTS=5
-          attempt=0
-          while [ "$attempt" -lt "$MAX_ATTEMPTS" ]; do
-            attempt=$((attempt + 1))
-
-            # Resync to the latest main (and tags, in case a concurrent CD run
-            # already moved cd/last-release) and start from a clean tree.
-            git fetch origin main --tags --force
-            git reset --hard origin/main
-
-            # Recompute bumps against the (stable) release-tag base, then
-            # regenerate marketplace.json from the resulting plugin.json set.
-            mise run auto-bump-plugins "--change-base=$BASE_REF" "--version-base=$BASE_REF" >/dev/null
-            mise run update-marketplace
-            mise run format 2>/dev/null || true
-
-            # Stage only the files this job is allowed to touch.
-            git add plugins/claude-code/*/.claude-plugin/plugin.json .claude-plugin/marketplace.json 2>/dev/null || true
-
-            if git diff --cached --quiet; then
-              echo "No version/marketplace changes to push"
-              break
-            fi
-
-            git commit --no-verify -m 'chore: bump plugin versions and update marketplace [skip ci]'
-
-            if git push origin HEAD:main; then
-              echo "Pushed plugin/marketplace updates on attempt $attempt"
-              break
-            fi
-
-            if [ "$attempt" -ge "$MAX_ATTEMPTS" ]; then
-              echo "::error::CD push failed after $MAX_ATTEMPTS attempts (main kept advancing)"
-              exit 1
-            fi
-            echo "Push rejected (attempt $attempt) — main advanced; resyncing and retrying"
-            sleep $((attempt * 3))
-          done
-
-      - name: Update release tag
-        run: |
-          TAG_NAME="cd/last-release"
-          git tag -f "$TAG_NAME" HEAD
-          git push origin "$TAG_NAME" --force
-          echo "Moved tag '$TAG_NAME' to $(git rev-parse --short HEAD)"

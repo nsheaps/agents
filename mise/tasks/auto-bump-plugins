@@ -4,7 +4,8 @@
 # --version-base: ref for version comparison (default: origin/main)
 #
 # On PRs, typically: --change-base=origin/<base-branch> --version-base=origin/<base-branch>
-# On main, typically: --change-base=cd/last-release --version-base=cd/last-release
+# On main, typically: --change-base=last-released --version-base=last-released
+#   (the floating release tag; invoked via plugins/release.sh from the nx release target)
 # Locally: defaults work (compares to origin/main for both)
 set -euo pipefail
 

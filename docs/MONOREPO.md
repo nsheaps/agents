@@ -4,13 +4,13 @@ This repository is an nx + bun + TypeScript monorepo. nx orchestrates per-projec
 
 ## Layout
 
-| Directory    | Purpose                                                                                                  | Publish target                                                                        |
-| ------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| `packages/*` | Shared libraries consumed by other workspace packages and external users.                                | npm public registry as `@nsheaps/<name>`                                              |
-| `lib/*`      | Internal utility libraries used across the monorepo.                                                     | npm public registry as `@nsheaps/<name>`                                              |
-| `services/*` | Deployable services (daemons, web servers, controllers).                                                 | Container images at `ghcr.io/nsheaps/<name>`. `"private": true` to block npm publish. |
-| `plugins`    | Claude Code + opencode plugins. Single workspace package (`@nsheaps/agents-plugins`, `"private": true`). | Plugin marketplace via the existing `cd.yaml` workflow. No npm publish.               |
-| `apps/*`     | CLI apps and other end-user-facing binaries.                                                             | Distribution varies (homebrew, ghcr.io, npm CLI bin) — declared per app.              |
+| Directory    | Purpose                                                                                                  | Publish target                                                                              |
+| ------------ | -------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------- |
+| `packages/*` | Shared libraries consumed by other workspace packages and external users.                                | npm public registry as `@nsheaps/<name>`                                                    |
+| `lib/*`      | Internal utility libraries used across the monorepo.                                                     | npm public registry as `@nsheaps/<name>`                                                    |
+| `services/*` | Deployable services (daemons, web servers, controllers).                                                 | Container images at `ghcr.io/nsheaps/<name>`. `"private": true` to block npm publish.       |
+| `plugins`    | Claude Code + opencode plugins. Single workspace package (`@nsheaps/agents-plugins`, `"private": true`). | Plugin marketplace via its nx `release` target (see [Releases](#releases)). No npm publish. |
+| `apps/*`     | CLI apps and other end-user-facing binaries.                                                             | Distribution varies (homebrew, ghcr.io, npm CLI bin) — declared per app.                    |
 
 `packages/*`, `services/*`, `lib/*`, and `plugins` are workspace entries in the root `package.json`. `apps/`, `agents/`, `templates/`, and the rest are managed outside nx.
 
@@ -28,12 +28,13 @@ This 1-to-1 mapping between directory basename, npm name, and container image is
 
 Every workspace package defines a subset of these scripts so nx can orchestrate them uniformly. The `lint` / `format` pair are mandatory; `build` / `test` are added where they apply.
 
-| Script   | Behavior                                                                                                                                                                      |
-| -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `lint`   | Read-only verification. Runs every check (e.g. `prettier --check . && tsc --noEmit`). Never writes. The safe gate for CI.                                                     |
-| `format` | Apply every auto-fixer (e.g. `prettier --write`) **then** re-run the exact same checks `lint` runs. Writes files AND can still fail on non-fixable checks (e.g. type errors). |
-| `build`  | Type-check and emit. `tsc -b` against the package's `tsconfig.json`. TS packages only.                                                                                        |
-| `test`   | TS packages: `bun test --pass-with-no-tests`. `@nsheaps/agents-plugins`: `claude plugin validate` over each `plugins/claude-code/*` (delegated via `mise run validate`).      |
+| Script    | Behavior                                                                                                                                                                                                                                                                                                 |
+| --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lint`    | Read-only verification. Runs every check (e.g. `prettier --check . && tsc --noEmit`). Never writes. The safe gate for CI.                                                                                                                                                                                |
+| `format`  | Apply every auto-fixer (e.g. `prettier --write`) **then** re-run the exact same checks `lint` runs. Writes files AND can still fail on non-fixable checks (e.g. type errors).                                                                                                                            |
+| `build`   | Type-check and emit. `tsc -b` against the package's `tsconfig.json`. TS packages only.                                                                                                                                                                                                                   |
+| `test`    | TS packages: `bun test --pass-with-no-tests`. `@nsheaps/agents-plugins`: `claude plugin validate` over each `plugins/claude-code/*` (delegated via `mise run validate`).                                                                                                                                 |
+| `release` | Publish the module. Defined only on modules that actually release: `root` → `release-it --ci` (GitHub release + Homebrew); `@nsheaps/agents-plugins` → `plugins/release.sh` (version bump + `marketplace.json`). Driven by `release.yaml` via `nx affected --target=release`. See [Releases](#releases). |
 
 ### Why `format` runs every check
 
@@ -177,7 +178,28 @@ Adding a new fan-out task is three steps:
 
 `mise run lint` / `mise run format` / `mise run build` / `mise run test` are each a single `bunx nx run-many --target=<name>` call, so CI and local-dev go through the exact same chain.
 
-`.github/workflows/cd.yaml` is plugin-version + marketplace-specific and is intentionally separate from the nx pipeline. The auto-bump + `marketplace.json` regen is committed **on merge to `main`** only; on PRs the workflow runs a preview-only `version-preview` job (sticky comment + `::notice` annotations on each affected `plugin.json`) and never pushes to the PR branch, which avoids cross-PR `marketplace.json` conflicts.
+`.github/workflows/cd.yaml` is now **preview-only**. On PRs it runs the `version-preview` job (sticky comment + `::notice` annotations on each affected `plugin.json`) showing the plugin bumps a merge will produce, and never pushes to the PR branch (which avoids cross-PR `marketplace.json` conflicts). The actual bump + `marketplace.json` regen runs on merge to `main` as the `@nsheaps/agents-plugins` module's nx `release` target — see [Releases](#releases).
+
+## Releases
+
+Releases are **affected-driven** and follow the same nx fan-out pattern as the other targets. `.github/workflows/release.yaml` runs on push to `main` and:
+
+1. resolves a base = the floating `last-released` tag (fallback `HEAD~1` on first run);
+2. computes affected modules with a `release` target via `bunx nx show projects --affected --withTarget=release --base=last-released`;
+3. runs `bunx nx affected --target=release --base=last-released --parallel=1`;
+4. opens the Homebrew formula PR **only when `root` is affected**;
+5. on success, moves `last-released` to the released commit.
+
+| Module                    | `release` script    | Publishes                                                                                            |
+| ------------------------- | ------------------- | ---------------------------------------------------------------------------------------------------- |
+| `root`                    | `release-it --ci`   | `vX.Y.Z` GitHub release + `agent-team` / `claude-team` Homebrew formulas (which ship only `bin/**`). |
+| `@nsheaps/agents-plugins` | `bash ./release.sh` | Per-plugin version bumps + `.claude-plugin/marketplace.json`.                                        |
+
+Each `release` script is **self-contained** (does its own commit/push), so `nx affected --target=release` can run modules independently; `--parallel=1` serializes them because they share one working tree. The `release` target `dependsOn: ["build", "test", "lint", "^release"]`, so a module builds/tests/lints (and upstream deps release) before it releases.
+
+Because a module only releases when it is affected, a `plugins/**`-only change no longer cuts an `agent-team` GitHub release or Homebrew PR — those formulas ship only `bin/**`, which a plugins change never touches. Modules without a `release` script (most `apps/*`, `packages/*`, `services/*`) are simply skipped until they declare one.
+
+The floating tag is `last-released` (it superseded the old `cd/last-release` tag).
 
 ## nx configuration notes
 
