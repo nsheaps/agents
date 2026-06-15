@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.47](https://github.com/nsheaps/agents/compare/v0.3.46...v0.3.47) (2026-06-15)
+
+### Maintenance
+
+* **deps:** update dependency npm:@anthropic-ai/claude-code to v2.1.143 ([#246](https://github.com/nsheaps/agents/issues/246)) ([2f54819](https://github.com/nsheaps/agents/commit/2f548195087af2488e364dfe90765a669ce21714))
+
 ## [0.3.46](https://github.com/nsheaps/agents/compare/v0.3.45...v0.3.46) (2026-06-14)
 
 ### Maintenance
