@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.48](https://github.com/nsheaps/agents/compare/v0.3.47...v0.3.48) (2026-06-16)
+
+### Maintenance
+
+* **deps:** update dependency pipx:litellm to v1.85.0 ([#247](https://github.com/nsheaps/agents/issues/247)) ([a4601a1](https://github.com/nsheaps/agents/commit/a4601a152f9aff213a53b747fa856aa28f2c530b))
+
 ## [0.3.47](https://github.com/nsheaps/agents/compare/v0.3.46...v0.3.47) (2026-06-15)
 
 ### Maintenance
