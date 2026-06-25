@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.58](https://github.com/nsheaps/agents/compare/v0.3.57...v0.3.58) (2026-06-25)
+
+### Maintenance
+
+* **deps:** update node.js to v24.17.0 ([#257](https://github.com/nsheaps/agents/issues/257)) ([be026d3](https://github.com/nsheaps/agents/commit/be026d3eb6d37fb83e2a2e60519768d8c5d7a8bf))
+
 ## [0.3.57](https://github.com/nsheaps/agents/compare/v0.3.56...v0.3.57) (2026-06-23)
 
 ### Maintenance
