@@ -1,0 +1,21 @@
+# Grafana dashboard provisioning configuration.
+# Loads dashboards from /var/lib/grafana/dashboards (mounted from ./grafana/dashboards/).
+#
+# To import the official APISIX dashboard (ID 11719):
+#   Grafana UI → Dashboards → Import → enter "11719" → select Prometheus datasource.
+# The per-consumer panel JSON included in deploy/grafana/dashboards/per-consumer.json
+# is loaded automatically by this provider.
+
+apiVersion: 1
+
+providers:
+  - name: reddit-proxy
+    orgId: 1
+    folder: 'Reddit Proxy'
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: false
+    options:
+      path: /var/lib/grafana/dashboards
+      foldersFromFilesStructure: false

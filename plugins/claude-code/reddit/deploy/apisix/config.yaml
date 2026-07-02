@@ -1,0 +1,59 @@
+# APISIX 3.9 configuration for the Reddit proxy stack.
+# Mounted read-only into the apisix container at /usr/local/apisix/conf/config.yaml
+
+apisix:
+  node_listen: 9080 # proxy port (agents send requests here)
+  enable_ipv6: false
+
+deployment:
+  role: traditional
+  role_traditional:
+    config_provider: etcd
+  admin:
+    admin_listen:
+      ip: '0.0.0.0'
+      port: 9180
+    # Admin API key is supplied via the APISIX_ADMIN_KEY env var (passed into
+    # the container by docker-compose). APISIX interpolates env vars in this
+    # config using ${{VAR}} (double-brace) syntax; single-brace ${VAR} is NOT
+    # interpolated and would be treated as a literal string.
+    admin_key:
+      - name: admin
+        key: ${{APISIX_ADMIN_KEY}}
+        role: admin
+    allow_admin:
+      - 0.0.0.0/0 # Restrict this further in production if not behind CF ZT
+
+  etcd:
+    host:
+      - 'http://etcd:2379'
+    prefix: /apisix
+    timeout: 30
+
+# Prometheus metrics are exported on a dedicated port/path to avoid
+# exposing them through the proxy port.
+plugin_attr:
+  prometheus:
+    export_uri: /apisix/prometheus/metrics
+    export_addr:
+      ip: '0.0.0.0'
+      port: 9091
+    # Enable per-consumer label in all metrics
+    enable_export_server: true
+
+# Plugins enabled for this deployment.
+# key-auth:       per-agent API key authentication
+# proxy-rewrite:  inject Authorization and User-Agent headers before upstream
+# prometheus:     emit per-consumer metrics
+# limit-count:    per-consumer rate limiting (protect shared 100 QPM Reddit quota)
+plugins:
+  - key-auth
+  - proxy-rewrite
+  - prometheus
+  - limit-count
+  - ip-restriction # optional; useful to restrict Admin API access by IP
+  - response-rewrite # available if response header manipulation is needed
+
+# Log level for troubleshooting. Set to "warn" in steady-state production.
+nginx_config:
+  error_log_level: warn

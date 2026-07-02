@@ -57,6 +57,24 @@ reddit-fetch.sh subreddit programming --after t3_abc123 --limit 10
 | `--after`        | Pagination cursor for next page   | none     |
 | `--exclude-nsfw` | Exclude NSFW posts                | included |
 
+## Proxy Mode (egress-restricted environments)
+
+By default the script fetches directly from `https://www.reddit.com`. In environments where outbound traffic to reddit.com is blocked (e.g. agent containers with SNI-based egress filtering), you can route requests through the included APISIX proxy stack.
+
+Set these environment variables before running the script:
+
+| Variable              | Description                                               | Default    |
+| --------------------- | --------------------------------------------------------- | ---------- |
+| `REDDIT_PROXY_URL`    | Base URL of the proxy (e.g. `https://proxy-api.host.com`) | _(direct)_ |
+| `REDDIT_PROXY_TOKEN`  | Per-agent authentication key issued by the proxy          | _(none)_   |
+| `REDDIT_PROXY_HEADER` | Header name used to send the token                        | `apikey`   |
+
+When `REDDIT_PROXY_URL` is set, all API requests go through the proxy. Output `**Link**:` lines always show canonical `www.reddit.com` URLs regardless of this setting, so links remain valid for humans browsing Reddit.
+
+**The proxy is off by default** — normal usage requires no proxy configuration.
+
+See [`deploy/README.md`](deploy/README.md) for quick-start instructions and [`docs/proxy-deployment.md`](docs/proxy-deployment.md) for the full operator guide (architecture, Cloudflare Zero Trust setup, security model, and operational runbook).
+
 ## Rate Limiting
 
 The script enforces a 6-second minimum gap between requests to respect Reddit's unauthenticated rate limits. HTTP 429 responses trigger automatic retries with backoff (up to 3 attempts).

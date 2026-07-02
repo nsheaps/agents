@@ -129,6 +129,20 @@ All output is markdown. Posts include title, author, score, comment count, date,
 - Comment body: max 500 characters
 - Comment depth: up to 4 levels (depth 0–3)
 
+## Proxy Mode (egress-restricted environments)
+
+If the agent runs in an environment where outbound traffic to reddit.com is blocked, the script can route requests through the Reddit proxy stack. **The proxy is off by default** — set these environment variables to enable it:
+
+| Variable              | Purpose                                                   | Default    |
+| --------------------- | --------------------------------------------------------- | ---------- |
+| `REDDIT_PROXY_URL`    | Base URL of the proxy (e.g. `https://proxy-api.host.com`) | _(direct)_ |
+| `REDDIT_PROXY_TOKEN`  | Per-agent key issued by the proxy operator                | _(none)_   |
+| `REDDIT_PROXY_HEADER` | Header name for the token                                 | `apikey`   |
+
+Output `**Link**:` lines always show canonical `www.reddit.com` URLs regardless of whether a proxy is in use.
+
+For setup instructions see [`deploy/README.md`](../../deploy/README.md) and the full operator guide at [`docs/proxy-deployment.md`](../../docs/proxy-deployment.md).
+
 ## Rate Limiting
 
 The script enforces a minimum 6-second gap between requests to comply with Reddit's unauthenticated rate limits (~10 requests/minute). On HTTP 429 responses, it retries with exponential backoff up to 3 times.
