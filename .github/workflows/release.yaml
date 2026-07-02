@@ -1,20 +1,43 @@
 name: Release
 
+# Affected-driven release. Each releasable module owns a self-contained `release` target
+# (nx run-script): root → release-it (GitHub release + Homebrew formula update); plugins →
+# version bump + marketplace.json regen. We compute which modules changed since the floating
+# `last-released` tag and run only those via `nx affected --target=release`. This is what
+# stops a plugins-only change from cutting an agent-team GitHub release + Homebrew PR (the
+# Homebrew formula ships only bin/** scripts, which a plugins change never touches).
+#
+# On success the `last-released` tag is moved to the released commit so the next run diffs
+# from here.
+
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      base_override:
+        description: 'Override the affected base ref (default: last-released tag, fallback HEAD~1)'
+        required: false
+        default: ''
+        type: string
 
 permissions:
   contents: write
   actions: read
 
+concurrency:
+  group: release-main
+  cancel-in-progress: false
+
 jobs:
   release:
     runs-on: ubuntu-latest
     outputs:
-      version: ${{ steps.release.outputs.version }}
-      tag: ${{ steps.release.outputs.tag }}
+      projects: ${{ steps.affected.outputs.projects }}
+      released: ${{ steps.release-info.outputs.released }}
+      version: ${{ steps.release-info.outputs.version }}
+      tag: ${{ steps.release-info.outputs.tag }}
     steps:
       - uses: actions/checkout@v6
         with:
@@ -28,7 +51,7 @@ jobs:
           private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
 
       - name: Fetch tags
-        run: git fetch --tags --force
+        run: git fetch origin --tags --force
 
       - name: Setup mise
         uses: jdx/mise-action@v4
@@ -36,18 +59,96 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
-      - name: Run release-it
-        id: release
+      # Base for affected detection: the floating last-released tag. workflow_dispatch can
+      # override it; first run (tag absent) falls back to HEAD~1.
+      - name: Resolve affected base
+        id: base
         env:
+          OVERRIDE: ${{ inputs.base_override }}
+        run: |
+          if [ -n "$OVERRIDE" ]; then
+            BASE="$OVERRIDE"
+            echo "Using workflow_dispatch override: $BASE"
+          elif git rev-parse --verify --quiet last-released >/dev/null; then
+            BASE="last-released"
+            echo "Using 'last-released' tag ($(git rev-parse --short last-released)) as base"
+          else
+            BASE="HEAD~1"
+            echo "'last-released' tag not found, falling back to HEAD~1"
+          fi
+          echo "base=$BASE" >> "$GITHUB_OUTPUT"
+
+      # Only projects that (a) define a release target AND (b) are affected since BASE.
+      - name: Compute affected release projects
+        id: affected
+        env:
+          BASE: ${{ steps.base.outputs.base }}
+        run: |
+          PROJECTS=$(bunx nx show projects --affected --withTarget=release --base="$BASE" --head=HEAD --json)
+          echo "projects=$PROJECTS" >> "$GITHUB_OUTPUT"
+          if echo "$PROJECTS" | jq -e 'index("root")' >/dev/null; then
+            echo "root=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "root=false" >> "$GITHUB_OUTPUT"
+          fi
+          echo "Affected release projects: $PROJECTS"
+
+      # Record the latest v* tag BEFORE releasing, so we can tell whether the root release
+      # actually cut a new version (release-it is a no-op when no version-worthy commits exist).
+      - name: Record pre-release tag
+        id: pre
+        run: echo "tag=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo none)" >> "$GITHUB_OUTPUT"
+
+      # Release affected modules via their own nx `release` target. Order matters: root's
+      # release-it pushes a commit to main and CANNOT tolerate main advancing under it,
+      # whereas every other module's release script resyncs to origin/main and retries. So
+      # release root FIRST (when affected), then the resilient rest. nx still runs each
+      # module's build/test/lint (and ^release) first per the release dependsOn.
+      - name: Run affected releases
+        if: steps.affected.outputs.projects != '[]'
+        env:
+          BASE: ${{ steps.base.outputs.base }}
+          RELEASE_BASE: ${{ steps.base.outputs.base }}
           GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
         run: |
-          bun run release-it --ci
-          TAG=$(git describe --tags --abbrev=0)
-          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
-          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+          if [ "${{ steps.affected.outputs.root }}" = "true" ]; then
+            bunx nx run root:release
+          fi
+          bunx nx affected --target=release --base="$BASE" --head=HEAD --exclude=root --parallel=1
+
+      # Surface root's release for the Homebrew job — but only when release-it actually cut a
+      # NEW v* tag. A root-affected change that produces no version bump (e.g. a docs-only
+      # change) must not open a no-op Homebrew PR against the unchanged version.
+      - name: Resolve root release info
+        id: release-info
+        if: steps.affected.outputs.root == 'true'
+        env:
+          PRE_TAG: ${{ steps.pre.outputs.tag }}
+        run: |
+          git fetch origin --tags --force
+          TAG=$(git describe --tags --abbrev=0 --match 'v*' 2>/dev/null || echo none)
+          if [ "$TAG" != "none" ] && [ "$TAG" != "$PRE_TAG" ]; then
+            echo "released=true" >> "$GITHUB_OUTPUT"
+            echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+            echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+            echo "Released root version $TAG (was $PRE_TAG)"
+          else
+            echo "released=false" >> "$GITHUB_OUTPUT"
+            echo "root affected but release-it produced no new version (still $TAG); skipping Homebrew"
+          fi
+
+      # Reached only when every prior step succeeded. Mark the released commit so the next
+      # run diffs from here. Point at origin/main (the release scripts pushed new commits).
+      - name: Move last-released tag
+        run: |
+          git fetch origin main --force
+          git tag -f last-released origin/main
+          git push origin last-released --force
+          echo "Moved 'last-released' to $(git rev-parse --short origin/main)"
 
   update-homebrew:
     needs: release
+    if: needs.release.outputs.released == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
