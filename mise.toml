@@ -11,7 +11,7 @@ node = "24.18.0"
 # Pinned to 2.1.128 to match alex/jack/henry mise.toml (and the patcher).
 # Avoid 2.1.146+ which ships a broken native-binary install regardless.
 "npm:@anthropic-ai/claude-code" = { version = "2.1.163", depends = "node" }
-"pipx:litellm" = { version = "1.87.0", extras = "proxy" }
+"pipx:litellm" = { version = "1.87.1", extras = "proxy" }
 tilt = "0.37.3"
 
 # nx is installed via bun (root devDependency). Every fan-out task below is
