@@ -10,7 +10,7 @@ node = "24.18.0"
 # ("claude native binary not installed", which fails `claude plugin validate`).
 # Pinned to 2.1.128 to match alex/jack/henry mise.toml (and the patcher).
 # Avoid 2.1.146+ which ships a broken native-binary install regardless.
-"npm:@anthropic-ai/claude-code" = { version = "2.1.177", depends = "node" }
+"npm:@anthropic-ai/claude-code" = { version = "2.1.178", depends = "node" }
 "pipx:litellm" = { version = "1.89.0", extras = "proxy" }
 tilt = "0.37.3"
 
