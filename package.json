@@ -19,12 +19,14 @@
     "name": "root",
     "includedScripts": [
       "format",
-      "lint"
+      "lint",
+      "release"
     ]
   },
   "scripts": {
     "format": "prettier --write \"**/*.md\" --ignore-path .prettierignore --ignore-path .prettierignore-root && bash scripts/lint-shell.sh",
-    "lint": "prettier --check \"**/*.md\" --ignore-path .prettierignore --ignore-path .prettierignore-root && bash scripts/lint-shell.sh"
+    "lint": "prettier --check \"**/*.md\" --ignore-path .prettierignore --ignore-path .prettierignore-root && bash scripts/lint-shell.sh",
+    "release": "release-it --ci"
   },
   "devDependencies": {
     "@release-it/bumper": "^7.0.5",

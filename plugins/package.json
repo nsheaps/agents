@@ -12,6 +12,7 @@
   "scripts": {
     "format": "prettier --write . --ignore-path ../.prettierignore",
     "lint": "prettier --check . --ignore-path ../.prettierignore",
-    "test": "bash ./test.sh"
+    "test": "bash ./test.sh",
+    "release": "bash ./release.sh"
   }
 }
