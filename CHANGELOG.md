@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.92](https://github.com/nsheaps/agents/compare/v0.3.91...v0.3.92) (2026-07-19)
+
+### Maintenance
+
+* **deps:** update dependency @types/node to v26 ([#295](https://github.com/nsheaps/agents/issues/295)) ([d27f131](https://github.com/nsheaps/agents/commit/d27f1312cb1f8eda063a38b21a60342e8fc63b28))
+
 ## [0.3.91](https://github.com/nsheaps/agents/compare/v0.3.90...v0.3.91) (2026-07-19)
 
 ### Maintenance
