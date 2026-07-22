@@ -143,6 +143,31 @@
       ]
     },
     {
+      "name": "shared-config",
+      "description": "Setup/SessionStart hook that clones shared-config source repos and symlinks their rules/skills/commands/agents into the project (deduped across projects via a shared cache), optionally merges settings files, and bootstraps from an org-level upstream config via $AGENT_PLUGIN_SHARED_CONFIG_UPSTREAM. Prefers the github-app token when available.",
+      "version": "0.1.1",
+      "author": {
+        "name": "Nathan Heaps"
+      },
+      "source": "./plugins/claude-code/shared-config",
+      "category": "utility",
+      "tags": [
+        "utility"
+      ],
+      "keywords": [
+        "claude-code",
+        "shared-config",
+        "symlink",
+        "rules",
+        "skills",
+        "commands",
+        "agents",
+        "settings-merge",
+        "hook",
+        "multi-project"
+      ]
+    },
+    {
       "name": "task-utils",
       "description": "Task discipline hooks (0-or-1 in_progress invariant, write-tool gating, validation-steps + RESULT cites) + task-manage skill for atomic-task workflow. Blocking behaviour is configurable via plugins.settings.yaml.",
       "version": "0.3.1",
