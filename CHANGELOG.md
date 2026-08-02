@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.104](https://github.com/nsheaps/agents/compare/v0.3.103...v0.3.104) (2026-08-02)
+
+### Maintenance
+
+* **deps:** update dependency tilt to v0.37.5 ([#307](https://github.com/nsheaps/agents/issues/307)) ([211f081](https://github.com/nsheaps/agents/commit/211f081960fb805517d9fb42e11de493b8362520))
+
 ## [0.3.103](https://github.com/nsheaps/agents/compare/v0.3.102...v0.3.103) (2026-08-01)
 
 ### Maintenance
