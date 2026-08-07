@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.109](https://github.com/nsheaps/agents/compare/v0.3.108...v0.3.109) (2026-08-07)
+
+### Maintenance
+
+* **deps:** update marocchino/sticky-pull-request-comment action to v3.0.5 ([#313](https://github.com/nsheaps/agents/issues/313)) ([4b52729](https://github.com/nsheaps/agents/commit/4b52729204f73274a79a4cff7cbcb28e7a56da8c))
+
 ## [0.3.108](https://github.com/nsheaps/agents/compare/v0.3.107...v0.3.108) (2026-08-06)
 
 ## [0.3.107](https://github.com/nsheaps/agents/compare/v0.3.106...v0.3.107) (2026-08-03)
