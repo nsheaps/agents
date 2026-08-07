@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.111](https://github.com/nsheaps/agents/compare/v0.3.110...v0.3.111) (2026-08-07)
+
+### Maintenance
+
+* **deps:** update dependency typescript to v7 ([#315](https://github.com/nsheaps/agents/issues/315)) ([6053b79](https://github.com/nsheaps/agents/commit/6053b798c30e03b91ef9576defc872513603621f))
+
 ## [0.3.110](https://github.com/nsheaps/agents/compare/v0.3.109...v0.3.110) (2026-08-07)
 
 ### Maintenance
