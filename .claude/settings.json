@@ -6,7 +6,8 @@
     "shared-lib@ai-mktpl": true,
     "1pass@ai-mktpl": true,
     "github-app@ai-mktpl": true,
-    "mise@ai-mktpl": true
+    "mise@ai-mktpl": true,
+    "hook-utils@agents": true
   },
   "extraKnownMarketplaces": {
     "agents": {
