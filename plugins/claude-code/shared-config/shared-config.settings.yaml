@@ -1,0 +1,28 @@
+# shared-config plugin — default settings (3rd tier).
+#
+# Resolved via the standard 3-tier plugins.settings.yaml mechanism:
+#   1. project: ${CLAUDE_PROJECT_DIR}/.claude/plugins.settings.yaml
+#   2. user:    ~/.claude/plugins.settings.yaml
+#   3. plugin:  this file
+# All keys live under the `shared-config:` namespace. Per-project config should
+# set the `shared-config:` section in plugins.settings.yaml (or use the
+# standalone shared-config.settings.yaml overlay — see README).
+
+shared-config:
+  enabled: true
+  # Resource dirs to link from each source into the project.
+  resourceTypes: [rules, skills, commands, agents]
+  # Base dir within a source repo that holds the {rules,skills,…} subdirs.
+  defaultSourceDir: '.'
+  # Where in the project the `.shared` links are placed.
+  targetBaseDir: '.claude'
+  # Seconds to wait for the github-app token to appear in CLAUDE_ENV_FILE
+  # (0 disables the wait).
+  waitForTokenTimeoutSeconds: 15
+  # Opt-in: merge source-provided settings.json fragments into the project.
+  mergeSettings: false
+  # List of source repos. Each is a GitHub uses:-style ref (no @ref):
+  #   - org/repo
+  #   - org/repo/sub/path        # sub/path = source dir
+  #   - { repo: org/repo, sourceDir: configs, targetDir: .claude }
+  sources: []
