@@ -125,9 +125,10 @@ truth. Run the mechanism instead:
 
 - Does not cover `pr-status-dispatch.yaml` (separate mechanism, see above).
 - Does not provision the `AUTOMATION_GITHUB_APP_ID`/`_PRIVATE_KEY` secrets —
-  handled by `sync-all.yaml`'s inline secret-sync tasks (not a role;
-  `ansible/roles/` only has `label_sync`, `org_settings_sync`, and
-  `file_sync`), independently of file-sync.
+  handled by `sync-all.yaml`'s inline secret-sync tasks, not a dedicated
+  role (`ansible/roles/` has `label_sync`, `org_settings_sync`, `file_sync`,
+  and `github_auth` — the latter authenticates the sync run itself, it
+  doesn't provision consumer-repo secrets), independently of file-sync.
 - Does not directly provision the `request-review` label — that's
   `label_sync`'s job (`.github/org-labels.yaml`, same `sync-all.yaml`
   pipeline), not this skill's or `file_sync`'s. It's mentioned here only
