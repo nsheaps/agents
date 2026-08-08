@@ -42,6 +42,17 @@ or PR dry-run gating below — those two facts come from reading
   The sync pushes directly to the target repo's default branch, overwriting
   drift; if branch protection blocks that (HTTP 409), it opens a PR **in the
   target repo** (not in `nsheaps/.github`) carrying the new content instead.
+- **The gate itself**: `state == 'open' && (draft != true ||
+  action == 'converted_to_draft' || (action == 'labeled' &&
+  label == 'request-review'))`. Reviews fire automatically on any open,
+  non-draft PR event (opened, reopened, synchronize, ready_for_review) — no
+  label needed. The `request-review` label only matters to force a review on
+  a still-draft PR (apply it while the PR is draft). `converted_to_draft` is
+  let through unconditionally so the receiver can short-circuit with a
+  `neutral` check instead of leaving a stale pending check-run. The label is
+  provisioned org-wide via `.github/org-labels.yaml` (`label_sync` role,
+  same `sync-all.yaml` pipeline, run over every `managed_repos` entry) — no
+  per-repo setup needed for it.
 - **A synced file must not be locally reformatted.** If the target repo runs
   its own formatter (prettier, etc.) over the whole tree, add the synced
   path to that formatter's ignore file — otherwise the next local format run
@@ -113,8 +124,20 @@ truth. Run the mechanism instead:
 ## Non-goals
 
 - Does not cover `pr-status-dispatch.yaml` (separate mechanism, see above).
-- Does not provision secrets (`AUTOMATION_GITHUB_APP_ID`/`_PRIVATE_KEY`) or
-  the `request-review` label — handled by the same `sync-all.yaml` pipeline's
-  secret-sync and label-sync roles, independently of file-sync.
+- Does not provision the `AUTOMATION_GITHUB_APP_ID`/`_PRIVATE_KEY` secrets —
+  handled by `sync-all.yaml`'s inline secret-sync tasks (not a role;
+  `ansible/roles/` only has `label_sync`, `org_settings_sync`, and
+  `file_sync`), independently of file-sync.
+- Does not directly provision the `request-review` label — that's
+  `label_sync`'s job (`.github/org-labels.yaml`, same `sync-all.yaml`
+  pipeline), not this skill's or `file_sync`'s. It's mentioned here only
+  because it used to be a silent trap: before it was added to
+  `org-labels.yaml`, the gate required it on every open PR event (not just
+  to force a draft review), so `dispatch-review.yaml` could be perfectly
+  synced everywhere and still never fire anywhere the label hadn't been
+  hand-added. That's fixed now (see "The gate itself" above), but the
+  general lesson holds for any future gate redesign: getting the workflow
+  file synced is not the same as confirming the gate actually fires — check
+  what it depends on, not just that it's present.
 - Does not decide `managed-repos.yml` membership on its own initiative —
   that's an organizational scope call, not something to infer.
