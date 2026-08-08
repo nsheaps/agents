@@ -28,13 +28,15 @@ or PR dry-run gating below — those two facts come from reading
   gate, since it takes real PRs too).
 - **Distribution engine**: `nsheaps/.github/.github/workflows/sync-all.yaml`
   runs the Ansible playbook (`ansible/playbooks/sync-all.yml`, `file_sync` role).
-- **Triggers** (per `sync-all.yaml`'s `on:` block): push to `main` touching
-  `ansible/config/**`, `ansible/templates/**`, `ansible/roles/**`,
+- **Triggers** (per `sync-all.yaml`'s `on.push.paths` block, verbatim):
+  `ansible/config/**`, `ansible/playbooks/sync-all.yml`, `ansible/roles/**`,
   `ansible/ansible.cfg`, `ansible/inventory/**`, `ansible/requirements.yml`,
-  `scripts/**`, the workflow file itself, or `.github/org-labels.yaml`; a
-  weekly cron (`0 6 * * 1` = Monday 06:00 UTC); manual `workflow_dispatch`.
-  PR runs are always dry-run (the workflow gates `DRY_RUN` on
-  `github.event_name == 'pull_request'` — validation only, never writes).
+  `.github/workflows/sync-all.yaml`, `ansible/templates/**`, `scripts/**`,
+  `ansible/config/org-settings.yaml`, `.github/org-labels.yaml` — push to
+  `main` only; a weekly cron (`0 6 * * 1` = Monday 06:00 UTC); manual
+  `workflow_dispatch`. PR runs are always dry-run (the workflow gates
+  `DRY_RUN` on `github.event_name == 'pull_request'` — validation only,
+  never writes).
 - **Conflict handling** (matches `docs/file-sync.md` and
   `ansible/roles/file_sync/files/sync_files.py`): central config always wins.
   The sync pushes directly to the target repo's default branch, overwriting
