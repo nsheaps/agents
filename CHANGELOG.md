@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.112](https://github.com/nsheaps/agents/compare/v0.3.111...v0.3.112) (2026-08-08)
+
+### Maintenance
+
+* **deps:** update actions/create-github-app-token action to v3 ([#316](https://github.com/nsheaps/agents/issues/316)) ([f7080ec](https://github.com/nsheaps/agents/commit/f7080ec0ffb0c39d7de6e773273f19fd1ed17b58))
+
 ## [0.3.111](https://github.com/nsheaps/agents/compare/v0.3.110...v0.3.111) (2026-08-07)
 
 ### Maintenance
