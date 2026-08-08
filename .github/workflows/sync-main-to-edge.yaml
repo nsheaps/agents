@@ -1,5 +1,5 @@
 # This file is managed by nsheaps/.github (sync-files).
-# Source: https://github.com/nsheaps/.github/blob/main/ansible/templates/.github/workflows/sync-main-to-edge.yaml
+# Source: https://github.com/nsheaps/.github/blob/main/ansible/templates/sync-main-to-edge.yaml
 # Edit-in-place will be overwritten on the next sync.
 name: Sync main to edge
 
