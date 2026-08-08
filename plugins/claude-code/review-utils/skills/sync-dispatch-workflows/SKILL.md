@@ -47,7 +47,7 @@ or PR dry-run gating below — those two facts come from reading
   this skill's drift check) just re-flags or re-overwrites it, forever. See
   `nsheaps/homebrew-devsetup`'s `.prettierignore` for a worked example: its
   `mise run format` was wrapping `dispatch-review.yaml`'s `on.pull_request.
-  types` array onto multiple lines (prettier's default `printWidth`
+types` array onto multiple lines (prettier's default `printWidth`
   wrapping a >80-char line), which is what caused its drift in the first
   place.
 
