@@ -12,8 +12,6 @@ skills/
     partials/
       review-thread-management.md
       review-formatting.md
-  sync-dispatch-workflows/
-    SKILL.md                 # the dispatch-review.yaml sync mechanism: how it works, how to maintain and trigger it
 actions/
   agent-setup/action.yaml    # mise trust + gh-pr-review extension install
   run-agent/action.yaml      # auth, check-run create/finalize, claude-code-action runner
@@ -28,7 +26,7 @@ The reusable workflow that consumers call (`nsheaps/agents/.github/workflows/rev
 
 Per-repo `.github/workflows/dispatch-review.yaml` is a thin consumer-side file distributed from `nsheaps/.github`'s `ansible/templates/.github/workflows/dispatch-review.yaml` — see `ansible/config/sync-files.yml` there for the exact `managed_repos` membership (currently every managed repo, `nsheaps/.github` included — it onboarded itself as a consumer of its own gate since it takes real PRs too). `nsheaps/agents/templates/dispatch-review.yaml` mirrors the canonical file for convenience, but `nsheaps/.github` is the source of truth. (A separate, unrelated file, `pr-status-dispatch.yaml`, is distributed by the same sync system but pings `nsheaps/.org`'s PR status digest — a different mechanism, not covered here.)
 
-Propagation is automatic (`nsheaps/.github`'s `sync-all.yaml`, weekly plus on template change). See the `sync-dispatch-workflows` skill in this plugin for how the mechanism works, how to change the template or add/remove consumer repos, and how to trigger a sync run rather than hand-patching a repo.
+Propagation is automatic (`nsheaps/.github`'s `sync-all.yaml`, weekly plus on template change). See the `sync-dispatch-workflows` skill in `nsheaps/.github/.claude/skills/` for how the mechanism works, how to change the template or add/remove consumer repos, and how to trigger a sync run rather than hand-patching a repo.
 
 ## Skill
 
