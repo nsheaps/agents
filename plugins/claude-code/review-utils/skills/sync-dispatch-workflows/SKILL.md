@@ -37,6 +37,7 @@ This file is not hand-copied between repos. It's one entry in
 ## How to maintain it
 
 **Change what the gate does everywhere** (edit the template):
+
 1. Edit `nsheaps/.github/ansible/templates/.github/workflows/dispatch-review.yaml`.
 2. Also update the convenience mirror at `nsheaps/agents/templates/dispatch-review.yaml`
    — grep `sync-files.yml`: nothing maps to `nsheaps/agents/templates/`, so
@@ -45,6 +46,7 @@ This file is not hand-copied between repos. It's one entry in
    propagates it to every repo in the target list.
 
 **Add or remove a consumer repo**:
+
 - New repo to the org generally → append it to `managed-repos.yml`.
 - Change which files an already-managed repo receives → edit that file's
   `repos:` expression in `sync-files.yml` (e.g. add back a
@@ -59,7 +61,7 @@ Prefer triggering the real mechanism over hand-copying the file into a
 consumer repo. A manual patch only fixes the one repo you're looking at, it
 doesn't fix the config that caused the drift, and — per the conflict
 handling above — the next real sync will either silently re-overwrite your
-hand patch (harmless, just wasted effort) or, if it *doesn't* run again soon,
+hand patch (harmless, just wasted effort) or, if it _doesn't_ run again soon,
 leave you wondering whether your patch or the template is now the source of
 truth. Run the mechanism instead:
 
