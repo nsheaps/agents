@@ -22,10 +22,10 @@ Two independent files, each with its own source-of-truth and its own
 exclusion rule. Do not conflate them — a repo can legitimately have one
 without the other.
 
-| File | Canonical source | Applies to | Excluded |
-|---|---|---|---|
-| `.github/workflows/dispatch-review.yaml` | `nsheaps/.github` → `ansible/templates/.github/workflows/dispatch-review.yaml` (mirrored at `nsheaps/agents/templates/dispatch-review.yaml`) | every repo in `managed_repos` (`nsheaps/.github/ansible/config/managed-repos.yml`) | `nsheaps/.github` (sync source never receives its own template) |
-| `.github/workflows/pr-status-dispatch.yaml` | `nsheaps/.github` → `ansible/templates/.github/workflows/pr-status-dispatch.yaml` | every repo in `managed_repos` | `nsheaps/.github` (sync source) **and** `nsheaps/.org` (the digest *receiver* — it listens to its own `pull_request` events directly via `pr-status-digest.yaml`/`pr-status-digest-retry.yaml` instead of dispatching to itself) |
+| File                                        | Canonical source                                                                                                                             | Applies to                                                                         | Excluded                                                                                                                                                                                                                         |
+| ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `.github/workflows/dispatch-review.yaml`    | `nsheaps/.github` → `ansible/templates/.github/workflows/dispatch-review.yaml` (mirrored at `nsheaps/agents/templates/dispatch-review.yaml`) | every repo in `managed_repos` (`nsheaps/.github/ansible/config/managed-repos.yml`) | `nsheaps/.github` (sync source never receives its own template)                                                                                                                                                                  |
+| `.github/workflows/pr-status-dispatch.yaml` | `nsheaps/.github` → `ansible/templates/.github/workflows/pr-status-dispatch.yaml`                                                            | every repo in `managed_repos`                                                      | `nsheaps/.github` (sync source) **and** `nsheaps/.org` (the digest _receiver_ — it listens to its own `pull_request` events directly via `pr-status-digest.yaml`/`pr-status-digest-retry.yaml` instead of dispatching to itself) |
 
 The exclusion list is defined authoritatively in
 `nsheaps/.github/ansible/config/sync-files.yml` under the two file keys —
@@ -40,8 +40,8 @@ block, changed `types:` list, altered permissions), it has drifted and must
 be overwritten with the canonical content verbatim. Do not "merge" or
 "preserve" a repo's local variation — per the spec (`nsheaps/agents/plugins/
 claude-code/review-utils/specs/review-dispatch.md`, §"Why nsheaps/.github CI
-sync owns both consumer-side files"): *"Drift across consumers is impossible
-by construction (the sync overwrites)."* This skill enforces the same
+sync owns both consumer-side files"): _"Drift across consumers is impossible
+by construction (the sync overwrites)."_ This skill enforces the same
 invariant by hand.
 
 ## Procedure
@@ -61,7 +61,7 @@ For a given target repo `nsheaps/<repo>`:
 
 3. **Compare.** For each applicable file, diff the canonical content against
    `.github/workflows/<file>` in the target repo (missing entirely counts as
-   a full diff). For each file that should be *excluded*, confirm it is
+   a full diff). For each file that should be _excluded_, confirm it is
    actually absent — an excluded file that's present anyway is also a
    discrepancy (e.g. `nsheaps/.org` should never grow a
    `pr-status-dispatch.yaml`).
@@ -74,7 +74,7 @@ For a given target repo `nsheaps/<repo>`:
 
 5. **Commit, push, PR.** If step 4 made any change, commit with a message
    naming the specific file(s) touched (e.g. `fix: sync dispatch-review.yaml
-   to canonical template`), push to the assigned branch, and open a draft PR
+to canonical template`), push to the assigned branch, and open a draft PR
    if one doesn't already exist for that branch (update the existing PR's
    description instead if one is open). If step 4 made no change, do **not**
    open a no-op PR — report the repo as already compliant.

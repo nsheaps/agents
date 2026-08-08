@@ -38,10 +38,11 @@ dispatch-review.yaml` mirrors the canonical `dispatch-review.yaml` for
 convenience but `nsheaps/.github` is the source of truth for both files.
 
 Normal propagation is automatic (`nsheaps/.github`'s `sync-all.yaml`, weekly
-+ on template change). To onboard a new consumer early, or repair a repo
-whose copies have drifted, use the `sync-dispatch-workflows` skill in this
-plugin rather than hand-copying — it encodes the exclusion rules and
-verifies byte-for-byte convergence with the canonical templates.
+
+- on template change). To onboard a new consumer early, or repair a repo
+  whose copies have drifted, use the `sync-dispatch-workflows` skill in this
+  plugin rather than hand-copying — it encodes the exclusion rules and
+  verifies byte-for-byte convergence with the canonical templates.
 
 ## Skill
 
