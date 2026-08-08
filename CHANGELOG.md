@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.114](https://github.com/nsheaps/agents/compare/v0.3.113...v0.3.114) (2026-08-08)
+
+### Maintenance
+
+* **deps:** update all patch updates ([#317](https://github.com/nsheaps/agents/issues/317)) ([a309dff](https://github.com/nsheaps/agents/commit/a309dff23de857b6e3cdc8180bcf47d3a3ab0338))
+
 ## [0.3.113](https://github.com/nsheaps/agents/compare/v0.3.112...v0.3.113) (2026-08-08)
 
 ## [0.3.112](https://github.com/nsheaps/agents/compare/v0.3.111...v0.3.112) (2026-08-08)
