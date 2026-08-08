@@ -14,8 +14,11 @@ don't conflate the two; this skill doesn't cover it.
 ## The mechanism
 
 This file is not hand-copied between repos. It's one entry in
-**`nsheaps/.github`'s org-wide file-sync system** (full reference:
-`nsheaps/.github/docs/file-sync.md`):
+**`nsheaps/.github`'s org-wide file-sync system**. `nsheaps/.github/docs/
+file-sync.md` covers the general config format and conflict-handling model
+(and is accurate on those); it does NOT document the specific cron schedule
+or PR dry-run gating below — those two facts come from reading
+`nsheaps/.github/.github/workflows/sync-all.yaml` directly, not from that doc.
 
 - **Canonical source**: `nsheaps/.github/ansible/templates/.github/workflows/dispatch-review.yaml`
 - **Target list**: `nsheaps/.github/ansible/config/sync-files.yml`, under the
@@ -25,14 +28,28 @@ This file is not hand-copied between repos. It's one entry in
   gate, since it takes real PRs too).
 - **Distribution engine**: `nsheaps/.github/.github/workflows/sync-all.yaml`
   runs the Ansible playbook (`ansible/playbooks/sync-all.yml`, `file_sync` role).
-- **Triggers**: push to `main` touching `ansible/config/**`,
-  `ansible/templates/**`, `ansible/roles/**`, or `scripts/**`; a weekly cron
-  (Monday 06:00 UTC); manual `workflow_dispatch`. PR runs against
-  `nsheaps/.github` are always dry-run (validate only, never write).
-- **Conflict handling**: central config always wins. The sync pushes directly
-  to the target repo's default branch, overwriting drift; if branch
-  protection blocks that (HTTP 409), it opens a PR **in the target repo**
-  (not in `nsheaps/.github`) carrying the new content instead.
+- **Triggers** (per `sync-all.yaml`'s `on:` block): push to `main` touching
+  `ansible/config/**`, `ansible/templates/**`, `ansible/roles/**`,
+  `ansible/ansible.cfg`, `ansible/inventory/**`, `ansible/requirements.yml`,
+  `scripts/**`, the workflow file itself, or `.github/org-labels.yaml`; a
+  weekly cron (`0 6 * * 1` = Monday 06:00 UTC); manual `workflow_dispatch`.
+  PR runs are always dry-run (the workflow gates `DRY_RUN` on
+  `github.event_name == 'pull_request'` — validation only, never writes).
+- **Conflict handling** (matches `docs/file-sync.md` and
+  `ansible/roles/file_sync/files/sync_files.py`): central config always wins.
+  The sync pushes directly to the target repo's default branch, overwriting
+  drift; if branch protection blocks that (HTTP 409), it opens a PR **in the
+  target repo** (not in `nsheaps/.github`) carrying the new content instead.
+- **A synced file must not be locally reformatted.** If the target repo runs
+  its own formatter (prettier, etc.) over the whole tree, add the synced
+  path to that formatter's ignore file — otherwise the next local format run
+  silently re-diverges the file from canonical, and the next sync run (or
+  this skill's drift check) just re-flags or re-overwrites it, forever. See
+  `nsheaps/homebrew-devsetup`'s `.prettierignore` for a worked example: its
+  `mise run format` was wrapping `dispatch-review.yaml`'s `on.pull_request.
+  types` array onto multiple lines (prettier's default `printWidth`
+  wrapping a >80-char line), which is what caused its drift in the first
+  place.
 
 ## How to maintain it
 
