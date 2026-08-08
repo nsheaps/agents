@@ -30,7 +30,13 @@ fi
 _AGENT_NAME="${CLAUDE_AGENT_NAME:-${AGENT_NAME:-agent}}"
 _AGENTS_REPO_URL="${AGENTS_REPO_URL:-}"
 readonly USER_AGENT="agent:${_AGENT_NAME} (claude-code; interactive${_AGENTS_REPO_URL:+; +${_AGENTS_REPO_URL}}) ${_PLUGIN_NAME}@${_PLUGIN_VERSION} (claude-code-plugin; +${_MARKETPLACE_URL}/plugins/${_PLUGIN_NAME})"
-readonly BASE_URL="https://www.reddit.com"
+# BASE_URL: where API requests are sent — overridable via proxy
+BASE_URL="${REDDIT_PROXY_URL:-https://www.reddit.com}"
+# Strip any trailing slash so URL concatenation is consistent
+BASE_URL="${BASE_URL%/}"
+readonly BASE_URL
+# DISPLAY_BASE: always the canonical Reddit URL used in **Link**: output lines
+readonly DISPLAY_BASE="https://www.reddit.com"
 readonly MIN_REQUEST_GAP=6  # seconds between requests (Reddit rate limit for unauth)
 readonly MAX_RETRIES=3
 readonly MAX_COMMENT_DEPTH=3
@@ -67,6 +73,14 @@ Common options:
   --exclude-nsfw         Exclude NSFW posts (default: included)
   --after <cursor>       Pagination cursor — use the 'after' value from a previous response to fetch the next page
   --help                 Show this help
+
+Environment variables (proxy mode — all optional):
+  REDDIT_PROXY_URL       Base URL of the Reddit proxy (e.g. https://proxy-api.example.com)
+                         When set, API requests go through the proxy instead of reddit.com directly.
+                         Output links always show www.reddit.com regardless of this setting.
+  REDDIT_PROXY_TOKEN     Authentication token sent to the proxy (per-agent key)
+  REDDIT_PROXY_HEADER    Header name for the proxy token (default: apikey)
+  See deploy/README.md or docs/proxy-deployment.md for setup instructions.
 
 Subreddit-specific:
   reddit-fetch.sh subreddit ClaudeCode --sort top --time week --limit 5
@@ -118,8 +132,14 @@ fetch_json() {
     local tmp_file
     tmp_file=$(mktemp)
 
+    local proxy_header_arg=()
+    if [[ -n "${REDDIT_PROXY_TOKEN:-}" ]]; then
+      proxy_header_arg=(-H "${REDDIT_PROXY_HEADER:-apikey}: ${REDDIT_PROXY_TOKEN}")
+    fi
+
     http_code=$(curl -s -o "$tmp_file" -w '%{http_code}' \
       -H "User-Agent: ${USER_AGENT}" \
+      "${proxy_header_arg[@]+"${proxy_header_arg[@]}"}" \
       -L "$url" 2>&1) || {
         rm -f "$tmp_file"
         if (( attempt >= MAX_RETRIES )); then
@@ -238,7 +258,7 @@ format_post_listing() {
 
     echo "## ${i}. ${title} (Score: ${score}, Comments: ${num_comments})"
     echo "**Author**: u/${author} | **Posted**: ${date_str} | **Type**: ${post_type}"
-    echo "**Link**: ${BASE_URL}${permalink}"
+    echo "**Link**: ${DISPLAY_BASE}${permalink}"
 
     if [[ "$post_type" == "link" && -n "$url_link" ]]; then
       echo "**URL**: ${url_link}"
@@ -300,7 +320,7 @@ format_search_results() {
 
     echo "## ${i}. ${title} (Score: ${score}, Comments: ${num_comments})"
     echo "**Subreddit**: r/${subreddit} | **Author**: u/${author} | **Posted**: ${date_str}"
-    echo "**Link**: ${BASE_URL}${permalink}"
+    echo "**Link**: ${DISPLAY_BASE}${permalink}"
 
     if [[ -n "$selftext" && "$selftext" != "null" ]]; then
       echo ""
@@ -399,7 +419,7 @@ format_post_with_comments() {
   echo "# ${title}"
   echo "**Author**: u/${author} | **Score**: ${score} | **Posted**: ${date_str}"
   echo "**Subreddit**: r/${subreddit} | **Comments**: ${num_comments}"
-  echo "**Link**: ${BASE_URL}${permalink}"
+  echo "**Link**: ${DISPLAY_BASE}${permalink}"
   echo ""
 
   if [[ -n "$selftext" && "$selftext" != "null" ]]; then
@@ -457,7 +477,7 @@ format_user_posts() {
 
     echo "## ${i}. ${title} (Score: ${score}, Comments: ${num_comments})"
     echo "**Subreddit**: r/${subreddit} | **Posted**: ${date_str}"
-    echo "**Link**: ${BASE_URL}${permalink}"
+    echo "**Link**: ${DISPLAY_BASE}${permalink}"
     echo ""
     echo "---"
     echo ""
