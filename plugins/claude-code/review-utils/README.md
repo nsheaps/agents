@@ -13,7 +13,7 @@ skills/
       review-thread-management.md
       review-formatting.md
   sync-dispatch-workflows/
-    SKILL.md                 # verify/repair the consumer-side dispatch-review.yaml + pr-status-dispatch.yaml pair
+    SKILL.md                 # the dispatch-review.yaml sync mechanism: how it works, how to maintain and trigger it
 actions/
   agent-setup/action.yaml    # mise trust + gh-pr-review extension install
   run-agent/action.yaml      # auth, check-run create/finalize, claude-code-action runner
@@ -26,23 +26,9 @@ The reusable workflow that consumers call (`nsheaps/agents/.github/workflows/rev
 
 ## Consumer setup
 
-Per-repo `.github/workflows/dispatch-review.yaml` (gate) and
-`.github/workflows/pr-status-dispatch.yaml` (org digest ping) are thin
-consumer-side files distributed from `nsheaps/.github`'s
-`ansible/templates/.github/workflows/` — see
-`ansible/config/sync-files.yml` there for the exact `managed_repos`
-membership and per-file exclusions (the sync source itself, and — for
-`pr-status-dispatch.yaml` only — `nsheaps/.org`, which listens to its own
-`pull_request` events directly instead). `nsheaps/agents/templates/
-dispatch-review.yaml` mirrors the canonical `dispatch-review.yaml` for
-convenience but `nsheaps/.github` is the source of truth for both files.
+Per-repo `.github/workflows/dispatch-review.yaml` is a thin consumer-side file distributed from `nsheaps/.github`'s `ansible/templates/.github/workflows/dispatch-review.yaml` — see `ansible/config/sync-files.yml` there for the exact `managed_repos` membership (currently every managed repo, `nsheaps/.github` included — it onboarded itself as a consumer of its own gate since it takes real PRs too). `nsheaps/agents/templates/dispatch-review.yaml` mirrors the canonical file for convenience, but `nsheaps/.github` is the source of truth. (A separate, unrelated file, `pr-status-dispatch.yaml`, is distributed by the same sync system but pings `nsheaps/.org`'s PR status digest — a different mechanism, not covered here.)
 
-Normal propagation is automatic (`nsheaps/.github`'s `sync-all.yaml`, weekly
-
-- on template change). To onboard a new consumer early, or repair a repo
-  whose copies have drifted, use the `sync-dispatch-workflows` skill in this
-  plugin rather than hand-copying — it encodes the exclusion rules and
-  verifies byte-for-byte convergence with the canonical templates.
+Propagation is automatic (`nsheaps/.github`'s `sync-all.yaml`, weekly plus on template change). See the `sync-dispatch-workflows` skill in this plugin for how the mechanism works, how to change the template or add/remove consumer repos, and how to trigger a sync run rather than hand-patching a repo.
 
 ## Skill
 
