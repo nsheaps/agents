@@ -43,7 +43,7 @@ or PR dry-run gating below — those two facts come from reading
   drift; if branch protection blocks that (HTTP 409), it opens a PR **in the
   target repo** (not in `nsheaps/.github`) carrying the new content instead.
 - **The gate itself**: `state == 'open' && (draft != true ||
-  (action == 'labeled' && label == 'request-review'))`. Reviews fire
+(action == 'labeled' && label == 'request-review'))`. Reviews fire
   automatically on any open, non-draft PR event (opened, reopened,
   synchronize, ready_for_review) — no label needed. The `request-review`
   label only matters to force a review on a still-draft PR (apply it while
