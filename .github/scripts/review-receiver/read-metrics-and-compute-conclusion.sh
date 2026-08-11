@@ -17,12 +17,16 @@ if [ ! -f "$path" ]; then
   if [ -f "$alt" ]; then
     path="$alt"
   else
-    echo "::warning::No metrics file at $METRICS_PATH or $alt"
+    # No metrics = the agent did not complete its job (crash, blocked tool
+    # calls, etc.). Fail this step so the job/run itself shows red, not just
+    # the PR check — matches spec §Stage-by-stage bullet 6. The `if: failure()`
+    # guard in review-receiver.yaml posts the terminal failure check.
+    echo "::error::No metrics file at $METRICS_PATH or $alt — review agent did not complete."
     {
       echo "conclusion=failure"
       echo "title=Review agent finished but metrics missing"
     } >> "$GITHUB_OUTPUT"
-    exit 0
+    exit 1
   fi
 fi
 
