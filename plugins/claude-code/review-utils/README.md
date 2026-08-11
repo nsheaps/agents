@@ -24,29 +24,9 @@ The reusable workflow that consumers call (`nsheaps/agents/.github/workflows/rev
 
 ## Consumer setup
 
-Per-repo `.github/workflows/dispatch-review.yaml` template:
+Per-repo `.github/workflows/dispatch-review.yaml` is a thin consumer-side file distributed from `nsheaps/.github`'s `ansible/templates/.github/workflows/dispatch-review.yaml` (source layout there mirrors each file's destination, nested under `ansible/templates/` — see that repo's `docs/file-sync.md`) — see `ansible/config/sync-files.yml` there for the exact `managed_repos` membership (currently every managed repo, `nsheaps/.github` included — it's a normal sync target of its own template since it takes real PRs too). `nsheaps/.github` is the sole source of truth — there is no mirror of this file in `nsheaps/agents`; a prior copy under `templates/` drifted out of sync more than once and was removed for that reason. (A separate, unrelated file, `pr-status-dispatch.yaml`, is distributed by the same sync system but pings `nsheaps/.org`'s PR status digest — a different mechanism, not covered here.)
 
-```yaml
-name: Dispatch PR Review
-
-on:
-  pull_request:
-    types: [opened, synchronize, reopened, ready_for_review, labeled]
-
-jobs:
-  dispatch:
-    uses: nsheaps/agents/.github/workflows/review-dispatch.yaml@main
-    secrets:
-      REVIEW_GITHUB_APP_ID: ${{ secrets.REVIEW_GITHUB_APP_ID }}
-      REVIEW_GITHUB_APP_PRIVATE_KEY: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
-      REVIEW_ANTHROPIC_API_KEY: ${{ secrets.REVIEW_ANTHROPIC_API_KEY }}
-      CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-    permissions:
-      contents: read
-      pull-requests: write
-```
-
-The full template at `nsheaps/agents/templates/dispatch-review.yaml` is kept in sync with this README.
+Propagation is automatic (`nsheaps/.github`'s `sync-all.yaml`, weekly plus on template change). See the `sync-dispatch-workflows` skill in `nsheaps/.github/.claude/skills/` for how the mechanism works, how to change the template or add/remove consumer repos, and how to trigger a sync run rather than hand-patching a repo.
 
 ## Skill
 

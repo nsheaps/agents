@@ -32,22 +32,22 @@ DRAFT — landing alongside implementation in PR #165 per the spec-with-impl dir
 
 ### Implementation map
 
-| Section                                         | File(s)                                                                                                                  |
-| ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Topology — decider                              | [`.github/workflows/review-dispatch.yaml`](../../../../.github/workflows/review-dispatch.yaml)                           |
-| Topology — receiver                             | [`.github/workflows/review-receiver.yaml`](../../../../.github/workflows/review-receiver.yaml)                           |
-| Topology — consumer template                    | [`templates/dispatch-review.yaml`](../../../../templates/dispatch-review.yaml)                                           |
-| Topology — receiver template                    | [`templates/dispatch-receiver-review.yaml`](../../../../templates/dispatch-receiver-review.yaml)                         |
-| Topology — plugin composite                     | [`../actions/run-agent/action.yaml`](../actions/run-agent/action.yaml)                                                   |
-| Topology — review-code skill                    | [`../skills/review-code/SKILL.md`](../skills/review-code/SKILL.md)                                                       |
-| Trigger events                                  | `templates/dispatch-review.yaml` `on:` block                                                                             |
-| Check-run lifecycle (queued/dispatched/failure) | `review-dispatch.yaml` steps "Post queued check" → "Update check (dispatched\|dispatch failed)"                          |
-| Check-run lifecycle (in_progress/terminal)      | `review-receiver.yaml` steps "Update check (in_progress\|terminal\|agent failed)"                                        |
-| Approval dismissal                              | `review-receiver.yaml` step "Dismiss prior approval reviews"                                                             |
-| Metrics emission (agent side)                   | `../skills/review-code/SKILL.md` step 11                                                                                 |
-| Metrics path export                             | `../actions/run-agent/action.yaml` step "Export trigger fields for prompt interpolation"                                 |
-| Metrics gate (receiver side)                    | `review-receiver.yaml` steps "Read agent metrics" + "Compute check conclusion"                                           |
-| `if: failure()` safety net                      | `review-receiver.yaml` step "Update check (agent failed)" + `review-dispatch.yaml` step "Update check (dispatch failed)" |
+| Section                                         | File(s)                                                                                                                                                                                                                                |
+| ----------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Topology — decider                              | [`.github/workflows/review-dispatch.yaml`](../../../../.github/workflows/review-dispatch.yaml)                                                                                                                                         |
+| Topology — receiver                             | [`.github/workflows/review-receiver.yaml`](../../../../.github/workflows/review-receiver.yaml)                                                                                                                                         |
+| Topology — consumer template                    | [`nsheaps/.github` — `ansible/templates/.github/workflows/dispatch-review.yaml`](https://github.com/nsheaps/.github/blob/main/ansible/templates/.github/workflows/dispatch-review.yaml) (sole source of truth; no mirror in this repo) |
+| Topology — receiver template                    | [`templates/dispatch-receiver-review.yaml`](../../../../templates/dispatch-receiver-review.yaml)                                                                                                                                       |
+| Topology — plugin composite                     | [`../actions/run-agent/action.yaml`](../actions/run-agent/action.yaml)                                                                                                                                                                 |
+| Topology — review-code skill                    | [`../skills/review-code/SKILL.md`](../skills/review-code/SKILL.md)                                                                                                                                                                     |
+| Trigger events                                  | `nsheaps/.github`'s `dispatch-review.yaml` template `on:` block                                                                                                                                                                        |
+| Check-run lifecycle (queued/dispatched/failure) | `review-dispatch.yaml` steps "Post queued check" → "Update check (dispatched\|dispatch failed)"                                                                                                                                        |
+| Check-run lifecycle (in_progress/terminal)      | `review-receiver.yaml` steps "Update check (in_progress\|terminal\|agent failed)"                                                                                                                                                      |
+| Approval dismissal                              | `review-receiver.yaml` step "Dismiss prior approval reviews"                                                                                                                                                                           |
+| Metrics emission (agent side)                   | `../skills/review-code/SKILL.md` step 11                                                                                                                                                                                               |
+| Metrics path export                             | `../actions/run-agent/action.yaml` step "Export trigger fields for prompt interpolation"                                                                                                                                               |
+| Metrics gate (receiver side)                    | `review-receiver.yaml` steps "Read agent metrics" + "Compute check conclusion"                                                                                                                                                         |
+| `if: failure()` safety net                      | `review-receiver.yaml` step "Update check (agent failed)" + `review-dispatch.yaml` step "Update check (dispatch failed)"                                                                                                               |
 
 ## Problem
 
