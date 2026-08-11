@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.123](https://github.com/nsheaps/agents/compare/v0.3.122...v0.3.123) (2026-08-11)
+
+### Bug Fixes
+
+* **review-utils:** metrics write permission + fail run on missing metrics ([#322](https://github.com/nsheaps/agents/issues/322)) ([7b41f26](https://github.com/nsheaps/agents/commit/7b41f267f8059c743c7cff98b85e4822dc83dd80))
+
 ## [0.3.122](https://github.com/nsheaps/agents/compare/v0.3.121...v0.3.122) (2026-08-11)
 
 ## [0.3.121](https://github.com/nsheaps/agents/compare/v0.3.120...v0.3.121) (2026-08-11)
