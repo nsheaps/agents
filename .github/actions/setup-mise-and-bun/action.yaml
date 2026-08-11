@@ -12,8 +12,6 @@ runs:
   steps:
     - name: Setup mise
       uses: jdx/mise-action@v4
-      env:
-        MISE_VERBOSE: '1'
       with:
         cache: ${{ inputs.cache }}
 
