@@ -11,8 +11,10 @@ node = "24.19.0"
 # sidesteps the npm package entirely, so there's no postinstall script for
 # mise's --ignore-scripts default to block (previously required
 # `depends = "node"` + `allow_builds` to work around that; see git history).
-# Pinned to 2.1.128 (last known-good; see renovate.json packageRules for why
-# auto-bumps are disabled for this dep).
+# Pinned to an exact version deliberately: Renovate still proposes bump PRs
+# against it (exact pins aren't exempt from updates), and each proposed PR's
+# own CI run of `claude plugin validate` is the gate — verify it passes
+# before merging a bump.
 "aqua:anthropics/claude-code" = "2.1.128"
 "pipx:litellm" = { version = "1.92.0", extras = "proxy" }
 tilt = "0.37.5"
