@@ -5,12 +5,17 @@
 jq = "1.8.2"
 bun = "1.3.14"
 node = "24.19.0"
-# claude-code's native binary is installed by a node postinstall script:
-# `depends = "node"` ensures node installs first, else the binary is missing
-# ("claude native binary not installed", which fails `claude plugin validate`).
-# Pinned to 2.1.128 to match alex/jack/henry mise.toml (and the patcher).
-# Avoid 2.1.146+ which ships a broken native-binary install regardless.
-"npm:@anthropic-ai/claude-code" = { version = "2.1.128", depends = "node" }
+# claude-code's native binary is fetched by a postinstall script. mise's npm
+# backend passes --ignore-scripts=true by default (security default), so that
+# postinstall never runs and `claude plugin validate` fails with "claude
+# native binary not installed" — at ANY version, not just newer ones (the
+# previous comment here blamed 2.1.146+; that was wrong, disproven by the
+# same failure at 2.1.128). `allow_builds` opts this one package back into
+# running its lifecycle scripts. `depends = "node"` ensures node installs
+# first, else the postinstall itself has nothing to run under.
+"npm:@anthropic-ai/claude-code" = { version = "2.1.128", depends = "node", allow_builds = [
+  "@anthropic-ai/claude-code",
+] }
 "pipx:litellm" = { version = "1.91.1", extras = "proxy" }
 tilt = "0.37.5"
 
