@@ -141,7 +141,7 @@ If the agent runs in an environment where outbound traffic to reddit.com is bloc
 
 Output `**Link**:` lines always show canonical `www.reddit.com` URLs regardless of whether a proxy is in use.
 
-For setup instructions see [`deploy/README.md`](../../deploy/README.md) and the full operator guide at [`docs/proxy-deployment.md`](../../docs/proxy-deployment.md).
+For setup instructions see the operator guide at [`docs/proxy-deployment.md`](../../docs/proxy-deployment.md).
 
 ## Rate Limiting
 

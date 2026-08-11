@@ -80,7 +80,7 @@ Environment variables (proxy mode — all optional):
                          Output links always show www.reddit.com regardless of this setting.
   REDDIT_PROXY_TOKEN     Authentication token sent to the proxy (per-agent key)
   REDDIT_PROXY_HEADER    Header name for the proxy token (default: apikey)
-  See deploy/README.md or docs/proxy-deployment.md for setup instructions.
+  See docs/proxy-deployment.md for setup instructions.
 
 Subreddit-specific:
   reddit-fetch.sh subreddit ClaudeCode --sort top --time week --limit 5

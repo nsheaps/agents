@@ -1,7 +1,10 @@
 # Reddit Proxy Deployment Guide
 
-Complete operator guide for deploying the Reddit API reverse-proxy stack that lets
-agent containers reach Reddit from egress-restricted environments.
+Operator guide for standing up a Reddit API reverse-proxy so agent containers can reach
+Reddit from egress-restricted environments. This is a **reference architecture built from
+off-the-shelf components** (Apache APISIX, Prometheus, Grafana, cloudflared) — the plugin
+does not ship a runnable stack. Assemble it wherever you deploy infrastructure (e.g.
+`nsheaps/iac`), using the config in this guide as the starting point.
 
 **Research basis:** [`../../../../docs/research/reddit-proxy-deployment-options.md`](../../../../docs/research/reddit-proxy-deployment-options.md)
 (GitHub: [`https://github.com/nsheaps/agents/blob/main/docs/research/reddit-proxy-deployment-options.md`](https://github.com/nsheaps/agents/blob/main/docs/research/reddit-proxy-deployment-options.md))
@@ -27,16 +30,22 @@ The proxy solves both problems:
 
 ## Architecture
 
-### Components
+### Components (all off-the-shelf images)
 
 | Component       | Image                           | Role                                                          |
 | --------------- | ------------------------------- | ------------------------------------------------------------- |
 | APISIX 3.9      | `apache/apisix:3.9.0-debian`    | API gateway: key-auth, proxy-rewrite, prometheus, embedded UI |
 | etcd            | `bitnami/etcd:3.5`              | APISIX configuration store                                    |
-| Prometheus      | `prom/prometheus:latest`        | Scrapes APISIX metrics on port 9091                           |
-| Grafana         | `grafana/grafana:latest`        | Per-consumer usage dashboards                                 |
+| Prometheus      | `prom/prometheus:latest`        | Scrapes APISIX metrics (optional — observability)             |
+| Grafana         | `grafana/grafana:latest`        | Per-consumer usage dashboards (optional — observability)      |
 | cloudflared     | `cloudflare/cloudflared:latest` | Cloudflare Tunnel daemon (connects proxy host to CF edge)     |
-| token-refresher | `alpine` + curl/jq              | Hourly Reddit OAuth token refresh → APISIX Admin API          |
+
+Reddit OAuth token refresh (every ~55 min) can run as a small sidecar or a host cron that
+POSTs to Reddit's token endpoint and PATCHes the APISIX route via the Admin API — see
+[Token Refresh](#token-refresh). Prometheus + Grafana are **optional**: they exist only to
+satisfy the "graphs of which API tokens have the most use" requirement. If you don't need
+usage graphs, drop both services and read the raw per-consumer metrics straight from
+APISIX's `/apisix/prometheus/metrics` endpoint.
 
 ### End-to-End Request Flow
 
@@ -47,7 +56,7 @@ sequenceDiagram
     participant CFAccess as CF Access<br/>(Bypass policy)
     participant CD as cloudflared daemon<br/>(Docker host)
     participant GW as APISIX Gateway<br/>(docker-compose, port 9080)
-    participant TR as token-refresher<br/>(sidecar)
+    participant TR as token-refresher<br/>(sidecar or cron)
     participant RD as oauth.reddit.com
 
     A->>CE: HTTPS GET /r/python.json<br/>apikey: sk-agent-01-xxx<br/>Host: proxy-api.example.com
@@ -75,50 +84,76 @@ sequenceDiagram
 
 ---
 
-## Docker-Compose Stack
+## Reference Docker-Compose Stack
 
-The full stack lives in `deploy/docker-compose.yaml`.
+The following is a **reference compose file** — adapt it to your deployment target rather
+than committing it verbatim. Inject all secrets (admin key, Reddit credentials, Grafana
+password) from your secrets store; **never commit real values**.
 
-**Service summary:**
+```yaml
+# Reddit proxy reference stack: APISIX + etcd + cloudflared (+ optional Prometheus/Grafana)
+services:
+  etcd:
+    image: bitnami/etcd:3.5
+    environment:
+      ALLOW_NONE_AUTHENTICATION: 'yes'
+      ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
+    volumes: [etcd_data:/bitnami/etcd]
+    restart: unless-stopped
 
-| Service           | Purpose                                                                                                                             |
-| ----------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| `etcd`            | APISIX's config/discovery store. Uses named volume for persistence.                                                                 |
-| `apisix`          | The gateway. Exposes `:9080` (proxy), `:9180` (Admin API + embedded UI), `:9091` (Prometheus metrics). Mounts `apisix/config.yaml`. |
-| `prometheus`      | Scrapes APISIX metrics. Mounts `prometheus/prometheus.yml`.                                                                         |
-| `grafana`         | Dashboard UI on `:3000`. Provisioned from `grafana/provisioning/`.                                                                  |
-| `cloudflared`     | Runs the CF Tunnel daemon; connects the host to Cloudflare edge.                                                                    |
-| `token-refresher` | Alpine sidecar; refreshes Reddit OAuth token and patches APISIX route.                                                              |
+  apisix:
+    image: apache/apisix:3.9.0-debian
+    ports:
+      - '9080:9080' # proxy ingress (agent requests)
+      - '9180:9180' # Admin API + embedded UI
+      - '9091:9091' # Prometheus metrics
+    volumes: [./apisix-config.yaml:/usr/local/apisix/conf/config.yaml:ro]
+    environment:
+      APISIX_ADMIN_KEY: '${APISIX_ADMIN_KEY}'
+    depends_on: [etcd]
+    restart: unless-stopped
 
-All secrets (admin key, Reddit credentials, Grafana password) are injected via the `.env`
-file. **Never commit `.env`** — only `.env.example` is in version control.
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel --config /etc/cloudflared/config.yml run
+    volumes: [./cloudflared:/etc/cloudflared:ro]  # config.yml + credentials.json (uncommitted)
+    depends_on: [apisix]
+    restart: unless-stopped
 
-### Starting the stack
+  # --- Optional observability (drop if you don't need usage graphs) ---
+  prometheus:
+    image: prom/prometheus:latest
+    volumes: [./prometheus.yml:/etc/prometheus/prometheus.yml:ro]
+    restart: unless-stopped
 
-```bash
-cd deploy/
-cp .env.example .env
-# Edit .env with real values (see section below)
-docker compose up -d
-docker compose logs -f token-refresher  # watch first token fetch
+  grafana:
+    image: grafana/grafana:latest
+    ports: ['3000:3000']
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_ADMIN_PASSWORD}'
+      GF_USERS_ALLOW_SIGN_UP: 'false'
+    depends_on: [prometheus]
+    restart: unless-stopped
+
+volumes:
+  etcd_data:
 ```
 
-### Bootstrap consumers and routes
+The `apisix-config.yaml` mounted above enables the `key-auth`, `proxy-rewrite`, and
+`prometheus` plugins and points APISIX at etcd. See the
+[APISIX Docker deploy docs](https://apisix.apache.org/docs/docker/manual/) and
+[key-auth plugin docs](https://apisix.apache.org/docs/apisix/plugins/key-auth/) for the
+canonical config; the [Prometheus plugin docs](https://apisix.apache.org/docs/apisix/plugins/prometheus/)
+cover metric export on port 9091.
 
-After the stack is healthy, run the bootstrap script to provision APISIX:
-
-```bash
-# Set env vars or export them, then:
-bash bootstrap/bootstrap.sh
-```
-
-See `deploy/bootstrap/bootstrap.sh` for full usage.
+Provision the upstream, route, and per-agent consumers via the Admin API after the stack is
+healthy — see [Minting Per-Agent Tokens](#minting-per-agent-tokens).
 
 ---
 
 ## Cloudflare Tunnel (cloudflared) Configuration
 
-The tunnel connects the Docker host to Cloudflare's edge. Two hostnames are exposed:
+The tunnel connects the Docker host to Cloudflare's edge. Expose these hostnames:
 
 | Hostname                    | Backend port | Purpose                                  |
 | --------------------------- | ------------ | ---------------------------------------- |
@@ -126,19 +161,37 @@ The tunnel connects the Docker host to Cloudflare's edge. Two hostnames are expo
 | `proxy-grafana.example.com` | 3000         | Grafana — per-consumer usage graphs      |
 | `proxy-api.example.com`     | 9080         | APISIX proxy endpoint for agent requests |
 
-The example config is at `deploy/cloudflared/config.example.yml`.
+Reference `config.yml` (place it and the tunnel `credentials.json` in the mounted
+`./cloudflared/` dir; `credentials.json` comes from `cloudflared tunnel create <name>` and
+must **not** be committed):
 
-**Rename to `config.yml` and replace placeholders before running:**
+```yaml
+tunnel: <YOUR_TUNNEL_ID>
+credentials-file: /etc/cloudflared/credentials.json
 
-```bash
-cp deploy/cloudflared/config.example.yml /path/to/cloudflared/config.yml
-# edit tunnel ID and hostnames
+ingress:
+  # Dashboard + APISIX embedded UI — CF Access Allow (owner email only)
+  - hostname: proxy-ui.example.com
+    service: http://apisix:9180
+    originRequest:
+      httpHostHeader: proxy-ui.example.com
+
+  # Proxy API endpoint — CF Access Bypass; APISIX key-auth validates per-agent keys
+  - hostname: proxy-api.example.com
+    service: http://apisix:9080
+    originRequest:
+      httpHostHeader: proxy-api.example.com
+      # IMPORTANT: Do NOT add an 'access:' block here (see JWT caveat below).
+
+  # Grafana (per-consumer usage graphs) — CF Access Allow (owner email only)
+  - hostname: proxy-grafana.example.com
+    service: http://grafana:3000
+    originRequest:
+      httpHostHeader: proxy-grafana.example.com
+
+  # Required catch-all rule. Must be last.
+  - service: http_status:404
 ```
-
-The cloudflared container in docker-compose mounts `./cloudflared:/etc/cloudflared:ro`.
-Place your real `config.yml` and the tunnel `credentials.json` file in `deploy/cloudflared/`
-(the credentials JSON is obtained from `cloudflared tunnel create <name>` and must not be
-committed to version control).
 
 ---
 
@@ -204,7 +257,7 @@ header on every request, identifying the consumer and blocking requests without 
 If cloudflared is configured with an `access` block in the ingress stanza, its
 `AccessJWTValidator` middleware may reject requests even for Bypass-policy applications
 (known CF community issue). **Do not add an `access:` block to the API ingress rule** in
-`config.yml`. The example config in this repo has none.
+`config.yml`. The reference config above has none.
 
 ---
 
@@ -224,8 +277,6 @@ curl -s -X PUT "http://apisix:9180/apisix/admin/consumers" \
     }
   }'
 ```
-
-Or use the bootstrap script with the `AGENT_KEYS` env var (see `deploy/bootstrap/bootstrap.sh`).
 
 ### Revoking an agent
 
@@ -256,22 +307,21 @@ The agent's key immediately stops working; no restart needed.
 
 ### Token Refresh
 
-The `token-refresher` sidecar handles token acquisition automatically:
+Reddit `client_credentials` tokens expire after 60 minutes and have no refresh token, so a
+small refresher (a sidecar container or a host cron) must re-request one periodically:
 
-- On startup, it POSTs to `https://www.reddit.com/api/v1/access_token` with
-  `grant_type=client_credentials` and Basic auth (`client_id:client_secret`).
-- Every 55 minutes it re-requests a fresh token (tokens expire after 60 minutes;
-  `client_credentials` has no refresh token — you must re-request).
-- On success, it PATCHes the APISIX route via the Admin API to update the
-  `proxy-rewrite` `Authorization: Bearer <token>` header.
+- POST to `https://www.reddit.com/api/v1/access_token` with `grant_type=client_credentials`
+  and Basic auth (`client_id:client_secret`).
+- Re-request every ~55 minutes (before the 60-minute expiry).
+- On success, PATCH the APISIX route via the Admin API to update the `proxy-rewrite`
+  `Authorization: Bearer <token>` header.
 
-The route ID used by the refresher is configured via the `APISIX_ROUTE_ID` env var
-(default: `reddit-route`). Set `REDDIT_USER_AGENT` to a string matching Reddit's required
-format: `<platform>:<app-id>/<version> by u/<reddit-username>`.
+Set `REDDIT_USER_AGENT` to a string matching Reddit's required format:
+`<platform>:<app-id>/<version> by u/<reddit-username>`.
 
 ---
 
-## Observability
+## Observability (optional)
 
 The APISIX Prometheus plugin emits metrics on port 9091 at
 `/apisix/prometheus/metrics`. Key metrics for per-consumer monitoring:
@@ -288,13 +338,12 @@ The APISIX Prometheus plugin emits metrics on port 9091 at
 sum(rate(apisix_http_status[5m])) by (consumer)
 ```
 
-**Grafana setup:**
+**Grafana setup** (only if you deployed the optional Prometheus + Grafana services):
 
-1. Grafana is provisioned automatically from `deploy/grafana/provisioning/`.
+1. Add the Prometheus service as a Grafana datasource.
 2. Import dashboard **ID 11719** from Grafana.com (APISIX official dashboard):
-   Grafana → Dashboards → Import → enter `11719` → select Prometheus datasource.
-3. A minimal per-consumer panel JSON is included at
-   `deploy/grafana/dashboards/per-consumer.json` for quick-start.
+   Grafana → Dashboards → Import → enter `11719` → select the Prometheus datasource.
+3. Filter panels by the `consumer` label to see per-token usage.
 
 **Accessing dashboards:**
 
@@ -361,16 +410,14 @@ workflow is assumed to be a GitHub Actions workflow that:
   in the same compose network, or a host-level daemon with a separate config path?)
 - `TODO(nate): Is there an existing cloudflared tunnel for this host, or must a new tunnel
 be created?`
-- `TODO(nate): Does the arcane workflow handle the APISIX bootstrap step, or must it be run
-manually after first deploy?`
 
 **Provisional deploy steps (to be verified against iac/arcane docs):**
 
-1. Copy `deploy/` to the appropriate path in `nsheaps/iac`.
+1. Author the compose stack (from the reference above) at the appropriate path in `nsheaps/iac`.
 2. Fill in secrets in the iac secrets store per the org convention.
 3. Commit and push; trigger the arcane workflow.
-4. Once the stack is healthy, run `deploy/bootstrap/bootstrap.sh` to provision
-   APISIX consumers and routes.
+4. Once the stack is healthy, provision APISIX consumers/routes via the Admin API
+   (see [Minting Per-Agent Tokens](#minting-per-agent-tokens)).
 5. Configure the two CF Access applications (UI Allow, API Bypass) as described above.
 6. Test with: `curl -H "apikey: sk-agent-01-xxx" https://proxy-api.example.com/r/ClaudeCode.json`
 
@@ -383,7 +430,7 @@ manually after first deploy?`
 | Reddit OAuth approval gating                     | HIGH       | Apply early via Responsible Builder Policy; ensure use-case description is compliant                     |
 | 100 QPM rate limit shared across all agents      | MEDIUM     | Use APISIX `limit-count` per consumer; register additional Reddit apps if volume grows                   |
 | Bypass policy leaves API unguarded at CF layer   | MEDIUM     | Accept (APISIX config is controlled) or switch to CF Service Auth for defense-in-depth                   |
-| token-refresher SPOF                             | LOW-MEDIUM | Add health-check alerting; implement retry/backoff (included in the script); consider two-token rotation |
+| token-refresher SPOF                             | LOW-MEDIUM | Add health-check alerting; implement retry/backoff; consider two-token rotation                          |
 | cloudflared Bypass + AccessJWTValidator conflict | LOW        | Do not add `access:` block to API ingress rule; validate in staging; fallback: Service Auth              |
 
 ---

@@ -59,7 +59,7 @@ reddit-fetch.sh subreddit programming --after t3_abc123 --limit 10
 
 ## Proxy Mode (egress-restricted environments)
 
-By default the script fetches directly from `https://www.reddit.com`. In environments where outbound traffic to reddit.com is blocked (e.g. agent containers with SNI-based egress filtering), you can route requests through the included APISIX proxy stack.
+By default the script fetches directly from `https://www.reddit.com`. In environments where outbound traffic to reddit.com is blocked (e.g. agent containers with SNI-based egress filtering), you can route requests through an operator-deployed APISIX proxy (built from off-the-shelf components — see the deployment guide below).
 
 Set these environment variables before running the script:
 
@@ -73,7 +73,7 @@ When `REDDIT_PROXY_URL` is set, all API requests go through the proxy. Output `*
 
 **The proxy is off by default** — normal usage requires no proxy configuration.
 
-See [`deploy/README.md`](deploy/README.md) for quick-start instructions and [`docs/proxy-deployment.md`](docs/proxy-deployment.md) for the full operator guide (architecture, Cloudflare Zero Trust setup, security model, and operational runbook).
+See [`docs/proxy-deployment.md`](docs/proxy-deployment.md) for the full operator guide (reference architecture, Cloudflare Zero Trust setup, security model, and operational runbook). The plugin ships only the client-side env-var support above — standing up the proxy is an infrastructure task.
 
 ## Rate Limiting
 
