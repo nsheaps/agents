@@ -32,13 +32,13 @@ The proxy solves both problems:
 
 ### Components (all off-the-shelf images)
 
-| Component       | Image                           | Role                                                          |
-| --------------- | ------------------------------- | ------------------------------------------------------------- |
-| APISIX 3.9      | `apache/apisix:3.9.0-debian`    | API gateway: key-auth, proxy-rewrite, prometheus, embedded UI |
-| etcd            | `bitnami/etcd:3.5`              | APISIX configuration store                                    |
-| Prometheus      | `prom/prometheus:latest`        | Scrapes APISIX metrics (optional — observability)             |
-| Grafana         | `grafana/grafana:latest`        | Per-consumer usage dashboards (optional — observability)      |
-| cloudflared     | `cloudflare/cloudflared:latest` | Cloudflare Tunnel daemon (connects proxy host to CF edge)     |
+| Component   | Image                           | Role                                                          |
+| ----------- | ------------------------------- | ------------------------------------------------------------- |
+| APISIX 3.9  | `apache/apisix:3.9.0-debian`    | API gateway: key-auth, proxy-rewrite, prometheus, embedded UI |
+| etcd        | `bitnami/etcd:3.5`              | APISIX configuration store                                    |
+| Prometheus  | `prom/prometheus:latest`        | Scrapes APISIX metrics (optional — observability)             |
+| Grafana     | `grafana/grafana:latest`        | Per-consumer usage dashboards (optional — observability)      |
+| cloudflared | `cloudflare/cloudflared:latest` | Cloudflare Tunnel daemon (connects proxy host to CF edge)     |
 
 Reddit OAuth token refresh (every ~55 min) can run as a small sidecar or a host cron that
 POSTs to Reddit's token endpoint and PATCHes the APISIX route via the Admin API — see
@@ -96,7 +96,7 @@ services:
   etcd:
     image: bitnami/etcd:3.5
     environment:
-      ALLOW_NONE_AUTHENTICATION: 'yes'
+      ALLOW_NONE_AUTHENTICATION: "yes"
       ETCD_ADVERTISE_CLIENT_URLS: http://etcd:2379
     volumes: [etcd_data:/bitnami/etcd]
     restart: unless-stopped
@@ -104,19 +104,19 @@ services:
   apisix:
     image: apache/apisix:3.9.0-debian
     ports:
-      - '9080:9080' # proxy ingress (agent requests)
-      - '9180:9180' # Admin API + embedded UI
-      - '9091:9091' # Prometheus metrics
+      - "9080:9080" # proxy ingress (agent requests)
+      - "9180:9180" # Admin API + embedded UI
+      - "9091:9091" # Prometheus metrics
     volumes: [./apisix-config.yaml:/usr/local/apisix/conf/config.yaml:ro]
     environment:
-      APISIX_ADMIN_KEY: '${APISIX_ADMIN_KEY}'
+      APISIX_ADMIN_KEY: "${APISIX_ADMIN_KEY}"
     depends_on: [etcd]
     restart: unless-stopped
 
   cloudflared:
     image: cloudflare/cloudflared:latest
     command: tunnel --config /etc/cloudflared/config.yml run
-    volumes: [./cloudflared:/etc/cloudflared:ro]  # config.yml + credentials.json (uncommitted)
+    volumes: [./cloudflared:/etc/cloudflared:ro] # config.yml + credentials.json (uncommitted)
     depends_on: [apisix]
     restart: unless-stopped
 
@@ -128,10 +128,10 @@ services:
 
   grafana:
     image: grafana/grafana:latest
-    ports: ['3000:3000']
+    ports: ["3000:3000"]
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: '${GRAFANA_ADMIN_PASSWORD}'
-      GF_USERS_ALLOW_SIGN_UP: 'false'
+      GF_SECURITY_ADMIN_PASSWORD: "${GRAFANA_ADMIN_PASSWORD}"
+      GF_USERS_ALLOW_SIGN_UP: "false"
     depends_on: [prometheus]
     restart: unless-stopped
 
@@ -425,13 +425,13 @@ be created?`
 
 ## Security Notes and Open Risks
 
-| Risk                                             | Severity   | Mitigation                                                                                               |
-| ------------------------------------------------ | ---------- | -------------------------------------------------------------------------------------------------------- |
-| Reddit OAuth approval gating                     | HIGH       | Apply early via Responsible Builder Policy; ensure use-case description is compliant                     |
-| 100 QPM rate limit shared across all agents      | MEDIUM     | Use APISIX `limit-count` per consumer; register additional Reddit apps if volume grows                   |
-| Bypass policy leaves API unguarded at CF layer   | MEDIUM     | Accept (APISIX config is controlled) or switch to CF Service Auth for defense-in-depth                   |
-| token-refresher SPOF                             | LOW-MEDIUM | Add health-check alerting; implement retry/backoff; consider two-token rotation                          |
-| cloudflared Bypass + AccessJWTValidator conflict | LOW        | Do not add `access:` block to API ingress rule; validate in staging; fallback: Service Auth              |
+| Risk                                             | Severity   | Mitigation                                                                                  |
+| ------------------------------------------------ | ---------- | ------------------------------------------------------------------------------------------- |
+| Reddit OAuth approval gating                     | HIGH       | Apply early via Responsible Builder Policy; ensure use-case description is compliant        |
+| 100 QPM rate limit shared across all agents      | MEDIUM     | Use APISIX `limit-count` per consumer; register additional Reddit apps if volume grows      |
+| Bypass policy leaves API unguarded at CF layer   | MEDIUM     | Accept (APISIX config is controlled) or switch to CF Service Auth for defense-in-depth      |
+| token-refresher SPOF                             | LOW-MEDIUM | Add health-check alerting; implement retry/backoff; consider two-token rotation             |
+| cloudflared Bypass + AccessJWTValidator conflict | LOW        | Do not add `access:` block to API ingress rule; validate in staging; fallback: Service Auth |
 
 ---
 
