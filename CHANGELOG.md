@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.123](https://github.com/nsheaps/agents/compare/v0.3.122...v0.3.123) (2026-08-11)
+
+### Bug Fixes
+
+* **review-utils:** metrics write permission + fail run on missing metrics ([#322](https://github.com/nsheaps/agents/issues/322)) ([7b41f26](https://github.com/nsheaps/agents/commit/7b41f267f8059c743c7cff98b85e4822dc83dd80))
+
+## [0.3.122](https://github.com/nsheaps/agents/compare/v0.3.121...v0.3.122) (2026-08-11)
+
+## [0.3.121](https://github.com/nsheaps/agents/compare/v0.3.120...v0.3.121) (2026-08-11)
+
+### Maintenance
+
+* **deps:** update dependency pipx:litellm to v1.92.0 ([#326](https://github.com/nsheaps/agents/issues/326)) ([3758f29](https://github.com/nsheaps/agents/commit/3758f29048bb6ebf9ef8613319e75a1c32e32b48))
+
+## [0.3.120](https://github.com/nsheaps/agents/compare/v0.3.119...v0.3.120) (2026-08-11)
+
+### Maintenance
+
+* **deps:** update node.js to v24.19.0 ([#323](https://github.com/nsheaps/agents/issues/323)) ([87b580c](https://github.com/nsheaps/agents/commit/87b580c0fcefd01d4969f02ffd52d9e4e78e9b5d))
+
 ## [0.3.119](https://github.com/nsheaps/agents/compare/v0.3.118...v0.3.119) (2026-08-11)
 
 ## [0.3.118](https://github.com/nsheaps/agents/compare/v0.3.117...v0.3.118) (2026-08-10)
