@@ -16,7 +16,7 @@ node = "24.19.0"
 "npm:@anthropic-ai/claude-code" = { version = "2.1.128", depends = "node", allow_builds = [
   "@anthropic-ai/claude-code",
 ] }
-"pipx:litellm" = { version = "1.91.1", extras = "proxy" }
+"pipx:litellm" = { version = "1.92.0", extras = "proxy" }
 tilt = "0.37.5"
 
 # nx is installed via bun (root devDependency). Every fan-out task below is
