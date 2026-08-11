@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.125](https://github.com/nsheaps/agents/compare/v0.3.124...v0.3.125) (2026-08-11)
+
+### Bug Fixes
+
+* **review-utils:** stop headless review agent hanging on gh approval ([#327](https://github.com/nsheaps/agents/issues/327)) ([9b7f423](https://github.com/nsheaps/agents/commit/9b7f423573dc4d93a9ea697931277b80fb4e6e4a))
+
 ## [0.3.124](https://github.com/nsheaps/agents/compare/v0.3.123...v0.3.124) (2026-08-11)
 
 ### Maintenance

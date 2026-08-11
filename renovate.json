@@ -1,4 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>nsheaps/renovate-config"]
+  "extends": ["github>nsheaps/renovate-config"],
+  "packageRules": [
+    {
+      "matchPackageNames": ["@anthropic-ai/claude-code"],
+      "enabled": false,
+      "description": "Pinned in mise.toml below the version where the native-binary postinstall breaks (see mise.toml comment). Renovate previously bumped this past the safe ceiling and broke CI on every commit -- bump manually only, after verifying `mise run validate` locally."
+    }
+  ]
 }
