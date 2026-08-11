@@ -13,7 +13,20 @@ runs:
     - name: Setup mise
       uses: jdx/mise-action@v4
       with:
+        install: false
         cache: ${{ inputs.cache }}
+
+    # mise install hits GitHub's releases API per tool (e.g. any aqua-backend
+    # installs); that call intermittently 403s on shared Actions runner IPs.
+    # Retry rather than fail the whole job on what's usually a transient
+    # upstream blip.
+    - name: mise install (retry on transient GitHub API failures)
+      uses: nick-fields/retry@v3
+      with:
+        timeout_minutes: 5
+        max_attempts: 3
+        retry_wait_seconds: 15
+        command: mise install
 
     - name: Install bun deps
       shell: bash
