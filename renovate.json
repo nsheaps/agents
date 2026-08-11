@@ -1,4 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>nsheaps/renovate-config"]
+  "extends": ["github>nsheaps/renovate-config"],
+  "packageRules": [
+    {
+      "matchManagers": ["mise"],
+      "matchDatasources": ["github-tags"],
+      "matchDepNames": ["aqua:anthropics/claude-code"],
+      "enabled": false,
+      "description": "claude-code is pinned deliberately in mise.toml — see the comment there. Bump manually and verify `claude plugin validate` before raising the ceiling."
+    }
+  ]
 }
