@@ -5,16 +5,9 @@
 jq = "1.8.2"
 bun = "1.3.14"
 node = "24.19.0"
-# Installed via mise's aqua backend, which pulls the native binary straight
-# from anthropics/claude-code GitHub releases — the same binary the official
-# `curl -fsSL https://claude.ai/install.sh | bash` installer ships. This
-# sidesteps the npm package entirely, so there's no postinstall script for
-# mise's --ignore-scripts default to block (previously required
-# `depends = "node"` + `allow_builds` to work around that; see git history).
-# Pinned to an exact version deliberately: Renovate still proposes bump PRs
-# against it (exact pins aren't exempt from updates), and each proposed PR's
-# own CI run of `claude plugin validate` is the gate — verify it passes
-# before merging a bump.
+# Native install (mise's aqua backend): npm's postinstall script fetches the
+# binary, but mise's npm backend runs with --ignore-scripts, so it never
+# lands. Bump only via a Renovate PR whose CI passes `claude plugin validate`.
 "aqua:anthropics/claude-code" = "2.1.128"
 "pipx:litellm" = { version = "1.92.0", extras = "proxy" }
 tilt = "0.37.5"
