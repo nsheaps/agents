@@ -1,4 +1,11 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>nsheaps/renovate-config"]
+  "extends": ["github>nsheaps/renovate-config"],
+  "packageRules": [
+    {
+      "matchDepNames": ["npm:@anthropic-ai/claude-code"],
+      "enabled": false,
+      "description": "Pinned to 2.1.128 in mise.toml — 2.1.146+ ships a broken native-binary install that fails `claude plugin validate` in CI. Re-enable only after manually verifying a newer version installs its native binary correctly."
+    }
+  ]
 }
