@@ -257,10 +257,12 @@ runs:
         # requires approval" with nobody headless to answer it (confirmed via
         # a review run's own transcript: 15+ retries of `gh pr view` in every
         # shape, ending in the agent calling AskUserQuestion, which nobody
-        # was there to answer). `dontAsk` runs only pre-approved tools and
-        # denies (never prompts) anything else -- the permission-modes docs
-        # name it explicitly for "locked-down CI and scripts". `deny` rules
-        # below still apply on top of it (deny always wins, in every mode).
+        # was there to answer). `auto` runs tool calls through background
+        # safety-check classifiers instead of prompting, so it works
+        # headlessly while still applying real judgment to each call (as
+        # opposed to `dontAsk`, which just mechanically allow/deny-lists).
+        # `deny` rules below still apply on top of it (deny always wins, in
+        # every mode).
         #
         # `--allowedTools` here does double duty: besides the permission
         # allow-list, it's also what decides which of claude-code-action's
@@ -272,7 +274,7 @@ runs:
         # all, `mcp_servers` comes back empty, and the agent has no way to
         # read or post a review short of raw `gh`/`git`/`curl`.
         claude_args: |
-          --permission-mode dontAsk --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*)"
+          --permission-mode auto --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*)"
         plugin_marketplaces: |
           https://github.com/nsheaps/ai-mktpl.git
         plugins: |
