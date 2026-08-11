@@ -250,6 +250,29 @@ runs:
           actions: read
           checks: write
         prompt: ${{ steps.prompt.outputs.prompt }}
+        # Agent mode (explicit `prompt:` input) does NOT default to any
+        # non-interactive permission mode the way tag mode defaults to
+        # `acceptEdits` (claude-code-action's src/modes/tag/index.ts). Left
+        # unset, every Bash call -- including `gh` -- errors "This command
+        # requires approval" with nobody headless to answer it (confirmed via
+        # a review run's own transcript: 15+ retries of `gh pr view` in every
+        # shape, ending in the agent calling AskUserQuestion, which nobody
+        # was there to answer). `dontAsk` runs only pre-approved tools and
+        # denies (never prompts) anything else -- the permission-modes docs
+        # name it explicitly for "locked-down CI and scripts". `deny` rules
+        # below still apply on top of it (deny always wins, in every mode).
+        #
+        # `--allowedTools` here does double duty: besides the permission
+        # allow-list, it's also what decides which of claude-code-action's
+        # bundled MCP servers get installed (see `prepareMcpConfig` /
+        # `hasGitHubMcpTools` in the action's own source) -- omit
+        # `mcp__github__*` here and the real GitHub MCP server (the one
+        # review-code/SKILL.md instructs using, e.g.
+        # mcp__github__create_pending_pull_request_review) never starts at
+        # all, `mcp_servers` comes back empty, and the agent has no way to
+        # read or post a review short of raw `gh`/`git`/`curl`.
+        claude_args: |
+          --permission-mode dontAsk --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*)"
         plugin_marketplaces: |
           https://github.com/nsheaps/ai-mktpl.git
         plugins: |
