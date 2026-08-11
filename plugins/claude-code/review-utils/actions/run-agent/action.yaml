@@ -243,25 +243,28 @@ runs:
       with:
         anthropic_api_key: ${{ inputs.anthropic-api-key }}
         claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
-        show_full_output: true
+        show_full_output: false
         github_token: ${{ steps.github-token.outputs.token }}
         allowed_bots: ${{ inputs.allowed-bots }}
         additional_permissions: |
           actions: read
           checks: write
         prompt: ${{ steps.prompt.outputs.prompt }}
+        # --allowedTools has to stay a claude_args flag, not a settings.permissions.allow
+        # entry: it's also what claude-code-action's prepareMcpConfig reads to decide
+        # whether to install the GitHub MCP server (hasGitHubMcpTools) -- settings.json
+        # allow rules don't feed that check.
+        claude_args: |
+          --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*)"
         plugin_marketplaces: |
           https://github.com/nsheaps/ai-mktpl.git
         plugins: |
           github@ai-mktpl
           review-changes@ai-mktpl
-        # additionalDirectories includes runner.temp because REVIEW_METRICS_PATH
-        # (set above) points at $RUNNER_TEMP/review-metrics.yaml, outside the
-        # workspace — without this the skill's mandatory metrics write is
-        # sandbox-denied and the receiver's metrics gate always fails.
         settings: |
           {
             "permissions": {
+              "defaultMode": "auto",
               "additionalDirectories": [
                 "${{ github.workspace }}/trigger-repo/",
                 ".claude/tmp/",
