@@ -5,12 +5,15 @@
 jq = "1.8.2"
 bun = "1.3.14"
 node = "24.19.0"
-# claude-code's native binary is installed by a node postinstall script:
-# `depends = "node"` ensures node installs first, else the binary is missing
-# ("claude native binary not installed", which fails `claude plugin validate`).
-# Pinned to 2.1.128 to match alex/jack/henry mise.toml (and the patcher).
-# Avoid 2.1.146+ which ships a broken native-binary install regardless.
-"npm:@anthropic-ai/claude-code" = { version = "2.1.205", depends = "node" }
+# Installed via mise's aqua backend, which pulls the native binary straight
+# from anthropics/claude-code GitHub releases — the same binary the official
+# `curl -fsSL https://claude.ai/install.sh | bash` installer ships. This
+# sidesteps the npm package entirely, so there's no postinstall script for
+# mise's --ignore-scripts default to block (previously required
+# `depends = "node"` + `allow_builds` to work around that; see git history).
+# Pinned to 2.1.128 (last known-good; see renovate.json packageRules for why
+# auto-bumps are disabled for this dep).
+"aqua:anthropics/claude-code" = "2.1.128"
 "pipx:litellm" = { version = "1.92.0", extras = "proxy" }
 tilt = "0.37.5"
 
