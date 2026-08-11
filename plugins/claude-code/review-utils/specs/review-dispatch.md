@@ -36,11 +36,11 @@ DRAFT — landing alongside implementation in PR #165 per the spec-with-impl dir
 | ----------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | Topology — decider                              | [`.github/workflows/review-dispatch.yaml`](../../../../.github/workflows/review-dispatch.yaml)                           |
 | Topology — receiver                             | [`.github/workflows/review-receiver.yaml`](../../../../.github/workflows/review-receiver.yaml)                           |
-| Topology — consumer template                    | [`templates/dispatch-review.yaml`](../../../../templates/dispatch-review.yaml)                                           |
+| Topology — consumer template                    | [`nsheaps/.github` — `ansible/templates/.github/workflows/dispatch-review.yaml`](https://github.com/nsheaps/.github/blob/main/ansible/templates/.github/workflows/dispatch-review.yaml) (sole source of truth; no mirror in this repo) |
 | Topology — receiver template                    | [`templates/dispatch-receiver-review.yaml`](../../../../templates/dispatch-receiver-review.yaml)                         |
 | Topology — plugin composite                     | [`../actions/run-agent/action.yaml`](../actions/run-agent/action.yaml)                                                   |
 | Topology — review-code skill                    | [`../skills/review-code/SKILL.md`](../skills/review-code/SKILL.md)                                                       |
-| Trigger events                                  | `templates/dispatch-review.yaml` `on:` block                                                                             |
+| Trigger events                                  | `nsheaps/.github`'s `dispatch-review.yaml` template `on:` block                                                          |
 | Check-run lifecycle (queued/dispatched/failure) | `review-dispatch.yaml` steps "Post queued check" → "Update check (dispatched\|dispatch failed)"                          |
 | Check-run lifecycle (in_progress/terminal)      | `review-receiver.yaml` steps "Update check (in_progress\|terminal\|agent failed)"                                        |
 | Approval dismissal                              | `review-receiver.yaml` step "Dismiss prior approval reviews"                                                             |
