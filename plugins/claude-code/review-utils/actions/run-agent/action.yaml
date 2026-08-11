@@ -243,50 +243,28 @@ runs:
       with:
         anthropic_api_key: ${{ inputs.anthropic-api-key }}
         claude_code_oauth_token: ${{ inputs.claude-code-oauth-token }}
-        show_full_output: true
+        show_full_output: false
         github_token: ${{ steps.github-token.outputs.token }}
         allowed_bots: ${{ inputs.allowed-bots }}
         additional_permissions: |
           actions: read
           checks: write
         prompt: ${{ steps.prompt.outputs.prompt }}
-        # Agent mode (explicit `prompt:` input) does NOT default to any
-        # non-interactive permission mode the way tag mode defaults to
-        # `acceptEdits` (claude-code-action's src/modes/tag/index.ts). Left
-        # unset, every Bash call -- including `gh` -- errors "This command
-        # requires approval" with nobody headless to answer it (confirmed via
-        # a review run's own transcript: 15+ retries of `gh pr view` in every
-        # shape, ending in the agent calling AskUserQuestion, which nobody
-        # was there to answer). `auto` runs tool calls through background
-        # safety-check classifiers instead of prompting, so it works
-        # headlessly while still applying real judgment to each call (as
-        # opposed to `dontAsk`, which just mechanically allow/deny-lists).
-        # `deny` rules below still apply on top of it (deny always wins, in
-        # every mode).
-        #
-        # `--allowedTools` here does double duty: besides the permission
-        # allow-list, it's also what decides which of claude-code-action's
-        # bundled MCP servers get installed (see `prepareMcpConfig` /
-        # `hasGitHubMcpTools` in the action's own source) -- omit
-        # `mcp__github__*` here and the real GitHub MCP server (the one
-        # review-code/SKILL.md instructs using, e.g.
-        # mcp__github__create_pending_pull_request_review) never starts at
-        # all, `mcp_servers` comes back empty, and the agent has no way to
-        # read or post a review short of raw `gh`/`git`/`curl`.
+        # --allowedTools has to stay a claude_args flag, not a settings.permissions.allow
+        # entry: it's also what claude-code-action's prepareMcpConfig reads to decide
+        # whether to install the GitHub MCP server (hasGitHubMcpTools) -- settings.json
+        # allow rules don't feed that check.
         claude_args: |
-          --permission-mode auto --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*)"
+          --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*)"
         plugin_marketplaces: |
           https://github.com/nsheaps/ai-mktpl.git
         plugins: |
           github@ai-mktpl
           review-changes@ai-mktpl
-        # additionalDirectories includes runner.temp because REVIEW_METRICS_PATH
-        # (set above) points at $RUNNER_TEMP/review-metrics.yaml, outside the
-        # workspace — without this the skill's mandatory metrics write is
-        # sandbox-denied and the receiver's metrics gate always fails.
         settings: |
           {
             "permissions": {
+              "defaultMode": "auto",
               "additionalDirectories": [
                 "${{ github.workspace }}/trigger-repo/",
                 ".claude/tmp/",
