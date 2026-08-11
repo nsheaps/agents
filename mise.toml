@@ -1,6 +1,11 @@
 [plugins]
 # postgres = "https://github.com/mise-plugins/vfox-postgres.git"
 
+[settings]
+# Local override for anthropics/claude-code: works around a mise 2026.8.4 bug
+# in aqua version_overrides type-switching. See .mise/aqua-registry.yaml.
+aqua.registries = [".mise/aqua-registry.yaml"]
+
 [tools]
 jq = "1.8.2"
 bun = "1.3.14"

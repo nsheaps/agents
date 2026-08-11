@@ -1,0 +1,41 @@
+# Local override for anthropics/claude-code, loaded before the baked-in aqua
+# registry via `aqua.registries` in mise.toml.
+#
+# The upstream aqua-registry entry for this package defines the top-level
+# package as `type: http` (with `version_constraint: "false"`, so it's never
+# used directly) and switches to `type: github_release` inside
+# `version_overrides` for the version range we pin. mise 2026.8.4 fails to
+# apply that type switch and instead tries to build a download URL from the
+# unused top-level `http` definition (which has no `url:` field), crashing
+# with "builder error: relative URL without a base" before any network call
+# is made. Defining the package directly as `type: github_release` here,
+# matching the upstream override's fields, sidesteps the buggy resolution
+# path entirely. See https://github.com/aquaproj/aqua-registry/blob/main/pkgs/anthropics/claude-code/registry.yaml
+packages:
+  - type: github_release
+    repo_owner: anthropics
+    repo_name: claude-code
+    description: Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands
+    asset: claude-{{.OS}}-{{.Arch}}.{{.Format}}
+    format: tar.gz
+    overrides:
+      - goos: linux
+        variants:
+          - key: libc
+            value: glibc
+      - goos: linux
+        asset: claude-{{.OS}}-{{.Arch}}-musl.{{.Format}}
+        variants:
+          - key: libc
+            value: musl
+      - goos: windows
+        format: zip
+    files:
+      - name: claude
+    replacements:
+      amd64: x64
+      windows: win32
+    checksum:
+      type: github_release
+      asset: SHASUMS256.txt
+      algorithm: sha256
