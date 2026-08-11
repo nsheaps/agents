@@ -1,13 +1,4 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["github>nsheaps/renovate-config"],
-  "customManagers": [
-    {
-      "customType": "regex",
-      "fileMatch": ["^\\.github/workflows/.*\\.ya?ml$"],
-      "matchStrings": [
-        "# renovate: datasource=(?<datasource>.*?) depName=(?<depName>.*?)( extractVersion=(?<extractVersion>.*?))?\\s+version: ['\"]?(?<currentValue>[^'\"\\s]+)['\"]?"
-      ]
-    }
-  ]
+  "extends": ["github>nsheaps/renovate-config"]
 }
