@@ -255,13 +255,18 @@ runs:
         plugins: |
           github@ai-mktpl
           review-changes@ai-mktpl
+        # additionalDirectories includes runner.temp because REVIEW_METRICS_PATH
+        # (set above) points at $RUNNER_TEMP/review-metrics.yaml, outside the
+        # workspace — without this the skill's mandatory metrics write is
+        # sandbox-denied and the receiver's metrics gate always fails.
         settings: |
           {
             "permissions": {
               "additionalDirectories": [
                 "${{ github.workspace }}/trigger-repo/",
                 ".claude/tmp/",
-                "~/.claude/tmp/"
+                "~/.claude/tmp/",
+                "${{ runner.temp }}"
               ],
               "deny": [
                 "mcp__github_ci__get_ci_status",
