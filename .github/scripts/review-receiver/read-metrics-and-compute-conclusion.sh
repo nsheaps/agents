@@ -42,7 +42,7 @@ case "$verdict" in
     conclusion=failure
     title="The agent rejected this PR. ${follow_ups} follow-ups found."
     ;;
-  COMMENT|comment|*)
+  COMMENT|comment)
     # Intentionally `failure`, not `neutral`. GitHub treats `neutral` as a
     # passing state for required status checks (same as `success`/`skipped`),
     # so it would NOT block merging -- silently defeating a branch-protection
@@ -50,6 +50,13 @@ case "$verdict" in
     # pass; COMMENT (P2-only follow-ups) still blocks, same as REQUEST_CHANGES.
     conclusion=failure
     title="The agent left comments (no approval). ${follow_ups} follow-ups found."
+    ;;
+  *)
+    # Unparseable/unknown verdict. Fail closed (same as COMMENT/REQUEST_CHANGES)
+    # but with a distinct title so this doesn't get misread as "the agent
+    # reviewed and left comments" during on-call debugging.
+    conclusion=failure
+    title="Unknown verdict '${verdict}'. Treating as failure. ${follow_ups} follow-ups found."
     ;;
 esac
 
