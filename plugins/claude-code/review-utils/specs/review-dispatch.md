@@ -309,8 +309,9 @@ Shell logic exceeding ~3 lines is extracted from inline YAML `run:` blocks into 
 
 Current scripts (introduced in commit `ae5a886`):
 
-- `.github/scripts/review-receiver/dismiss-prior-approvals.sh` — **superseded 2026-08-12**, no longer invoked by `review-receiver.yaml`. Kept as a reference implementation; the equivalent `gh api` commands are now inlined directly in `partials/review-thread-management.md` for the skill to run itself (its sandbox doesn't have access to this file's path).
 - `.github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh` — reads the metrics yaml emitted by the agent and outputs the `conclusion` + `title` for the terminal check update. Updated 2026-08-12 to special-case `skipped: true`.
+
+`dismiss-prior-approvals.sh` (introduced in `ae5a886`) was removed in the 2026-08-12 redesign — approval dismissal moved into the skill itself (see the "2026-08-12 redesign" section above and `partials/review-thread-management.md`), and the workflow no longer invokes a separate script for it.
 
 This convention keeps workflow YAML readable and makes shell logic independently testable.
 

@@ -19,20 +19,8 @@ name: Review Receiver (reusable)
 #     runs only for non-draft transitions.
 #   - Shell scripts >3 lines extracted to .github/scripts/review-receiver/.
 #
-# 2026-08-12 redesign (incremental review / skip-brief-full):
-#   - Removed the unconditional "Dismiss prior approval reviews" step that
-#     used to run before every agent invocation. Renovate/Dependabot
-#     force-push rebases frequently don't change the reviewable diff at
-#     all, so dismissing on every dispatch churned the PR (dismiss ->
-#     re-review -> dismiss -> re-review) without giving the author anything
-#     new. Dismissal now happens INSIDE the agent run, only when the skill's
-#     own diff-fingerprint + classification decision (see
-#     plugins/claude-code/review-utils/skills/review-code/partials/incremental-review.md)
-#     concludes a full re-review is warranted — see
-#     partials/review-thread-management.md "Dismissing a stale prior
-#     approval". The agent has its own gh auth (REVIEW_GITHUB_APP_*) to
-#     invoke the dismissal itself, so this workflow no longer needs to
-#     mint a separate token for it.
+# Approval dismissal is no longer handled by this workflow — see the
+# "2026-08-12 redesign" section of the spec above.
 #
 # Flow (review job):
 #   1. Checkout the plugin contents (nsheaps/agents@plugin-ref) — must happen
