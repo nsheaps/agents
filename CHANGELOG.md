@@ -1,5 +1,21 @@
 # Changelog
 
+## [0.3.129](https://github.com/nsheaps/agents/compare/v0.3.128...v0.3.129) (2026-08-12)
+
+### Bug Fixes
+
+* **review-utils:** COMMENT verdict must block required checks ([#334](https://github.com/nsheaps/agents/issues/334)) ([51d89b6](https://github.com/nsheaps/agents/commit/51d89b64d4e59eea70e6942faad30dcb2a0e1228)), closes [#331](https://github.com/nsheaps/agents/issues/331) [#331](https://github.com/nsheaps/agents/issues/331) [#1](https://github.com/nsheaps/agents/issues/1) [#331](https://github.com/nsheaps/agents/issues/331) [#336](https://github.com/nsheaps/agents/issues/336)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([6a7db28](https://github.com/nsheaps/agents/commit/6a7db288c2939d7e41d1d633291d2b4e8f8e4d99))
+
+## [0.3.128](https://github.com/nsheaps/agents/compare/v0.3.127...v0.3.128) (2026-08-12)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([456007f](https://github.com/nsheaps/agents/commit/456007f13b7d8511ca3dbe5924722afca34b0c1d))
+
 ## [0.3.127](https://github.com/nsheaps/agents/compare/v0.3.126...v0.3.127) (2026-08-12)
 
 ### Bug Fixes
