@@ -26,4 +26,4 @@ label_name="${LABEL_NAME:-request-review}"
 
 echo "Removing label '${label_name}' from ${SOURCE_REPO}#${PR_NUMBER} (if present)"
 gh api -X DELETE "repos/${SOURCE_REPO}/issues/${PR_NUMBER}/labels/${label_name}" \
-  >/dev/null 2>&1 || true
+  >/dev/null || true
