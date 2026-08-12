@@ -74,7 +74,9 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
 
 12. **Update the check run** (only when NOT invoked via the receiver — i.e. `${REVIEW_METRICS_PATH}` is empty).
     When the receiver workflow owns the check_run lifecycle, it reads the metrics file emitted in step 11 and updates the check itself; don't write to it from here.
-    - APPROVE -> `success`, COMMENT -> `neutral`, REQUEST_CHANGES -> `action_required`
+    - APPROVE -> `success`, COMMENT -> `action_required`, REQUEST_CHANGES -> `action_required`
+      (COMMENT is deliberately NOT `neutral` — GitHub treats `neutral` as a passing state for
+      required status checks, so it wouldn't block merge on an unapproved PR. Only APPROVE passes.)
 
     ```bash
     if [ -z "${REVIEW_METRICS_PATH}" ]; then

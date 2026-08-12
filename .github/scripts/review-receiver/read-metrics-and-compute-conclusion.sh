@@ -43,8 +43,13 @@ case "$verdict" in
     title="The agent rejected this PR. ${follow_ups} follow-ups found."
     ;;
   COMMENT|comment|*)
-    conclusion=neutral
-    title="The agent finished. ${follow_ups} follow-ups found."
+    # Intentionally `failure`, not `neutral`. GitHub treats `neutral` as a
+    # passing state for required status checks (same as `success`/`skipped`),
+    # so it would NOT block merging -- silently defeating a branch-protection
+    # rule that requires this check to pass. Only a strict APPROVE verdict may
+    # pass; COMMENT (P2-only follow-ups) still blocks, same as REQUEST_CHANGES.
+    conclusion=failure
+    title="The agent left comments (no approval). ${follow_ups} follow-ups found."
     ;;
 esac
 

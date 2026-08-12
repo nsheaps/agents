@@ -153,7 +153,7 @@ stateDiagram-v2
     Dispatched --> Neutral: converted_to_draft\ncompleted/neutral\n'PR converted to draft'
     Dispatched --> Running: normal review\nin_progress/'Review agent running...'
 
-    Running --> CommentOnly: agent verdict COMMENT\ncompleted/neutral\n'N follow-ups found'
+    Running --> CommentOnly: agent verdict COMMENT\ncompleted/failure\n'N follow-ups found'
     Running --> Rejected: agent verdict REQUEST_CHANGES\ncompleted/failure\n'N follow-ups found'
     Running --> Approved: agent verdict APPROVE\ncompleted/success\n'N follow-ups found'
     Running --> AgentFail: if: failure() guard\ncompleted/failure\n'review agent failed'
@@ -174,8 +174,11 @@ stateDiagram-v2
 4. **Agent runs.** `claude-code-action` invokes the `review-code` skill from the `review-utils` plugin. The skill posts the actual review (comment / REQUEST_CHANGES / APPROVE) via the GitHub MCP server. It ALSO emits a structured metrics file (yaml or json — schema TBD) into the workflow workspace.
 5. **Approval dismissal.** Before the agent runs, the receiver dismisses any prior `APPROVED` review from this bot on this PR. The intent: a previously-approved PR with new commits MUST get a fresh look before merge. Comment-only and request-changes reviews are NOT dismissed — they remain part of the audit trail. See [Open question §1](#open-questions) on whether this should happen earlier.
 6. **Metrics gate.** A final receiver step reads the metrics file. If absent, the workflow fails (`if: !steps.metrics.outputs.exists`). This forces the agent to emit metrics or the run is marked failed — preventing silent regressions where the agent posts but doesn't report.
-7. **Final check update.** Based on the agent's verdict + the metrics' follow-up count:
-   - COMMENT only → `completed/neutral` "The agent finished. {N} follow-ups found."
+7. **Final check update.** Based on the agent's verdict + the metrics' follow-up count. Only APPROVE
+   passes — `neutral` is deliberately avoided for COMMENT because GitHub treats it as a passing
+   state for required status checks (same as `success`/`skipped`), which would let an unapproved PR
+   merge anyway when this check is marked required:
+   - COMMENT only → `completed/failure` "The agent left comments (no approval). {N} follow-ups found."
    - REQUEST_CHANGES → `completed/failure` "The agent rejected this PR. {N} follow-ups found."
    - APPROVE → `completed/success` "The agent approved this PR. {N} follow-ups found."
 8. **`if: failure()` guard.** A final receiver step that runs only when an earlier step failed posts `completed/failure` "The review agent failed to run." This catches infrastructure failures (auth gone, MCP server crash, etc.) that would otherwise leave the check stuck `in_progress`.
@@ -220,7 +223,7 @@ sequenceDiagram
         else review REQUEST_CHANGES
             SR->>CK: failure / 'Rejected. N follow-ups'
         else review COMMENT only
-            SR->>CK: neutral / 'Finished. N follow-ups'
+            SR->>CK: failure / 'Left comments (no approval). N follow-ups'
         else infra failure
             SR->>CK: failure / 'review agent failed to run'
         end
