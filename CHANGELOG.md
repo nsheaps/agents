@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.133](https://github.com/nsheaps/agents/compare/v0.3.132...v0.3.133) (2026-08-12)
+
+### Bug Fixes
+
+* **review-utils:** grant Read in dispatch pipeline's allowedTools ([#340](https://github.com/nsheaps/agents/issues/340)) ([0a0f7b0](https://github.com/nsheaps/agents/commit/0a0f7b0926abfd7f5feb37361a4d66484451453c))
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([8032553](https://github.com/nsheaps/agents/commit/8032553bf9a1b9fbd98ad4df20d29262c1ec44f2))
+
 ## [0.3.132](https://github.com/nsheaps/agents/compare/v0.3.131...v0.3.132) (2026-08-12)
 
 ## [0.3.131](https://github.com/nsheaps/agents/compare/v0.3.130...v0.3.131) (2026-08-12)
