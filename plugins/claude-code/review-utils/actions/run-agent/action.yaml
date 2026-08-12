@@ -269,12 +269,21 @@ runs:
         plugins: |
           github@ai-mktpl
           review-changes@ai-mktpl
+        # additionalDirectories: "agent-repo/" (this checkout of nsheaps/agents,
+        # per the caller's `path: agent-repo`) must be listed alongside
+        # trigger-repo/ -- review-code/SKILL.md's Formatting section points to
+        # partials/review-formatting.md and partials/review-thread-management.md
+        # under this same checkout. Without it those Reads are denied and the
+        # model silently improvises its own review format instead of the
+        # required shields.io badge structure (observed on
+        # nsheaps/greasemonkey-scripts#54).
         settings: |
           {
             "permissions": {
               "defaultMode": "auto",
               "additionalDirectories": [
                 "${{ github.workspace }}/trigger-repo/",
+                "${{ github.workspace }}/agent-repo/",
                 ".claude/tmp/",
                 "~/.claude/tmp/",
                 "${{ runner.temp }}"
