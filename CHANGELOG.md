@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.130](https://github.com/nsheaps/agents/compare/v0.3.129...v0.3.130) (2026-08-12)
+
+### Bug Fixes
+
+* make github-app config explicit; add mise-install hook ([#339](https://github.com/nsheaps/agents/issues/339)) ([92f0d8e](https://github.com/nsheaps/agents/commit/92f0d8ece024d08321f7ad463648ec346e55b431))
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([7f1328f](https://github.com/nsheaps/agents/commit/7f1328fa318414a02f0f0120105debeeb028fee3))
+
 ## [0.3.129](https://github.com/nsheaps/agents/compare/v0.3.128...v0.3.129) (2026-08-12)
 
 ### Bug Fixes
