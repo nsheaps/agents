@@ -57,15 +57,16 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
     review_url: https://github.com/${REPO}/pull/${PR_NUMBER}#pullrequestreview-XXXX
     ```
 
-    Use `Bash` with a heredoc (do NOT use a code-execution tool that escapes the value). Example:
+    Use the `Write` tool to create `${REVIEW_METRICS_PATH}` directly (it is permitted there via
+    `Write(${{ runner.temp }}/**)`). Do NOT use `Bash` — a `cat > ... <<EOF` heredoc does not match
+    the `Bash(gh:*)`/`Bash(git:*)` allowlist and will be silently denied, leaving this step
+    incomplete even though the rest of the review succeeded. Example content:
 
-    ```bash
-    cat > "${REVIEW_METRICS_PATH}" <<EOF
+    ```yaml
     version: 1
     verdict: COMMENT
     follow_ups: 5
     review_url: ${REVIEW_URL}
-    EOF
     ```
 
     If `${REVIEW_METRICS_PATH}` is empty (legacy direct-invocation path with no receiver), skip this step.
