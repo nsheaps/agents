@@ -6,6 +6,9 @@
 #   METRICS_PATH   — path to the yaml metrics file (json fallback tried too)
 #   GITHUB_OUTPUT  — provided by GitHub Actions; outputs `conclusion` + `title`
 #
+# Optional env (review-API fallback; see below):
+#   GH_TOKEN, SOURCE_REPO, SOURCE_PR_NUMBER, SOURCE_HEAD_SHA, APP_SLUG
+#
 # Spec: plugins/claude-code/review-utils/specs/review-dispatch.md
 #       §Stage-by-stage bullet 6 (metrics gate) + bullet 7 (final check update).
 
@@ -27,9 +30,18 @@ if [ ! -f "$path" ]; then
     review_state=""
     review_html_url=""
     if [ -n "${GH_TOKEN:-}" ] && [ -n "${SOURCE_REPO:-}" ] && [ -n "${SOURCE_PR_NUMBER:-}" ] && [ -n "${SOURCE_HEAD_SHA:-}" ]; then
-      reviews_json=$(gh api "repos/${SOURCE_REPO}/pulls/${SOURCE_PR_NUMBER}/reviews" --paginate 2>/dev/null || echo '[]')
-      latest_review=$(echo "$reviews_json" | jq -c --arg sha "$SOURCE_HEAD_SHA" \
-        '[.[] | select(.commit_id == $sha)] | sort_by(.submitted_at) | last // empty')
+      gh_stderr=$(mktemp)
+      reviews_json=$(gh api "repos/${SOURCE_REPO}/pulls/${SOURCE_PR_NUMBER}/reviews" --paginate 2>"$gh_stderr" || echo '[]')
+      if [ -s "$gh_stderr" ]; then
+        echo "::warning::gh api reviews call emitted errors while attempting review-API fallback: $(tr '\n' ' ' <"$gh_stderr")"
+      fi
+      rm -f "$gh_stderr"
+      # Filter to the reviewing bot's own reviews (by App slug) so a human
+      # reviewer's comment landing on the same SHA in this narrow window
+      # can't hijack the conclusion -- the fallback exists to recover the
+      # *agent's own* review, not any review on the SHA.
+      latest_review=$(echo "$reviews_json" | jq -c --arg sha "$SOURCE_HEAD_SHA" --arg login "${APP_SLUG:+${APP_SLUG}[bot]}" \
+        '[.[] | select(.commit_id == $sha and ($login == "" or .user.login == $login))] | sort_by(.submitted_at) | last // empty')
       review_state=$(echo "$latest_review" | jq -r '.state // empty')
       review_html_url=$(echo "$latest_review" | jq -r '.html_url // empty')
     fi

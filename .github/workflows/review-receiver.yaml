@@ -266,6 +266,8 @@ jobs:
           SOURCE_REPO: ${{ inputs.source-repo }}
           SOURCE_PR_NUMBER: ${{ inputs.source-pr-number }}
           SOURCE_HEAD_SHA: ${{ inputs.source-head-sha }}
+          # Scopes the fallback to the reviewing bot's own reviews only.
+          APP_SLUG: ${{ steps.review-auth.outputs.app-slug }}
         run: bash agent-repo/.github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh
 
       - name: Update check (terminal)
