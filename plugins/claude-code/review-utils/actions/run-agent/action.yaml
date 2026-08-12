@@ -304,6 +304,19 @@ runs:
               "GH_PROMPT_DISABLED": "true",
               "GH_BROWSER": "curl",
               "CLAUDE_CODE_REMOTE": "true"
+            },
+            "hooks": {
+              "Stop": [
+                {
+                  "hooks": [
+                    {
+                      "type": "command",
+                      "command": "bash ${{ github.workspace }}/agent-repo/plugins/claude-code/review-utils/hooks/require-metrics-file.sh",
+                      "timeout": 10
+                    }
+                  ]
+                }
+              ]
             }
           }
 
