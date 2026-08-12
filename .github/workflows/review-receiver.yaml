@@ -259,6 +259,13 @@ jobs:
         id: conclusion
         env:
           METRICS_PATH: ${{ runner.temp }}/review-metrics.yaml
+          # Fallback source of truth when the agent posts a review but skips
+          # writing the metrics file (github.com/nsheaps/agents/issues/336).
+          # Reuses the review-auth token already scoped to the consumer repo.
+          GH_TOKEN: ${{ steps.review-auth.outputs.token }}
+          SOURCE_REPO: ${{ inputs.source-repo }}
+          SOURCE_PR_NUMBER: ${{ inputs.source-pr-number }}
+          SOURCE_HEAD_SHA: ${{ inputs.source-head-sha }}
         run: bash agent-repo/.github/scripts/review-receiver/read-metrics-and-compute-conclusion.sh
 
       - name: Update check (terminal)

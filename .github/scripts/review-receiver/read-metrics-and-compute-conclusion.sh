@@ -17,11 +17,56 @@ if [ ! -f "$path" ]; then
   if [ -f "$alt" ]; then
     path="$alt"
   else
-    # No metrics = the agent did not complete its job (crash, blocked tool
-    # calls, etc.). Fail this step so the job/run itself shows red, not just
-    # the PR check — matches spec §Stage-by-stage bullet 6. The `if: failure()`
-    # guard in review-receiver.yaml posts the terminal failure check.
-    echo "::error::No metrics file at $METRICS_PATH or $alt — review agent did not complete."
+    # Metrics file missing. This has been observed to happen even when the
+    # agent successfully posts its review (github.com/nsheaps/agents/issues/336) --
+    # the agent treats "submit the review" as task completion and doesn't
+    # reliably continue on to the metrics-emission step. Before failing
+    # closed, fall back to the real GitHub review the agent should have just
+    # posted: it's a more reliable source of truth than an LLM-authored side
+    # file, since it's the actual outcome we're gating on.
+    review_state=""
+    review_html_url=""
+    if [ -n "${GH_TOKEN:-}" ] && [ -n "${SOURCE_REPO:-}" ] && [ -n "${SOURCE_PR_NUMBER:-}" ] && [ -n "${SOURCE_HEAD_SHA:-}" ]; then
+      reviews_json=$(gh api "repos/${SOURCE_REPO}/pulls/${SOURCE_PR_NUMBER}/reviews" --paginate 2>/dev/null || echo '[]')
+      latest_review=$(echo "$reviews_json" | jq -c --arg sha "$SOURCE_HEAD_SHA" \
+        '[.[] | select(.commit_id == $sha)] | sort_by(.submitted_at) | last // empty')
+      review_state=$(echo "$latest_review" | jq -r '.state // empty')
+      review_html_url=$(echo "$latest_review" | jq -r '.html_url // empty')
+    fi
+
+    if [ -n "$review_state" ]; then
+      echo "::warning::No metrics file at $METRICS_PATH or $alt, but found a review (state=$review_state, $review_html_url) on $SOURCE_HEAD_SHA. Deriving conclusion from the review API instead of failing closed. See https://github.com/nsheaps/agents/issues/336."
+      case "$review_state" in
+        APPROVED)
+          conclusion=success
+          title="The agent approved this PR (recovered via review API — metrics file missing)."
+          ;;
+        CHANGES_REQUESTED)
+          conclusion=failure
+          title="The agent rejected this PR (recovered via review API — metrics file missing)."
+          ;;
+        COMMENTED)
+          conclusion=failure
+          title="The agent left comments, no approval (recovered via review API — metrics file missing)."
+          ;;
+        *)
+          conclusion=failure
+          title="Unrecognized review state '${review_state}' (recovered via review API — metrics file missing)."
+          ;;
+      esac
+      {
+        echo "conclusion=$conclusion"
+        echo "title=$title"
+      } >> "$GITHUB_OUTPUT"
+      exit 0
+    fi
+
+    # No metrics file AND no matching review found = the agent genuinely did
+    # not complete its job (crash, blocked tool calls, etc.). Fail this step
+    # so the job/run itself shows red, not just the PR check — matches spec
+    # §Stage-by-stage bullet 6. The `if: failure()` guard in
+    # review-receiver.yaml posts the terminal failure check.
+    echo "::error::No metrics file at $METRICS_PATH or $alt, and no matching review found on $SOURCE_HEAD_SHA — review agent did not complete."
     {
       echo "conclusion=failure"
       echo "title=Review agent finished but metrics missing"
