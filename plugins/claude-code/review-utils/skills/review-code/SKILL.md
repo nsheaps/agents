@@ -40,10 +40,10 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
 
 10. **Hide your previous reviews** just before submitting. Only hide YOUR OWN reviews:
 
-   ```bash
-   gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | select(.author.login == "<BOT_USERNAME>") | {id, state}'
-   # Minimize each with GraphQL minimizeComment mutation, classifier: OUTDATED
-   ```
+```bash
+gh pr view <PR_NUMBER> --json reviews --jq '.reviews[] | select(.author.login == "<BOT_USERNAME>") | {id, state}'
+# Minimize each with GraphQL minimizeComment mutation, classifier: OUTDATED
+```
 
 11. **Submit the review**: Use `mcp__github__submit_pending_pull_request_review`. Skip this step entirely if step 2 decided "skip" or "brief refresh with nothing new to say" — see `partials/incremental-review.md`.
     - **REQUEST_CHANGES**: P0 or P1 follow-ups remain (security, perf, correctness, significant quality issues)

@@ -66,6 +66,7 @@ Used for a BRIEF REFRESH (see `partials/incremental-review.md`) when a new revie
 <one-line verdict statement, e.g. "Dependency bump checked — no issues found.">
 
 <optional short bullet list, ONLY if follow-ups exist>
+
 - **P1**: [issue]
 - **P2**: [issue]
 
