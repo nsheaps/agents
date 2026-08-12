@@ -164,7 +164,7 @@ stateDiagram-v2
     Dispatched --> Neutral: converted_to_draft\ncompleted/neutral\n'PR converted to draft'
     Dispatched --> Running: normal review\nin_progress/'Review agent running...'
 
-    Running --> CommentOnly: agent verdict COMMENT\ncompleted/neutral\n'N follow-ups found'
+    Running --> CommentOnly: agent verdict COMMENT\ncompleted/failure\n'N follow-ups found'
     Running --> Rejected: agent verdict REQUEST_CHANGES\ncompleted/failure\n'N follow-ups found'
     Running --> Approved: agent verdict APPROVE\ncompleted/success\n'N follow-ups found'
     Running --> AgentFail: if: failure() guard\ncompleted/failure\n'review agent failed'
@@ -183,10 +183,14 @@ stateDiagram-v2
 2. **`repository_dispatch` payload.** The dispatch event carries: `event_type` (e.g. `pr-review`), `client_payload.source` (consumer repo, PR number, head SHA, head ref, base ref), `client_payload.check_run_id` (the consumer-side check-run to update), `client_payload.consumer_workflow_run_url` (so the receiver can preserve the deep link if it doesn't override), and `client_payload.trigger` (`event` + `action` fields from the originating PR event — the receiver uses `action` to detect `converted_to_draft` and short-circuit).
 3. **Receiver updates to in_progress.** First action on the receiver side is `checks.update({check_run_id, status: "in_progress", output: {title: "Review agent running..."}})`. The receiver runs under the target agent's GitHub App, but updates the check-run on the consumer repo — so the App must be installed on the consumer.
 4. **Agent runs.** `run-agent` first restores the prior review-state cache entry for this PR (if any — see `partials/incremental-review.md`). `claude-code-action` then invokes the `review-code` skill from the `review-utils` plugin, which loads that state, classifies the PR, computes a diff fingerprint, and decides SKIP / BRIEF REFRESH / FULL REVIEW before doing anything else. On SKIP it posts nothing. Otherwise it posts the review (comment / REQUEST_CHANGES / APPROVE) via the GitHub MCP server, using brief formatting for a `routine-update` BRIEF REFRESH or full formatting otherwise. It ALSO emits a structured metrics file (yaml — schema v1, see below) and a review-state cache entry into the workflow workspace; `run-agent` saves the state entry back to the cache after the run.
+   4a. **Metrics-emission enforcement (prevention layer).** The agent process runs with a Claude Code Stop hook (`plugins/claude-code/review-utils/hooks/require-metrics-file.sh`) wired in via `run-agent/action.yaml`'s `settings.hooks.Stop`. Before each attempt to end the turn, the hook checks that `$REVIEW_METRICS_PATH` (or its `.json` fallback) has actually been written; if not, it returns `{"decision":"block","reason":"..."}` which re-prompts the agent to comply with SKILL.md step 13 (metrics emission is REQUIRED regardless of the skip/refresh/full decision — see step 12/13). Respects `stop_hook_active` so it only re-prompts once per turn-cycle. This is complementary to bullet 6's review-API fallback: the hook prevents the common case (agent skips the step) at the source, the fallback catches structural failures the hook can't observe (killed/timed-out process — no Stop event ever fires).
 5. **Approval dismissal (skill-driven, conditional).** The skill — not the receiver — dismisses any prior `APPROVED` review from this bot on this PR, and only in the FULL REVIEW branch (or a REQUEST_CHANGES-verdict BRIEF REFRESH). A SKIP or a no-issues BRIEF REFRESH dismisses nothing — an unchanged or routine-update diff on top of an already-approved PR doesn't need a fresh "ready to merge" gate. Comment-only and request-changes reviews are NOT dismissed — they remain part of the audit trail. See `partials/review-thread-management.md` "Dismissing a stale prior approval". This resolves the former [Open question §1](#open-questions) — dismissal timing is now agent-decision-time, not receiver-pre-run-time.
-6. **Metrics gate.** A final receiver step reads the metrics file. If absent, the workflow fails (`if: !steps.metrics.outputs.exists`). This forces the agent to emit metrics or the run is marked failed — preventing silent regressions where the agent posts but doesn't report.
-7. **Final check update.** Based on the agent's verdict + the metrics' follow-up count:
-   - COMMENT only → `completed/neutral` "The agent finished. {N} follow-ups found."
+6. **Metrics gate, with review-API fallback.** A final receiver step reads the metrics file. In practice the agent has been observed to sometimes post its review successfully but skip emitting the metrics file (treating "submit the review" as task completion — see [nsheaps/agents#336](https://github.com/nsheaps/agents/issues/336)). Before failing closed, the step falls back to querying `GET /repos/{source-repo}/pulls/{pr}/reviews`, taking the latest review whose `commit_id` matches the consumer head SHA, and deriving the conclusion from that review's real `state` (`APPROVED`/`COMMENTED`/`CHANGES_REQUESTED`) — the same strict mapping as bullet 7 below. This is still a real, workflow-computed outcome (never a hand-patched check): it just prefers the platform's own record of the review over an LLM-authored side file when the two disagree on whether the step ran. Only when NEITHER the metrics file NOR a matching review exists does the workflow fail (`exit 1`) — that's a genuine non-completion (crash, blocked tool calls, etc.), not a missed reporting step. A SKIP or BRIEF REFRESH run still always emits a metrics file (with `skipped: true` when nothing new was posted — see the schema below), so this fallback path is not reachable for those decisions; it only matters for FULL REVIEW / posting BRIEF REFRESH runs.
+7. **Final check update.** Based on the agent's verdict + the metrics' follow-up count. Only APPROVE
+   passes — `neutral` is deliberately avoided for COMMENT because GitHub treats it as a passing
+   state for required status checks (same as `success`/`skipped`), which would let an unapproved PR
+   merge anyway when this check is marked required:
+   - COMMENT only → `completed/failure` "The agent left comments (no approval). {N} follow-ups found."
    - REQUEST_CHANGES → `completed/failure` "The agent rejected this PR. {N} follow-ups found."
    - APPROVE → `completed/success` "The agent approved this PR. {N} follow-ups found."
 8. **`if: failure()` guard.** A final receiver step that runs only when an earlier step failed posts `completed/failure` "The review agent failed to run." This catches infrastructure failures (auth gone, MCP server crash, etc.) that would otherwise leave the check stuck `in_progress`.
@@ -239,7 +243,7 @@ sequenceDiagram
         else review REQUEST_CHANGES
             SR->>CK: failure / 'Rejected. N follow-ups'
         else review COMMENT only
-            SR->>CK: neutral / 'Finished. N follow-ups'
+            SR->>CK: failure / 'Left comments (no approval). N follow-ups'
         else infra failure
             SR->>CK: failure / 'review agent failed to run'
         end

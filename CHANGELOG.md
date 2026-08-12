@@ -1,5 +1,31 @@
 # Changelog
 
+## [0.3.131](https://github.com/nsheaps/agents/compare/v0.3.130...v0.3.131) (2026-08-12)
+
+### Bug Fixes
+
+* guard unbound SOURCE_HEAD_SHA in metrics-gate error message ([d5ec519](https://github.com/nsheaps/agents/commit/d5ec519e4e3913d3f2384c33a503fe8c7c64ddcd)), closes [nsheaps/agents#333](https://github.com/nsheaps/agents/issues/333)
+
+## [0.3.130](https://github.com/nsheaps/agents/compare/v0.3.129...v0.3.130) (2026-08-12)
+
+### Bug Fixes
+
+* make github-app config explicit; add mise-install hook ([#339](https://github.com/nsheaps/agents/issues/339)) ([92f0d8e](https://github.com/nsheaps/agents/commit/92f0d8ece024d08321f7ad463648ec346e55b431))
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([7f1328f](https://github.com/nsheaps/agents/commit/7f1328fa318414a02f0f0120105debeeb028fee3))
+
+## [0.3.129](https://github.com/nsheaps/agents/compare/v0.3.128...v0.3.129) (2026-08-12)
+
+### Bug Fixes
+
+* **review-utils:** COMMENT verdict must block required checks ([#334](https://github.com/nsheaps/agents/issues/334)) ([51d89b6](https://github.com/nsheaps/agents/commit/51d89b64d4e59eea70e6942faad30dcb2a0e1228)), closes [#331](https://github.com/nsheaps/agents/issues/331) [#331](https://github.com/nsheaps/agents/issues/331) [#1](https://github.com/nsheaps/agents/issues/1) [#331](https://github.com/nsheaps/agents/issues/331) [#336](https://github.com/nsheaps/agents/issues/336)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([6a7db28](https://github.com/nsheaps/agents/commit/6a7db288c2939d7e41d1d633291d2b4e8f8e4d99))
+
 ## [0.3.128](https://github.com/nsheaps/agents/compare/v0.3.127...v0.3.128) (2026-08-12)
 
 ### Maintenance
