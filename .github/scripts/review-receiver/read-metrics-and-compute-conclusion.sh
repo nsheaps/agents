@@ -78,7 +78,7 @@ if [ ! -f "$path" ]; then
     # so the job/run itself shows red, not just the PR check — matches spec
     # §Stage-by-stage bullet 6. The `if: failure()` guard in
     # review-receiver.yaml posts the terminal failure check.
-    echo "::error::No metrics file at $METRICS_PATH or $alt, and no matching review found on $SOURCE_HEAD_SHA — review agent did not complete."
+    echo "::error::No metrics file at $METRICS_PATH or $alt, and no matching review found on ${SOURCE_HEAD_SHA:-<unset>} — review agent did not complete."
     {
       echo "conclusion=failure"
       echo "title=Review agent finished but metrics missing"
