@@ -274,8 +274,16 @@ runs:
         # entry: it's also what claude-code-action's prepareMcpConfig reads to decide
         # whether to install the GitHub MCP server (hasGitHubMcpTools) -- settings.json
         # allow rules don't feed that check.
+        #
+        # Write(${{ runner.temp }}/**) is scoped to the runner's temp dir (already
+        # exposed via additionalDirectories below) so the review-code skill's step 11
+        # can emit review-metrics.yaml. Without it, the only write path is a Bash
+        # heredoc, which doesn't match Bash(gh:*)/Bash(git:*) and gets denied --
+        # the agent then finishes its review (approve/comment/request-changes posted
+        # fine via MCP) but never writes the metrics file, so the receiver workflow's
+        # metrics gate fails the check even though the review itself succeeded.
         claude_args: |
-          --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*)"
+          --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*),Write(${{ runner.temp }}/**)"
         plugin_marketplaces: |
           https://github.com/nsheaps/ai-mktpl.git
         plugins: |

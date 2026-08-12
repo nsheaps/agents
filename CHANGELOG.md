@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.127](https://github.com/nsheaps/agents/compare/v0.3.126...v0.3.127) (2026-08-12)
+
+### Bug Fixes
+
+* **review-utils:** allow review agent to write metrics file ([#331](https://github.com/nsheaps/agents/issues/331)) ([be7df97](https://github.com/nsheaps/agents/commit/be7df97a3f5679f43a15546e5341794342b7213a))
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([733fc3e](https://github.com/nsheaps/agents/commit/733fc3eb73084dd1921d6791ec6ee92984b5b69a))
+
 ## [0.3.126](https://github.com/nsheaps/agents/compare/v0.3.125...v0.3.126) (2026-08-11)
 
 ### Maintenance
