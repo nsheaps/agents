@@ -10,24 +10,14 @@ name: Review Receiver (reusable)
 #
 # Spec: plugins/claude-code/review-utils/specs/review-dispatch.md
 #       §Receiver-side-flow + §Final-CI-side-check-update
+#       (§Status has the dated design-decision log, including why the
+#       receiver removes the trigger label at review-start — this file
+#       only describes current behavior, not its history.)
 #
-# 2026-05-23 redesign (Nate 18:08Z):
-#   - The receiver MUST NOT remove the trigger label. The label stays so
-#     subsequent PR events keep re-firing the dispatch.
-#   - `converted_to_draft` is a first-class event — handled by the `skip`
-#     job below: posts a `neutral` check + early-exits. The `review` job
-#     runs only for non-draft transitions.
-#   - Shell scripts >3 lines extracted to .github/scripts/review-receiver/.
-#
-# SUPERSEDED (handler instruction, this session): the "receiver MUST NOT
-# remove the trigger label" bullet above no longer holds. The receiver now
-# removes the request-review label right when the review actually starts
-# (in_progress), so a still-draft PR's label can be freely re-applied to
-# request another review round after feedback is addressed. The decider
-# still never touches the label — only the receiver, and only at review
-# start, not at dispatch time. See review-dispatch.md for the full
-# rationale and the consumer-side "re-apply label to re-request review"
-# workflow this enables.
+# `converted_to_draft` is a first-class event — handled by the `skip` job
+# below: posts a `neutral` check + early-exits. The `review` job runs only
+# for non-draft transitions. Shell scripts >3 lines are extracted to
+# .github/scripts/review-receiver/.
 #
 # Flow (review job):
 #   1. Checkout the plugin contents (nsheaps/agents@plugin-ref) — must happen
