@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.131](https://github.com/nsheaps/agents/compare/v0.3.130...v0.3.131) (2026-08-12)
+
+### Bug Fixes
+
+* guard unbound SOURCE_HEAD_SHA in metrics-gate error message ([d5ec519](https://github.com/nsheaps/agents/commit/d5ec519e4e3913d3f2384c33a503fe8c7c64ddcd)), closes [nsheaps/agents#333](https://github.com/nsheaps/agents/issues/333)
+
 ## [0.3.130](https://github.com/nsheaps/agents/compare/v0.3.129...v0.3.130) (2026-08-12)
 
 ### Bug Fixes
