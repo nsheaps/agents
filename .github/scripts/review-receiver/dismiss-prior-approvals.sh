@@ -1,4 +1,14 @@
 #!/usr/bin/env bash
+# SUPERSEDED (2026-08-12): no longer invoked automatically by
+# review-receiver.yaml. Dismissal now happens inside the review-code skill
+# itself, only when its diff-fingerprint + classification decision concludes
+# a full re-review is warranted — see
+# plugins/claude-code/review-utils/skills/review-code/partials/incremental-review.md
+# and partials/review-thread-management.md ("Dismissing a stale prior
+# approval"). Kept here as a reference implementation / for manual use; the
+# equivalent gh api commands are inlined in the skill's own partial since its
+# sandbox doesn't have access to this file.
+#
 # Dismiss prior APPROVED reviews by this bot on the given PR so the PR
 # can't be merged on a stale approval. Keeps REQUEST_CHANGES + COMMENT
 # reviews intact (audit trail).

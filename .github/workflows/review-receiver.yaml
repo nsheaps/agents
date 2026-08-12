@@ -19,18 +19,35 @@ name: Review Receiver (reusable)
 #     runs only for non-draft transitions.
 #   - Shell scripts >3 lines extracted to .github/scripts/review-receiver/.
 #
+# 2026-08-12 redesign (incremental review / skip-brief-full):
+#   - Removed the unconditional "Dismiss prior approval reviews" step that
+#     used to run before every agent invocation. Renovate/Dependabot
+#     force-push rebases frequently don't change the reviewable diff at
+#     all, so dismissing on every dispatch churned the PR (dismiss ->
+#     re-review -> dismiss -> re-review) without giving the author anything
+#     new. Dismissal now happens INSIDE the agent run, only when the skill's
+#     own diff-fingerprint + classification decision (see
+#     plugins/claude-code/review-utils/skills/review-code/partials/incremental-review.md)
+#     concludes a full re-review is warranted — see
+#     partials/review-thread-management.md "Dismissing a stale prior
+#     approval". The agent has its own gh auth (REVIEW_GITHUB_APP_*) to
+#     invoke the dismissal itself, so this workflow no longer needs to
+#     mint a separate token for it.
+#
 # Flow (review job):
 #   1. Checkout the plugin contents (nsheaps/agents@plugin-ref) — must happen
 #      early so .github/scripts/review-receiver/ is available.
-#   2. Generate review App token (used to call back into consumer repo).
+#   2. Generate App token for updating checks (used to call back into
+#      consumer repo).
 #   3. Update the consumer-side check-run to in_progress "Review agent
 #      running...".
-#   4. Dismiss prior APPROVED reviews from this bot on the PR.
-#   5. Invoke the plugin's `run-agent` composite action.
-#   6. Read metrics yaml/json file emitted by the agent; fail if absent.
-#   7. Update the consumer-side check to terminal state (success/neutral/failure)
+#   4. Invoke the plugin's `run-agent` composite action, which restores prior
+#      review state, runs the skill's skip/brief/full decision, and (only
+#      when warranted) dismisses a stale prior approval itself.
+#   5. Read metrics yaml/json file emitted by the agent; fail if absent.
+#   6. Update the consumer-side check to terminal state (success/neutral/failure)
 #      based on agent verdict + follow-up count.
-#   8. `if: failure()` final guard: post "review agent failed to run" check.
+#   7. `if: failure()` final guard: post "review agent failed to run" check.
 
 on:
   workflow_call:
@@ -188,14 +205,6 @@ jobs:
           private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ steps.consumer.outputs.owner }}
 
-      - name: Generate App token for dismissing review
-        id: review-auth
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
-        with:
-          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
-          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
-          owner: ${{ steps.consumer.outputs.owner }}
-
       # Update check-run on consumer to in_progress.
       - name: Update check (in_progress)
         uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
@@ -207,17 +216,6 @@ jobs:
           details_url: ${{ steps.ctx.outputs.details_url }}
           output: |
             {"title":"Review agent running...","summary":"Reviewing on ${{ github.repository }} runners."}
-
-      # Dismiss prior APPROVED reviews from this bot so the PR can't merge
-      # on a stale approval. Keep REQUEST_CHANGES + COMMENT reviews intact.
-      # Logic in .github/scripts/review-receiver/dismiss-prior-approvals.sh.
-      - name: Dismiss prior approval reviews
-        env:
-          GH_TOKEN: ${{ steps.review-auth.outputs.token }}
-          SOURCE_REPO: ${{ inputs.source-repo }}
-          PR_NUMBER: ${{ inputs.source-pr-number }}
-          APP_SLUG: ${{ steps.review-auth.outputs.app-slug }}
-        run: bash agent-repo/.github/scripts/review-receiver/dismiss-prior-approvals.sh
 
       # Invoke the plugin's run-agent composite. It owns the actual review:
       # auth, checkout consumer repo, claude-code-action with plugins, finalize.
