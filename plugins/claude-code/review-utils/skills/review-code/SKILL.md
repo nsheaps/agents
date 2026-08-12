@@ -57,10 +57,11 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
     review_url: https://github.com/${REPO}/pull/${PR_NUMBER}#pullrequestreview-XXXX
     ```
 
-    Use the `Write` tool to create `${REVIEW_METRICS_PATH}` directly (it is permitted there via
-    `Write(${{ runner.temp }}/**)`). Do NOT use `Bash` — a `cat > ... <<EOF` heredoc does not match
-    the `Bash(gh:*)`/`Bash(git:*)` allowlist and will be silently denied, leaving this step
-    incomplete even though the rest of the review succeeded. Example content:
+    Use the `Write` tool to create `${REVIEW_METRICS_PATH}` directly (it is permitted under the
+    same directory as `${REVIEW_METRICS_PATH}` via a `Write(<runner-temp>/**)` rule in
+    `run-agent/action.yaml`). Do NOT use `Bash` — a `cat > ... <<EOF` heredoc does not match the
+    `Bash(gh:*)`/`Bash(git:*)` allowlist and will be silently denied, leaving this step incomplete
+    even though the rest of the review succeeded. Example content:
 
     ```yaml
     version: 1
