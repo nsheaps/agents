@@ -1,5 +1,7 @@
 # Changelog
 
+## [0.3.132](https://github.com/nsheaps/agents/compare/v0.3.131...v0.3.132) (2026-08-12)
+
 ## [0.3.131](https://github.com/nsheaps/agents/compare/v0.3.130...v0.3.131) (2026-08-12)
 
 ### Bug Fixes
