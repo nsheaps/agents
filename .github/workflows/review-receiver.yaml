@@ -19,18 +19,30 @@ name: Review Receiver (reusable)
 #     runs only for non-draft transitions.
 #   - Shell scripts >3 lines extracted to .github/scripts/review-receiver/.
 #
+# SUPERSEDED (handler instruction, this session): the "receiver MUST NOT
+# remove the trigger label" bullet above no longer holds. The receiver now
+# removes the request-review label right when the review actually starts
+# (in_progress), so a still-draft PR's label can be freely re-applied to
+# request another review round after feedback is addressed. The decider
+# still never touches the label — only the receiver, and only at review
+# start, not at dispatch time. See review-dispatch.md for the full
+# rationale and the consumer-side "re-apply label to re-request review"
+# workflow this enables.
+#
 # Flow (review job):
 #   1. Checkout the plugin contents (nsheaps/agents@plugin-ref) — must happen
 #      early so .github/scripts/review-receiver/ is available.
 #   2. Generate review App token (used to call back into consumer repo).
 #   3. Update the consumer-side check-run to in_progress "Review agent
 #      running...".
-#   4. Dismiss prior APPROVED reviews from this bot on the PR.
-#   5. Invoke the plugin's `run-agent` composite action.
-#   6. Read metrics yaml/json file emitted by the agent; fail if absent.
-#   7. Update the consumer-side check to terminal state (success/neutral/failure)
+#   4. Remove the request-review label from the consumer PR (idempotent —
+#      no-op if absent). Frees it to be re-applied for the next round.
+#   5. Dismiss prior APPROVED reviews from this bot on the PR.
+#   6. Invoke the plugin's `run-agent` composite action.
+#   7. Read metrics yaml/json file emitted by the agent; fail if absent.
+#   8. Update the consumer-side check to terminal state (success/neutral/failure)
 #      based on agent verdict + follow-up count.
-#   8. `if: failure()` final guard: post "review agent failed to run" check.
+#   9. `if: failure()` final guard: post "review agent failed to run" check.
 
 on:
   workflow_call:
@@ -106,8 +118,9 @@ on:
 jobs:
   # converted_to_draft path — the PR is no longer ready for review.
   # Post a `neutral` check on the consumer PR and exit early. We DO NOT
-  # touch the trigger label here (or anywhere) — label stays for the next
-  # PR event to re-fire the dispatch.
+  # touch the trigger label here — no review ran, so there's nothing to
+  # signal "done, re-request when ready" for. (The `review` job below DOES
+  # remove the label, but only once a review actually starts.)
   skip:
     if: inputs.trigger-event-action == 'converted_to_draft'
     runs-on: ubuntu-latest
@@ -207,6 +220,20 @@ jobs:
           details_url: ${{ steps.ctx.outputs.details_url }}
           output: |
             {"title":"Review agent running...","summary":"Reviewing on ${{ github.repository }} runners."}
+
+      # Remove the request-review label now that the review has actually
+      # started. This frees the label to be re-applied later (e.g. on a
+      # still-draft PR) to request another review round after feedback is
+      # addressed — see .github/scripts/review-receiver/remove-request-review-label.sh
+      # and review-dispatch.md for the full rationale. Uses the automation
+      # token (same identity that edits labels in the decider), not the
+      # review token — label edits are a routing concern, not a reviewer one.
+      - name: Remove request-review label
+        env:
+          GH_TOKEN: ${{ steps.auth.outputs.token }}
+          SOURCE_REPO: ${{ inputs.source-repo }}
+          PR_NUMBER: ${{ inputs.source-pr-number }}
+        run: bash agent-repo/.github/scripts/review-receiver/remove-request-review-label.sh
 
       # Dismiss prior APPROVED reviews from this bot so the PR can't merge
       # on a stale approval. Keep REQUEST_CHANGES + COMMENT reviews intact.
