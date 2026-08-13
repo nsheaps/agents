@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.134](https://github.com/nsheaps/agents/compare/v0.3.133...v0.3.134) (2026-08-13)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([4dc6f60](https://github.com/nsheaps/agents/commit/4dc6f60f4666741f60cd93f46f3806d730008e9d))
+* **deps:** update nsheaps + squink github actions ([#321](https://github.com/nsheaps/agents/issues/321)) ([686f67b](https://github.com/nsheaps/agents/commit/686f67b65abade7576be895684793553a0b1d746))
+
 ## [0.3.133](https://github.com/nsheaps/agents/compare/v0.3.132...v0.3.133) (2026-08-12)
 
 ### Bug Fixes
