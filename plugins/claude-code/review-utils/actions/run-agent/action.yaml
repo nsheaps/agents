@@ -245,7 +245,7 @@ runs:
     #   https://docs.claude.com/en/docs/claude-code/hooks
     - name: Build prompt
       id: prompt
-      uses: nsheaps/ai-mktpl/.github/actions/interpolate-prompt@0f61088bc3910ecc375166a7e3dc13a4244e117a # main
+      uses: nsheaps/ai-mktpl/.github/actions/interpolate-prompt@329302cdee5d1e49006dc548e55d4ca9e2dabc82 # main
       with:
         template-file: ${{ env.PROMPT_TEMPLATE }}
 
@@ -270,10 +270,11 @@ runs:
           actions: read
           checks: write
         prompt: ${{ steps.prompt.outputs.prompt }}
-        # --allowedTools has to stay a claude_args flag, not a settings.permissions.allow
-        # entry: it's also what claude-code-action's prepareMcpConfig reads to decide
-        # whether to install the GitHub MCP server (hasGitHubMcpTools) -- settings.json
-        # allow rules don't feed that check.
+        # --allowedTools has to stay a claude_args flag (not moved to
+        # settings.permissions.allow) for mcp__github__*, Bash(gh:*), Bash(git:*),
+        # and Write(${{ runner.temp }}/**): it's also what claude-code-action's
+        # prepareMcpConfig reads to decide whether to install the GitHub MCP server
+        # (hasGitHubMcpTools) -- settings.json allow rules don't feed that check.
         #
         # Write(${{ runner.temp }}/**) is scoped to the runner's temp dir (already
         # exposed via additionalDirectories below) so the review-code skill's step 11
@@ -282,6 +283,10 @@ runs:
         # the agent then finishes its review (approve/comment/request-changes posted
         # fine via MCP) but never writes the metrics file, so the receiver workflow's
         # metrics gate fails the check even though the review itself succeeded.
+        #
+        # Read is granted via settings.permissions.allow below instead -- it has no
+        # such dependency on --allowedTools/prepareMcpConfig, so it belongs in
+        # settings like any other ordinary tool grant.
         claude_args: |
           --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*),Write(${{ runner.temp }}/**)"
         plugin_marketplaces: |
@@ -297,10 +302,26 @@ runs:
         # model silently improvises its own review format instead of the
         # required shields.io badge structure (observed on
         # nsheaps/greasemonkey-scripts#54).
+        #
+        # permissions.allow: "Read" -- required so the review-code skill can
+        # actually load partials/review-formatting.md and
+        # partials/review-thread-management.md (additionalDirectories above only
+        # controls *where* Read can operate; it doesn't grant Read itself). Without
+        # it, every Read call is denied and the model silently improvises its own
+        # review format instead of the required shields.io badge structure
+        # (observed on nsheaps/greasemonkey-scripts#54 and nsheaps/ai-mktpl#746,
+        # where permission_denials_count: 11 was observed with no Read tool_use
+        # calls in the stream-json output at all). Unlike mcp__github__*,
+        # Bash(gh:*), Bash(git:*), and Write(...) above, Read has no dependency on
+        # claude-code-action's prepareMcpConfig/hasGitHubMcpTools check, so it's
+        # granted here via settings.permissions.allow rather than --allowedTools.
         settings: |
           {
             "permissions": {
               "defaultMode": "auto",
+              "allow": [
+                "Read"
+              ],
               "additionalDirectories": [
                 "${{ github.workspace }}/trigger-repo/",
                 "${{ github.workspace }}/agent-repo/",

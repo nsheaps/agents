@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.135](https://github.com/nsheaps/agents/compare/v0.3.134...v0.3.135) (2026-08-13)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([a3702c0](https://github.com/nsheaps/agents/commit/a3702c05c34eafb35cc25a04dcfe897517d4b46b))
+
+## [0.3.134](https://github.com/nsheaps/agents/compare/v0.3.133...v0.3.134) (2026-08-13)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([4dc6f60](https://github.com/nsheaps/agents/commit/4dc6f60f4666741f60cd93f46f3806d730008e9d))
+* **deps:** update nsheaps + squink github actions ([#321](https://github.com/nsheaps/agents/issues/321)) ([686f67b](https://github.com/nsheaps/agents/commit/686f67b65abade7576be895684793553a0b1d746))
+
+## [0.3.133](https://github.com/nsheaps/agents/compare/v0.3.132...v0.3.133) (2026-08-12)
+
+### Bug Fixes
+
+* **review-utils:** grant Read in dispatch pipeline's allowedTools ([#340](https://github.com/nsheaps/agents/issues/340)) ([0a0f7b0](https://github.com/nsheaps/agents/commit/0a0f7b0926abfd7f5feb37361a4d66484451453c))
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([8032553](https://github.com/nsheaps/agents/commit/8032553bf9a1b9fbd98ad4df20d29262c1ec44f2))
+
+## [0.3.132](https://github.com/nsheaps/agents/compare/v0.3.131...v0.3.132) (2026-08-12)
+
 ## [0.3.131](https://github.com/nsheaps/agents/compare/v0.3.130...v0.3.131) (2026-08-12)
 
 ### Bug Fixes
