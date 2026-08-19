@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.137](https://github.com/nsheaps/agents/compare/v0.3.136...v0.3.137) (2026-08-19)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([c11e86f](https://github.com/nsheaps/agents/commit/c11e86f4729ea964f2ae89a0e0bac8f1f103dc4c))
+
 ## [0.3.136](https://github.com/nsheaps/agents/compare/v0.3.135...v0.3.136) (2026-08-18)
 
 ### Maintenance
