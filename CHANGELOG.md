@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.139](https://github.com/nsheaps/agents/compare/v0.3.138...v0.3.139) (2026-08-25)
+
+### Maintenance
+
+* **deps:** update dependency @release-it/bumper to v8 ([#346](https://github.com/nsheaps/agents/issues/346)) ([5f0ca8b](https://github.com/nsheaps/agents/commit/5f0ca8bf2b492335eb6af679671a2c1294ac5a8b))
+
 ## [0.3.138](https://github.com/nsheaps/agents/compare/v0.3.137...v0.3.138) (2026-08-25)
 
 ### Maintenance
