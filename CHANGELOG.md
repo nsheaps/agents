@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.140](https://github.com/nsheaps/agents/compare/v0.3.139...v0.3.140) (2026-08-25)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([416bd3f](https://github.com/nsheaps/agents/commit/416bd3f32f662a254d07830eb063b78b6c639e5f))
+* **deps:** update dependency release-it to v21 ([#347](https://github.com/nsheaps/agents/issues/347)) ([93f8743](https://github.com/nsheaps/agents/commit/93f874305b603d0d1c0d16ce8b4d96809c72bb27))
+
 ## [0.3.139](https://github.com/nsheaps/agents/compare/v0.3.138...v0.3.139) (2026-08-25)
 
 ### Maintenance
