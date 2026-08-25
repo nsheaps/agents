@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.141](https://github.com/nsheaps/agents/compare/v0.3.140...v0.3.141) (2026-08-25)
+
+### Maintenance
+
+* **deps:** update dependency @release-it/conventional-changelog to v12 ([#348](https://github.com/nsheaps/agents/issues/348)) ([d1c0daa](https://github.com/nsheaps/agents/commit/d1c0daa54f96916925a277c9deea4052e806e2a6)), references [#8203](https://github.com/nsheaps/agents/issues/8203)
+
 ## [0.3.140](https://github.com/nsheaps/agents/compare/v0.3.139...v0.3.140) (2026-08-25)
 
 ### Maintenance
