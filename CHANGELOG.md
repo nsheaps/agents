@@ -1,5 +1,30 @@
 # Changelog
 
+## [0.3.140](https://github.com/nsheaps/agents/compare/v0.3.139...v0.3.140) (2026-08-25)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([416bd3f](https://github.com/nsheaps/agents/commit/416bd3f32f662a254d07830eb063b78b6c639e5f))
+* **deps:** update dependency release-it to v21 ([#347](https://github.com/nsheaps/agents/issues/347)) ([93f8743](https://github.com/nsheaps/agents/commit/93f874305b603d0d1c0d16ce8b4d96809c72bb27))
+
+## [0.3.139](https://github.com/nsheaps/agents/compare/v0.3.138...v0.3.139) (2026-08-25)
+
+### Maintenance
+
+* **deps:** update dependency @release-it/bumper to v8 ([#346](https://github.com/nsheaps/agents/issues/346)) ([5f0ca8b](https://github.com/nsheaps/agents/commit/5f0ca8bf2b492335eb6af679671a2c1294ac5a8b))
+
+## [0.3.138](https://github.com/nsheaps/agents/compare/v0.3.137...v0.3.138) (2026-08-25)
+
+### Maintenance
+
+* **deps:** update nsheaps + squink github actions ([#345](https://github.com/nsheaps/agents/issues/345)) ([0452606](https://github.com/nsheaps/agents/commit/04526065e06f6ec8cfecfe55c666057e9059ee7f))
+
+## [0.3.137](https://github.com/nsheaps/agents/compare/v0.3.136...v0.3.137) (2026-08-19)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([c11e86f](https://github.com/nsheaps/agents/commit/c11e86f4729ea964f2ae89a0e0bac8f1f103dc4c))
+
 ## [0.3.136](https://github.com/nsheaps/agents/compare/v0.3.135...v0.3.136) (2026-08-18)
 
 ### Maintenance
