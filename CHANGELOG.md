@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.144](https://github.com/nsheaps/agents/compare/v0.3.143...v0.3.144) (2026-08-28)
+
+### Maintenance
+
+* **deps:** update nsheaps/ai-mktpl digest to 08d1043 ([#349](https://github.com/nsheaps/agents/issues/349)) ([7dfe28f](https://github.com/nsheaps/agents/commit/7dfe28f9d26b3d75392b0d3dffc4c3e0bb1fadbf))
+
 ## [0.3.143](https://github.com/nsheaps/agents/compare/v0.3.142...v0.3.143) (2026-08-28)
 
 ### Maintenance
