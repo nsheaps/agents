@@ -1,5 +1,29 @@
 # Changelog
 
+## [0.3.144](https://github.com/nsheaps/agents/compare/v0.3.143...v0.3.144) (2026-08-28)
+
+### Maintenance
+
+* **deps:** update nsheaps/ai-mktpl digest to 08d1043 ([#349](https://github.com/nsheaps/agents/issues/349)) ([7dfe28f](https://github.com/nsheaps/agents/commit/7dfe28f9d26b3d75392b0d3dffc4c3e0bb1fadbf))
+
+## [0.3.143](https://github.com/nsheaps/agents/compare/v0.3.142...v0.3.143) (2026-08-28)
+
+### Maintenance
+
+* **deps:** update dependency tilt to v0.37.6 ([#320](https://github.com/nsheaps/agents/issues/320)) ([6609d66](https://github.com/nsheaps/agents/commit/6609d662bef180a6ae0694671b5997fde8a4bd7b))
+
+## [0.3.142](https://github.com/nsheaps/agents/compare/v0.3.141...v0.3.142) (2026-08-28)
+
+### Maintenance
+
+* **deps:** update dependency pipx:litellm to v1.94.0 ([#350](https://github.com/nsheaps/agents/issues/350)) ([e64fefd](https://github.com/nsheaps/agents/commit/e64fefdf285d51742c542b11f3ef0296967053b9))
+
+## [0.3.141](https://github.com/nsheaps/agents/compare/v0.3.140...v0.3.141) (2026-08-25)
+
+### Maintenance
+
+* **deps:** update dependency @release-it/conventional-changelog to v12 ([#348](https://github.com/nsheaps/agents/issues/348)) ([d1c0daa](https://github.com/nsheaps/agents/commit/d1c0daa54f96916925a277c9deea4052e806e2a6)), references [#8203](https://github.com/nsheaps/agents/issues/8203)
+
 ## [0.3.140](https://github.com/nsheaps/agents/compare/v0.3.139...v0.3.140) (2026-08-25)
 
 ### Maintenance
