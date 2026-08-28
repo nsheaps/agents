@@ -10,7 +10,7 @@ node = "24.19.0"
 # this package's postinstall to let that download run.
 "npm:@anthropic-ai/claude-code" = { version = "2.1.128", allow_builds = ["@anthropic-ai/claude-code"] }
 "pipx:litellm" = { version = "1.94.0", extras = "proxy" }
-tilt = "0.37.5"
+tilt = "0.37.6"
 
 # nx is installed via bun (root devDependency). Every fan-out task below is
 # a pure `bunx nx run-many --target=<name>` invocation — no inline prettier,
