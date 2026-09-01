@@ -8,7 +8,7 @@ node = "24.19.0"
 # npm's postinstall script fetches the native binary; mise's npm backend
 # ignores lifecycle scripts by default, so allow_builds explicitly approves
 # this package's postinstall to let that download run.
-"npm:@anthropic-ai/claude-code" = { version = "2.1.128", allow_builds = ["@anthropic-ai/claude-code"] }
+"npm:@anthropic-ai/claude-code" = { version = "2.1.163", allow_builds = ["@anthropic-ai/claude-code"] }
 "pipx:litellm" = { version = "1.95.0", extras = "proxy" }
 tilt = "0.37.6"
 
