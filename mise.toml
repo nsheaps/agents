@@ -4,7 +4,7 @@
 [tools]
 jq = "1.8.2"
 bun = "1.3.14"
-node = "24.19.0"
+node = "24.20.0"
 # npm's postinstall script fetches the native binary; mise's npm backend
 # ignores lifecycle scripts by default, so allow_builds explicitly approves
 # this package's postinstall to let that download run.
