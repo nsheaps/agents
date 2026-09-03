@@ -57,3 +57,22 @@ Your review MUST end with reference links including:
 2. External sources used to validate findings
 
 Do NOT include: CDATA wrappers, links to previous reviews, or inline comment links (those go in the details section).
+
+### Brief format (routine-update classification only)
+
+Used for a BRIEF REFRESH (see `partials/incremental-review.md`) when a new review is warranted but the PR is `routine-update`-classified. No mandatory badges, no `<details>`/`<summary>` wrapper, no Quality/Security/Simplicity/Confidence scoring — those exist to summarize deep review depth this pass didn't need.
+
+```markdown
+<one-line verdict statement, e.g. "Dependency bump checked — no issues found.">
+
+<optional short bullet list, ONLY if follow-ups exist>
+
+- **P1**: [issue]
+- **P2**: [issue]
+
+<footnotes and references, same requirements as the full template>
+```
+
+If there are no follow-ups, the one-line verdict statement plus footnotes is the entire review body — do not pad it with sections that have nothing to say. If follow-ups do exist, the finding still needs enough detail to act on, but skip the badge/collapsible scaffolding built for `standard`-depth reviews.
+
+Never use the brief format for a `standard`-classification review, even if the diff is small — classification, not diff size, decides which template applies.

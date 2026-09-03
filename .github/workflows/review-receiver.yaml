@@ -19,20 +19,25 @@ name: Review Receiver (reusable)
 # for non-draft transitions. Shell scripts >3 lines are extracted to
 # .github/scripts/review-receiver/.
 #
+# Approval dismissal is no longer handled by this workflow — see the
+# "2026-08-12 redesign" section of the spec above.
+#
 # Flow (review job):
 #   1. Checkout the plugin contents (nsheaps/agents@plugin-ref) — must happen
 #      early so .github/scripts/review-receiver/ is available.
-#   2. Generate review App token (used to call back into consumer repo).
+#   2. Generate App token for updating checks (used to call back into
+#      consumer repo).
 #   3. Update the consumer-side check-run to in_progress "Review agent
 #      running...".
 #   4. Remove the request-review label from the consumer PR (idempotent —
 #      no-op if absent). Frees it to be re-applied for the next round.
-#   5. Dismiss prior APPROVED reviews from this bot on the PR.
-#   6. Invoke the plugin's `run-agent` composite action.
-#   7. Read metrics yaml/json file emitted by the agent; fail if absent.
-#   8. Update the consumer-side check to terminal state (success/neutral/failure)
+#   5. Invoke the plugin's `run-agent` composite action, which restores prior
+#      review state, runs the skill's skip/brief/full decision, and (only
+#      when warranted) dismisses a stale prior approval itself.
+#   6. Read metrics yaml/json file emitted by the agent; fail if absent.
+#   7. Update the consumer-side check to terminal state (success/neutral/failure)
 #      based on agent verdict + follow-up count.
-#   9. `if: failure()` final guard: post "review agent failed to run" check.
+#   8. `if: failure()` final guard: post "review agent failed to run" check.
 
 on:
   workflow_call:
@@ -191,14 +196,6 @@ jobs:
           private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
           owner: ${{ steps.consumer.outputs.owner }}
 
-      - name: Generate App token for dismissing review
-        id: review-auth
-        uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
-        with:
-          app-id: ${{ secrets.REVIEW_GITHUB_APP_ID }}
-          private-key: ${{ secrets.REVIEW_GITHUB_APP_PRIVATE_KEY }}
-          owner: ${{ steps.consumer.outputs.owner }}
-
       # Update check-run on consumer to in_progress.
       - name: Update check (in_progress)
         uses: LouisBrunner/checks-action@937cbbcde3259005b50746dc91cde29098aac2ff # v3.1.0
@@ -225,16 +222,10 @@ jobs:
           PR_NUMBER: ${{ inputs.source-pr-number }}
         run: bash agent-repo/.github/scripts/review-receiver/remove-request-review-label.sh
 
-      # Dismiss prior APPROVED reviews from this bot so the PR can't merge
-      # on a stale approval. Keep REQUEST_CHANGES + COMMENT reviews intact.
-      # Logic in .github/scripts/review-receiver/dismiss-prior-approvals.sh.
-      - name: Dismiss prior approval reviews
-        env:
-          GH_TOKEN: ${{ steps.review-auth.outputs.token }}
-          SOURCE_REPO: ${{ inputs.source-repo }}
-          PR_NUMBER: ${{ inputs.source-pr-number }}
-          APP_SLUG: ${{ steps.review-auth.outputs.app-slug }}
-        run: bash agent-repo/.github/scripts/review-receiver/dismiss-prior-approvals.sh
+      # Prior-approval dismissal is NOT done here — it's the skill's job now,
+      # gated on the full-review decision (see the "2026-08-12 redesign"
+      # section of the spec). An unconditional pre-dismissal here would
+      # re-open an already-approved, unchanged PR on every rebase.
 
       # Invoke the plugin's run-agent composite. It owns the actual review:
       # auth, checkout consumer repo, claude-code-action with plugins, finalize.
