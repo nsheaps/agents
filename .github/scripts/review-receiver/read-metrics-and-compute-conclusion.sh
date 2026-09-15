@@ -89,6 +89,7 @@ fi
 
 verdict=$(grep -E '^verdict:' "$path" | sed 's/^verdict:[[:space:]]*//' | tr -d '"' || echo unknown)
 follow_ups=$(grep -E '^follow_ups:' "$path" | sed 's/^follow_ups:[[:space:]]*//' || echo 0)
+skipped=$(grep -E '^skipped:' "$path" | sed 's/^skipped:[[:space:]]*//' | tr -d '"' || echo false)
 
 case "$verdict" in
   APPROVE|approve)
@@ -116,6 +117,15 @@ case "$verdict" in
     title="Unknown verdict '${verdict}'. Treating as failure. ${follow_ups} follow-ups found."
     ;;
 esac
+
+# skipped: true means the skill decided (per incremental-review.md) that no
+# new review was warranted — same diff content, or a routine-update refresh
+# with nothing new to say. The verdict/follow_ups above are carried over
+# from prior state unchanged; swap in a title that makes clear nothing new
+# ran, so the check doesn't read as if a fresh review just happened.
+if [ "$skipped" = "true" ]; then
+  title="No changes requiring re-review — previous review still stands (${verdict}, ${follow_ups} follow-ups)."
+fi
 
 {
   echo "conclusion=$conclusion"

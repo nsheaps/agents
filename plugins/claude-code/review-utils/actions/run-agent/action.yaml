@@ -200,6 +200,12 @@ runs:
         else
           echo "REVIEW_METRICS_PATH=" >> $GITHUB_ENV
         fi
+        # REVIEW_STATE_PATH: cross-run cache of the skill's prior conclusions
+        # (diff fingerprint, classification, verdict, etc — see
+        # partials/incremental-review.md). Always set, unlike
+        # REVIEW_METRICS_PATH, since incremental review applies regardless of
+        # receiver vs direct-invocation mode.
+        echo "REVIEW_STATE_PATH=$RUNNER_TEMP/review-state.json" >> $GITHUB_ENV
         # JOB_CONTEXT is JSON, use heredoc to handle multiline safely
         DELIMITER="DELIM_$(date +%s%N)"
         {
@@ -207,6 +213,20 @@ runs:
           echo '${{ toJson(steps.additional-context.outputs) }}'
           echo "$DELIMITER"
         } >> $GITHUB_ENV
+
+    # --- Prior review state cache ---
+    # Restores the skill's last-run conclusions for this PR so it can decide
+    # to skip/brief-refresh/full-review instead of always doing a full
+    # review. Cache keys are immutable, so restore-keys prefix-matches the
+    # most recent entry (each save below uses a unique run_id-suffixed key).
+    - name: Restore prior review state
+      id: restore-review-state
+      uses: actions/cache/restore@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ${{ runner.temp }}/review-state.json
+        key: review-state-${{ inputs.trigger-repo }}-${{ env.PR_NUMBER }}-${{ github.run_id }}
+        restore-keys: |
+          review-state-${{ inputs.trigger-repo }}-${{ env.PR_NUMBER }}-
 
     # Strip YAML frontmatter from the skill body so envsubst only operates on
     # the prompt text. The skill defines `name` + `description` for skill
@@ -340,6 +360,24 @@ runs:
               ]
             }
           }
+
+    # Ensure a state file exists before saving to cache — actions/cache/save
+    # fails if the path doesn't exist. If the skill errored before step 12
+    # (write review state), or this is a legacy direct-invocation without a
+    # receiver, fall back to whatever restore-review-state populated (or an
+    # empty placeholder on the very first run for this PR).
+    - name: Ensure review state file exists
+      if: always()
+      shell: bash
+      run: |
+        touch "${{ runner.temp }}/review-state.json"
+
+    - name: Save review state
+      if: always()
+      uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+      with:
+        path: ${{ runner.temp }}/review-state.json
+        key: review-state-${{ inputs.trigger-repo }}-${{ env.PR_NUMBER }}-${{ github.run_id }}
 
     # --- Finalize check run on source repo ---
     # Only finalize when this action created the check. If the caller passed
