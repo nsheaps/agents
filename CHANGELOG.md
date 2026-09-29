@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.156](https://github.com/nsheaps/agents/compare/v0.3.155...v0.3.156) (2026-09-29)
+
+### Maintenance
+
+* **deps:** update nsheaps + squink github actions ([#362](https://github.com/nsheaps/agents/issues/362)) ([ac4e62c](https://github.com/nsheaps/agents/commit/ac4e62c9fc2109412ce40fd034cb4d9f7f691768))
+
 ## [0.3.155](https://github.com/nsheaps/agents/compare/v0.3.154...v0.3.155) (2026-09-28)
 
 ### Maintenance
