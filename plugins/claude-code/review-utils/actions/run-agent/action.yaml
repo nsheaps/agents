@@ -225,7 +225,7 @@ runs:
     #   https://docs.claude.com/en/docs/claude-code/hooks
     - name: Build prompt
       id: prompt
-      uses: nsheaps/ai-mktpl/.github/actions/interpolate-prompt@f03178c9e38ee3980c3f1c6318ffc222adcd3d81 # main
+      uses: nsheaps/ai-mktpl/.github/actions/interpolate-prompt@e7607fb342e7a3fc9e1458cff03bfdbdda338cd7 # main
       with:
         template-file: ${{ env.PROMPT_TEMPLATE }}
 
