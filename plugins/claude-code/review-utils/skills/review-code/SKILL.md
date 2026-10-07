@@ -23,17 +23,17 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
 
 2. **Review previous reviews** including your own. Your new review must be self-contained with all relevant details.
 
-3. **Track findings in a local doc** updated after every piece reviewed. Include summary, inline comments, questions, reference links. Do not trust memory.
+3. **Track findings in a notes file** named `review-notes.md` in the same directory as `${REVIEW_METRICS_PATH}` (the runner temp dir, where the `Write`/`Edit` tools are permitted). Update it after every piece reviewed. Include summary, inline comments, questions, reference links. Do not trust memory.
 
-4. **Manage previous comments and threads**: See `partials/review-thread-management.md` for the full procedure on minimizing comments, resolving threads, and updating existing comments.
+4. **Manage previous comments and threads**: See the "Managing Previous Reviews and Threads" section (inlined from `partials/review-thread-management.md` at the end of this prompt) for the full procedure on minimizing comments, resolving threads, and updating existing comments.
 
 5. **Start a review**: Use `mcp__github__create_pending_pull_request_review`.
 
 6. **Add inline comments**: Use `mcp__github__add_comment_to_pending_review` for each piece of feedback. Use `suggestion` blocks for code changes. Only suggest changes with clear benefit (bug fix, perf, security, correctness, maintainability, simplicity). Never suggest changes to code outside the PR.
 
-7. **Fetch review comments** to get URLs for cross-linking. Update your local doc.
+7. **Fetch review comments** to get URLs for cross-linking. Update your notes file.
 
-8. **Draft review summary** in your local doc with high-level assessment, strengths, improvements, critical issues, recommendation, and follow-ups.
+8. **Draft review summary** in your notes file with high-level assessment, strengths, improvements, critical issues, recommendation, and follow-ups.
 
 9. **Hide your previous reviews** just before submitting. Only hide YOUR OWN reviews:
 
@@ -57,17 +57,18 @@ Do not duplicate questions from past reviews. Respond to engagement on your prev
     review_url: https://github.com/${REPO}/pull/${PR_NUMBER}#pullrequestreview-XXXX
     ```
 
-    Use the `Write` tool to create `${REVIEW_METRICS_PATH}` directly (it is permitted under the
-    same directory as `${REVIEW_METRICS_PATH}` via a `Write(<runner-temp>/**)` rule in
-    `run-agent/action.yaml`). Do NOT use `Bash` — a `cat > ... <<EOF` heredoc does not match the
-    `Bash(gh:*)`/`Bash(git:*)` allowlist and will be silently denied, leaving this step incomplete
-    even though the rest of the review succeeded. Example content:
+    Use the `Write` tool to create `${REVIEW_METRICS_PATH}` directly. `run-agent/action.yaml`
+    permits `Write` and `Edit` anywhere under the runner temp dir, which is where this path
+    lives. Do NOT use `Bash`: a `cat > ... <<EOF` heredoc does not match the
+    `Bash(gh:*)`/`Bash(git:*)` allowlist and is denied, leaving this step incomplete even though
+    the rest of the review succeeded. Set `review_url` to the `html_url` of the review you just
+    submitted. Example content:
 
     ```yaml
     version: 1
     verdict: COMMENT
     follow_ups: 5
-    review_url: ${REVIEW_URL}
+    review_url: https://github.com/${REPO}/pull/${PR_NUMBER}#pullrequestreview-1234567890
     ```
 
     If `${REVIEW_METRICS_PATH}` is empty (legacy direct-invocation path with no receiver), skip this step.
@@ -95,7 +96,7 @@ Design principles (KISS, YAGNI, DRY, incremental development, etc.) are provided
 
 ## Formatting
 
-See `partials/review-formatting.md` for emoji legend, badge requirements, review structure template, and footnote formatting.
+The Review Formatting section (inlined from `partials/review-formatting.md` at the end of this prompt) defines the emoji legend, required badges, review structure template and footnote formatting. Follow it exactly; do not invent your own layout.
 
 ## Critical Rules
 

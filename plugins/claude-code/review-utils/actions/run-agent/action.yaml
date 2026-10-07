@@ -263,23 +263,28 @@ runs:
         prompt: ${{ steps.prompt.outputs.prompt }}
         # --allowedTools has to stay a claude_args flag (not moved to
         # settings.permissions.allow) for mcp__github__*, Bash(gh:*), Bash(git:*),
-        # and Write(${{ runner.temp }}/**): it's also what claude-code-action's
+        # and the Write/Edit rules: it's also what claude-code-action's
         # prepareMcpConfig reads to decide whether to install the GitHub MCP server
         # (hasGitHubMcpTools) -- settings.json allow rules don't feed that check.
         #
-        # Write(${{ runner.temp }}/**) is scoped to the runner's temp dir (already
-        # exposed via additionalDirectories below) so the review-code skill's step 11
-        # can emit review-metrics.yaml. Without it, the only write path is a Bash
-        # heredoc, which doesn't match Bash(gh:*)/Bash(git:*) and gets denied --
-        # the agent then finishes its review (approve/comment/request-changes posted
-        # fine via MCP) but never writes the metrics file, so the receiver workflow's
-        # metrics gate fails the check even though the review itself succeeded.
+        # Write/Edit are scoped to the runner's temp dir (already exposed via
+        # additionalDirectories below) so the review-code skill can keep its notes
+        # file and emit review-metrics.yaml there.
+        #
+        # The rule MUST be written as `Write(/${{ runner.temp }}/**)` -- note the
+        # extra leading slash. In Claude Code permission rules a path starting with
+        # a single `/` is relative to the settings source, not the filesystem
+        # root; an absolute path needs `//`. `runner.temp` already starts with
+        # `/`, so prefixing one more `/` renders `//home/runner/work/_temp/**`.
+        # The old single-slash form never matched, every Write was denied, the
+        # metrics file was never written and the receiver's metrics gate failed
+        # (e.g. nsheaps/agent-jordan#2, run 37557540105).
         #
         # Read is granted via settings.permissions.allow below instead -- it has no
         # such dependency on --allowedTools/prepareMcpConfig, so it belongs in
         # settings like any other ordinary tool grant.
         claude_args: |
-          --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*),Write(${{ runner.temp }}/**)"
+          --allowedTools "mcp__github__*,Bash(gh:*),Bash(git:*),Write(/${{ runner.temp }}/**),Edit(/${{ runner.temp }}/**)"
         plugin_marketplaces: |
           https://github.com/nsheaps/ai-mktpl.git
         plugins: |
@@ -311,7 +316,9 @@ runs:
             "permissions": {
               "defaultMode": "auto",
               "allow": [
-                "Read"
+                "Read",
+                "Write(/${{ runner.temp }}/**)",
+                "Edit(/${{ runner.temp }}/**)"
               ],
               "additionalDirectories": [
                 "${{ github.workspace }}/trigger-repo/",
@@ -351,6 +358,36 @@ runs:
               ]
             }
           }
+
+    # --- Surface permission denials ---
+    # claude-code-action records every denied tool call in the result message of
+    # its execution file but never prints them, so a mis-scoped permission rule
+    # fails silently (the review posts, the metrics file doesn't). Log them as
+    # warnings so the next broken rule is visible in the run summary.
+
+    - name: Report permission denials
+      if: ${{ always() && steps.claude.outputs.execution_file != '' }}
+      shell: bash
+      env:
+        EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+      run: |
+        if [ ! -f "$EXECUTION_FILE" ]; then
+          echo "No execution file at $EXECUTION_FILE"
+          exit 0
+        fi
+        denials="$(jq -c '[.[] | select(.type == "result") | .permission_denials // [] | .[]]' "$EXECUTION_FILE" 2>/dev/null || echo '[]')"
+        count="$(jq 'length' <<<"$denials")"
+        echo "Permission denials: $count"
+        if [ "$count" -gt 0 ]; then
+          jq -r '.[] | "::warning title=Permission denied::\(.tool_name) \(.tool_input | tostring | .[0:300])"' <<<"$denials"
+          {
+            echo "### Permission denials ($count)"
+            echo
+            echo '| Tool | Input |'
+            echo '| --- | --- |'
+            jq -r '.[] | "| `\(.tool_name)` | `\(.tool_input | tostring | .[0:200] | gsub("\\|"; "\\|"))` |"' <<<"$denials"
+          } >> "$GITHUB_STEP_SUMMARY"
+        fi
 
     # --- Finalize check run on source repo ---
     # Only finalize when this action created the check. If the caller passed
