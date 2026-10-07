@@ -1,5 +1,15 @@
 # Changelog
 
+## [0.3.162](https://github.com/nsheaps/agents/compare/v0.3.161...v0.3.162) (2026-10-07)
+
+### Bug Fixes
+
+* **review-utils:** inline skill partials into the review prompt ([#368](https://github.com/nsheaps/agents/issues/368)) ([e3c72c9](https://github.com/nsheaps/agents/commit/e3c72c9248742200d4239a93e0ef3c60262a4c9d))
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([437444e](https://github.com/nsheaps/agents/commit/437444e2b2223477c222d25f37e713a7a580aba0))
+
 ## [0.3.161](https://github.com/nsheaps/agents/compare/v0.3.160...v0.3.161) (2026-10-06)
 
 ### Maintenance
