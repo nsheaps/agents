@@ -212,12 +212,23 @@ runs:
     # the prompt text. The skill defines `name` + `description` for skill
     # tooling — the action only needs the methodology that follows the second
     # `---` delimiter.
+    #
+    # The skill's partials (formatting + thread management) are appended
+    # INLINE. Relying on the model to Read them by relative path was not
+    # reliable even with Read granted: reviews kept improvising their own
+    # format (observed on nsheaps/greasemonkey-scripts#54, nsheaps/ai-mktpl#746
+    # and nsheaps/agent-jordan#2). Inlining makes the format part of the prompt.
     - name: Extract prompt body from skill
       shell: bash
       run: |
-        awk 'BEGIN{p=0} /^---$/{p++; next} p>=2' \
-          "./agent-repo/plugins/claude-code/review-utils/skills/review-code/SKILL.md" \
-          > "$RUNNER_TEMP/review-prompt-template.md"
+        SKILL_DIR="./agent-repo/plugins/claude-code/review-utils/skills/review-code"
+        {
+          awk 'BEGIN{p=0} /^---$/{p++; next} p>=2' "$SKILL_DIR/SKILL.md"
+          for partial in "$SKILL_DIR"/partials/*.md; do
+            printf '\n\n---\n\n<!-- Inlined from partials/%s (the file referenced above; do not try to Read it) -->\n\n' "$(basename "$partial")"
+            cat "$partial"
+          done
+        } > "$RUNNER_TEMP/review-prompt-template.md"
         echo "PROMPT_TEMPLATE=$RUNNER_TEMP/review-prompt-template.md" >> $GITHUB_ENV
 
     # TODO: investigate a Claude Code plugin hook for internal prompt interpolation
