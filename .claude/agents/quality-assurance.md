@@ -130,6 +130,7 @@ When validating a complete deliverable:
 - Verify that `--help` output is accurate for all modified scripts
 - Check that scripts work via both direct invocation and Homebrew symlinks
 - Every defect must include a file path, line number, and reproduction steps
+- When identifying follow-up items from reviews — especially bugs and gaps outside the current scope — consider using the `github-issue-creator` sub-agent to file them as GitHub issues rather than running `gh issue create` directly
 
 ## Output
 
