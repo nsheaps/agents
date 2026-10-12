@@ -17,6 +17,16 @@
         "typescript": "^7.0.0",
       },
     },
+    "apps/claude-rc-cli": {
+      "name": "@nsheaps/claude-rc-cli",
+      "version": "0.0.0",
+      "bin": {
+        "claude-rc": "./src/main.ts",
+      },
+      "dependencies": {
+        "@nsheaps/claude-rc-core": "workspace:*",
+      },
+    },
     "apps/pr-status-cli": {
       "name": "@nsheaps/pr-status-cli",
       "version": "0.1.0",
@@ -30,6 +40,10 @@
     },
     "lib/agents-pg-utils": {
       "name": "@nsheaps/agents-pg-utils",
+      "version": "0.0.0",
+    },
+    "lib/claude-rc-core": {
+      "name": "@nsheaps/claude-rc-core",
       "version": "0.0.0",
     },
     "packages/agent-api": {
@@ -59,6 +73,16 @@
     "services/agent-web": {
       "name": "@nsheaps/agent-web",
       "version": "0.0.0",
+    },
+    "services/claude-rc-daemon": {
+      "name": "@nsheaps/claude-rc-daemon",
+      "version": "0.0.0",
+      "bin": {
+        "claude-rc-daemon": "./src/main.ts",
+      },
+      "dependencies": {
+        "@nsheaps/claude-rc-core": "workspace:*",
+      },
     },
   },
   "packages": {
@@ -133,6 +157,12 @@
     "@nsheaps/agents-pg-utils": ["@nsheaps/agents-pg-utils@workspace:lib/agents-pg-utils"],
 
     "@nsheaps/agents-plugins": ["@nsheaps/agents-plugins@workspace:plugins"],
+
+    "@nsheaps/claude-rc-cli": ["@nsheaps/claude-rc-cli@workspace:apps/claude-rc-cli"],
+
+    "@nsheaps/claude-rc-core": ["@nsheaps/claude-rc-core@workspace:lib/claude-rc-core"],
+
+    "@nsheaps/claude-rc-daemon": ["@nsheaps/claude-rc-daemon@workspace:services/claude-rc-daemon"],
 
     "@nsheaps/pr-status-cli": ["@nsheaps/pr-status-cli@workspace:apps/pr-status-cli"],
 
