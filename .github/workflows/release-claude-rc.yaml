@@ -43,6 +43,14 @@ jobs:
         working-directory: apps/claude-rc-cli
         run: bun run scripts/build-binary.ts --version "${{ steps.version.outputs.version }}" --out "$GITHUB_WORKSPACE/dist"
 
+      - name: Smoke-test compiled linux-x64 binaries (version + PTY)
+        run: |
+          mkdir smoke && tar -xzf "dist/claude-rc-${{ steps.version.outputs.version }}-linux-x64.tar.gz" -C smoke
+          ./smoke/claude-rc --version
+          printf '#!/bin/sh\n[ -t 0 ] && [ -t 1 ] && echo TTY-YES\nexit 4\n' > smoke/probe.sh && chmod +x smoke/probe.sh
+          rc=0; ./smoke/claude-rc-daemon pty-run -- ./smoke/probe.sh > smoke/out.txt || rc=$?
+          grep -q TTY-YES smoke/out.txt && [ "$rc" = 4 ]
+
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

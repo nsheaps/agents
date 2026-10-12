@@ -67,7 +67,9 @@ macOS (launchd), Ubuntu / Debian / Fedora (systemd user manager; inproc if none,
 ## 9. TTY / workspace trust
 
 `claude rc` prompts to trust the directory and fails without a TTY. The daemon (or `claude-rc trust`) sets `projects[<key>].hasTrustDialogAccepted = true` in `~/.claude.json` (key = git root of the repo, main checkout for worktrees; never `$HOME`). Writes are atomic and mode-preserving; a corrupt file is refused.
-If `claude rc` still needs a TTY after trust: first try a PTY; tmux only as last resort and only with the user's explicit approval. Whether `claude rc` runs headless once trusted is unverified (§11).
+Terminal: every child runs as `claude-rc-daemon pty-run -- claude rc ...`. `pty-run` allocates a pseudo-terminal (Bun `terminal` spawn option), runs the command on it, mirrors its output to stdout (the service log), forwards SIGTERM/SIGINT/SIGHUP, and exits with the child's code. Supervisors therefore track one long-lived process that owns the PTY. Disable with `CLAUDE_RC_PTY=0`.
+tmux was evaluated and rejected as the default: `tmux new-session -d` returns in milliseconds and leaves the real process in the tmux server, so systemd/launchd would see the service "exit" and restart it in a loop (measured: 16 ms). It remains available as a future last resort.
+Verified: the e2e test uses a fake `claude` that exits 1 without a TTY, passing on Linux and macOS CI via `pty-run`. Not verified: the real `claude rc`, which checks for a full-scope `claude auth login` token before anything else and refuses to run inside cloud sessions, so it cannot be exercised in CI without a real login.
 
 ## 10. Packaging & release
 
@@ -91,3 +93,4 @@ Socket 0600; `~/.claude.json` writes atomic, mode-preserving; daemon env is allo
 | D3  | Pre-trust via `~/.claude.json`; PTY before tmux; ask before tmux                                                                 | 2026-10-12                               |
 | D4  | OS-native supervision default, in-process fallback or flag                                                                       | 2026-10-12                               |
 | D5  | Daemon defaults: non-fatal upgrade failure, degraded on bad config, children stop on daemon SIGTERM, no third-party runtime deps | 2026-10-12 (defaults; user may override) |
+| D6  | PTY via built-in `pty-run` (not tmux): tmux detaches from the supervisor                                                         | 2026-10-12                               |

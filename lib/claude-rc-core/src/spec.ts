@@ -68,6 +68,8 @@ export interface BuildCtx {
   claudeBin: string;
   baseEnv: Record<string, string | undefined>;
   paths: Pick<RcPaths, "logDir">;
+  /** Command prefix that runs the rest of argv inside a pseudo-terminal (`<self> pty-run --`). */
+  ptyPrefix?: string[];
 }
 
 export function buildSpec(
@@ -86,7 +88,14 @@ export function buildSpec(
   return {
     name: repo.name,
     cwd: repo.path,
-    argv: [ctx.claudeBin, "rc", "--spawn", repo.spawn ?? cfg.spawn, "--verbose"],
+    argv: [
+      ...(ctx.ptyPrefix ?? []),
+      ctx.claudeBin,
+      "rc",
+      "--spawn",
+      repo.spawn ?? cfg.spawn,
+      "--verbose",
+    ],
     env,
     logFile: join(ctx.paths.logDir, `${repo.name}.log`),
   };

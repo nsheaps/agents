@@ -49,6 +49,7 @@ function setup(
     claude?: boolean;
     upgrade?: () => Promise<{ ok: boolean; output: string }>;
     sup?: ReturnType<typeof fakeSup>;
+    ptyPrefix?: string[];
   } = {},
 ) {
   const home = mkdtempSync(join(tmpdir(), "rc-d-"));
@@ -76,6 +77,7 @@ function setup(
     paths,
     supervisor: s.sup,
     supervisorReason: "test",
+    ptyPrefix: opts.ptyPrefix,
     upgrade:
       opts.upgrade ??
       (async (bin) => {
@@ -108,6 +110,14 @@ describe("Daemon startup", () => {
     expect(s.argv.slice(1)).toEqual(["rc", "--spawn", "worktree", "--verbose"]);
     expect(s.cwd).toBe(t.repo);
     expect(s.env.FOO).toBe("bar");
+  });
+  test("with a pty prefix, claude runs inside `<self> pty-run --` (start and restart)", async () => {
+    const t = setup({ config: (r: string) => cfg(r), ptyPrefix: ["/x/rcd", "pty-run", "--"] });
+    await t.d.start();
+    expect(t.specs.a!.argv.slice(0, 3)).toEqual(["/x/rcd", "pty-run", "--"]);
+    expect(t.specs.a!.argv.slice(4)).toEqual(["rc", "--spawn", "worktree", "--verbose"]);
+    await t.d.handle({ cmd: "restart", name: "a" });
+    expect(t.specs.a!.argv.slice(0, 3)).toEqual(["/x/rcd", "pty-run", "--"]);
   });
   test("upgrade failure is non-fatal and reported in status", async () => {
     const t = setup({

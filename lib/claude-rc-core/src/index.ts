@@ -11,3 +11,5 @@ export { InProcSupervisor } from "./inproc";
 export { pickSupervisor } from "./pick";
 export { VERSION } from "./version";
 export * from "./config-edit";
+export { runInPty } from "./pty-run";
+export type { PtyRunOptions } from "./pty-run";

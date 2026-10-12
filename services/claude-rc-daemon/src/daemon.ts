@@ -25,6 +25,8 @@ export interface DaemonDeps {
   paths: RcPaths;
   supervisor: Supervisor;
   supervisorReason: string;
+  /** Wraps `claude rc` in `<self> pty-run --` so it gets a terminal; omit to run it bare. */
+  ptyPrefix?: string[];
   upgrade: (claudeBin: string) => Promise<UpgradeResult>;
   log: (msg: string) => void;
 }
@@ -148,6 +150,7 @@ export class Daemon {
         claudeBin: this.claudeBin!,
         baseEnv: this.d.env,
         paths: this.d.paths,
+        ptyPrefix: this.d.ptyPrefix,
       }),
     );
     this.specs = new Map(all.map((s) => [s.name, s]));
@@ -229,6 +232,7 @@ export class Daemon {
       claudeBin: this.claudeBin!,
       baseEnv: this.d.env,
       paths: this.d.paths,
+      ptyPrefix: this.d.ptyPrefix,
     });
   }
 

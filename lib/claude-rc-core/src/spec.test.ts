@@ -18,6 +18,23 @@ describe("buildSpec", () => {
     expect(s.cwd).toBe("/r/a");
     expect(s.logFile).toBe("/logs/a.log");
   });
+  test("ptyPrefix wraps the command so claude gets a terminal", () => {
+    const s = buildSpec(
+      { name: "a", path: "/r/a" },
+      { spawn: "worktree", env: {} },
+      { claudeBin: "/bin/claude", baseEnv: base, paths, ptyPrefix: ["/bin/rcd", "pty-run", "--"] },
+    );
+    expect(s.argv).toEqual([
+      "/bin/rcd",
+      "pty-run",
+      "--",
+      "/bin/claude",
+      "rc",
+      "--spawn",
+      "worktree",
+      "--verbose",
+    ]);
+  });
   test("per-repo spawn overrides global", () => {
     const s = buildSpec(
       { name: "a", path: "/r", spawn: "same-dir" },

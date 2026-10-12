@@ -87,7 +87,10 @@ beforeAll(async () => {
     `#!/bin/sh
 case "$1" in
   upgrade) echo "upgrade called" >> "${fakeLog}"; echo "Claude Code is up to date"; exit 0;;
-  rc) echo "rc $* cwd=$(pwd) FOO=$FOO" >> "${fakeLog}"; echo "fake claude rc running"; exec sleep 600;;
+  rc)
+    # Like the real thing, refuse to run without a terminal.
+    if [ ! -t 0 ] || [ ! -t 1 ]; then echo "Error: claude rc needs an interactive terminal (no TTY)" >&2; [ -n "$FAKE_PROBE" ] || echo "rc-no-tty" >> "${fakeLog}"; exit 1; fi
+    echo "rc $* cwd=$(pwd) FOO=$FOO" >> "${fakeLog}"; echo "fake claude rc running"; exec sleep 600;;
 esac
 `,
   );
@@ -140,6 +143,19 @@ describe("claude-rc e2e (" + SUP + ")", () => {
     },
     T,
   );
+
+  test("the fake claude refuses to run without a TTY (so the passing test above proves the PTY wrapper)", () => {
+    const p = Bun.spawnSync([join(bin, "claude"), "rc"], {
+      stdin: "ignore",
+      env: { ...env, FAKE_PROBE: "1" },
+    });
+    expect(p.exitCode).toBe(1);
+    expect(p.stderr.toString()).toContain("no TTY");
+  });
+
+  test("the supervised service got a terminal: log has no rc-no-tty line", () => {
+    expect(readFileSync(fakeLog, "utf8")).not.toContain("rc-no-tty");
+  });
 
   test("workspace trust was written to ~/.claude.json", () => {
     const j = JSON.parse(readFileSync(join(home, ".claude.json"), "utf8"));

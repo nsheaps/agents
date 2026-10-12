@@ -5,11 +5,13 @@ import { basename } from "node:path";
 import { getPaths, pickSupervisor, realExec, serveIpc, VERSION } from "@nsheaps/claude-rc-core";
 import { DAEMON_HELP, parseDaemonArgs } from "./args";
 import { Daemon } from "./daemon";
+import { ptyRunMain, selfPtyPrefix } from "./pty-cmd";
 import { runUpgrade } from "./upgrade";
 
 const log = (m: string) => console.log(`[${new Date().toISOString()}] ${m}`);
 
 async function main(): Promise<number> {
+  if (process.argv[2] === "pty-run") return ptyRunMain(process.argv.slice(3));
   const args = parseDaemonArgs(process.argv.slice(2), process.env);
   if (args.kind === "version") return (console.log(`claude-rc-daemon ${VERSION}`), 0);
   if (args.kind === "help") return (console.log(DAEMON_HELP), 0);
@@ -38,6 +40,7 @@ async function main(): Promise<number> {
     paths,
     supervisor: picked.supervisor,
     supervisorReason: picked.reason,
+    ptyPrefix: selfPtyPrefix(process.env),
     upgrade: (bin) => runUpgrade(bin),
     log,
   });
