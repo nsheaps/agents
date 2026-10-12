@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { mkdtempSync, readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { InProcSupervisor } from "./inproc";
@@ -29,7 +29,7 @@ describe("InProcSupervisor", () => {
     await sup.start(mk(["sh", "-c", 'echo "$MARK:$(pwd)"; sleep 30']));
     await until(async () => (await sup.status("svc")).state === "running");
     await until(() => readFileSync(join(dir, "svc.log"), "utf8").includes("m1:"));
-    expect(readFileSync(join(dir, "svc.log"), "utf8")).toContain(`m1:${dir}`);
+    expect(readFileSync(join(dir, "svc.log"), "utf8")).toContain(`m1:${realpathSync(dir)}`);
   });
   test("restarts after the process dies (new pid, restarts counted)", async () => {
     sup = new InProcSupervisor({ restartDelayMs: 20 });

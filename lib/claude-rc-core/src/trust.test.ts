@@ -1,5 +1,5 @@
 import { describe, expect, test } from "bun:test";
-import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { ensureTrusted, trustKeyFor } from "./trust";
@@ -86,6 +86,6 @@ describe("ensureTrusted", () => {
     const f = file();
     writeFileSync(f, "{}", { mode: 0o600 });
     ensureTrusted(f, "/p");
-    expect(Bun.spawnSync(["stat", "-c", "%a", f]).stdout.toString().trim()).toBe("600");
+    expect((statSync(f).mode & 0o777).toString(8)).toBe("600");
   });
 });
