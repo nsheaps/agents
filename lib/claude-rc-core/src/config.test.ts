@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { loadConfig, parseConfig } from "./config";
+import { deriveRepoName, loadConfig, parseConfig } from "./config";
 
 const ok = (v: unknown) => {
   const r = parseConfig(v);
@@ -66,6 +66,16 @@ describe("parseConfig", () => {
     expect(errs(input)).toContain(needle as string);
   });
 
+  test.each([["a\nb"], ["a\0b"], ["a\x7fb"]])(
+    "rejects control characters in env values (%j)",
+    (v) => {
+      expect(errs({ repos: [], env: { K: v } })).toContain("control character");
+    },
+  );
+  test("allows tabs and unicode in env values", () => {
+    expect(ok({ repos: [], env: { K: "a\tb é" } }).env.K).toBe("a\tb é");
+  });
+
   test("empty repos list is valid", () => {
     expect(ok({ repos: [] }).repos).toEqual([]);
   });
@@ -125,5 +135,19 @@ describe("loadConfig", () => {
     writeFileSync(p, JSON.stringify({ repos: [{ name: "a", path: "/a" }] }));
     const r = loadConfig(p);
     expect(r.ok && r.config.repos.length).toBe(1);
+  });
+});
+
+describe("deriveRepoName", () => {
+  test.each([
+    ["/home/a/My Project", "My-Project"],
+    ["/r/my-repo/", "my-repo"],
+    ["/r/.hidden", "hidden"],
+    ["/r/_x", "x"],
+    ["/r/a b  c", "a-b-c"],
+    ["/", "repo"],
+  ])("%s -> %s", (p, want) => {
+    expect(deriveRepoName(p)).toBe(want);
+    expect(ok({ repos: [{ name: deriveRepoName(p), path: "/abs" }] }).repos.length).toBe(1);
   });
 });

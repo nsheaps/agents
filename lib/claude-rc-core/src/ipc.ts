@@ -59,10 +59,16 @@ export async function serveIpc(path: string, handler: IpcHandler): Promise<() =>
       }
     });
   });
-  await new Promise<void>((res, rej) => {
-    server.once("error", rej);
-    server.listen(path, () => res());
-  });
+  // bind with a restrictive umask so the socket is never briefly world-connectable
+  const prevUmask = process.umask(0o077);
+  try {
+    await new Promise<void>((res, rej) => {
+      server.once("error", rej);
+      server.listen(path, () => res());
+    });
+  } finally {
+    process.umask(prevUmask);
+  }
   chmodSync(path, 0o600);
   return () =>
     new Promise<void>((res) => {

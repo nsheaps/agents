@@ -1,5 +1,4 @@
-import { basename } from "node:path";
-import { SPAWN_MODES, type SpawnMode } from "@nsheaps/claude-rc-core";
+import { deriveRepoName, SPAWN_MODES, type SpawnMode } from "@nsheaps/claude-rc-core";
 
 export type Command =
   | { cmd: "help" }
@@ -57,7 +56,7 @@ export function parseArgs(argv: string[]): Command {
       return {
         cmd: "add",
         path: pos[0],
-        name: (flags.get("--name") as string | undefined) ?? basename(pos[0]),
+        name: (flags.get("--name") as string | undefined) ?? deriveRepoName(pos[0]),
         ...(spawn ? { spawn: spawn as SpawnMode } : {}),
       };
     }

@@ -38,6 +38,14 @@ const ENV_KEY_RE = /^[A-Za-z_][A-Za-z0-9_]*$/;
 const isObject = (v: unknown): v is Record<string, unknown> =>
   typeof v === "object" && v !== null && !Array.isArray(v);
 
+/** A valid repo name from a directory path ("My Project" -> "My-Project"). */
+export function deriveRepoName(path: string): string {
+  const base = (path.replace(/\/+$/, "").split("/").pop() ?? "")
+    .replace(/[^A-Za-z0-9._-]+/g, "-")
+    .replace(/^[^A-Za-z0-9]+/, "");
+  return base || "repo";
+}
+
 function checkEnv(v: unknown, where: string, errors: string[]): Record<string, string> {
   if (v === undefined) return {};
   if (!isObject(v)) {
@@ -49,6 +57,8 @@ function checkEnv(v: unknown, where: string, errors: string[]): Record<string, s
     if (!ENV_KEY_RE.test(k)) errors.push(`${where}: env key "${k}" is not a valid variable name`);
     else if (typeof val !== "string")
       errors.push(`${where}: env value for "${k}" must be a string`);
+    else if (/[\x00-\x08\x0A-\x1F\x7F]/.test(val))
+      errors.push(`${where}: env value for "${k}" contains a control character`);
     else out[k] = val;
   }
   return out;

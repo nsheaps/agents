@@ -66,7 +66,7 @@ macOS (launchd), Ubuntu / Debian / Fedora (systemd user manager; inproc if none,
 
 ## 9. TTY / workspace trust
 
-`claude rc` prompts to trust the directory and fails without a TTY. The daemon (or `claude-rc trust`) sets `projects[<key>].hasTrustDialogAccepted = true` in `~/.claude.json` (key = git root of the repo, main checkout for worktrees; never `$HOME`). Writes are atomic and mode-preserving; a corrupt file is refused.
+`claude rc` prompts to trust the directory and fails without a TTY. The daemon (or `claude-rc trust`) sets `projects[<key>].hasTrustDialogAccepted = true` in `~/.claude.json` (key = git root of the repo, main checkout for worktrees; never `$HOME`). Writes are an atomic rename and mode-preserving, with optimistic concurrency (re-read and redo if Claude changed the file meanwhile; a write landing in the last few microseconds before the rename can still be lost); a corrupt file is refused.
 Terminal: every child runs as `claude-rc-daemon pty-run -- claude rc ...`. `pty-run` allocates a pseudo-terminal (Bun `terminal` spawn option), runs the command on it, mirrors its output to stdout (the service log), forwards SIGTERM/SIGINT/SIGHUP, and exits with the child's code. Supervisors therefore track one long-lived process that owns the PTY. Disable with `CLAUDE_RC_PTY=0`.
 tmux was evaluated and rejected as the default: `tmux new-session -d` returns in milliseconds and leaves the real process in the tmux server, so systemd/launchd would see the service "exit" and restart it in a loop (measured: 16 ms). It remains available as a future last resort.
 Verified: the e2e test uses a fake `claude` that exits 1 without a TTY, passing on Linux and macOS CI via `pty-run`. Not verified: the real `claude rc`, which checks for a full-scope `claude auth login` token before anything else and refuses to run inside cloud sessions, so it cannot be exercised in CI without a real login.
@@ -82,7 +82,7 @@ Not verified in the authoring sandbox: real `claude rc`, real systemd/launchd, b
 
 ## 12. Security
 
-Socket 0600; `~/.claude.json` writes atomic, mode-preserving; daemon env is allowlisted before passing to children; config `env` is plain text in `rc.json` (keep file private); logs never print env values.
+Socket 0600 (bound under umask 077; daemon, log and run dirs 0700); `~/.claude.json` writes atomic, mode-preserving; daemon env is allowlisted before passing to children; config `env` is plain text in `rc.json` (keep file private); logs never print env values.
 
 ## 12a. Notifications, update checks, local web UI
 

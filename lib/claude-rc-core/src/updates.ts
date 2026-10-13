@@ -2,7 +2,10 @@ import type { Notice } from "./notify";
 
 export const CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
-const RELEASES_URL = "https://api.github.com/repos/nsheaps/agents/releases?per_page=50";
+const PER_PAGE = 50;
+const MAX_PAGES = 5; // newest first, so the latest claude-rc is on the first page that has one
+const releasesUrl = (page: number) =>
+  `https://api.github.com/repos/nsheaps/agents/releases?per_page=${PER_PAGE}&page=${page}`;
 const NPM_URL = "https://registry.npmjs.org/@anthropic-ai/claude-code/latest";
 const TAG_PREFIX = "claude-rc-v";
 
@@ -74,15 +77,18 @@ async function getJson(fetch: FetchLike, url: string, what: string): Promise<unk
 }
 
 async function latestClaudeRc(fetch: FetchLike): Promise<string | undefined> {
-  const list = await getJson(fetch, RELEASES_URL, "claude-rc releases");
-  if (!Array.isArray(list)) throw new Error("claude-rc releases: unexpected response");
-  let best: string | undefined;
-  for (const r of list as Array<{ tag_name?: string; draft?: boolean; prerelease?: boolean }>) {
-    if (!r.tag_name?.startsWith(TAG_PREFIX) || r.draft || r.prerelease) continue;
-    const v = r.tag_name.slice(TAG_PREFIX.length);
-    if (!best || compareVersions(v, best) > 0) best = v;
+  for (let page = 1; page <= MAX_PAGES; page++) {
+    const list = await getJson(fetch, releasesUrl(page), "claude-rc releases");
+    if (!Array.isArray(list)) throw new Error("claude-rc releases: unexpected response");
+    let best: string | undefined;
+    for (const r of list as Array<{ tag_name?: string; draft?: boolean; prerelease?: boolean }>) {
+      if (!r.tag_name?.startsWith(TAG_PREFIX) || r.draft || r.prerelease) continue;
+      const v = r.tag_name.slice(TAG_PREFIX.length);
+      if (!best || compareVersions(v, best) > 0) best = v;
+    }
+    if (best || list.length < PER_PAGE) return best;
   }
-  return best;
+  return undefined;
 }
 
 async function latestClaude(fetch: FetchLike): Promise<string | undefined> {

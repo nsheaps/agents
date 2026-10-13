@@ -210,12 +210,8 @@ export async function run(cmd: Command, ctx: Ctx): Promise<number> {
       const r = await call(ctx, { cmd: cmd.cmd, name: cmd.name });
       if (!r) return (ctx.err(NOT_RUNNING), EXIT.notRunning);
       if (!r.ok) return (ctx.err(`claude-rc: ${r.error}`), EXIT.error);
-      ctx.out(
-        `${cmd.cmd}${cmd.cmd === "stop" ? "ped" : cmd.cmd === "start" ? "ed" : "ed"} ${cmd.name ?? "all repos"}`.replace(
-          "stoped",
-          "stopped",
-        ),
-      );
+      const past = { start: "started", stop: "stopped", restart: "restarted" } as const;
+      ctx.out(`${past[cmd.cmd]} ${cmd.name ?? "all repos"}`);
       return EXIT.ok;
     }
 

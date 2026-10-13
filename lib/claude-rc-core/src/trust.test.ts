@@ -88,4 +88,26 @@ describe("ensureTrusted", () => {
     ensureTrusted(f, "/p");
     expect((statSync(f).mode & 0o777).toString(8)).toBe("600");
   });
+  test("a concurrent writer's change is kept: we re-read and redo instead of clobbering it", () => {
+    const f = join(mkdtempSync(join(tmpdir(), "rc-trust-")), ".claude.json");
+    writeFileSync(f, JSON.stringify({ projects: {} }));
+    let raced = false;
+    const r = ensureTrusted(f, "/r/a", () => {
+      if (raced) return;
+      raced = true;
+      writeFileSync(f, JSON.stringify({ projects: {}, theme: "dark-from-claude" }));
+    });
+    expect(r).toBe("added");
+    const j = JSON.parse(readFileSync(f, "utf8"));
+    expect(j.theme).toBe("dark-from-claude");
+    expect(j.projects["/r/a"].hasTrustDialogAccepted).toBe(true);
+  });
+  test("gives up with a clear error if the file never settles", () => {
+    const f = join(mkdtempSync(join(tmpdir(), "rc-trust-")), ".claude.json");
+    writeFileSync(f, "{}");
+    let n = 0;
+    expect(() =>
+      ensureTrusted(f, "/r/a", () => writeFileSync(f, JSON.stringify({ n: ++n }) + " ".repeat(n))),
+    ).toThrow("keeps changing");
+  });
 });

@@ -140,6 +140,14 @@ describe("web UI api", () => {
     expect(t.reqs.at(-1)).toEqual({ cmd: "reload" });
   });
 
+  test("a directory name that is not a valid repo name is sanitized", async () => {
+    const t = await setup();
+    const dir = join(t.home, "My Project");
+    mkdirSync(dir);
+    expect((await t.json("POST", "/api/repos", { path: dir })).status).toBe(200);
+    expect(JSON.parse(readFileSync(t.paths.configPath, "utf8")).repos[0].name).toBe("My-Project");
+  });
+
   test.each([
     [{ path: "relative/dir" }, "absolute"],
     [{ path: "/definitely/not/here" }, "exist"],

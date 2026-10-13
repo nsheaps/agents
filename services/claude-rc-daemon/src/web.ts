@@ -1,8 +1,9 @@
 import { randomBytes, timingSafeEqual } from "node:crypto";
 import { chmodSync, existsSync, mkdirSync, statSync, unlinkSync, writeFileSync } from "node:fs";
-import { basename, dirname, isAbsolute } from "node:path";
+import { dirname, isAbsolute } from "node:path";
 import {
   addRepo,
+  deriveRepoName,
   loadConfig,
   removeRepo,
   updateSettings,
@@ -118,7 +119,7 @@ export async function startWebUi(opts: WebUiOptions): Promise<WebUi> {
         if (!existsSync(path) || !statSync(path).isDirectory())
           throw new Error(`path does not exist or is not a directory: ${path}`);
         addRepo(opts.paths.configPath, {
-          name: typeof body.name === "string" && body.name ? body.name : basename(path),
+          name: typeof body.name === "string" && body.name ? body.name : deriveRepoName(path),
           path,
           ...(typeof body.spawn === "string" ? { spawn: body.spawn as never } : {}),
         });

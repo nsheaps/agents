@@ -114,7 +114,7 @@ jobs:
           VERSION: ${{ needs.build.outputs.version }}
         run: |
           cd homebrew-devsetup
-          for pr in $(gh pr list --state open --search "chore: update claude-rc to" --json number --jq '.[].number' || true); do
+          for pr in $(gh pr list --state open --author "@me" --search "chore: update claude-rc to in:title" --json number --jq '.[].number' || true); do
             gh pr close "$pr" --comment "Superseded by claude-rc ${VERSION}."
           done
           BRANCH="bump-claude-rc-${VERSION}"

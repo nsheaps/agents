@@ -67,6 +67,48 @@ describe("checkForUpdates", () => {
     expect(r.state.lastCheck).toBe(NOW);
   });
 
+  test("keeps paging past unrelated releases to find the latest claude-rc", async () => {
+    const other = Array.from({ length: 50 }, (_, i) => ({
+      tag_name: `agents-v1.${i}.0`,
+      draft: false,
+      prerelease: false,
+    }));
+    const calls: string[] = [];
+    const f: FetchLike = async (url) => {
+      calls.push(url);
+      if (url.includes("npmjs")) return json({ version: "2.4.0" });
+      if (url.includes("page=1")) return json(other);
+      if (url.includes("page=2")) return json([{ tag_name: "claude-rc-v3.0.0" }]);
+      return json([]);
+    };
+    const r = await checkForUpdates({
+      fetch: f,
+      now: NOW,
+      versions: { claudeRc: "1.0.0", claude: "2.4.0" },
+      enabled: ON,
+      state: {},
+    });
+    expect(r.notices.map((n) => n.title)).toEqual(["claude-rc 3.0.0 available"]);
+    expect(calls.filter((c) => c.includes("github")).length).toBe(2);
+  });
+
+  test("gives up after a bounded number of pages", async () => {
+    const other = Array.from({ length: 50 }, () => ({ tag_name: "agents-v1.0.0" }));
+    let pages = 0;
+    const f: FetchLike = async (url) => {
+      if (url.includes("github")) pages++;
+      return json(url.includes("npmjs") ? { version: "2.4.0" } : other);
+    };
+    await checkForUpdates({
+      fetch: f,
+      now: NOW,
+      versions: { claudeRc: "1.0.0", claude: "2.4.0" },
+      enabled: ON,
+      state: {},
+    });
+    expect(pages).toBe(5);
+  });
+
   test("no notice when already current or ahead", async () => {
     const { f } = fakeFetch(NET);
     const r = await checkForUpdates({

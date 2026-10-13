@@ -31,8 +31,8 @@ async function main(): Promise<number> {
 
   const home = process.env.HOME ?? homedir();
   const paths = getPaths(process.env, home);
-  mkdirSync(paths.logDir, { recursive: true });
-  mkdirSync(paths.runDir, { recursive: true });
+  for (const d of [paths.daemonDir, paths.logDir, paths.runDir])
+    mkdirSync(d, { recursive: true, mode: 0o700 });
 
   const picked = await pickSupervisor({
     prefer: args.supervisor,
