@@ -140,7 +140,12 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
       await teardown();
       return 143;
     }
-    const p = await probeSession(exec, o.tmuxBin, o.socket, 0);
+    let p = await probeSession(exec, o.tmuxBin, o.socket, 0);
+    // tmux can flag a pane dead a moment before it has reaped the child's status; ask again.
+    for (let i = 0; p?.dead && p.exitStatus === undefined && i < 10; i++) {
+      await sleep(100, o.signal);
+      p = await probeSession(exec, o.tmuxBin, o.socket, 0);
+    }
     if (!p) {
       log("[claude-rc] tmux session disappeared");
       await teardown();

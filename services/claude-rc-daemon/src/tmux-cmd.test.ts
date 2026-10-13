@@ -68,8 +68,11 @@ const TMUX = Bun.which("tmux");
       ],
       { cwd: dir, stdout: "pipe", stderr: "pipe", stdin: "ignore" },
     );
-    const out = await new Response(p.stdout).text();
-    expect(await p.exited).toBe(5);
+    const [out, err] = await Promise.all([
+      new Response(p.stdout).text(),
+      new Response(p.stderr).text(),
+    ]);
+    expect({ code: await p.exited, err }).toEqual({ code: 5, err: expect.any(String) });
     expect(out).toContain("hi-from-pane");
   });
 
