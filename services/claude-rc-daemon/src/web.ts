@@ -223,15 +223,16 @@ export async function startWebUi(opts: WebUiOptions): Promise<WebUi> {
             });
             return;
           }
-          // After auth: JSON {type:"resize"} control frames, everything else is keyboard input.
+          // After auth: JSON control frames are always consumed (applied or dropped), never typed.
           if (text.startsWith("{")) {
             try {
               const c = JSON.parse(text);
-              if (c.type === "resize" && Number.isInteger(c.cols) && Number.isInteger(c.rows)) {
-                d.proc?.terminal?.resize(
-                  Math.min(Math.max(c.cols, 1), 500),
-                  Math.min(Math.max(c.rows, 1), 200),
-                );
+              if (c && typeof c === "object") {
+                if (c.type === "resize" && Number.isInteger(c.cols) && Number.isInteger(c.rows))
+                  d.proc?.terminal?.resize(
+                    Math.min(Math.max(c.cols, 1), 500),
+                    Math.min(Math.max(c.rows, 1), 200),
+                  );
                 return;
               }
             } catch {}

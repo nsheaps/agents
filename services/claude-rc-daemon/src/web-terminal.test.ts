@@ -140,6 +140,20 @@ describe("browser terminal websocket", () => {
     c.ws.close();
   });
 
+  test("control frames are never written to the pty as keyboard input", async () => {
+    const t = await setup(() => ["cat"]);
+    const c = connect(t.ui, "x");
+    expect(await c.opened).toBe(true);
+    c.ws.send(JSON.stringify({ token: t.ui.token, cols: 80, rows: 24 }));
+    c.ws.send('{"type":"resize","cols":"abc","rows":24}');
+    c.ws.send('{"type":"paste","text":"leak-me"}');
+    c.ws.send("after-frames\n");
+    expect(await until(() => c.out.text.includes("after-frames"))).toBe(true);
+    expect(c.out.text).not.toContain("leak-me");
+    expect(c.out.text).not.toContain("resize");
+    c.ws.close();
+  });
+
   test.skipIf(!TMUX)(
     "attaches to a real tmux session, shows its output and leaves it running on close",
     async () => {

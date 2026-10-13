@@ -70,7 +70,6 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
 
   try {
     ensureSocketDir(dirname(o.socket));
-    writeFileSync(conf, tmuxConf(o.name), { mode: 0o600 });
   } catch (e) {
     log(`[claude-rc] cannot prepare tmux socket: ${(e as Error).message}`);
     return 1;
@@ -89,13 +88,19 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
       if (now !== undefined && now !== serverPid) return; // someone else's server now
     }
     await tmux("kill-server").catch(() => {});
-    for (const f of [o.socket, statusFile])
+    for (const f of [o.socket, statusFile, conf])
       try {
         unlinkSync(f);
       } catch {}
   };
 
   await teardown(); // a server left behind by a keeper that was SIGKILLed
+  try {
+    writeFileSync(conf, tmuxConf(o.name), { mode: 0o600 }); // after teardown, which removes the old one
+  } catch (e) {
+    log(`[claude-rc] cannot write tmux config: ${(e as Error).message}`);
+    return 1;
+  }
 
   const env: Record<string, string> = {};
   for (const [k, v] of Object.entries(o.env ?? process.env)) if (v !== undefined) env[k] = v;

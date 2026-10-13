@@ -185,6 +185,17 @@ real("runTmuxKeeper (real tmux)", () => {
     await done;
   });
 
+  test("teardown removes the generated conf as well as the socket", async () => {
+    const t = setup();
+    const done = runTmuxKeeper(t.opts(["sleep", "30"]));
+    await t.waitFor(t.probe);
+    const conf = join(t.dir, "t", "x.conf");
+    expect(existsSync(conf)).toBe(true);
+    t.ac.abort();
+    await done;
+    expect(existsSync(conf)).toBe(false);
+  });
+
   test("a command that cannot start is an error, not a hang", async () => {
     const t = setup();
     const code = await runTmuxKeeper(t.opts(["/definitely/not/a/binary"]));

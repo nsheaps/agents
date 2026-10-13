@@ -17,6 +17,7 @@ import {
   ensureTrusted,
   ipcRequest,
   loadConfig,
+  attachArgv,
   pickSupervisor,
   realExec,
   removeRepo,
@@ -241,7 +242,7 @@ export async function run(cmd: Command, ctx: Ctx): Promise<number> {
           ctx.err(`claude-rc: ${cmd.name} is ${repo.state}, there is no session to attach to`),
           EXIT.error
         );
-      const p = Bun.spawn([tmux, "-S", repo.attach.socket, "attach", "-t", "rc"], {
+      const p = Bun.spawn(attachArgv(tmux, repo.attach.socket), {
         stdin: "inherit",
         stdout: "inherit",
         stderr: "inherit",
