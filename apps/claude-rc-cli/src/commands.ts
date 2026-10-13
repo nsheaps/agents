@@ -21,6 +21,7 @@ import {
   realExec,
   removeRepo,
   resolveClaude,
+  resolveTmux,
   trustKeyFor,
   VERSION,
   type IpcRequest,
@@ -65,6 +66,8 @@ Daemon:
   status [--json]        Show daemon and per-repo state (exit 3 if the daemon is not running)
   start|stop|restart [name]   Control one repo's \`claude rc\` (restart without a name restarts all)
   reload                 Re-read rc.json now (the daemon also watches it)
+  attach <name>          Connect to a repo's tmux session (detach with Ctrl-b d; it keeps running)
+  update [--no-restart]  Run \`claude upgrade\` now and restart running repos when they are idle
   ui [--print]           Open the settings/monitor page in your browser (--print: just show the URL)
   logs <name> [-n N] [-f]  Show a repo's \`claude rc\` log
   shutdown               Stop the daemon and its repos
@@ -212,6 +215,51 @@ export async function run(cmd: Command, ctx: Ctx): Promise<number> {
       if (!r.ok) return (ctx.err(`claude-rc: ${r.error}`), EXIT.error);
       const past = { start: "started", stop: "stopped", restart: "restarted" } as const;
       ctx.out(`${past[cmd.cmd]} ${cmd.name ?? "all repos"}`);
+      return EXIT.ok;
+    }
+
+    case "attach": {
+      const st = await fetchStatus(ctx);
+      if (!st) return (ctx.err(NOT_RUNNING), EXIT.notRunning);
+      const repo = st.repos.find((r) => r.name === cmd.name);
+      if (!repo) {
+        ctx.err(
+          `claude-rc: unknown repo "${cmd.name}" (configured: ${st.repos.map((r) => r.name).join(", ") || "none"})`,
+        );
+        return EXIT.error;
+      }
+      if (!repo.attach) {
+        ctx.err(
+          `claude-rc: ${cmd.name} is not running in tmux (terminal: ${repo.terminal ?? "pty"}). See \`claude-rc logs ${cmd.name}\`.`,
+        );
+        return EXIT.error;
+      }
+      const tmux = resolveTmux(ctx.env, ctx.home);
+      if (!tmux) return (ctx.err("claude-rc: tmux not found on PATH"), EXIT.error);
+      if (repo.state !== "running")
+        return (
+          ctx.err(`claude-rc: ${cmd.name} is ${repo.state}, there is no session to attach to`),
+          EXIT.error
+        );
+      const p = Bun.spawn([tmux, "-S", repo.attach.socket, "attach", "-t", "rc"], {
+        stdin: "inherit",
+        stdout: "inherit",
+        stderr: "inherit",
+      });
+      return (await p.exited) === 0 ? EXIT.ok : EXIT.error;
+    }
+
+    case "update": {
+      const r = await call(ctx, { cmd: "update", restart: cmd.restart }, 5 * 60_000);
+      if (!r) return (ctx.err(NOT_RUNNING), EXIT.notRunning);
+      if (!r.ok) return (ctx.err(`claude-rc: ${r.error}`), EXIT.error);
+      const d = r.data as { upgrade?: string; pending?: string[] };
+      if (d.upgrade) ctx.out(d.upgrade.trim());
+      ctx.out(
+        d.pending?.length
+          ? `restarting when idle: ${d.pending.join(", ")}`
+          : "no running repos need a restart",
+      );
       return EXIT.ok;
     }
 
@@ -399,14 +447,26 @@ async function doctor(ctx: Ctx): Promise<number> {
       `${ctx.color ? "\x1b[33m!\x1b[0m" : "!"} notify-send not found, so desktop notifications are off\n    install libnotify (Debian/Ubuntu: apt install libnotify-bin; Fedora: dnf install libnotify)`,
     );
 
+  const tmuxBin = resolveTmux(ctx.env, ctx.home);
+  if (tmuxBin) {
+    const v = Bun.spawnSync([tmuxBin, "-V"], { stdout: "pipe", stderr: "pipe" });
+    ok(`tmux found: ${tmuxBin}${v.exitCode === 0 ? ` (${v.stdout.toString().trim()})` : ""}`);
+  } else
+    ctx.out(
+      `${ctx.color ? "\x1b[33m!\x1b[0m" : "!"} tmux not found, so sessions run without attach/browser terminal\n    install it (brew install tmux; apt install tmux; dnf install tmux)`,
+    );
+
   const st = await fetchStatus(ctx).catch(() => undefined);
   if (st) ok(`daemon running (pid ${st.pid}, ${st.version}, supervisor ${st.supervisor.kind})`);
   else no("daemon not running", "brew services start claude-rc");
   if (st?.configError) no(`daemon reports config error: ${st.configError}`);
   if (st?.upgrade && !st.upgrade.ok) no(`last claude upgrade failed: ${st.upgrade.output}`);
-  for (const r of st?.repos ?? [])
+  for (const r of st?.repos ?? []) {
     if (r.state !== "running" && !r.stoppedByUser)
       no(`${r.name}: ${r.state}${r.error ? ` — ${r.error}` : ""}`);
+    else if (r.health && ["attention", "down", "crash-loop"].includes(r.health.state))
+      no(`${r.name}: ${r.health.state}${r.health.detail ? ` — ${r.health.detail}` : ""}`);
+  }
 
   return bad ? EXIT.error : EXIT.ok;
 }

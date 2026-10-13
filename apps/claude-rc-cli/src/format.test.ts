@@ -61,3 +61,43 @@ describe("formatStatus", () => {
     expect(strip(formatStatus(st, true))).toBe(formatStatus(st, false));
   });
 });
+
+describe("formatStatus tmux + updates", () => {
+  const base = {
+    pid: 1,
+    version: "1.0.0",
+    phase: "ready",
+    startedAt: "",
+    supervisor: { kind: "inproc", reason: "" },
+    configPath: "/c",
+  };
+  const repo = {
+    name: "a",
+    path: "/p",
+    spawn: "worktree",
+    state: "running",
+    pid: 2,
+    attach: { socket: "/s", command: "tmux -S /s attach -t rc" },
+  };
+  test("flags unhealthy sessions, pending restarts and available updates", () => {
+    const out = formatStatus(
+      {
+        ...base,
+        repos: [{ ...repo, health: { state: "attention", detail: "trust prompt" } }],
+        updates: { available: { claude: "9.9.9", claudeRc: "8.8.8" }, pendingRestart: ["a"] },
+      },
+      false,
+    );
+    expect(out).toContain("running (attention)");
+    expect(out).toContain("a: attention — trust prompt");
+    expect(out).toContain("Claude Code 9.9.9 available");
+    expect(out).toContain("brew upgrade claude-rc");
+    expect(out).toContain("restarting when idle: a");
+    expect(out).toContain("claude-rc attach <name>");
+  });
+  test("a healthy session looks plain", () => {
+    const out = formatStatus({ ...base, repos: [{ ...repo, health: { state: "ok" } }] }, false);
+    expect(out).toContain("running ");
+    expect(out).not.toContain("(ok)");
+  });
+});

@@ -129,6 +129,7 @@ export async function checkForUpdates(input: UpdateCheckInput): Promise<UpdateCh
           notices.push({
             title: `claude-rc ${v} available`,
             body: `You have ${versions.claudeRc}. Run: brew upgrade claude-rc`,
+            broadcast: true,
           });
         }
       }
@@ -147,7 +148,8 @@ export async function checkForUpdates(input: UpdateCheckInput): Promise<UpdateCh
           notified.claude = v;
           notices.push({
             title: `Claude Code ${v} available`,
-            body: `You have ${versions.claude}. The daemon runs "claude upgrade" on its next start.`,
+            body: `You have ${versions.claude}. Use "Update now" in the claude-rc UI, or run: claude-rc update`,
+            broadcast: true,
           });
         }
       }
@@ -158,4 +160,18 @@ export async function checkForUpdates(input: UpdateCheckInput): Promise<UpdateCh
 
   if (!reached) return { checked: true, notices, errors, state: input.state };
   return { checked: true, notices, errors, state: { lastCheck: now, latest, notified } };
+}
+
+/** Which sources have a newer release than what is installed. */
+export function availableUpdates(
+  latest: { claudeRc?: string; claude?: string } | undefined,
+  installed: { claudeRc?: string; claude?: string },
+): { claudeRc?: string; claude?: string } {
+  const out: { claudeRc?: string; claude?: string } = {};
+  for (const k of ["claudeRc", "claude"] as const) {
+    const l = latest?.[k];
+    const i = installed[k];
+    if (l && i && compareVersions(l, i) > 0) out[k] = l;
+  }
+  return out;
 }

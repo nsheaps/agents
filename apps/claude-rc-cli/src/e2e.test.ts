@@ -101,7 +101,15 @@ esac
   writeFileSync(join(bin, "notify-send"), `#!/bin/sh\necho "$*" >> "${notifyLog}"\n`);
   chmodSync(join(bin, "notify-send"), 0o755);
   mkdirSync(join(home, ".claude/daemon"), { recursive: true });
-  writeFileSync(rcJson, JSON.stringify({ repos: [], env: { FOO: "bar" }, ui: { port: 0 } }));
+  writeFileSync(
+    rcJson,
+    JSON.stringify({
+      repos: [],
+      env: { FOO: "bar" },
+      ui: { port: 0 },
+      updates: { idleSeconds: 0 },
+    }),
+  );
   daemon = Bun.spawn(["bun", "run", DAEMON, "--supervisor", SUP], {
     env,
     stdout: "pipe",
@@ -302,11 +310,46 @@ describe("claude-rc e2e (" + SUP + ")", () => {
     T,
   );
 
+  test.skipIf(!Bun.which("tmux"))(
+    "tmux: the session is attachable, healthy, and `update` upgrades claude then restarts when idle",
+    async () => {
+      const r = await until(async () => {
+        const x = await repoState();
+        return x?.health?.state === "ok" && x.attach ? x : false;
+      });
+      expect(r.terminal).toBe("tmux");
+      // What a human would run to connect really shows the session.
+      const shown = Bun.spawnSync(
+        ["tmux", "-S", r.attach.socket, "capture-pane", "-p", "-t", "rc"],
+        { stdout: "pipe", stderr: "pipe" },
+      );
+      expect(shown.stdout.toString()).toContain("fake claude rc running");
+      expect((await cli("status")).stdout).toContain("claude-rc attach <name>");
+
+      const upgrades = () => readFileSync(fakeLog, "utf8").split("upgrade called").length - 1;
+      const before = upgrades();
+      const pidBefore = r.pid;
+      const u = await cli("update");
+      expect(u.code).toBe(0);
+      expect(u.stdout).toContain("restarting when idle: proj");
+      expect(upgrades()).toBe(before + 1);
+      // idleSeconds: 0 in this suite's config, so the restart happens on the next poll.
+      const after = await until(async () => {
+        const x = await running();
+        return x && x.pid !== pidBefore && !x.restartPending ? x : false;
+      });
+      expect(after.pid).not.toBe(pidBefore);
+      expect((await status()).updates.pendingRestart).toEqual([]);
+    },
+    T,
+  );
+
   test(
     "doctor passes in a healthy setup",
     async () => {
       const r = await cli("doctor");
       expect(r.stdout).toContain("claude");
+      expect(r.stdout).not.toContain("✗");
       expect(r.code).toBe(0);
     },
     T,

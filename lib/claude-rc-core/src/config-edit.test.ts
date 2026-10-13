@@ -138,3 +138,26 @@ describe("file mode", () => {
     expect(statSync(f).mode & 0o777).toBe(0o640);
   });
 });
+
+describe("updateSettings (terminal and update controls)", () => {
+  test("terminal, updates.autoUpgrade and ui.terminal are settable and merge", () => {
+    const f = file();
+    addRepo(f, { name: "a", path: "/a" });
+    updateSettings(f, {
+      terminal: "tmux",
+      updates: { autoUpgrade: false },
+      ui: { terminal: false },
+    });
+    updateSettings(f, { updates: { idleSeconds: 30 } });
+    const j = JSON.parse(readFileSync(f, "utf8"));
+    expect(j.terminal).toBe("tmux");
+    expect(j.updates).toEqual({ autoUpgrade: false, idleSeconds: 30 });
+    expect(j.ui).toEqual({ terminal: false });
+  });
+  test("an invalid terminal is rejected and nothing is written", () => {
+    const f = file();
+    addRepo(f, { name: "a", path: "/a" });
+    expect(() => updateSettings(f, { terminal: "screen" })).toThrow("terminal");
+    expect(JSON.parse(readFileSync(f, "utf8")).terminal).toBeUndefined();
+  });
+});

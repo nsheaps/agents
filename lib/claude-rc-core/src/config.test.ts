@@ -39,9 +39,29 @@ describe("parseConfig", () => {
 
   test("notifications and updates default to everything on; ui to the default port", () => {
     const c = ok({ repos: [] });
-    expect(c.notifications).toEqual({ enabled: true, onStart: true, onExit: true });
-    expect(c.updates).toEqual({ claudeRc: true, claude: true });
-    expect(c.ui).toEqual({ port: 47474 });
+    expect(c.notifications).toEqual({ enabled: true, onStart: true, onExit: true, allUsers: true });
+    expect(c.updates).toEqual({
+      claudeRc: true,
+      claude: true,
+      autoUpgrade: true,
+      idleSeconds: 120,
+    });
+    expect(c.ui).toEqual({ port: 47474, terminal: true });
+    expect(c.terminal).toBe("auto");
+  });
+
+  test("terminal, autoUpgrade, idleSeconds, allUsers and ui.terminal can be set", () => {
+    const c = ok({
+      repos: [],
+      terminal: "pty",
+      notifications: { allUsers: false },
+      updates: { autoUpgrade: false, idleSeconds: 5 },
+      ui: { terminal: false },
+    });
+    expect(c.terminal).toBe("pty");
+    expect(c.notifications.allUsers).toBe(false);
+    expect(c.updates).toMatchObject({ autoUpgrade: false, idleSeconds: 5 });
+    expect(c.ui).toEqual({ port: 47474, terminal: false });
   });
 
   test("notifications, updates and ui can be set partially", () => {
@@ -51,8 +71,8 @@ describe("parseConfig", () => {
       updates: { claude: false },
       ui: { port: 0 },
     });
-    expect(c.notifications).toEqual({ enabled: true, onStart: true, onExit: false });
-    expect(c.updates).toEqual({ claudeRc: true, claude: false });
+    expect(c.notifications).toMatchObject({ enabled: true, onStart: true, onExit: false });
+    expect(c.updates).toMatchObject({ claudeRc: true, claude: false });
     expect(c.ui.port).toBe(0);
   });
 
@@ -62,6 +82,12 @@ describe("parseConfig", () => {
     [{ repos: [], updates: { claude: 1 } }, "updates.claude"],
     [{ repos: [], ui: { port: 70000 } }, "ui.port"],
     [{ repos: [], ui: { port: "80" } }, "ui.port"],
+    [{ repos: [], ui: { terminal: "yes" } }, "ui.terminal"],
+    [{ repos: [], terminal: "screen" }, "terminal"],
+    [{ repos: [], updates: { autoUpgrade: "yes" } }, "updates.autoUpgrade"],
+    [{ repos: [], updates: { idleSeconds: -1 } }, "updates.idleSeconds"],
+    [{ repos: [], updates: { idleSeconds: 1.5 } }, "updates.idleSeconds"],
+    [{ repos: [], notifications: { allUsers: 0 } }, "notifications.allUsers"],
   ])("rejects %j mentioning %s", (input, needle) => {
     expect(errs(input)).toContain(needle as string);
   });

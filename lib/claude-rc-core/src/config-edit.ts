@@ -53,7 +53,7 @@ export function removeRepo(path: string, name: string): void {
 }
 
 const NESTED = ["notifications", "updates", "ui"] as const;
-const SETTABLE = ["spawn", "env", "autoTrust", ...NESTED];
+const SETTABLE = ["spawn", "env", "autoTrust", "terminal", ...NESTED];
 
 /**
  * Change top-level settings (not repos). `notifications`, `updates` and `ui` are merged

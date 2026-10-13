@@ -16,3 +16,6 @@ export * from "./events";
 export * from "./updates";
 export { runInPty } from "./pty-run";
 export type { PtyRunOptions } from "./pty-run";
+export * from "./tmux";
+export * from "./tmux-keeper";
+export * from "./health";

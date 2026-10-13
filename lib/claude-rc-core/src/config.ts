@@ -4,6 +4,10 @@ import { isAbsolute } from "node:path";
 export const SPAWN_MODES = ["same-dir", "worktree", "session"] as const;
 export type SpawnMode = (typeof SPAWN_MODES)[number];
 
+/** How `claude rc` gets a terminal: tmux (attachable), a bare pty, or tmux when installed. */
+export const TERMINAL_MODES = ["auto", "tmux", "pty"] as const;
+export type TerminalMode = (typeof TERMINAL_MODES)[number];
+
 export interface RepoConfig {
   name: string;
   path: string;
@@ -18,12 +22,15 @@ export interface RcConfig {
   /** Pre-accept the workspace trust dialog for each repo in ~/.claude.json. */
   autoTrust: boolean;
   /** Desktop notifications when a service starts/exits. */
-  notifications: { enabled: boolean; onStart: boolean; onExit: boolean };
-  /** Daily update checks, one switch per thing checked. */
-  updates: { claudeRc: boolean; claude: boolean };
+  notifications: { enabled: boolean; onStart: boolean; onExit: boolean; allUsers: boolean };
+  /** Daily update checks (one switch per thing checked), auto-upgrade at startup, idle threshold. */
+  updates: { claudeRc: boolean; claude: boolean; autoUpgrade: boolean; idleSeconds: number };
   /** Local settings page served by the daemon; port 0 = pick a free one. */
-  ui: { port: number };
+  ui: { port: number; terminal: boolean };
+  terminal: TerminalMode;
 }
+
+export const DEFAULT_IDLE_SECONDS = 120;
 
 export const DEFAULT_UI_PORT = 47474;
 
@@ -110,18 +117,49 @@ export function parseConfig(input: unknown): ParseResult {
   const notifications = checkBools(
     input.notifications,
     "notifications",
-    ["enabled", "onStart", "onExit"] as const,
+    ["enabled", "onStart", "onExit", "allUsers"] as const,
     errors,
   );
-  const updates = checkBools(input.updates, "updates", ["claudeRc", "claude"] as const, errors);
+  const updateFlags = checkBools(
+    input.updates,
+    "updates",
+    ["claudeRc", "claude", "autoUpgrade"] as const,
+    errors,
+  );
+  let idleSeconds = DEFAULT_IDLE_SECONDS;
+  if (isObject(input.updates) && input.updates.idleSeconds !== undefined) {
+    const n = input.updates.idleSeconds;
+    if (typeof n === "number" && Number.isInteger(n) && n >= 0) idleSeconds = n;
+    else errors.push("config: updates.idleSeconds must be a non-negative integer");
+  }
+  const updates = { ...updateFlags, idleSeconds };
   let port = DEFAULT_UI_PORT;
+  let uiTerminal = true;
   if (input.ui !== undefined) {
     if (!isObject(input.ui)) errors.push("config: ui must be an object");
-    else if (input.ui.port !== undefined) {
-      const p = input.ui.port;
-      if (typeof p === "number" && Number.isInteger(p) && p >= 0 && p <= 65535) port = p;
-      else errors.push("config: ui.port must be an integer 0-65535");
+    else {
+      if (input.ui.port !== undefined) {
+        const p = input.ui.port;
+        if (typeof p === "number" && Number.isInteger(p) && p >= 0 && p <= 65535) port = p;
+        else errors.push("config: ui.port must be an integer 0-65535");
+      }
+      if (input.ui.terminal !== undefined) {
+        if (typeof input.ui.terminal === "boolean") uiTerminal = input.ui.terminal;
+        else errors.push("config: ui.terminal must be a boolean");
+      }
     }
+  }
+  let terminal: TerminalMode = "auto";
+  if (input.terminal !== undefined) {
+    if (
+      typeof input.terminal === "string" &&
+      (TERMINAL_MODES as readonly string[]).includes(input.terminal)
+    )
+      terminal = input.terminal as TerminalMode;
+    else
+      errors.push(
+        `config: terminal must be one of ${TERMINAL_MODES.join(", ")} (got ${JSON.stringify(input.terminal)})`,
+      );
   }
 
   const repos: RepoConfig[] = [];
@@ -156,7 +194,19 @@ export function parseConfig(input: unknown): ParseResult {
 
   return errors.length
     ? { ok: false, errors }
-    : { ok: true, config: { repos, spawn, env, autoTrust, notifications, updates, ui: { port } } };
+    : {
+        ok: true,
+        config: {
+          repos,
+          spawn,
+          env,
+          autoTrust,
+          notifications,
+          updates,
+          ui: { port, terminal: uiTerminal },
+          terminal,
+        },
+      };
 }
 
 export function loadConfig(path: string): LoadResult {
@@ -169,9 +219,15 @@ export function loadConfig(path: string): LoadResult {
         spawn: "worktree",
         env: {},
         autoTrust: true,
-        notifications: { enabled: true, onStart: true, onExit: true },
-        updates: { claudeRc: true, claude: true },
-        ui: { port: DEFAULT_UI_PORT },
+        notifications: { enabled: true, onStart: true, onExit: true, allUsers: true },
+        updates: {
+          claudeRc: true,
+          claude: true,
+          autoUpgrade: true,
+          idleSeconds: DEFAULT_IDLE_SECONDS,
+        },
+        ui: { port: DEFAULT_UI_PORT, terminal: true },
+        terminal: "auto",
       },
     };
   let raw: unknown;

@@ -11,6 +11,7 @@ import {
   type IpcResponse,
   type RcPaths,
 } from "@nsheaps/claude-rc-core";
+import { ASSETS } from "./assets";
 import { PAGE_HTML } from "./web-page";
 
 export interface WebUiOptions {
@@ -20,6 +21,15 @@ export interface WebUiOptions {
   /** The daemon's command handler (status/reload/start/stop/restart). */
   handle: (req: IpcRequest) => Promise<IpcResponse>;
   log: (msg: string) => void;
+  /** argv that attaches to a repo's tmux session, or undefined when it has none (browser terminal). */
+  attach?: (name: string) => string[] | undefined;
+}
+
+interface TermData {
+  name: string;
+  authed: boolean;
+  proc?: ReturnType<typeof Bun.spawn>;
+  timer?: ReturnType<typeof setTimeout>;
 }
 
 export interface WebUi {
@@ -50,12 +60,39 @@ export async function startWebUi(opts: WebUiOptions): Promise<WebUi> {
   const token = randomBytes(32).toString("hex");
   let allowed = new Set<string>();
 
-  const route = async (req: Request): Promise<Response> => {
+  const route = async (
+    req: Request,
+    srv: { upgrade: (r: Request, o: { data: TermData }) => boolean },
+  ) => {
     const url = new URL(req.url);
     if (!allowed.has(req.headers.get("host") ?? "")) return fail(403, "bad Host header");
     const origin = req.headers.get("origin");
     if (origin && ![...allowed].some((h) => origin === `http://${h}`))
       return fail(403, "cross-origin request refused");
+
+    // Static xterm.js assets: public library code, so no token (a <script src> can't send one).
+    const asset = req.method === "GET" ? ASSETS[url.pathname] : undefined;
+    if (asset)
+      return new Response(asset.body, {
+        headers: { "content-type": asset.type, "cache-control": "no-store" },
+      });
+
+    // Browser terminal: a WebSocket bridged to `tmux attach`. An Origin is mandatory (browsers
+    // always send one; its absence means a non-browser client) and the token travels in the first
+    // message rather than the URL.
+    const tm = /^\/ws\/term\/([^/]+)$/.exec(url.pathname);
+    if (tm) {
+      if (!origin) return fail(403, "Origin header required");
+      const c = loadConfig(opts.paths.configPath);
+      if (c.ok && !c.config.ui.terminal)
+        return fail(403, "browser terminal is disabled (ui.terminal)");
+      const name = decodeURIComponent(tm[1]!);
+      if (!opts.attach?.(name)) return fail(404, `no tmux session for "${name}"`);
+      const data: TermData = { name, authed: false };
+      return srv.upgrade(req, { data })
+        ? (undefined as never)
+        : fail(400, "websocket upgrade failed");
+    }
 
     const isPage = url.pathname === "/" && req.method === "GET";
     const given = isPage ? url.searchParams.get("token") : req.headers.get("x-claude-rc-token");
@@ -68,7 +105,7 @@ export async function startWebUi(opts: WebUiOptions): Promise<WebUi> {
           "cache-control": "no-store",
           "referrer-policy": "no-referrer",
           "content-security-policy":
-            "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; form-action 'none'",
+            "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' ws://127.0.0.1:* ws://localhost:*; base-uri 'none'; form-action 'none'",
         },
       });
 
@@ -109,6 +146,8 @@ export async function startWebUi(opts: WebUiOptions): Promise<WebUi> {
       return c.ok ? json(200, c.config) : fail(500, c.errors.join("; "));
     }
     if (req.method === "POST" && p === "/api/reload") return ipc({ cmd: "reload" });
+    if (req.method === "POST" && p === "/api/update")
+      return ipc({ cmd: "update", restart: body?.restart !== false });
     if (req.method === "PUT" && p === "/api/settings")
       return edit(() => updateSettings(opts.paths.configPath, body));
     if (req.method === "POST" && p === "/api/repos") {
@@ -140,6 +179,73 @@ export async function startWebUi(opts: WebUiOptions): Promise<WebUi> {
       hostname: "127.0.0.1",
       port,
       fetch: route,
+      websocket: {
+        open(ws: { data: TermData; close: (c?: number, r?: string) => void }) {
+          ws.data.timer = setTimeout(() => ws.close(4401, "auth timeout"), 5000);
+        },
+        message(ws: any, msg: string | Buffer) {
+          const d = ws.data as TermData;
+          const text = typeof msg === "string" ? msg : msg.toString("utf8");
+          if (!d.authed) {
+            let first: any;
+            try {
+              first = JSON.parse(text);
+            } catch {}
+            if (!first || !tokenOk(first.token ?? null, token))
+              return ws.close(4401, "unauthorized");
+            const argv = opts.attach?.(d.name);
+            if (!argv) return ws.close(4404, "no session");
+            clearTimeout(d.timer);
+            d.authed = true;
+            const size = (n: unknown, def: number, max: number) =>
+              Number.isInteger(n) && (n as number) > 0 ? Math.min(n as number, max) : def;
+            const dec = new TextDecoder();
+            try {
+              d.proc = Bun.spawn(argv, {
+                env: { ...process.env, TERM: "xterm-256color" },
+                terminal: {
+                  cols: size(first.cols, 120, 500),
+                  rows: size(first.rows, 40, 200),
+                  data(_t, chunk) {
+                    ws.send(dec.decode(chunk, { stream: true }));
+                  },
+                },
+              });
+            } catch (e) {
+              ws.send(`\r\n[cannot attach: ${(e as Error).message}]\r\n`);
+              return ws.close(1011, "spawn failed");
+            }
+            d.proc.exited.then(() => {
+              try {
+                ws.send("\r\n[detached]\r\n");
+                ws.close(1000, "detached");
+              } catch {}
+            });
+            return;
+          }
+          // After auth: JSON {type:"resize"} control frames, everything else is keyboard input.
+          if (text.startsWith("{")) {
+            try {
+              const c = JSON.parse(text);
+              if (c.type === "resize" && Number.isInteger(c.cols) && Number.isInteger(c.rows)) {
+                d.proc?.terminal?.resize(
+                  Math.min(Math.max(c.cols, 1), 500),
+                  Math.min(Math.max(c.rows, 1), 200),
+                );
+                return;
+              }
+            } catch {}
+          }
+          d.proc?.terminal?.write(text);
+        },
+        close(ws: any) {
+          const d = ws.data as TermData;
+          clearTimeout(d.timer);
+          // Closing the pty detaches the tmux client; the session keeps running.
+          d.proc?.terminal?.close();
+          d.proc?.kill();
+        },
+      },
       error: () => fail(500, "internal error"),
     });
   let server: ReturnType<typeof bind>;

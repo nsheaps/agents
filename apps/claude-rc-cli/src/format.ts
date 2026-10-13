@@ -24,7 +24,17 @@ export interface StatusData {
     error?: string;
     trustError?: string;
     logFile?: string;
+    terminal?: string;
+    attach?: { socket: string; command: string };
+    health?: { state: string; detail?: string };
+    restartPending?: boolean;
   }>;
+  updates?: {
+    installed?: { claudeRc?: string; claude?: string };
+    available?: { claudeRc?: string; claude?: string };
+    autoUpgrade?: boolean;
+    pendingRestart?: string[];
+  };
 }
 
 export function formatStatus(s: StatusData, color: boolean): string {
@@ -42,6 +52,12 @@ export function formatStatus(s: StatusData, color: boolean): string {
   if (s.configError) out.push(red(`config error: ${s.configError}`));
   if (s.claudeError) out.push(red(s.claudeError));
   if (s.upgrade && !s.upgrade.ok) out.push(yellow(`claude upgrade failed: ${s.upgrade.output}`));
+  const av = s.updates?.available;
+  if (av?.claude) out.push(yellow(`Claude Code ${av.claude} available — run: claude-rc update`));
+  if (av?.claudeRc)
+    out.push(yellow(`claude-rc ${av.claudeRc} available — run: brew upgrade claude-rc`));
+  if (s.updates?.pendingRestart?.length)
+    out.push(yellow(`restarting when idle: ${s.updates.pendingRestart.join(", ")}`));
   out.push("");
 
   if (s.repos.length === 0) {
@@ -51,7 +67,11 @@ export function formatStatus(s: StatusData, color: boolean): string {
 
   const rows = s.repos.map((r) => ({
     name: r.name,
-    state: r.stoppedByUser ? "stopped (manual)" : r.state,
+    state: r.stoppedByUser
+      ? "stopped (manual)"
+      : r.state === "running" && r.health && r.health.state !== "ok" && r.health.state !== "unknown"
+        ? `running (${r.health.state})`
+        : r.state,
     raw: r.state,
     pid: r.pid ? String(r.pid) : "-",
     restarts: r.restarts !== undefined ? String(r.restarts) : "-",
@@ -78,18 +98,31 @@ export function formatStatus(s: StatusData, color: boolean): string {
     `${r.name!.padEnd(widths.name)}  ${paint(r.state!.padEnd(widths.state))}  ${r.pid!.padEnd(widths.pid)}  ${r.restarts!.padEnd(widths.restarts)}  ${r.spawn!.padEnd(widths.spawn)}  ${r.path}`;
   out.push(dim(line(head)));
   for (const r of rows)
-    out.push(line(r, r.raw === "running" ? green : r.raw === "failed" ? red : yellow));
+    out.push(
+      line(
+        r,
+        r.raw === "running" && r.state === "running" ? green : r.raw === "failed" ? red : yellow,
+      ),
+    );
 
   const problems = s.repos.flatMap(
     (r) =>
       [
         r.error && `${r.name}: ${r.error}`,
         r.trustError && `${r.name}: trust: ${r.trustError}`,
+        r.health && ["attention", "down", "crash-loop"].includes(r.health.state)
+          ? `${r.name}: ${r.health.state}${r.health.detail ? ` — ${r.health.detail}` : ""}`
+          : undefined,
       ].filter(Boolean) as string[],
   );
   if (problems.length) {
     out.push("");
     for (const p of problems) out.push(red(p));
+  }
+  const attachable = s.repos.filter((r) => r.attach);
+  if (attachable.length) {
+    out.push("");
+    out.push(dim("Connect to a session (detach with Ctrl-b d): claude-rc attach <name>"));
   }
   return out.join("\n");
 }

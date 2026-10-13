@@ -1,5 +1,6 @@
 import { describe, expect, test } from "bun:test";
 import {
+  availableUpdates,
   CHECK_INTERVAL_MS,
   checkForUpdates,
   compareVersions,
@@ -243,5 +244,40 @@ describe("checkForUpdates", () => {
     });
     expect(calls.some((c) => c.includes("npmjs"))).toBe(false);
     expect(r.notices).toEqual([]);
+  });
+});
+
+describe("update notices", () => {
+  test("are flagged for broadcast so every active user hears about them", async () => {
+    const { f } = fakeFetch(NET);
+    const r = await checkForUpdates({
+      fetch: f,
+      now: NOW,
+      versions: { claudeRc: "1.0.0", claude: "1.0.0" },
+      enabled: ON,
+      state: {},
+    });
+    expect(r.notices.length).toBe(2);
+    expect(r.notices.every((n) => n.broadcast === true)).toBe(true);
+  });
+});
+
+describe("availableUpdates", () => {
+  test("lists only the sources whose latest is newer than installed", () => {
+    expect(
+      availableUpdates(
+        { claudeRc: "1.4.0", claude: "2.5.0" },
+        { claudeRc: "1.3.0", claude: "2.5.0" },
+      ),
+    ).toEqual({ claudeRc: "1.4.0" });
+  });
+  test("unknown on either side is not an update", () => {
+    expect(availableUpdates({ claudeRc: "9.9.9" }, { claudeRc: undefined })).toEqual({});
+    expect(availableUpdates(undefined, { claudeRc: "1.0.0" })).toEqual({});
+  });
+  test("a dev build is older than its release", () => {
+    expect(availableUpdates({ claudeRc: "0.1.0" }, { claudeRc: "0.0.0-dev" })).toEqual({
+      claudeRc: "0.1.0",
+    });
   });
 });

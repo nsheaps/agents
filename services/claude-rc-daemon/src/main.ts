@@ -10,12 +10,14 @@ import {
   parseClaudeVersion,
   pickSupervisor,
   realExec,
+  resolveTmux,
   serveIpc,
   VERSION,
 } from "@nsheaps/claude-rc-core";
 import { DAEMON_HELP, parseDaemonArgs } from "./args";
 import { Daemon } from "./daemon";
 import { ptyRunMain, selfPtyPrefix } from "./pty-cmd";
+import { selfCommand, tmuxRunMain } from "./tmux-cmd";
 import { runUpgrade } from "./upgrade";
 import { startWebUi, type WebUi } from "./web";
 
@@ -23,6 +25,7 @@ const log = (m: string) => console.log(`[${new Date().toISOString()}] ${m}`);
 
 async function main(): Promise<number> {
   if (process.argv[2] === "pty-run") return ptyRunMain(process.argv.slice(3));
+  if (process.argv[2] === "tmux-run") return tmuxRunMain(process.argv.slice(3));
   const args = parseDaemonArgs(process.argv.slice(2), process.env);
   if (args.kind === "version") return (console.log(`claude-rc-daemon ${VERSION}`), 0);
   if (args.kind === "help") return (console.log(DAEMON_HELP), 0);
@@ -45,6 +48,9 @@ async function main(): Promise<number> {
     `claude-rc-daemon ${VERSION} starting (supervisor: ${picked.supervisor.kind} — ${picked.reason})`,
   );
 
+  const tmuxBin = resolveTmux(process.env, home);
+  log(tmuxBin ? `tmux: ${tmuxBin}` : "tmux: not found (services will use a plain pty)");
+
   const daemon = new Daemon({
     env: process.env,
     home,
@@ -52,6 +58,7 @@ async function main(): Promise<number> {
     supervisor: picked.supervisor,
     supervisorReason: picked.reason,
     ptyPrefix: selfPtyPrefix(process.env),
+    tmux: tmuxBin ? { bin: tmuxBin, selfCmd: selfCommand() } : undefined,
     upgrade: (bin) => runUpgrade(bin),
     notifier: await createNotifier(process.platform, realExec),
     claudeVersion: async (bin) => parseClaudeVersion((await realExec([bin, "--version"])).stdout),
@@ -116,6 +123,7 @@ async function main(): Promise<number> {
       paths,
       port: cfg.ok ? cfg.config.ui.port : DEFAULT_UI_PORT,
       handle: (r) => daemon.handle(r),
+      attach: (n) => daemon.attachArgvFor(n),
       log,
     });
   } catch (e) {

@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { mkdirSync, mkdtempSync, writeFileSync, chmodSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { buildSpec, resolveClaude, specHash } from "./spec";
+import { buildSpec, resolveClaude, resolveTmux, specHash } from "./spec";
 
 const paths = { logDir: "/logs" } as any;
 
@@ -17,6 +17,29 @@ describe("buildSpec", () => {
     expect(s.argv).toEqual(["/bin/claude", "rc", "--spawn", "worktree", "--verbose"]);
     expect(s.cwd).toBe("/r/a");
     expect(s.logFile).toBe("/logs/a.log");
+  });
+  test("tmuxPrefix wraps the command and wins over ptyPrefix", () => {
+    const s = buildSpec(
+      { name: "a", path: "/r/a" },
+      { spawn: "session", env: {} },
+      {
+        claudeBin: "/bin/claude",
+        baseEnv: base,
+        paths,
+        ptyPrefix: ["/bin/rcd", "pty-run", "--"],
+        tmuxPrefix: ["/bin/rcd", "tmux-run", "--"],
+      },
+    );
+    expect(s.argv).toEqual([
+      "/bin/rcd",
+      "tmux-run",
+      "--",
+      "/bin/claude",
+      "rc",
+      "--spawn",
+      "session",
+      "--verbose",
+    ]);
   });
   test("ptyPrefix wraps the command so claude gets a terminal", () => {
     const s = buildSpec(
@@ -74,6 +97,25 @@ describe("specHash", () => {
     expect(specHash(s)).not.toBe(specHash({ ...s, argv: ["c", "x"] }));
     expect(specHash(s)).not.toBe(specHash({ ...s, env: { A: "1" } }));
     expect(specHash(s)).not.toBe(specHash({ ...s, cwd: "/q" }));
+  });
+});
+
+describe("resolveTmux", () => {
+  const mk = (dir: string) => {
+    mkdirSync(dir, { recursive: true });
+    const f = join(dir, "tmux");
+    writeFileSync(f, "#!/bin/sh\n");
+    chmodSync(f, 0o755);
+    return f;
+  };
+  test("prefers CLAUDE_RC_TMUX_BIN, then PATH, then fallback dirs", () => {
+    const d = mkdtempSync(join(tmpdir(), "rc-tm-"));
+    const a = mk(join(d, "a"));
+    const b = mk(join(d, "b"));
+    expect(resolveTmux({ CLAUDE_RC_TMUX_BIN: a, PATH: join(d, "b") }, d)).toBe(a);
+    expect(resolveTmux({ PATH: join(d, "b") }, d)).toBe(b);
+    const l = mk(join(d, ".local", "bin"));
+    expect(resolveTmux({ PATH: "/nonexistent" }, d)).toBe(l);
   });
 });
 

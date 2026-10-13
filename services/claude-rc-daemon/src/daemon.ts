@@ -1,9 +1,19 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, statSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
+  attachArgv,
+  attachCommandLine,
+  availableUpdates,
   buildSpec,
   checkForUpdates,
+  computeHealth,
+  CrashLoopTracker,
+  isIdle,
+  probeSession,
+  realExec,
   StateWatcher,
+  tmuxRunPrefix,
+  tmuxSocketFor,
   ensureTrusted,
   loadConfig,
   reconcile,
@@ -11,7 +21,9 @@ import {
   specHash,
   trustKeyFor,
   VERSION,
+  type Exec,
   type FetchLike,
+  type Health,
   type IpcRequest,
   type IpcResponse,
   type RcConfig,
@@ -34,6 +46,10 @@ export interface DaemonDeps {
   supervisorReason: string;
   /** Wraps `claude rc` in `<self> pty-run --` so it gets a terminal; omit to run it bare. */
   ptyPrefix?: string[];
+  /** Present when tmux is installed: `selfCmd` re-invokes this binary (for `tmux-run`). */
+  tmux?: { bin: string; selfCmd: string[] };
+  /** Runs tmux queries (injectable for tests). */
+  exec?: Exec;
   upgrade: (claudeBin: string) => Promise<UpgradeResult>;
   /** Desktop notifications; omit to disable. */
   notifier?: Notifier;
@@ -51,7 +67,14 @@ interface PersistedState {
   hashes: Record<string, string>;
   stopped: string[];
   update?: UpdateState;
+  /** Repos waiting to be restarted (when idle) to pick up an update. */
+  pendingRestart?: string[];
 }
+
+type Terminal = "tmux" | "pty";
+
+const STARTUP_GRACE_MS = 10_000;
+const HEALTH_MAX_AGE_MS = 2000;
 
 export class Daemon {
   private phase: Phase = "starting";
@@ -70,6 +93,19 @@ export class Daemon {
   private queue: Promise<unknown> = Promise.resolve();
   private update: UpdateState = {};
   private readonly watcher = new StateWatcher();
+  private readonly crashes = new CrashLoopTracker();
+  private terminals = new Map<string, Terminal>();
+  private health = new Map<string, Health>();
+  private healthAt = 0;
+  /** When each repo's current process first appeared, so a session still being created isn't "down". */
+  private pidSince = new Map<string, { pid?: number; at: number }>();
+  private attentionSeen = new Map<string, string>();
+  private loopAnnounced = new Set<string>();
+  private expectRestart = new Map<string, number>();
+  private pendingRestart = new Set<string>();
+  private installedClaude: string | undefined;
+  private activity = new Map<string, { lastActivity?: number; attached: number }>();
+  private lastUpgrade: { ok: boolean; at: string; output: string } | undefined;
 
   constructor(private readonly d: DaemonDeps) {
     this.loadState();
@@ -89,6 +125,7 @@ export class Daemon {
       this.hashes = s.hashes ?? {};
       this.userStopped = new Set(s.stopped ?? []);
       this.update = s.update ?? {};
+      this.pendingRestart = new Set(s.pendingRestart ?? []);
     } catch {}
   }
 
@@ -102,6 +139,7 @@ export class Daemon {
             hashes: this.hashes,
             stopped: [...this.userStopped],
             update: this.update,
+            pendingRestart: [...this.pendingRestart],
           } satisfies PersistedState,
           null,
           2,
@@ -116,7 +154,11 @@ export class Daemon {
   async start(): Promise<void> {
     await this.locked(async () => {
       this.resolveClaudeBin();
-      if (this.claudeBin) {
+      const early = loadConfig(this.d.paths.configPath);
+      const autoUpgrade = early.ok ? early.config.updates.autoUpgrade : true;
+      if (this.claudeBin && !autoUpgrade)
+        this.d.log("claude upgrade skipped (updates.autoUpgrade is off)");
+      if (this.claudeBin && autoUpgrade) {
         this.phase = "upgrading";
         this.d.log(`running: ${this.claudeBin} upgrade`);
         const r = await this.d.upgrade(this.claudeBin);
@@ -124,6 +166,7 @@ export class Daemon {
         this.d.log(r.ok ? "claude upgrade ok" : `claude upgrade failed (continuing): ${r.output}`);
         this.resolveClaudeBin(); // upgrade may have installed/moved the binary
       }
+      await this.refreshInstalledClaude();
       await this.apply();
       this.phase = "ready";
     });
@@ -153,6 +196,17 @@ export class Daemon {
       return this.claudeError;
     }
 
+    const want = loaded.config.terminal;
+    if (want === "tmux" && !this.d.tmux) {
+      const msg =
+        'terminal is "tmux" but tmux was not found (install it, or set terminal to "auto" or "pty")';
+      this.configError = msg;
+      this.d.log(`config error (keeping current services): ${msg}`);
+      return msg;
+    }
+    const mode: Terminal = want === "pty" || (want === "auto" && !this.d.tmux) ? "pty" : "tmux";
+    this.terminals = new Map(loaded.config.repos.map((r) => [r.name, mode]));
+
     this.trustErrors.clear();
     if (loaded.config.autoTrust) {
       for (const repo of loaded.config.repos) {
@@ -168,14 +222,7 @@ export class Daemon {
       }
     }
 
-    const all = loaded.config.repos.map((r) =>
-      buildSpec(r, loaded.config, {
-        claudeBin: this.claudeBin!,
-        baseEnv: this.d.env,
-        paths: this.d.paths,
-        ptyPrefix: this.d.ptyPrefix,
-      }),
-    );
+    const all = loaded.config.repos.map((r) => this.specFor(r.name, loaded.config));
     this.specs = new Map(all.map((s) => [s.name, s]));
     for (const n of [...this.userStopped]) if (!this.specs.has(n)) this.userStopped.delete(n);
     const desired = all.filter((s) => !this.userStopped.has(s.name));
@@ -210,6 +257,8 @@ export class Daemon {
         return this.locked(() => this.control(req.name, "stop"));
       case "start":
         return this.locked(() => this.control(req.name, "start"));
+      case "update":
+        return this.locked(() => this.updateNow(req.restart !== false));
       default:
         return { ok: false, error: `unknown command "${req.cmd}"` };
     }
@@ -232,10 +281,12 @@ export class Daemon {
       try {
         if (op === "stop") {
           this.userStopped.add(n);
+          this.pendingRestart.delete(n);
           await this.d.supervisor.stop(n);
           delete this.hashes[n];
         } else {
           this.userStopped.delete(n);
+          this.expectRestart.set(n, this.now()); // the pid change is ours, not a crash
           const spec = this.rebuild(n);
           await this.d.supervisor.start(spec);
           this.hashes[n] = specHash(spec);
@@ -245,18 +296,50 @@ export class Daemon {
         return { ok: false, error: `${n}: ${(e as Error).message}` };
       }
     }
+    this.healthAt = 0;
     this.saveState();
     return { ok: true };
   }
 
+  /** argv that attaches a pty to the repo's tmux session (for the browser terminal), if there is one. */
+  attachArgvFor(name: string): string[] | undefined {
+    if (this.terminals.get(name) !== "tmux" || !this.d.tmux || !this.specs.has(name))
+      return undefined;
+    return attachArgv(this.d.tmux.bin, this.socketFor(name));
+  }
+
   private rebuild(name: string): ServiceSpec {
-    const repo = this.config!.repos.find((r) => r.name === name)!;
-    return buildSpec(repo, this.config!, {
+    return this.specFor(name, this.config!);
+  }
+
+  private socketFor(name: string): string {
+    return tmuxSocketFor(this.d.paths, this.d.env, name);
+  }
+
+  private specFor(name: string, cfg: RcConfig): ServiceSpec {
+    const repo = cfg.repos.find((r) => r.name === name)!;
+    const tmux = this.terminals.get(name) === "tmux" ? this.d.tmux : undefined;
+    return buildSpec(repo, cfg, {
       claudeBin: this.claudeBin!,
       baseEnv: this.d.env,
       paths: this.d.paths,
       ptyPrefix: this.d.ptyPrefix,
+      ...(tmux
+        ? {
+            tmuxPrefix: tmuxRunPrefix(
+              tmux.selfCmd,
+              tmux.bin,
+              this.socketFor(name),
+              name,
+              `${this.d.paths.logDir}/${name}.log`,
+            ),
+          }
+        : {}),
     });
+  }
+
+  private now(): number {
+    return (this.d.now ?? Date.now)();
   }
 
   private async send(n: Notice): Promise<void> {
@@ -267,8 +350,9 @@ export class Daemon {
     }
   }
 
-  /** Compare service states with the last poll and notify about starts and unexpected exits. */
+  /** Compare service states with the last poll; notify about starts, exits and problems; act on queued restarts. */
   async pollOnce(): Promise<ServiceEvent[]> {
+    const now = this.now();
     const snap: Record<string, Observed> = {};
     for (const r of this.config?.repos ?? []) {
       const st = await this.d.supervisor.status(r.name);
@@ -278,36 +362,178 @@ export class Daemon {
         ...(this.userStopped.has(r.name) ? { stoppedByUser: true } : {}),
       };
     }
-    const events = this.watcher.observe(snap);
+    const events = this.watcher.observe(snap).filter((e) => {
+      const t = this.expectRestart.get(e.name);
+      if (t === undefined) return true;
+      if (now - t > 60_000) return this.expectRestart.delete(e.name) || true;
+      if (e.type === "restarted") return !this.expectRestart.delete(e.name); // ours: not news
+      if (e.type === "started") this.expectRestart.delete(e.name);
+      return true;
+    });
     const n = this.config?.notifications;
-    if (!n?.enabled) return events;
+    const loud = n?.enabled === true;
+
     for (const e of events) {
       const log = `${this.d.paths.logDir}/${e.name}.log`;
-      if (e.type === "started" && n.onStart)
+      if (e.type === "exited" || e.type === "restarted") {
+        if (this.crashes.record(e.name, now) && !this.loopAnnounced.has(e.name)) {
+          this.loopAnnounced.add(e.name);
+          if (loud && n!.onExit)
+            await this.send({
+              title: `${e.name} keeps crashing`,
+              body: `It has exited 3 times in 10 minutes. See ${log}`,
+            });
+        }
+      }
+      if (!loud) continue;
+      if (e.type === "started" && n!.onStart)
         await this.send({ title: `${e.name} started`, body: "claude rc is running" });
-      else if (e.type === "exited" && n.onExit)
+      else if (e.type === "exited" && n!.onExit)
         await this.send({ title: `${e.name} exited`, body: `See ${log}` });
-      else if (e.type === "restarted" && n.onExit)
+      else if (e.type === "restarted" && n!.onExit)
         await this.send({
           title: `${e.name} restarted`,
           body: `It exited and was restarted. See ${log}`,
         });
     }
+    for (const name of [...this.loopAnnounced])
+      if (!this.crashes.looping(name, now)) this.loopAnnounced.delete(name);
+
+    await this.refreshHealth(true);
+    for (const [name, h] of this.health) {
+      if (h.state !== "attention") {
+        this.attentionSeen.delete(name);
+        continue;
+      }
+      if (this.attentionSeen.get(name) === h.detail) continue;
+      this.attentionSeen.set(name, h.detail ?? "");
+      if (loud && n!.onExit)
+        await this.send({
+          title: `${name} needs attention`,
+          body: `${h.detail ?? "claude rc is waiting for input"} — attach with: claude-rc attach ${name}`,
+        });
+    }
+
+    await this.processPending();
     return events;
+  }
+
+  /** Probe every repo's terminal and derive its health; cached briefly so status polling stays cheap. */
+  private async refreshHealth(force = false): Promise<void> {
+    const now = this.now();
+    if (!force && now - this.healthAt < HEALTH_MAX_AGE_MS) return;
+    this.healthAt = now;
+    const health = new Map<string, Health>();
+    const activity = new Map<string, { lastActivity?: number; attached: number }>();
+    for (const r of this.config?.repos ?? []) {
+      const st = await this.d.supervisor.status(r.name);
+      const running = st.state === "running";
+      const terminal = this.terminals.get(r.name) ?? "pty";
+      const probe =
+        terminal === "tmux" && running && this.d.tmux
+          ? await probeSession(this.d.exec ?? realExec, this.d.tmux.bin, this.socketFor(r.name))
+          : null;
+      const seen = this.pidSince.get(r.name);
+      if (!seen || seen.pid !== st.pid) this.pidSince.set(r.name, { pid: st.pid, at: now });
+      const starting =
+        terminal === "tmux" &&
+        running &&
+        !probe &&
+        now - (this.pidSince.get(r.name)?.at ?? now) < STARTUP_GRACE_MS;
+      health.set(
+        r.name,
+        starting
+          ? { state: "unknown", detail: "starting", tail: [] }
+          : computeHealth({
+              terminal,
+              running,
+              probe,
+              crashLoop: this.crashes.looping(r.name, now),
+            }),
+      );
+      if (running) {
+        if (terminal === "tmux")
+          activity.set(r.name, probe ? probe : { lastActivity: 0, attached: 0 });
+        else {
+          let mtime = 0; // no log yet = no output yet
+          try {
+            mtime = statSync(`${this.d.paths.logDir}/${r.name}.log`).mtimeMs;
+          } catch {}
+          activity.set(r.name, { lastActivity: mtime, attached: 0 });
+        }
+      }
+    }
+    this.health = health;
+    this.activity = activity;
+  }
+
+  /** Restart repos queued by "update now" as soon as each one is idle. */
+  private async processPending(): Promise<void> {
+    if (this.pendingRestart.size === 0 || !this.config) return;
+    const idleMs = this.config.updates.idleSeconds * 1000;
+    let changed = false;
+    for (const name of [...this.pendingRestart]) {
+      const a = this.activity.get(name);
+      if (!this.specs.has(name) || this.userStopped.has(name) || !a) {
+        this.pendingRestart.delete(name); // gone, stopped, or not running (the supervisor is restarting it anyway)
+        changed = true;
+        continue;
+      }
+      if (!isIdle(a, this.now(), idleMs)) continue;
+      const r = await this.locked(() => this.control(name, "restart"));
+      this.pendingRestart.delete(name);
+      changed = true;
+      if (!r.ok) {
+        this.d.log(`restart after update failed for ${name}: ${r.error}`);
+        continue;
+      }
+      this.d.log(`${name}: restarted after update (idle)`);
+      if (this.config.notifications.enabled)
+        await this.send({
+          title: `${name} restarted`,
+          body: "Restarted to pick up the Claude Code update (it was idle).",
+        });
+    }
+    if (changed) this.saveState();
+  }
+
+  private async refreshInstalledClaude(): Promise<void> {
+    if (this.claudeBin && this.d.claudeVersion)
+      this.installedClaude = await this.d.claudeVersion(this.claudeBin).catch(() => undefined);
+  }
+
+  /** "Update now": `claude upgrade`, then queue running repos to restart once idle. */
+  private async updateNow(restart: boolean): Promise<IpcResponse> {
+    this.resolveClaudeBin();
+    if (!this.claudeBin) return { ok: false, error: this.claudeError };
+    this.d.log(`running: ${this.claudeBin} upgrade (update now)`);
+    const r = await this.d.upgrade(this.claudeBin);
+    this.upgradeResult = { ...r, at: new Date().toISOString() };
+    this.lastUpgrade = { ...r, at: this.upgradeResult.at };
+    if (!r.ok) return { ok: false, error: `claude upgrade failed: ${r.output}` };
+    this.resolveClaudeBin();
+    await this.refreshInstalledClaude();
+    if (restart) {
+      for (const name of this.specs.keys()) {
+        if (this.userStopped.has(name)) continue;
+        if ((await this.d.supervisor.status(name)).state === "running")
+          this.pendingRestart.add(name);
+      }
+    }
+    this.healthAt = 0;
+    this.saveState();
+    return { ok: true, data: { upgrade: r.output, pending: [...this.pendingRestart] } };
   }
 
   /** Once-a-day check for newer claude-rc / Claude Code; a no-op when checked recently. */
   async checkUpdates(): Promise<void> {
     if (!this.config) return;
     this.resolveClaudeBin();
-    const claude =
-      this.claudeBin && this.d.claudeVersion
-        ? await this.d.claudeVersion(this.claudeBin)
-        : undefined;
+    await this.refreshInstalledClaude();
     const r = await checkForUpdates({
       fetch: this.d.fetch ?? ((u, i) => fetch(u, i)),
-      now: (this.d.now ?? Date.now)(),
-      versions: { claudeRc: VERSION, claude },
+      now: this.now(),
+      versions: { claudeRc: VERSION, claude: this.installedClaude },
       enabled: this.config.updates,
       state: this.update,
     });
@@ -316,14 +542,22 @@ export class Daemon {
       this.update = r.state;
       this.saveState();
     }
-    if (this.config.notifications.enabled) for (const n of r.notices) await this.send(n);
+    if (this.config.notifications.enabled)
+      for (const n of r.notices)
+        await this.send({
+          ...n,
+          broadcast: n.broadcast === true && this.config.notifications.allUsers,
+        });
   }
 
   private async status() {
+    await this.refreshHealth();
     const repos = [];
     for (const r of this.config?.repos ?? []) {
       const st = await this.d.supervisor.status(r.name);
       const last = this.last.get(r.name);
+      const terminal = this.terminals.get(r.name) ?? "pty";
+      const socket = this.socketFor(r.name);
       repos.push({
         name: r.name,
         path: r.path,
@@ -332,6 +566,12 @@ export class Daemon {
         ...(st.pid ? { pid: st.pid } : {}),
         ...(st.restarts !== undefined ? { restarts: st.restarts } : {}),
         ...(this.userStopped.has(r.name) ? { stoppedByUser: true } : {}),
+        terminal,
+        ...(terminal === "tmux" && this.d.tmux
+          ? { attach: { socket, command: attachCommandLine(socket) } }
+          : {}),
+        ...(this.health.get(r.name) ? { health: this.health.get(r.name) } : {}),
+        ...(this.pendingRestart.has(r.name) ? { restartPending: true } : {}),
         ...(last ? { action: last.action } : {}),
         ...(last?.error ? { error: last.error } : {}),
         ...(this.trustErrors.has(r.name) ? { trustError: this.trustErrors.get(r.name) } : {}),
@@ -353,6 +593,17 @@ export class Daemon {
       updates: {
         ...(this.update.latest ? { latest: this.update.latest } : {}),
         ...(this.update.lastCheck ? { lastCheck: this.update.lastCheck } : {}),
+        installed: {
+          claudeRc: VERSION,
+          ...(this.installedClaude ? { claude: this.installedClaude } : {}),
+        },
+        available: availableUpdates(this.update.latest, {
+          claudeRc: VERSION,
+          claude: this.installedClaude,
+        }),
+        autoUpgrade: this.config?.updates.autoUpgrade ?? true,
+        pendingRestart: [...this.pendingRestart],
+        ...(this.lastUpgrade ? { lastUpgrade: this.lastUpgrade } : {}),
       },
       repos,
     };

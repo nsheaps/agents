@@ -74,4 +74,11 @@ describe("parseArgs", () => {
     expect(parseArgs(["ui", "--print"])).toEqual({ cmd: "ui", print: true });
     expect(parseArgs(["ui", "--bogus"]).cmd).toBe("error");
   });
+
+  test("attach needs a name; update restarts by default and --no-restart opts out", () => {
+    expect(parseArgs(["attach"]).cmd).toBe("error");
+    expect(parseArgs(["attach", "a"])).toEqual({ cmd: "attach", name: "a" });
+    expect(parseArgs(["update"])).toEqual({ cmd: "update", restart: true });
+    expect(parseArgs(["update", "--no-restart"])).toEqual({ cmd: "update", restart: false });
+  });
 });

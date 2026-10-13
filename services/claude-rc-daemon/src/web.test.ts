@@ -127,7 +127,12 @@ describe("web UI api", () => {
     const c = (await (await t.call("/api/config")).json()) as any;
     expect(c.repos).toEqual([]);
     expect(c.notifications.enabled).toBe(true);
-    expect(c.updates).toEqual({ claudeRc: true, claude: true });
+    expect(c.updates).toEqual({
+      claudeRc: true,
+      claude: true,
+      autoUpgrade: true,
+      idleSeconds: 120,
+    });
     expect(c.ui.port).toBe(47474);
   });
 

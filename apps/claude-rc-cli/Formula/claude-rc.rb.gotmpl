@@ -29,6 +29,9 @@ class ClaudeRc < Formula
     end
   end
 
+  # Each repo's `claude rc` runs in a private tmux session you can attach to.
+  depends_on 'tmux'
+
   def install
     bin.install 'claude-rc'
     bin.install 'claude-rc-daemon'
@@ -55,7 +58,9 @@ class ClaudeRc < Formula
         brew services start claude-rc
         claude-rc status
 
-      Open the settings/monitor page with:  claude-rc ui
+      Open the settings/monitor page (with an in-browser terminal) with:  claude-rc ui
+      Connect to a running session in your terminal with:  claude-rc attach <repo>
+        (detach with Ctrl-b d; it keeps running)
 
       `claude` (Claude Code) must be installed and on your PATH.
       Linux desktop notifications need notify-send (libnotify).

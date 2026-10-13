@@ -64,12 +64,32 @@ export function resolveClaude(
   return undefined;
 }
 
+export function resolveTmux(
+  env: Record<string, string | undefined>,
+  home: string,
+): string | undefined {
+  if (env.CLAUDE_RC_TMUX_BIN && isExec(env.CLAUDE_RC_TMUX_BIN)) return env.CLAUDE_RC_TMUX_BIN;
+  const dirs = [
+    ...(env.PATH ?? "").split(delimiter).filter(Boolean),
+    ...extraBinDirs(home),
+    "/usr/bin",
+    "/bin",
+  ];
+  for (const d of dirs) {
+    const f = join(d, "tmux");
+    if (isExec(f)) return f;
+  }
+  return undefined;
+}
+
 export interface BuildCtx {
   claudeBin: string;
   baseEnv: Record<string, string | undefined>;
   paths: Pick<RcPaths, "logDir">;
   /** Command prefix that runs the rest of argv inside a pseudo-terminal (`<self> pty-run --`). */
   ptyPrefix?: string[];
+  /** Same for the tmux keeper (`<self> tmux-run ... --`); takes precedence over ptyPrefix. */
+  tmuxPrefix?: string[];
 }
 
 export function buildSpec(
@@ -89,7 +109,7 @@ export function buildSpec(
     name: repo.name,
     cwd: repo.path,
     argv: [
-      ...(ctx.ptyPrefix ?? []),
+      ...(ctx.tmuxPrefix ?? ctx.ptyPrefix ?? []),
       ctx.claudeBin,
       "rc",
       "--spawn",
