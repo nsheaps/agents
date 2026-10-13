@@ -1,0 +1,127 @@
+name: Release claude-rc
+
+# Tag `claude-rc-vX.Y.Z` (or run manually with a version) to build the
+# standalone binaries, publish a GitHub release, and open a formula PR in
+# nsheaps/homebrew-devsetup.
+on:
+  push:
+    tags:
+      - 'claude-rc-v*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version to release (without the claude-rc-v prefix), e.g. 0.1.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Resolve version
+        id: version
+        env:
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          if [ -n "$INPUT_VERSION" ]; then v="$INPUT_VERSION"; else v="${GITHUB_REF_NAME#claude-rc-v}"; fi
+          echo "version=$v" >> "$GITHUB_OUTPUT"
+
+      - uses: jdx/mise-action@v4
+
+      - run: bun install --frozen-lockfile
+
+      - name: Test
+        run: bunx nx run-many --target=test --projects=@nsheaps/claude-rc-core,@nsheaps/claude-rc-daemon,@nsheaps/claude-rc-cli
+
+      - name: Build binaries
+        working-directory: apps/claude-rc-cli
+        run: bun run scripts/build-binary.ts --version "${{ steps.version.outputs.version }}" --out "$GITHUB_WORKSPACE/dist"
+
+      - name: Smoke-test compiled linux-x64 binaries (version + PTY)
+        run: |
+          mkdir smoke && tar -xzf "dist/claude-rc-${{ steps.version.outputs.version }}-linux-x64.tar.gz" -C smoke
+          ./smoke/claude-rc --version
+          printf '#!/bin/sh\n[ -t 0 ] && [ -t 1 ] && echo TTY-YES\nexit 4\n' > smoke/probe.sh && chmod +x smoke/probe.sh
+          rc=0; ./smoke/claude-rc-daemon pty-run -- ./smoke/probe.sh > smoke/out.txt || rc=$?
+          grep -q TTY-YES smoke/out.txt && [ "$rc" = 4 ]
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          tag="claude-rc-v${VERSION}"
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --title "claude-rc ${VERSION}" --generate-notes --target "$GITHUB_SHA"
+          gh release upload "$tag" dist/*.tar.gz dist/*.sha256 --clobber
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: claude-rc-dist
+          path: dist/*
+
+  update-homebrew:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: claude-rc-dist
+          path: dist
+
+      - name: Authenticate as GitHub App
+        id: auth
+        uses: ./.github/actions/github-app-auth
+        with:
+          app-id: ${{ secrets.AUTOMATION_GITHUB_APP_ID }}
+          private-key: ${{ secrets.AUTOMATION_GITHUB_APP_PRIVATE_KEY }}
+
+      - name: Clone homebrew-devsetup
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+        run: gh repo clone nsheaps/homebrew-devsetup homebrew-devsetup
+
+      - name: Install gomplate
+        run: |
+          GOMPLATE_VERSION="v4.3.0"
+          GOMPLATE_SHA256="8adb82e5be7dfde49857ebd7c948fd8f9b10cdcdb13f71b74685dff6e6756890"
+          curl -fsSL "https://github.com/hairyhenderson/gomplate/releases/download/${GOMPLATE_VERSION}/gomplate_linux-amd64" -o /usr/local/bin/gomplate
+          echo "$GOMPLATE_SHA256  /usr/local/bin/gomplate" | sha256sum -c
+          chmod +x /usr/local/bin/gomplate
+
+      - name: Render formula
+        env:
+          Version: ${{ needs.build.outputs.version }}
+        run: |
+          export Version
+          sha() { cut -d' ' -f1 "dist/claude-rc-${Version}-$1.tar.gz.sha256"; }
+          export SHA256_DARWIN_ARM64="$(sha darwin-arm64)" SHA256_DARWIN_X64="$(sha darwin-x64)"
+          export SHA256_LINUX_ARM64="$(sha linux-arm64)" SHA256_LINUX_X64="$(sha linux-x64)"
+          gomplate -f apps/claude-rc-cli/Formula/claude-rc.rb.gotmpl -o homebrew-devsetup/Formula/claude-rc.rb
+
+      - name: Open formula PR
+        env:
+          GITHUB_TOKEN: ${{ steps.auth.outputs.token }}
+          VERSION: ${{ needs.build.outputs.version }}
+        run: |
+          cd homebrew-devsetup
+          for pr in $(gh pr list --state open --author "@me" --search "chore: update claude-rc to in:title" --json number --jq '.[].number' || true); do
+            gh pr close "$pr" --comment "Superseded by claude-rc ${VERSION}."
+          done
+          BRANCH="bump-claude-rc-${VERSION}"
+          git push origin --delete "$BRANCH" 2>/dev/null || true
+          git checkout -b "$BRANCH"
+          git add Formula/claude-rc.rb
+          git commit -m "chore: update claude-rc to ${VERSION}"
+          git push -u origin "$BRANCH"
+          gh pr create --title "chore: update claude-rc to ${VERSION}" \
+            --body "Automated formula update from https://github.com/${GITHUB_REPOSITORY}/releases/tag/claude-rc-v${VERSION}"

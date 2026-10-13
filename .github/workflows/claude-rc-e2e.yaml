@@ -1,0 +1,68 @@
+name: claude-rc e2e
+
+# Real daemon + CLI processes against a fake `claude`, on every supported OS.
+# Container jobs have no systemd user manager, so they exercise the in-process
+# supervisor; the ubuntu/macos runner jobs exercise the native supervisors.
+on:
+  pull_request:
+    paths:
+      - 'lib/claude-rc-core/**'
+      - 'services/claude-rc-daemon/**'
+      - 'apps/claude-rc-cli/**'
+      - '.github/workflows/claude-rc-e2e.yaml'
+  push:
+    branches: [main]
+    paths:
+      - 'lib/claude-rc-core/**'
+      - 'services/claude-rc-daemon/**'
+      - 'apps/claude-rc-cli/**'
+
+jobs:
+  distro:
+    name: ${{ matrix.image }} (inproc)
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        image: ['ubuntu:24.04', 'debian:12', 'fedora:41']
+    steps:
+      - name: Install prerequisites
+        run: |
+          if command -v apt-get >/dev/null; then apt-get update && apt-get install -y curl unzip git ca-certificates tmux; else dnf install -y curl unzip git tar tmux; fi
+      - uses: actions/checkout@v7
+      - name: Install bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+      - run: bun install --frozen-lockfile
+      - run: bun test lib/claude-rc-core services/claude-rc-daemon apps/claude-rc-cli
+        env:
+          CLAUDE_RC_E2E_SUPERVISOR: inproc
+
+  native:
+    name: ${{ matrix.os }} (${{ matrix.supervisor }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { os: ubuntu-latest, supervisor: systemd }
+          - { os: macos-latest, supervisor: launchd }
+    steps:
+      - uses: actions/checkout@v7
+      - uses: jdx/mise-action@v4
+      - run: bun install --frozen-lockfile
+      - name: Install tmux
+        run: |
+          if [ "$(uname)" = Darwin ]; then brew install tmux; else command -v tmux >/dev/null || sudo apt-get install -y tmux; fi
+      - name: Start systemd user manager
+        if: matrix.supervisor == 'systemd'
+        run: |
+          sudo loginctl enable-linger "$USER"
+          echo "XDG_RUNTIME_DIR=/run/user/$(id -u)" >> "$GITHUB_ENV"
+          sleep 2
+          systemctl --user is-system-running --wait || true
+      - run: bun test lib/claude-rc-core services/claude-rc-daemon apps/claude-rc-cli
+        env:
+          CLAUDE_RC_E2E_SUPERVISOR: ${{ matrix.supervisor }}

@@ -1,0 +1,74 @@
+# typed: false
+# frozen_string_literal: true
+
+class ClaudeRc < Formula
+  desc 'Keep Claude Code remote-control sessions running for your repos'
+  homepage 'https://github.com/nsheaps/agents'
+  version '{{ .Env.Version }}'
+  license 'MIT'
+
+  on_macos do
+    on_arm do
+      url 'https://github.com/nsheaps/agents/releases/download/claude-rc-v{{ .Env.Version }}/claude-rc-{{ .Env.Version }}-darwin-arm64.tar.gz'
+      sha256 '{{ .Env.SHA256_DARWIN_ARM64 }}'
+    end
+    on_intel do
+      url 'https://github.com/nsheaps/agents/releases/download/claude-rc-v{{ .Env.Version }}/claude-rc-{{ .Env.Version }}-darwin-x64.tar.gz'
+      sha256 '{{ .Env.SHA256_DARWIN_X64 }}'
+    end
+  end
+
+  on_linux do
+    on_arm do
+      url 'https://github.com/nsheaps/agents/releases/download/claude-rc-v{{ .Env.Version }}/claude-rc-{{ .Env.Version }}-linux-arm64.tar.gz'
+      sha256 '{{ .Env.SHA256_LINUX_ARM64 }}'
+    end
+    on_intel do
+      url 'https://github.com/nsheaps/agents/releases/download/claude-rc-v{{ .Env.Version }}/claude-rc-{{ .Env.Version }}-linux-x64.tar.gz'
+      sha256 '{{ .Env.SHA256_LINUX_X64 }}'
+    end
+  end
+
+  # Each repo's `claude rc` runs in a private tmux session you can attach to.
+  depends_on 'tmux'
+
+  def install
+    bin.install 'claude-rc'
+    bin.install 'claude-rc-daemon'
+  end
+
+  # `brew services start claude-rc` runs the daemon at login/boot. The daemon
+  # supervises one `claude rc` service per repo in ~/.claude/daemon/rc.json.
+  service do
+    run [opt_bin/'claude-rc-daemon']
+    keep_alive true
+    environment_variables PATH: std_service_path_env
+    log_path var/'log/claude-rc-daemon.log'
+    error_log_path var/'log/claude-rc-daemon.log'
+  end
+
+  def caveats
+    <<~EOS
+      Create ~/.claude/daemon/rc.json, e.g.:
+
+        {"repos":[{"name":"my-repo","path":"/abs/path/to/my-repo"}],"spawn":"worktree"}
+
+      then start the daemon:
+
+        brew services start claude-rc
+        claude-rc status
+
+      Open the settings/monitor page (with an in-browser terminal) with:  claude-rc ui
+      Connect to a running session in your terminal with:  claude-rc attach <repo>
+        (detach with Ctrl-b d; it keeps running)
+
+      `claude` (Claude Code) must be installed and on your PATH.
+      Linux desktop notifications need notify-send (libnotify).
+    EOS
+  end
+
+  test do
+    assert_match version.to_s, shell_output("#{bin}/claude-rc --version")
+    assert_match version.to_s, shell_output("#{bin}/claude-rc-daemon --version")
+  end
+end

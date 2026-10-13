@@ -1,0 +1,28 @@
+{
+  "name": "@nsheaps/claude-rc-daemon",
+  "version": "0.0.0",
+  "private": true,
+  "description": "claude-rc-daemon: keeps 'claude rc' running for each configured repo.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nsheaps/agent-team.git",
+    "directory": "services/claude-rc-daemon"
+  },
+  "license": "UNLICENSED",
+  "scripts": {
+    "format": "prettier --write . --ignore-path ../../.prettierignore && tsc --noEmit",
+    "lint": "prettier --check . --ignore-path ../../.prettierignore && tsc --noEmit",
+    "build": "tsc -b",
+    "test": "bun test src --pass-with-no-tests",
+    "start": "bun run src/main.ts"
+  },
+  "dependencies": {
+    "@nsheaps/claude-rc-core": "workspace:*",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/xterm": "^6.0.0"
+  },
+  "bin": {
+    "claude-rc-daemon": "./src/main.ts"
+  }
+}

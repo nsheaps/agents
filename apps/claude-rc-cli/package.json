@@ -1,0 +1,27 @@
+{
+  "name": "@nsheaps/claude-rc-cli",
+  "version": "0.0.0",
+  "private": true,
+  "description": "claude-rc: CLI for the claude-rc daemon.",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/nsheaps/agent-team.git",
+    "directory": "apps/claude-rc-cli"
+  },
+  "license": "UNLICENSED",
+  "scripts": {
+    "format": "prettier --write . --ignore-path ../../.prettierignore && tsc --noEmit",
+    "lint": "prettier --check . --ignore-path ../../.prettierignore && tsc --noEmit",
+    "build": "tsc -b",
+    "test": "bun test --pass-with-no-tests",
+    "start": "bun run src/main.ts",
+    "build:binary": "bun run scripts/build-binary.ts"
+  },
+  "dependencies": {
+    "@nsheaps/claude-rc-core": "workspace:*"
+  },
+  "bin": {
+    "claude-rc": "./src/main.ts"
+  }
+}
