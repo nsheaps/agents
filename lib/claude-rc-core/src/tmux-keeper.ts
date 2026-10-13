@@ -1,4 +1,4 @@
-import { chmodSync, lstatSync, mkdirSync, unlinkSync, writeFileSync } from "node:fs";
+import { chmodSync, lstatSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { probeSession, TMUX_SESSION, tmuxConf } from "./tmux";
 import { realExec, type Exec } from "./supervisor-types";
@@ -57,6 +57,16 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
   const exec = o.exec ?? realExec;
   const tmux = (...a: string[]) => exec([o.tmuxBin, "-S", o.socket, ...a]);
   const conf = o.socket.replace(/\.sock$/, "") + ".conf";
+  // Older tmux (3.3) cannot report how a signalled pane died, so a tiny wrapper records `$?` itself.
+  const statusFile = o.socket.replace(/\.sock$/, "") + ".status";
+  const readStatus = (): number | undefined => {
+    try {
+      const v = readFileSync(statusFile, "utf8").trim();
+      return /^\d+$/.test(v) ? Number(v) : undefined;
+    } catch {
+      return undefined;
+    }
+  };
 
   try {
     ensureSocketDir(dirname(o.socket));
@@ -68,9 +78,10 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
 
   const teardown = async () => {
     await tmux("kill-server").catch(() => {});
-    try {
-      unlinkSync(o.socket);
-    } catch {}
+    for (const f of [o.socket, statusFile])
+      try {
+        unlinkSync(f);
+      } catch {}
   };
 
   await teardown(); // a server left behind by a keeper that was SIGKILLed
@@ -99,6 +110,11 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
         "-y",
         String(o.rows ?? 40),
         "--",
+        "sh",
+        "-c",
+        'f=$1; shift; "$@"; s=$?; echo "$s" > "$f"; exit "$s"',
+        "claude-rc",
+        statusFile,
         ...o.argv,
       ],
       { env, stdin: "ignore", stdout: "pipe", stderr: "pipe" },
@@ -142,7 +158,11 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
     }
     let p = await probeSession(exec, o.tmuxBin, o.socket, 0);
     // tmux can flag a pane dead a moment before it has reaped the child's status; ask again.
-    for (let i = 0; p?.dead && p.exitStatus === undefined && i < 10; i++) {
+    for (
+      let i = 0;
+      p?.dead && p.exitStatus === undefined && readStatus() === undefined && i < 10;
+      i++
+    ) {
       await sleep(100, o.signal);
       p = await probeSession(exec, o.tmuxBin, o.socket, 0);
     }
@@ -153,7 +173,7 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
     }
     if (p.dead) {
       const full = await probeSession(exec, o.tmuxBin, o.socket, 40);
-      const status = p.exitStatus ?? 1;
+      const status = readStatus() ?? p.exitStatus ?? 1;
       log(`[claude-rc] pane exited with status ${status}; last output:`);
       for (const l of full?.tail ?? []) log(l);
       await teardown();
