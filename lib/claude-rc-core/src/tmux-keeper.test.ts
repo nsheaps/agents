@@ -148,6 +148,31 @@ real("runTmuxKeeper (real tmux)", () => {
     await second;
   });
 
+  test("tearing down never kills a newer server that took over the socket path", async () => {
+    // launchd can start the next keeper before the old one has finished exiting.
+    const t = setup();
+    const old = runTmuxKeeper(t.opts(["sleep", "30"], { pollMs: 60_000 }));
+    await t.waitFor(t.probe);
+    await realExec([TMUX!, "-S", t.socket, "kill-server"]);
+    await realExec([
+      TMUX!,
+      "-S",
+      t.socket,
+      "new-session",
+      "-d",
+      "-s",
+      "rc",
+      "sh",
+      "-c",
+      "echo newer; sleep 30",
+    ]);
+    await t.waitFor(async () => (await t.probe())?.tail.includes("newer"));
+    t.ac.abort();
+    expect(await old).toBe(143);
+    expect((await t.probe())?.tail).toContain("newer");
+    expect(existsSync(t.socket)).toBe(true);
+  });
+
   test("socket directory is private and a generated config is written beside it", async () => {
     const t = setup();
     const done = runTmuxKeeper(t.opts(["sleep", "30"]));

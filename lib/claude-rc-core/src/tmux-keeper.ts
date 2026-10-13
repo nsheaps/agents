@@ -76,7 +76,18 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
     return 1;
   }
 
+  // pid of the tmux server this keeper created. A supervisor may start the next keeper on the same
+  // socket before this one has finished exiting; teardown must then leave the newer server alone.
+  let serverPid: string | undefined;
+  const livePid = async () => {
+    const r = await tmux("display-message", "-p", "-t", TMUX_SESSION, "#{pid}").catch(() => null);
+    return r && r.code === 0 ? r.stdout.trim() : undefined;
+  };
   const teardown = async () => {
+    if (serverPid !== undefined) {
+      const now = await livePid();
+      if (now !== undefined && now !== serverPid) return; // someone else's server now
+    }
     await tmux("kill-server").catch(() => {});
     for (const f of [o.socket, statusFile])
       try {
@@ -133,6 +144,7 @@ export async function runTmuxKeeper(o: KeeperOptions): Promise<number> {
     log(`[claude-rc] tmux new-session failed: ${create.stderr.trim() || create.stdout.trim()}`);
     return 1;
   }
+  serverPid = await livePid();
   log(
     `[claude-rc] tmux session "${TMUX_SESSION}" started: tmux -S ${o.socket} attach -t ${TMUX_SESSION}`,
   );
