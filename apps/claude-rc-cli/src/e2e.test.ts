@@ -41,6 +41,13 @@ delete env.CLAUDE_CONFIG_DIR;
 delete env.CLAUDE_RC_SUPERVISOR;
 const rcJson = join(home, ".claude/daemon/rc.json");
 let daemon: ReturnType<typeof Bun.spawn> | undefined;
+let daemonOut = "";
+// An undrained pipe fills up (16 KiB on macOS) and blocks the daemon mid-log-write.
+const drain = async (s: ReadableStream<Uint8Array> | undefined) => {
+  if (!s) return;
+  const dec = new TextDecoder();
+  for await (const chunk of s) daemonOut += dec.decode(chunk, { stream: true });
+};
 
 async function cli(...args: string[]) {
   const p = Bun.spawn(["bun", "run", CLI, ...args], {
@@ -116,6 +123,8 @@ esac
     stderr: "pipe",
     stdin: "ignore",
   });
+  void drain(daemon.stdout as ReadableStream<Uint8Array>);
+  void drain(daemon.stderr as ReadableStream<Uint8Array>);
   await until(async () => (await cli("status")).code === 0 && (await status()).phase === "ready");
 }, T);
 
@@ -123,6 +132,10 @@ afterAll(async () => {
   await cli("shutdown");
   await Promise.race([daemon?.exited, Bun.sleep(8000)]);
   daemon?.kill("SIGKILL");
+  // Visible in CI output when a test fails; cheap otherwise.
+  console.log(
+    `--- daemon output (last 80 lines) ---\n${daemonOut.split("\n").slice(-80).join("\n")}`,
+  );
 });
 
 describe("claude-rc e2e (" + SUP + ")", () => {

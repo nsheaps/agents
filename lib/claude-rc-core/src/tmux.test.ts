@@ -105,6 +105,10 @@ describe("probeSession", () => {
     const t = fakeTmux("1||15|4242|1700000000|0", "");
     expect(await probeSession(t.exec, "tmux", "/s.sock")).toMatchObject({ exitStatus: 143 });
   });
+  test.each(["TERM", "SIGTERM", "term"])("newer tmux prints the signal by name (%s)", async (n) => {
+    const t = fakeTmux(`1||${n}|4242|1700000000|0`, "");
+    expect(await probeSession(t.exec, "tmux", "/s.sock")).toMatchObject({ exitStatus: 143 });
+  });
   test("tailLines 0 skips the capture call entirely", async () => {
     const t = fakeTmux("0|||1|1|0", "x");
     const p = await probeSession(t.exec, "tmux", "/s.sock", 0);

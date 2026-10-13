@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { constants } from "node:os";
 import { join } from "node:path";
 import type { RcPaths } from "./paths";
 import type { Exec } from "./supervisor-types";
@@ -69,6 +70,16 @@ export interface SessionProbe {
   tail: string[];
 }
 
+/** tmux prints pane_dead_signal as a number (older) or a name like "TERM"/"SIGTERM" (newer). */
+export function signalNumber(v: string): number | undefined {
+  if (/^\d+$/.test(v)) return Number(v) > 0 ? Number(v) : undefined;
+  const name = v.trim().toUpperCase();
+  if (!name) return undefined;
+  return (constants.signals as Record<string, number>)[
+    name.startsWith("SIG") ? name : `SIG${name}`
+  ];
+}
+
 const FORMAT =
   "#{pane_dead}|#{pane_dead_status}|#{pane_dead_signal}|#{pane_pid}|#{window_activity}|#{session_attached}";
 
@@ -106,11 +117,12 @@ export async function probeSession(
       ? cap.stdout.split("\n").filter((l) => l.trim() !== "" && !l.startsWith("Pane is dead"))
       : [];
 
+  const sigNo = signalNumber(sig);
   const exitStatus =
     dead !== "1"
       ? undefined
-      : /^\d+$/.test(sig) && Number(sig) > 0
-        ? 128 + Number(sig)
+      : sigNo !== undefined
+        ? 128 + sigNo
         : /^\d+$/.test(status)
           ? Number(status)
           : undefined;
