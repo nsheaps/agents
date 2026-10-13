@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, statSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
 import { probeSession } from "./tmux";
 import { runTmuxKeeper, type KeeperOptions } from "./tmux-keeper";
 import { realExec } from "./supervisor-types";
@@ -123,9 +123,21 @@ real("runTmuxKeeper (real tmux)", () => {
 
   test("a stale server left on the socket is replaced", async () => {
     const t = setup();
-    const first = runTmuxKeeper(t.opts(["sh", "-c", "echo old; sleep 30"], { signal: undefined }));
+    // An orphaned server, as left by a SIGKILLed keeper (no live keeper is polling it).
+    mkdirSync(dirname(t.socket), { recursive: true });
+    await realExec([
+      TMUX!,
+      "-S",
+      t.socket,
+      "new-session",
+      "-d",
+      "-s",
+      "rc",
+      "sh",
+      "-c",
+      "echo old; sleep 30",
+    ]);
     await t.waitFor(async () => (await t.probe())?.tail.includes("old"));
-    // Pretend the first keeper was SIGKILLed: its server survives. A second keeper takes over.
     const second = runTmuxKeeper(t.opts(["sh", "-c", "echo fresh; sleep 30"]));
     const p = await t.waitFor(async () => {
       const x = await t.probe();
@@ -134,7 +146,6 @@ real("runTmuxKeeper (real tmux)", () => {
     expect(p.tail).not.toContain("old");
     t.ac.abort();
     await second;
-    first.catch(() => {});
   });
 
   test("socket directory is private and a generated config is written beside it", async () => {

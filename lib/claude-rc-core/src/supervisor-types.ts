@@ -39,15 +39,23 @@ export interface ExecResult {
 }
 export type Exec = (argv: string[]) => Promise<ExecResult>;
 
+/** A helper that never returns (e.g. a tmux client stuck on a dying server) must not wedge the daemon. */
+const EXEC_TIMEOUT_MS = 30_000;
+
 export const realExec: Exec = async (argv) => {
   try {
     const p = Bun.spawn(argv, { stdout: "pipe", stderr: "pipe", stdin: "ignore" });
-    const [stdout, stderr, code] = await Promise.all([
-      new Response(p.stdout).text(),
-      new Response(p.stderr).text(),
-      p.exited,
-    ]);
-    return { code, stdout, stderr };
+    const timer = setTimeout(() => p.kill("SIGKILL"), EXEC_TIMEOUT_MS);
+    try {
+      const [stdout, stderr, code] = await Promise.all([
+        new Response(p.stdout).text(),
+        new Response(p.stderr).text(),
+        p.exited,
+      ]);
+      return { code, stdout, stderr };
+    } finally {
+      clearTimeout(timer);
+    }
   } catch (e) {
     return { code: 127, stdout: "", stderr: (e as Error).message };
   }
