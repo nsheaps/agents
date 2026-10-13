@@ -1,5 +1,14 @@
 import { describe, expect, test } from "bun:test";
-import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  mkdtempSync,
+  readFileSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
+import { dirname } from "node:path";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { addRepo, removeRepo, updateSettings } from "./config-edit";
@@ -108,5 +117,24 @@ describe("updateSettings", () => {
     const f = file();
     updateSettings(f, { spawn: "same-dir" });
     expect(read(f)).toEqual({ repos: [], spawn: "same-dir" });
+  });
+});
+
+describe("file mode", () => {
+  test("new rc.json is private (0600)", () => {
+    const f = file();
+    addRepo(f, { name: "a", path: "/a" });
+    expect(statSync(f).mode & 0o777).toBe(0o600);
+  });
+
+  test("an existing mode chosen by the user survives edits", () => {
+    const f = file();
+    mkdirSync(dirname(f), { recursive: true });
+    writeFileSync(f, JSON.stringify({ repos: [] }));
+    chmodSync(f, 0o640);
+    addRepo(f, { name: "a", path: "/a" });
+    expect(statSync(f).mode & 0o777).toBe(0o640);
+    removeRepo(f, "a");
+    expect(statSync(f).mode & 0o777).toBe(0o640);
   });
 });

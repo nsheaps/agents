@@ -1,4 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
+import {
+  chmodSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  renameSync,
+  statSync,
+  writeFileSync,
+} from "node:fs";
 import { dirname } from "node:path";
 import { parseConfig, type RepoConfig } from "./config";
 
@@ -17,8 +25,11 @@ function write(path: string, data: unknown): void {
   const parsed = parseConfig(data);
   if (!parsed.ok) throw new Error(parsed.errors.join("; "));
   mkdirSync(dirname(path), { recursive: true });
+  // Keep a mode the user chose (e.g. 0600 for a file holding env secrets); new files start private.
+  const mode = existsSync(path) ? statSync(path).mode & 0o777 : 0o600;
   const tmp = `${path}.${process.pid}.tmp`;
-  writeFileSync(tmp, JSON.stringify(data, null, 2) + "\n");
+  writeFileSync(tmp, JSON.stringify(data, null, 2) + "\n", { mode });
+  chmodSync(tmp, mode); // writeFileSync's mode is masked by umask
   renameSync(tmp, path);
 }
 
