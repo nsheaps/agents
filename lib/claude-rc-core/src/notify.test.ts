@@ -6,12 +6,9 @@ const rec = (have: string[] = []) => {
   const calls: string[][] = [];
   const exec: Exec = async (argv) => {
     calls.push(argv);
-    if (argv[0] === "which" || argv[0] === "command") {
-      return { code: have.includes(argv[1]!) ? 0 : 1, stdout: "", stderr: "" };
-    }
     return { code: 0, stdout: "", stderr: "" };
   };
-  return { exec, calls };
+  return { exec, calls, which: (n: string) => (have.includes(n) ? `/usr/bin/${n}` : null) };
 };
 
 describe("escapeAppleScript", () => {
@@ -29,21 +26,21 @@ describe("escapeAppleScript", () => {
 describe("createNotifier", () => {
   test("macOS: osascript display notification, text passed as one argv element", async () => {
     const r = rec();
-    const n = await createNotifier("darwin", r.exec);
+    const n = await createNotifier("darwin", r.exec, r.which);
     await n.notify({ title: 'T"', body: "B" });
     expect(r.calls).toEqual([["osascript", "-e", 'display notification "B" with title "T\\""']]);
     expect(n.kind).toBe("osascript");
   });
   test("linux: notify-send with -- guard when present", async () => {
     const r = rec(["notify-send"]);
-    const n = await createNotifier("linux", r.exec);
+    const n = await createNotifier("linux", r.exec, r.which);
     await n.notify({ title: "-T", body: "B" });
     expect(r.calls.at(-1)).toEqual(["notify-send", "-a", "claude-rc", "--", "-T", "B"]);
     expect(n.kind).toBe("notify-send");
   });
   test("linux without notify-send: kind none, notify is a no-op and never throws", async () => {
     const r = rec([]);
-    const n = await createNotifier("linux", r.exec);
+    const n = await createNotifier("linux", r.exec, r.which);
     expect(n.kind).toBe("none");
     await n.notify({ title: "t", body: "b" });
     expect(r.calls.filter((c) => c[0] === "notify-send")).toEqual([]);

@@ -16,7 +16,14 @@ export function escapeAppleScript(s: string): string {
   return s.replace(/\r?\n/g, " ").replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
-export async function createNotifier(platform: NodeJS.Platform, exec: Exec): Promise<Notifier> {
+/**
+ * `which` is looked up in-process: minimal containers (e.g. Fedora) ship no `which` binary.
+ */
+export async function createNotifier(
+  platform: NodeJS.Platform,
+  exec: Exec,
+  which: (name: string) => string | null = (n) => Bun.which(n),
+): Promise<Notifier> {
   if (platform === "darwin") {
     return {
       kind: "osascript",
@@ -29,7 +36,7 @@ export async function createNotifier(platform: NodeJS.Platform, exec: Exec): Pro
       },
     };
   }
-  if (platform === "linux" && (await exec(["which", "notify-send"])).code === 0) {
+  if (platform === "linux" && which("notify-send") !== null) {
     return {
       kind: "notify-send",
       async notify({ title, body }) {
