@@ -44,25 +44,50 @@ describe("LaunchdSupervisor", () => {
   const dir = () => mkdtempSync(join(tmpdir(), "rc-ld-"));
   test("start writes plist OUTSIDE ~/Library/LaunchAgents and bootstraps it into gui/<uid>", async () => {
     const d = dir();
-    const { exec, calls } = fake();
-    await new LaunchdSupervisor(exec, d, 501).start(spec);
+    const { exec, calls } = fake({ print: { code: 113 } }); // already unloaded
+    await new LaunchdSupervisor(exec, d, 501, 1).start(spec);
     const plist = join(d, "dev.nsheaps.claude-rc.web.plist");
     expect(existsSync(plist)).toBe(true);
     expect(readFileSync(plist, "utf8")).toContain("dev.nsheaps.claude-rc.web");
     expect(calls[0]).toEqual(["launchctl", "bootout", "gui/501/dev.nsheaps.claude-rc.web"]);
-    expect(calls[1]).toEqual(["launchctl", "bootstrap", "gui/501", plist]);
+    expect(calls.at(-1)).toEqual(["launchctl", "bootstrap", "gui/501", plist]);
     expect(plist).not.toContain("LaunchAgents");
   });
   test("start surfaces bootstrap errors", async () => {
-    const { exec } = fake({ bootstrap: { code: 5, stderr: "Bootstrap failed: 5" } });
-    await expect(new LaunchdSupervisor(exec, dir(), 501).start(spec)).rejects.toThrow(
+    const { exec } = fake({
+      print: { code: 113 },
+      bootstrap: { code: 5, stderr: "Bootstrap failed: 5" },
+    });
+    await expect(new LaunchdSupervisor(exec, dir(), 501, 1).start(spec)).rejects.toThrow(
       /Bootstrap failed/,
     );
   });
+  test("start waits for a still-unloading job to disappear, then bootstraps", async () => {
+    let prints = 0;
+    const calls: string[][] = [];
+    const exec: Exec = async (argv) => {
+      calls.push(argv);
+      if (argv[1] === "print") return { code: ++prints < 4 ? 0 : 113, stdout: "", stderr: "" };
+      return { code: 0, stdout: "", stderr: "" };
+    };
+    await new LaunchdSupervisor(exec, dir(), 501, 1).start(spec);
+    expect(prints).toBe(4);
+    expect(calls.at(-1)![1]).toBe("bootstrap");
+  });
+  test("start retries a bootstrap that races the unload", async () => {
+    let boots = 0;
+    const exec: Exec = async (argv) => {
+      if (argv[1] === "print") return { code: 113, stdout: "", stderr: "" };
+      if (argv[1] === "bootstrap" && ++boots < 3) return { code: 5, stdout: "", stderr: "I/O" };
+      return { code: 0, stdout: "", stderr: "" };
+    };
+    await new LaunchdSupervisor(exec, dir(), 501, 1).start(spec);
+    expect(boots).toBe(3);
+  });
   test("stop boots out and removes the plist", async () => {
     const d = dir();
-    const { exec, calls } = fake();
-    const s = new LaunchdSupervisor(exec, d, 501);
+    const { exec, calls } = fake({ print: { code: 113 } });
+    const s = new LaunchdSupervisor(exec, d, 501, 1);
     await s.start(spec);
     await s.stop("web");
     expect(calls.at(-1)).toEqual(["launchctl", "bootout", "gui/501/dev.nsheaps.claude-rc.web"]);

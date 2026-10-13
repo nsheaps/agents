@@ -53,6 +53,7 @@ export class LaunchdSupervisor implements Supervisor {
     private readonly exec: Exec,
     private readonly plistDir: string,
     private readonly uid: number,
+    private readonly pollMs = 100,
   ) {}
 
   private label = (n: string) => `${LABEL_PREFIX}${n}`;
@@ -61,14 +62,29 @@ export class LaunchdSupervisor implements Supervisor {
 
   async start(spec: ServiceSpec): Promise<void> {
     await this.exec(["launchctl", "bootout", this.target(spec.name)]);
+    await this.waitUnloaded(spec.name);
     mkdirSync(this.plistDir, { recursive: true });
     const path = this.plistPath(spec.name);
     writeFileSync(path, renderPlist(this.label(spec.name), spec), { mode: 0o600 });
-    const r = await this.exec(["launchctl", "bootstrap", `gui/${this.uid}`, path]);
+    // bootout can return before the job is gone (a keeper tears its tmux server down on SIGTERM), and
+    // bootstrapping over a job that is still unloading fails with an I/O error; retry briefly.
+    let r = await this.exec(["launchctl", "bootstrap", `gui/${this.uid}`, path]);
+    for (let i = 0; r.code !== 0 && i < 20; i++) {
+      await new Promise((res) => setTimeout(res, this.pollMs * 2.5));
+      r = await this.exec(["launchctl", "bootstrap", `gui/${this.uid}`, path]);
+    }
     if (r.code !== 0)
       throw new Error(
         `launchctl bootstrap failed for "${spec.name}": ${r.stderr.trim() || `exit ${r.code}`}`,
       );
+  }
+
+  /** Wait (bounded) until launchd no longer knows the job. */
+  private async waitUnloaded(name: string): Promise<void> {
+    for (let i = 0; i < 100; i++) {
+      if ((await this.exec(["launchctl", "print", this.target(name)])).code !== 0) return;
+      await new Promise((res) => setTimeout(res, this.pollMs));
+    }
   }
 
   async stop(name: string): Promise<void> {
