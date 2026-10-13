@@ -74,4 +74,5 @@ Platforms: macOS, Ubuntu, Debian, Fedora. Tests first. Same libs as monorepo.
 9. [x] Formula template (`apps/claude-rc-cli/Formula/claude-rc.rb.gotmpl`), binary build script, release workflow
 10. [x] CI workflow: ubuntu/debian/fedora containers (inproc), native systemd (ubuntu) + launchd (macOS)
 11. [~] READMEs, changelog, PR
+    11a. [x] Notifications (osascript / notify-send), start/exit events, daily update check (claude-rc + Claude Code), local web UI + `claude-rc ui` (user choices 2026-10-13: no native tray; web page; check both). Tests first; e2e covers notify-send fake + web API.
 12. [?] UNVERIFIED here (needs user/CI): real `claude rc` headless after pre-trust, real systemd/launchd runs, brew install of formula. If `claude rc` still needs a TTY: try PTY first; ask before any tmux.

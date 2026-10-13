@@ -31,6 +31,7 @@ claude-rc add <name> <path> / remove <name>
 claude-rc restart|start|stop [name]
 claude-rc reload            re-read rc.json
 claude-rc trust [name]      pre-accept Claude's workspace-trust prompt
+claude-rc ui [--print]      open the local settings/monitor page (prints the URL with --print)
 claude-rc logs <name> [-f]
 claude-rc config            print the config path and contents
 claude-rc doctor            check claude, config, service manager, daemon
@@ -38,6 +39,24 @@ claude-rc shutdown          stop the daemon (and its children)
 ```
 
 Exit codes: 0 ok, 1 error, 2 usage, 3 daemon not running.
+
+## Notifications, updates and the web UI
+
+- **Notifications** when a repo's `claude rc` starts, exits or is restarted (macOS: built in; Linux: needs `notify-send`, package `libnotify-bin` on Debian/Ubuntu, `libnotify` on Fedora).
+- **Update check** once a day for claude-rc and for Claude Code; each new version is announced once.
+- **`claude-rc ui`** opens a page on `127.0.0.1` to monitor repos, add/remove them, restart/stop/start them, and change settings.
+
+All three are configurable in `rc.json`:
+
+```json
+{
+  "notifications": { "enabled": true, "onStart": true, "onExit": true },
+  "updates": { "claudeRc": true, "claude": true },
+  "ui": { "port": 47474 }
+}
+```
+
+There is no native menu-bar/tray icon; the web page covers the same ground.
 
 See `docs/specs/draft/claude-rc.md` for the design.
 

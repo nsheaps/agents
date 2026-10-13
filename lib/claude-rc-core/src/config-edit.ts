@@ -40,3 +40,26 @@ export function removeRepo(path: string, name: string): void {
   raw.repos = repos.filter((r) => r.name !== name);
   write(path, raw);
 }
+
+const NESTED = ["notifications", "updates", "ui"] as const;
+const SETTABLE = ["spawn", "env", "autoTrust", ...NESTED];
+
+/**
+ * Change top-level settings (not repos). `notifications`, `updates` and `ui` are merged
+ * key-by-key; `env` and scalars are replaced. Validates the whole result before writing.
+ */
+export function updateSettings(path: string, patch: Record<string, unknown>): void {
+  const bad = Object.keys(patch).filter((k) => !SETTABLE.includes(k));
+  if (bad.length)
+    throw new Error(`cannot change ${bad.join(", ")} here (settable: ${SETTABLE.join(", ")})`);
+  const raw = readRaw(path);
+  for (const [k, v] of Object.entries(patch)) {
+    const nested = (NESTED as readonly string[]).includes(k);
+    const cur = raw[k];
+    if (nested && v && typeof v === "object" && !Array.isArray(v)) {
+      raw[k] = { ...(cur && typeof cur === "object" ? cur : {}), ...(v as object) };
+    } else raw[k] = v;
+  }
+  if (!Array.isArray(raw.repos)) raw.repos = [];
+  write(path, raw);
+}

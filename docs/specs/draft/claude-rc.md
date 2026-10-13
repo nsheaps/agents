@@ -54,11 +54,11 @@ Each repo runs `cd <path> && claude rc --spawn <mode> --verbose` as its own serv
 
 ## 6. CLI surface
 
-`claude-rc [status|list|add <name> <path>|remove <name>|restart [name]|start [name]|stop [name]|reload|trust [name]|logs <name> [-f]|config|doctor|shutdown|--version|--help]`. Exit codes: 0 ok, 1 error, 2 usage, 3 daemon not running.
+`claude-rc [status|list|add <name> <path>|remove <name>|restart [name]|start [name]|stop [name]|reload|trust [name]|ui [--print]|logs <name> [-f]|config|doctor|shutdown|--version|--help]`. Exit codes: 0 ok, 1 error, 2 usage, 3 daemon not running.
 
 ## 7. IPC
 
-Unix socket `~/.claude/daemon/rc.sock` (short-path fallback when too long), mode 0600, newline-delimited JSON: request `{cmd, ...}` → response `{ok, ...}`. Commands: ping, status, reload, restart, stop, start, shutdown. A stale socket is replaced; a live one refuses a second daemon.
+Unix socket `~/.claude/daemon/rc.sock` (short-path fallback when too long), mode 0600, newline-delimited JSON: request `{cmd, ...}` → response `{ok, ...}`. Commands: ping, status, reload, restart, stop, start, shutdown. (`claude-rc ui` reads `run/ui.json` directly; it needs no IPC command.) A stale socket is replaced; a live one refuses a second daemon.
 
 ## 8. Platform support
 
@@ -84,13 +84,24 @@ Not verified in the authoring sandbox: real `claude rc`, real systemd/launchd, b
 
 Socket 0600; `~/.claude.json` writes atomic, mode-preserving; daemon env is allowlisted before passing to children; config `env` is plain text in `rc.json` (keep file private); logs never print env values.
 
+## 12a. Notifications, update checks, local web UI
+
+**Notifications.** The daemon polls service state (default every 10 s) and notifies when a repo's `claude rc` starts, exits on its own, or is auto-restarted. A user-initiated `stop` is not an exit. macOS uses `osascript`; Linux uses `notify-send` (libnotify) and silently does nothing if it is absent (`claude-rc doctor` warns). Config: `notifications: {enabled, onStart, onExit}` (all default true). Notification failures never affect supervision.
+
+**Update checks.** At most once per 24 h (timestamp persisted in `state.json`, so daemon restarts do not re-check), the daemon compares the installed claude-rc against the latest non-draft, non-prerelease `claude-rc-v*` GitHub release, and the installed Claude Code (`claude --version`) against npm `@anthropic-ai/claude-code` latest. Each new version is announced once. claude-rc updates point at `brew upgrade claude-rc`; Claude Code updates are applied by the daemon's `claude upgrade` on its next start. Config: `updates: {claudeRc, claude}` (default true). A failed source is logged and does not block the other; `lastCheck` only advances if a source answered. Latest known versions appear in `status` under `updates`.
+
+**Local web UI.** The daemon serves a settings/monitor page on `127.0.0.1` (config `ui.port`, default 47474, `0` = ephemeral; falls back to a free port if taken; change needs a daemon restart). `claude-rc ui` opens it (`--print` prints the URL). The address and a per-run random token are recorded in `~/.claude/daemon/run/ui.json` (0600). The page lists repos with state, restart/start/stop/remove, adds repos, and edits spawn, autoTrust, env, notifications, updates and the UI port. Edits go through the same validate-then-atomic-write path as the CLI and then trigger a reload.
+Protections: token on every request (constant-time compare; the page reads it from `?token=` and strips it from the URL, it is never embedded in served HTML); `Host` must be loopback and `Origin`, if sent, same-origin (DNS rebinding, CSRF); mutating requests must be `application/json`; a strict CSP; DOM built with `textContent` only.
+API: `GET /api/status|config`, `POST /api/reload`, `PUT /api/settings`, `POST /api/repos`, `DELETE /api/repos/:name`, `POST /api/repos/:name/(restart|start|stop)`.
+
 ## 13. Decisions log
 
-| #   | Decision                                                                                                                         | Date                                     |
-| --- | -------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------- |
-| D1  | Layout `lib/` + `services/` + `apps/`                                                                                            | 2026-10-12                               |
-| D2  | Compiled binaries per platform; per-app tag `claude-rc-vX.Y.Z`                                                                   | 2026-10-12                               |
-| D3  | Pre-trust via `~/.claude.json`; PTY before tmux; ask before tmux                                                                 | 2026-10-12                               |
-| D4  | OS-native supervision default, in-process fallback or flag                                                                       | 2026-10-12                               |
-| D5  | Daemon defaults: non-fatal upgrade failure, degraded on bad config, children stop on daemon SIGTERM, no third-party runtime deps | 2026-10-12 (defaults; user may override) |
-| D6  | PTY via built-in `pty-run` (not tmux): tmux detaches from the supervisor                                                         | 2026-10-12                               |
+| #   | Decision                                                                                                                                                                                                                                                                 | Date                                     |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------- |
+| D1  | Layout `lib/` + `services/` + `apps/`                                                                                                                                                                                                                                    | 2026-10-12                               |
+| D2  | Compiled binaries per platform; per-app tag `claude-rc-vX.Y.Z`                                                                                                                                                                                                           | 2026-10-12                               |
+| D3  | Pre-trust via `~/.claude.json`; PTY before tmux; ask before tmux                                                                                                                                                                                                         | 2026-10-12                               |
+| D4  | OS-native supervision default, in-process fallback or flag                                                                                                                                                                                                               | 2026-10-12                               |
+| D5  | Daemon defaults: non-fatal upgrade failure, degraded on bad config, children stop on daemon SIGTERM, no third-party runtime deps                                                                                                                                         | 2026-10-12 (defaults; user may override) |
+| D6  | PTY via built-in `pty-run` (not tmux): tmux detaches from the supervisor                                                                                                                                                                                                 | 2026-10-12                               |
+| D7  | No native tray icon: notifications + a local web page opened by `claude-rc ui`. A tray needs a native toolkit (AppIndicator on Linux, NSStatusItem on macOS) that cannot be built with the monorepo's TypeScript-only stack, and would split the compiled-binary release | 2026-10-13                               |

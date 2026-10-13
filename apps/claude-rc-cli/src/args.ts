@@ -16,6 +16,7 @@ export type Command =
   | { cmd: "trust"; name?: string }
   | { cmd: "logs"; name: string; lines: number; follow: boolean }
   | { cmd: "config"; sub: "path" | "show" | "validate" }
+  | { cmd: "ui"; print: boolean }
   | { cmd: "doctor" }
   | { cmd: "shutdown" };
 
@@ -29,7 +30,7 @@ export function parseArgs(argv: string[]): Command {
   const flags = new Map<string, string | true>();
   const pos: string[] = [];
   const valueFlags = new Set(["--name", "--spawn", "-n"]);
-  const boolFlags = new Set(["--json", "-f", "--follow"]);
+  const boolFlags = new Set(["--json", "-f", "--follow", "--print"]);
   for (let i = 0; i < rest.length; i++) {
     const a = rest[i]!;
     if (valueFlags.has(a)) {
@@ -72,6 +73,8 @@ export function parseArgs(argv: string[]): Command {
     case "doctor":
     case "shutdown":
       return { cmd: first };
+    case "ui":
+      return { cmd: "ui", print: flags.has("--print") };
     case "trust":
       return { cmd: "trust", name: pos[0] };
     case "logs": {

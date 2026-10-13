@@ -27,12 +27,14 @@ const home = Bun.spawnSync(["realpath", mkdtempSync(join(tmpdir(), "rc-e2e-"))])
   .trim();
 const bin = join(home, "bin");
 const fakeLog = join(home, "fake.log");
+const notifyLog = join(home, "notify.log");
 const repo = join(home, "proj");
 const env = {
   ...process.env,
   HOME: home,
   PATH: `${bin}:${process.env.PATH}`,
   XDG_RUNTIME_DIR: process.env.XDG_RUNTIME_DIR ?? "",
+  CLAUDE_RC_POLL_MS: "300",
 } as Record<string, string>;
 delete env.CLAUDE_RC_HOME;
 delete env.CLAUDE_CONFIG_DIR;
@@ -95,8 +97,11 @@ esac
 `,
   );
   chmodSync(join(bin, "claude"), 0o755);
+  // Linux notifier shells out to notify-send; a fake records what would have been shown.
+  writeFileSync(join(bin, "notify-send"), `#!/bin/sh\necho "$*" >> "${notifyLog}"\n`);
+  chmodSync(join(bin, "notify-send"), 0o755);
   mkdirSync(join(home, ".claude/daemon"), { recursive: true });
-  writeFileSync(rcJson, JSON.stringify({ repos: [], env: { FOO: "bar" } }));
+  writeFileSync(rcJson, JSON.stringify({ repos: [], env: { FOO: "bar" }, ui: { port: 0 } }));
   daemon = Bun.spawn(["bun", "run", DAEMON, "--supervisor", SUP], {
     env,
     stdout: "pipe",
@@ -248,6 +253,51 @@ describe("claude-rc e2e (" + SUP + ")", () => {
       await until(async () =>
         readFileSync(fakeLog, "utf8").includes("rc --spawn same-dir --verbose"),
       );
+    },
+    T,
+  );
+
+  test.skipIf(process.platform !== "linux")(
+    "a desktop notification is sent when a service starts",
+    async () => {
+      await until(
+        async () =>
+          existsSync(notifyLog) && readFileSync(notifyLog, "utf8").includes("proj started"),
+      );
+    },
+    T,
+  );
+
+  test(
+    "web UI: `ui --print` gives a tokened URL; the API shows, edits and controls repos",
+    async () => {
+      const r = await cli("ui", "--print");
+      expect(r.code).toBe(0);
+      const link = new URL(r.stdout.trim());
+      const token = link.searchParams.get("token")!;
+      expect(link.hostname).toBe("127.0.0.1");
+      const api = (method: string, path: string, body?: unknown) =>
+        fetch(`${link.origin}${path}`, {
+          method,
+          headers: { "x-claude-rc-token": token, "content-type": "application/json" },
+          body: body === undefined ? undefined : JSON.stringify(body),
+        });
+      expect((await fetch(`${link.origin}/api/status`)).status).toBe(401);
+      const st: any = await (await api("GET", "/api/status")).json();
+      expect(st.repos.map((x: any) => x.name)).toContain("proj");
+      expect((await fetch(link.href)).status).toBe(200);
+
+      const put = await api("PUT", "/api/settings", { notifications: { onExit: false } });
+      expect(put.status).toBe(200);
+      expect(JSON.parse(readFileSync(rcJson, "utf8")).notifications.onExit).toBe(false);
+      await api("PUT", "/api/settings", { notifications: { onExit: true } });
+
+      const pid = (await repoState()).pid;
+      expect((await api("POST", "/api/repos/proj/restart")).status).toBe(200);
+      await until(async () => {
+        const s = await running();
+        return s && s.pid !== pid ? s : false;
+      });
     },
     T,
   );

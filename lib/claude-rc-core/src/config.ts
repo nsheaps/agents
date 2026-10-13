@@ -17,7 +17,15 @@ export interface RcConfig {
   env: Record<string, string>;
   /** Pre-accept the workspace trust dialog for each repo in ~/.claude.json. */
   autoTrust: boolean;
+  /** Desktop notifications when a service starts/exits. */
+  notifications: { enabled: boolean; onStart: boolean; onExit: boolean };
+  /** Daily update checks, one switch per thing checked. */
+  updates: { claudeRc: boolean; claude: boolean };
+  /** Local settings page served by the daemon; port 0 = pick a free one. */
+  ui: { port: number };
 }
+
+export const DEFAULT_UI_PORT = 47474;
 
 export type ParseResult = { ok: true; config: RcConfig } | { ok: false; errors: string[] };
 export type LoadResult =
@@ -56,6 +64,26 @@ function checkSpawn(v: unknown, where: string, errors: string[]): SpawnMode | un
   return undefined;
 }
 
+function checkBools<K extends string>(
+  v: unknown,
+  where: string,
+  keys: readonly K[],
+  errors: string[],
+): Record<K, boolean> {
+  const out = Object.fromEntries(keys.map((k) => [k, true])) as Record<K, boolean>;
+  if (v === undefined) return out;
+  if (!isObject(v)) {
+    errors.push(`config: ${where} must be an object`);
+    return out;
+  }
+  for (const k of keys) {
+    if (v[k] === undefined) continue;
+    if (typeof v[k] === "boolean") out[k] = v[k] as boolean;
+    else errors.push(`config: ${where}.${k} must be a boolean`);
+  }
+  return out;
+}
+
 export function parseConfig(input: unknown): ParseResult {
   const errors: string[] = [];
   if (!isObject(input)) return { ok: false, errors: ["config must be a JSON object"] };
@@ -67,6 +95,23 @@ export function parseConfig(input: unknown): ParseResult {
   if (input.autoTrust !== undefined) {
     if (typeof input.autoTrust === "boolean") autoTrust = input.autoTrust;
     else errors.push("config: autoTrust must be a boolean");
+  }
+
+  const notifications = checkBools(
+    input.notifications,
+    "notifications",
+    ["enabled", "onStart", "onExit"] as const,
+    errors,
+  );
+  const updates = checkBools(input.updates, "updates", ["claudeRc", "claude"] as const, errors);
+  let port = DEFAULT_UI_PORT;
+  if (input.ui !== undefined) {
+    if (!isObject(input.ui)) errors.push("config: ui must be an object");
+    else if (input.ui.port !== undefined) {
+      const p = input.ui.port;
+      if (typeof p === "number" && Number.isInteger(p) && p >= 0 && p <= 65535) port = p;
+      else errors.push("config: ui.port must be an integer 0-65535");
+    }
   }
 
   const repos: RepoConfig[] = [];
@@ -101,7 +146,7 @@ export function parseConfig(input: unknown): ParseResult {
 
   return errors.length
     ? { ok: false, errors }
-    : { ok: true, config: { repos, spawn, env, autoTrust } };
+    : { ok: true, config: { repos, spawn, env, autoTrust, notifications, updates, ui: { port } } };
 }
 
 export function loadConfig(path: string): LoadResult {
@@ -109,7 +154,15 @@ export function loadConfig(path: string): LoadResult {
     return {
       ok: true,
       missing: true,
-      config: { repos: [], spawn: "worktree", env: {}, autoTrust: true },
+      config: {
+        repos: [],
+        spawn: "worktree",
+        env: {},
+        autoTrust: true,
+        notifications: { enabled: true, onStart: true, onExit: true },
+        updates: { claudeRc: true, claude: true },
+        ui: { port: DEFAULT_UI_PORT },
+      },
     };
   let raw: unknown;
   try {

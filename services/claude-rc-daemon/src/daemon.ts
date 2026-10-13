@@ -2,6 +2,8 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import {
   buildSpec,
+  checkForUpdates,
+  StateWatcher,
   ensureTrusted,
   loadConfig,
   reconcile,
@@ -9,14 +11,19 @@ import {
   specHash,
   trustKeyFor,
   VERSION,
+  type FetchLike,
   type IpcRequest,
   type IpcResponse,
   type RcConfig,
+  type Notice,
+  type Notifier,
   type RcPaths,
   type ReconcileResult,
   type ServiceSpec,
   type Supervisor,
+  type UpdateState,
 } from "@nsheaps/claude-rc-core";
+import type { Observed, ServiceEvent } from "@nsheaps/claude-rc-core";
 import type { UpgradeResult } from "./upgrade";
 
 export interface DaemonDeps {
@@ -28,6 +35,13 @@ export interface DaemonDeps {
   /** Wraps `claude rc` in `<self> pty-run --` so it gets a terminal; omit to run it bare. */
   ptyPrefix?: string[];
   upgrade: (claudeBin: string) => Promise<UpgradeResult>;
+  /** Desktop notifications; omit to disable. */
+  notifier?: Notifier;
+  /** Network access for the daily update check (injectable for tests). */
+  fetch?: FetchLike;
+  now?: () => number;
+  /** Installed `claude --version`, parsed; undefined when unknown. */
+  claudeVersion?: (claudeBin: string) => Promise<string | undefined>;
   log: (msg: string) => void;
 }
 
@@ -36,6 +50,7 @@ type Phase = "starting" | "upgrading" | "ready" | "stopping";
 interface PersistedState {
   hashes: Record<string, string>;
   stopped: string[];
+  update?: UpdateState;
 }
 
 export class Daemon {
@@ -53,9 +68,12 @@ export class Daemon {
   private userStopped = new Set<string>();
   private specs = new Map<string, ServiceSpec>();
   private queue: Promise<unknown> = Promise.resolve();
+  private update: UpdateState = {};
+  private readonly watcher = new StateWatcher();
 
   constructor(private readonly d: DaemonDeps) {
     this.loadState();
+    this.watcher.observe({}); // so services that appear after this are reported as started
   }
 
   /** Serialize all state-changing work. */
@@ -70,6 +88,7 @@ export class Daemon {
       const s = JSON.parse(readFileSync(this.d.paths.statePath, "utf8")) as Partial<PersistedState>;
       this.hashes = s.hashes ?? {};
       this.userStopped = new Set(s.stopped ?? []);
+      this.update = s.update ?? {};
     } catch {}
   }
 
@@ -79,7 +98,11 @@ export class Daemon {
       writeFileSync(
         this.d.paths.statePath,
         JSON.stringify(
-          { hashes: this.hashes, stopped: [...this.userStopped] } satisfies PersistedState,
+          {
+            hashes: this.hashes,
+            stopped: [...this.userStopped],
+            update: this.update,
+          } satisfies PersistedState,
           null,
           2,
         ),
@@ -236,6 +259,66 @@ export class Daemon {
     });
   }
 
+  private async send(n: Notice): Promise<void> {
+    try {
+      await this.d.notifier?.notify(n);
+    } catch (e) {
+      this.d.log(`notification failed: ${(e as Error).message}`);
+    }
+  }
+
+  /** Compare service states with the last poll and notify about starts and unexpected exits. */
+  async pollOnce(): Promise<ServiceEvent[]> {
+    const snap: Record<string, Observed> = {};
+    for (const r of this.config?.repos ?? []) {
+      const st = await this.d.supervisor.status(r.name);
+      snap[r.name] = {
+        state: st.state,
+        ...(st.pid ? { pid: st.pid } : {}),
+        ...(this.userStopped.has(r.name) ? { stoppedByUser: true } : {}),
+      };
+    }
+    const events = this.watcher.observe(snap);
+    const n = this.config?.notifications;
+    if (!n?.enabled) return events;
+    for (const e of events) {
+      const log = `${this.d.paths.logDir}/${e.name}.log`;
+      if (e.type === "started" && n.onStart)
+        await this.send({ title: `${e.name} started`, body: "claude rc is running" });
+      else if (e.type === "exited" && n.onExit)
+        await this.send({ title: `${e.name} exited`, body: `See ${log}` });
+      else if (e.type === "restarted" && n.onExit)
+        await this.send({
+          title: `${e.name} restarted`,
+          body: `It exited and was restarted. See ${log}`,
+        });
+    }
+    return events;
+  }
+
+  /** Once-a-day check for newer claude-rc / Claude Code; a no-op when checked recently. */
+  async checkUpdates(): Promise<void> {
+    if (!this.config) return;
+    this.resolveClaudeBin();
+    const claude =
+      this.claudeBin && this.d.claudeVersion
+        ? await this.d.claudeVersion(this.claudeBin)
+        : undefined;
+    const r = await checkForUpdates({
+      fetch: this.d.fetch ?? ((u, i) => fetch(u, i)),
+      now: (this.d.now ?? Date.now)(),
+      versions: { claudeRc: VERSION, claude },
+      enabled: this.config.updates,
+      state: this.update,
+    });
+    for (const e of r.errors) this.d.log(`update check: ${e}`);
+    if (r.state !== this.update) {
+      this.update = r.state;
+      this.saveState();
+    }
+    if (this.config.notifications.enabled) for (const n of r.notices) await this.send(n);
+  }
+
   private async status() {
     const repos = [];
     for (const r of this.config?.repos ?? []) {
@@ -267,6 +350,10 @@ export class Daemon {
       ...(this.claudeBin ? { claudeBin: this.claudeBin } : {}),
       ...(this.claudeError ? { claudeError: this.claudeError } : {}),
       ...(this.upgradeResult ? { upgrade: this.upgradeResult } : {}),
+      updates: {
+        ...(this.update.latest ? { latest: this.update.latest } : {}),
+        ...(this.update.lastCheck ? { lastCheck: this.update.lastCheck } : {}),
+      },
       repos,
     };
   }

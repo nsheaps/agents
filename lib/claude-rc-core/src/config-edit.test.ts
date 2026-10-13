@@ -2,7 +2,7 @@ import { describe, expect, test } from "bun:test";
 import { existsSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { addRepo, removeRepo } from "./config-edit";
+import { addRepo, removeRepo, updateSettings } from "./config-edit";
 
 const file = () => join(mkdtempSync(join(tmpdir(), "rc-ce-")), "sub", "rc.json");
 const read = (f: string) => JSON.parse(readFileSync(f, "utf8"));
@@ -61,5 +61,52 @@ describe("removeRepo", () => {
   });
   test("missing file -> clear error", () => {
     expect(() => removeRepo(file(), "a")).toThrow(/no repos configured/);
+  });
+});
+
+describe("updateSettings", () => {
+  test("merges nested notifications/updates/ui, replaces env, keeps repos and unknown keys", () => {
+    const f = file();
+    addRepo(f, { name: "a", path: "/r/a" });
+    writeFileSync(f, JSON.stringify({ ...read(f), custom: 5, notifications: { onExit: false } }));
+    updateSettings(f, {
+      spawn: "session",
+      env: { X: "1" },
+      autoTrust: false,
+      notifications: { onStart: false },
+      updates: { claude: false },
+      ui: { port: 5000 },
+    });
+    const j = read(f);
+    expect(j.spawn).toBe("session");
+    expect(j.env).toEqual({ X: "1" });
+    expect(j.autoTrust).toBe(false);
+    expect(j.notifications).toEqual({ onExit: false, onStart: false });
+    expect(j.updates).toEqual({ claude: false });
+    expect(j.ui).toEqual({ port: 5000 });
+    expect(j.custom).toBe(5);
+    expect(j.repos.length).toBe(1);
+  });
+  test("rejects unknown keys, naming them, without touching the file", () => {
+    const f = file();
+    addRepo(f, { name: "a", path: "/r/a" });
+    const before = readFileSync(f, "utf8");
+    expect(() => updateSettings(f, { repos: [] } as any)).toThrow("repos");
+    expect(() => updateSettings(f, { bogus: 1 } as any)).toThrow("bogus");
+    expect(readFileSync(f, "utf8")).toBe(before);
+  });
+  test("rejects invalid values via the normal validation, leaving the file untouched", () => {
+    const f = file();
+    addRepo(f, { name: "a", path: "/r/a" });
+    const before = readFileSync(f, "utf8");
+    expect(() => updateSettings(f, { spawn: "nope" })).toThrow("spawn");
+    expect(() => updateSettings(f, { ui: { port: 99999 } })).toThrow("ui.port");
+    expect(() => updateSettings(f, { notifications: true as any })).toThrow("notifications");
+    expect(readFileSync(f, "utf8")).toBe(before);
+  });
+  test("creates the file when absent", () => {
+    const f = file();
+    updateSettings(f, { spawn: "same-dir" });
+    expect(read(f)).toEqual({ repos: [], spawn: "same-dir" });
   });
 });

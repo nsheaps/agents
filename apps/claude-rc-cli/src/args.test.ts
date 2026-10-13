@@ -69,4 +69,9 @@ describe("parseArgs", () => {
     expect(parseArgs(["trust", "a"])).toMatchObject({ cmd: "trust", name: "a" });
     for (const c of ["reload", "doctor", "shutdown"]) expect(parseArgs([c]).cmd as string).toBe(c);
   });
+  test("ui [--print]", () => {
+    expect(parseArgs(["ui"])).toEqual({ cmd: "ui", print: false });
+    expect(parseArgs(["ui", "--print"])).toEqual({ cmd: "ui", print: true });
+    expect(parseArgs(["ui", "--bogus"]).cmd).toBe("error");
+  });
 });

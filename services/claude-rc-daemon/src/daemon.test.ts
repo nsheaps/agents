@@ -4,6 +4,8 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import {
   getPaths,
+  type FetchLike,
+  type Notice,
   type ServiceSpec,
   type ServiceStatus,
   type Supervisor,
@@ -50,6 +52,9 @@ function setup(
     upgrade?: () => Promise<{ ok: boolean; output: string }>;
     sup?: ReturnType<typeof fakeSup>;
     ptyPrefix?: string[];
+    fetch?: FetchLike;
+    claudeVersion?: string;
+    now?: () => number;
   } = {},
 ) {
   const home = mkdtempSync(join(tmpdir(), "rc-d-"));
@@ -71,7 +76,12 @@ function setup(
   const s = opts.sup ?? fakeSup();
   const calls: string[] = [];
   const lines: string[] = [];
+  const notices: Notice[] = [];
   const d = new Daemon({
+    notifier: { kind: "none", notify: async (n) => void notices.push(n) },
+    fetch: opts.fetch,
+    now: opts.now,
+    claudeVersion: async () => opts.claudeVersion,
     env: { PATH: bin, HOME: home },
     home,
     paths,
@@ -87,7 +97,7 @@ function setup(
       }),
     log: (m) => lines.push(m),
   });
-  return { d, ...s, home, paths, repo, calls, lines, writeConfig, bin };
+  return { d, ...s, home, paths, repo, calls, lines, notices, writeConfig, bin };
 }
 const cfg = (repo: string, extra: object = {}) => ({
   repos: [{ name: "a", path: repo }],
@@ -276,5 +286,136 @@ describe("Daemon restart adoption", () => {
     expect(shared.log).not.toContain("start:a");
     const st: any = (await d2.handle({ cmd: "status" })).data;
     expect(st.repos[0].action).toBe("kept");
+  });
+});
+
+describe("Daemon notifications", () => {
+  test("notifies when a service starts, once", async () => {
+    const t = setup({ config: (r: string) => cfg(r) });
+    await t.d.start();
+    await t.d.pollOnce();
+    expect(t.notices.map((n) => n.title)).toEqual(["a started"]);
+    await t.d.pollOnce();
+    expect(t.notices.length).toBe(1);
+  });
+
+  test("notifies with the log path when a service exits on its own", async () => {
+    const t = setup({ config: (r: string) => cfg(r) });
+    await t.d.start();
+    await t.d.pollOnce();
+    t.state.a = "failed";
+    await t.d.pollOnce();
+    expect(t.notices.at(-1)!.title).toBe("a exited");
+    expect(t.notices.at(-1)!.body).toContain(`${t.paths.logDir}/a.log`);
+  });
+
+  test("a user stop is not reported as an exit", async () => {
+    const t = setup({ config: (r: string) => cfg(r) });
+    await t.d.start();
+    await t.d.pollOnce();
+    await t.d.handle({ cmd: "stop", name: "a" });
+    await t.d.pollOnce();
+    expect(t.notices.map((n) => n.title)).toEqual(["a started"]);
+  });
+
+  test("onStart:false and onExit:false suppress just those", async () => {
+    const t = setup({
+      config: (r: string) => cfg(r, { notifications: { onStart: false } }),
+    });
+    await t.d.start();
+    await t.d.pollOnce();
+    expect(t.notices).toEqual([]);
+    t.state.a = "failed";
+    await t.d.pollOnce();
+    expect(t.notices.map((n) => n.title)).toEqual(["a exited"]);
+  });
+
+  test("notifications.enabled:false silences everything", async () => {
+    const t = setup({
+      config: (r: string) => cfg(r, { notifications: { enabled: false } }),
+    });
+    await t.d.start();
+    await t.d.pollOnce();
+    t.state.a = "failed";
+    await t.d.pollOnce();
+    expect(t.notices).toEqual([]);
+  });
+
+  test("a throwing notifier never breaks polling", async () => {
+    const t = setup({ config: (r: string) => cfg(r) });
+    (t.d as any).d.notifier = {
+      kind: "none",
+      notify: async () => {
+        throw new Error("boom");
+      },
+    };
+    await t.d.start();
+    await expect(t.d.pollOnce()).resolves.toBeDefined();
+  });
+});
+
+describe("Daemon update check", () => {
+  const net: FetchLike = async (url) =>
+    url.includes("github")
+      ? new Response(JSON.stringify([{ tag_name: "claude-rc-v1.4.0" }]))
+      : new Response(JSON.stringify({ version: "2.5.0" }));
+
+  test("notifies for both, persists, and does not repeat within a day", async () => {
+    let now = 1_000_000_000_000;
+    const calls: string[] = [];
+    const t = setup({
+      config: (r: string) => cfg(r),
+      claudeVersion: "2.4.0",
+      now: () => now,
+      fetch: async (u, i) => (calls.push(u), net(u, i)),
+    });
+    await t.d.start();
+    await t.d.checkUpdates();
+    expect(t.notices.map((n) => n.title).sort()).toEqual([
+      "Claude Code 2.5.0 available",
+      "claude-rc 1.4.0 available",
+    ]);
+    expect(JSON.parse(readFileSync(t.paths.statePath, "utf8")).update.lastCheck).toBe(now);
+    const n = calls.length;
+    now += 60_000;
+    await t.d.checkUpdates();
+    expect(calls.length).toBe(n);
+    const st = (await t.d.handle({ cmd: "status" })) as any;
+    expect(st.data.updates.latest).toEqual({ claudeRc: "1.4.0", claude: "2.5.0" });
+  });
+
+  test("a fresh daemon reads lastCheck from state.json (survives restart)", async () => {
+    const now = 1_000_000_000_000;
+    const t = setup({
+      config: (r: string) => cfg(r),
+      claudeVersion: "2.4.0",
+      now: () => now,
+      fetch: net,
+    });
+    await t.d.start();
+    await t.d.checkUpdates();
+    let called = false;
+    const t2 = setup({
+      config: (r: string) => cfg(r),
+      now: () => now,
+      fetch: async (u, i) => ((called = true), net(u, i)),
+    });
+    writeFileSync(t2.paths.statePath, readFileSync(t.paths.statePath));
+    const d2 = new Daemon((t2.d as any).d);
+    await d2.checkUpdates();
+    expect(called).toBe(false);
+  });
+
+  test("updates.* switches are honoured", async () => {
+    const t = setup({
+      config: (r: string) => cfg(r, { updates: { claudeRc: false, claude: false } }),
+      claudeVersion: "2.4.0",
+      fetch: async () => {
+        throw new Error("must not be called");
+      },
+    });
+    await t.d.start();
+    await t.d.checkUpdates();
+    expect(t.notices).toEqual([]);
   });
 });

@@ -8,6 +8,8 @@ export interface RcPaths {
   runDir: string;
   socketPath: string;
   statePath: string;
+  /** Where the daemon records its web UI address and token (mode 0600). */
+  uiPath: string;
 }
 
 const UNIX_SOCKET_MAX = 100; // sun_path is 104 on macOS, 108 on Linux; keep headroom
@@ -27,5 +29,6 @@ export function getPaths(env: Record<string, string | undefined>, home: string):
     runDir: join(daemonDir, "run"),
     socketPath,
     statePath: join(daemonDir, "state.json"),
+    uiPath: join(daemonDir, "run", "ui.json"),
   };
 }

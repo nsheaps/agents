@@ -65,6 +65,7 @@ Daemon:
   status [--json]        Show daemon and per-repo state (exit 3 if the daemon is not running)
   start|stop|restart [name]   Control one repo's \`claude rc\` (restart without a name restarts all)
   reload                 Re-read rc.json now (the daemon also watches it)
+  ui [--print]           Open the settings/monitor page in your browser (--print: just show the URL)
   logs <name> [-n N] [-f]  Show a repo's \`claude rc\` log
   shutdown               Stop the daemon and its repos
 
@@ -292,6 +293,28 @@ export async function run(cmd: Command, ctx: Ctx): Promise<number> {
       return EXIT.ok;
     }
 
+    case "ui": {
+      if (!(await daemonUp(ctx))) return (ctx.err(NOT_RUNNING), EXIT.notRunning);
+      let rec: { url?: string; token?: string };
+      try {
+        rec = JSON.parse(readFileSync(ctx.paths.uiPath, "utf8"));
+      } catch {
+        ctx.err(
+          `claude-rc: the daemon's web UI is not available (${ctx.paths.uiPath} missing); see its log for "web UI disabled"`,
+        );
+        return EXIT.error;
+      }
+      const link = `${rec.url}/?token=${rec.token}`;
+      if (cmd.print) return (ctx.out(link), EXIT.ok);
+      const opener = process.platform === "darwin" ? "open" : "xdg-open";
+      const r = Bun.spawnSync([opener, link], { stdout: "ignore", stderr: "ignore" });
+      if (r.exitCode !== 0) {
+        ctx.err(`claude-rc: could not run ${opener}; open this link yourself:`);
+        ctx.out(link);
+      } else ctx.out(`opened ${rec.url} in your browser`);
+      return EXIT.ok;
+    }
+
     case "doctor":
       return doctor(ctx);
   }
@@ -372,6 +395,13 @@ async function doctor(ctx: Ctx): Promise<number> {
   if (picked.supervisor?.kind === "inproc") ok(`service manager: none native — ${picked.reason}`);
   else if (picked.supervisor) ok(`service manager: ${picked.supervisor.kind}`);
   else no("service manager unavailable", picked.reason);
+
+  if (process.platform === "darwin") ok("desktop notifications: osascript");
+  else if (Bun.which("notify-send")) ok("desktop notifications: notify-send");
+  else
+    ctx.out(
+      `${ctx.color ? "\x1b[33m!\x1b[0m" : "!"} notify-send not found, so desktop notifications are off\n    install libnotify (Debian/Ubuntu: apt install libnotify-bin; Fedora: dnf install libnotify)`,
+    );
 
   const st = await fetchStatus(ctx).catch(() => undefined);
   if (st) ok(`daemon running (pid ${st.pid}, ${st.version}, supervisor ${st.supervisor.kind})`);

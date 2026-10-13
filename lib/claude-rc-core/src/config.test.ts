@@ -37,6 +37,35 @@ describe("parseConfig", () => {
     expect(c.repos[0]).toEqual({ name: "a", path: "/a", spawn: "same-dir", env: { X: "1" } });
   });
 
+  test("notifications and updates default to everything on; ui to the default port", () => {
+    const c = ok({ repos: [] });
+    expect(c.notifications).toEqual({ enabled: true, onStart: true, onExit: true });
+    expect(c.updates).toEqual({ claudeRc: true, claude: true });
+    expect(c.ui).toEqual({ port: 47474 });
+  });
+
+  test("notifications, updates and ui can be set partially", () => {
+    const c = ok({
+      repos: [],
+      notifications: { onExit: false },
+      updates: { claude: false },
+      ui: { port: 0 },
+    });
+    expect(c.notifications).toEqual({ enabled: true, onStart: true, onExit: false });
+    expect(c.updates).toEqual({ claudeRc: true, claude: false });
+    expect(c.ui.port).toBe(0);
+  });
+
+  test.each([
+    [{ repos: [], notifications: true }, "notifications"],
+    [{ repos: [], notifications: { enabled: "no" } }, "notifications.enabled"],
+    [{ repos: [], updates: { claude: 1 } }, "updates.claude"],
+    [{ repos: [], ui: { port: 70000 } }, "ui.port"],
+    [{ repos: [], ui: { port: "80" } }, "ui.port"],
+  ])("rejects %j mentioning %s", (input, needle) => {
+    expect(errs(input)).toContain(needle as string);
+  });
+
   test("empty repos list is valid", () => {
     expect(ok({ repos: [] }).repos).toEqual([]);
   });
