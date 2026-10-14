@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.166](https://github.com/nsheaps/agents/compare/v0.3.165...v0.3.166) (2026-10-14)
+
+### Maintenance
+
+* **deps:** update github actions ([#373](https://github.com/nsheaps/agents/issues/373)) ([f7abed3](https://github.com/nsheaps/agents/commit/f7abed3dd178621a0d3891c710e81380d3708816)), references [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203)
+
 ## [0.3.165](https://github.com/nsheaps/agents/compare/v0.3.164...v0.3.165) (2026-10-10)
 
 ### Maintenance
