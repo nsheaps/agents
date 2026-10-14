@@ -109,7 +109,9 @@ jobs:
           cd homebrew-devsetup
           # Close any open PRs from previous formula updates — they're superseded
           # Convention dependency: PR title prefix must match "chore: update agent-team claude-team to"
-          stale_prs=$(gh pr list --state open --search "chore: update agent-team claude-team to" --json number --jq '.[].number' || true)
+          # --search is fuzzy (token match, any order), so it also matches unrelated bump PRs
+          # (e.g. claude-rc). Filter on the exact title prefix and our own PRs instead.
+          stale_prs=$(gh pr list --state open --author "@me" --limit 100 --json number,title --jq '.[] | select(.title | startswith("chore: update agent-team claude-team to ")) | .number' || true)
           for pr_num in $stale_prs; do
             echo "Closing superseded PR #${pr_num}"
             gh pr close "$pr_num" --comment "Superseded by v${{ steps.release.outputs.version }} update."
