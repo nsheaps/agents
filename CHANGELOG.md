@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.171](https://github.com/nsheaps/agents/compare/v0.3.170...v0.3.171) (2026-10-22)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([2125d49](https://github.com/nsheaps/agents/commit/2125d49335e2a4798ebc13cf57e5d762f26157dc))
+* **deps:** update node.js to v24.22.0 ([#378](https://github.com/nsheaps/agents/issues/378)) ([59d696f](https://github.com/nsheaps/agents/commit/59d696f59ece14120fdf35d7c0786bde2b946b2e)), references [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203)
+
 ## [0.3.170](https://github.com/nsheaps/agents/compare/v0.3.169...v0.3.170) (2026-10-21)
 
 ### Maintenance
