@@ -200,6 +200,10 @@ An agent for searching past conversations to find what was previously said or de
 - A teammate claims something was decided earlier and you need to confirm
 - You're looking for the root cause of a recurring failure and need historical context
 
+### `github-issue-creator` Agent
+
+When pattern analysis or spec reviews surface follow-up items that should be tracked — recurring failures, systemic gaps, recommended improvements — consider using the `github-issue-creator` sub-agent to file them as GitHub issues rather than running `gh issue create` directly. It ensures consistent formatting and proper artifact linking.
+
 ## Configuration Landscape
 
 The AI Agent Eng must understand where things are stored to properly diagnose failures and identify patterns. Misplaced files, missing configurations, and incorrect paths are common failure modes.
