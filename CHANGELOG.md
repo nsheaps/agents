@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.176](https://github.com/nsheaps/agents/compare/v0.3.175...v0.3.176) (2026-10-28)
+
+### Maintenance
+
+* **deps:** update dependency pipx:litellm to v1.103.0 ([#382](https://github.com/nsheaps/agents/issues/382)) ([954e355](https://github.com/nsheaps/agents/commit/954e35562a01b54c6acbe4a2758de9f37d975ae2)), references [#820](https://github.com/nsheaps/agents/issues/820)
+* **deps:** update node.js to v24.22.1 ([#383](https://github.com/nsheaps/agents/issues/383)) ([7ab9b10](https://github.com/nsheaps/agents/commit/7ab9b1078baa05d4b756202e0aa87c4a480a8c5b)), references [#8203](https://github.com/nsheaps/agents/issues/8203)
+
 ## [0.3.175](https://github.com/nsheaps/agents/compare/v0.3.174...v0.3.175) (2026-10-27)
 
 ### Maintenance
