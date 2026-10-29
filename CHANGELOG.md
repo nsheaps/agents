@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.178](https://github.com/nsheaps/agents/compare/v0.3.177...v0.3.178) (2026-10-29)
+
+### Maintenance
+
+* **deps:** update jdx/mise-action action to v5 ([#385](https://github.com/nsheaps/agents/issues/385)) ([b5a1ff8](https://github.com/nsheaps/agents/commit/b5a1ff845f670ece0d75874656200242673e108a))
+
 ## [0.3.177](https://github.com/nsheaps/agents/compare/v0.3.176...v0.3.177) (2026-10-28)
 
 ### Maintenance
