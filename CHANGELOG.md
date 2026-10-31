@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.179](https://github.com/nsheaps/agents/compare/v0.3.178...v0.3.179) (2026-10-31)
+
+### Maintenance
+
+* **deps:** update all patch updates ([#387](https://github.com/nsheaps/agents/issues/387)) ([4c4b9f2](https://github.com/nsheaps/agents/commit/4c4b9f2a70b71af583650bfd575dd14039a2d416))
+
 ## [0.3.178](https://github.com/nsheaps/agents/compare/v0.3.177...v0.3.178) (2026-10-29)
 
 ### Maintenance
