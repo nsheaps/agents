@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.182](https://github.com/nsheaps/agents/compare/v0.3.181...v0.3.182) (2026-11-04)
+
+### Maintenance
+
+* **deps:** update node.js to v24.22.2 ([#391](https://github.com/nsheaps/agents/issues/391)) ([027c946](https://github.com/nsheaps/agents/commit/027c9462c4e152a8f54f0ff52b261cd2c0178ecf)), references [#8203](https://github.com/nsheaps/agents/issues/8203)
+
 ## [0.3.181](https://github.com/nsheaps/agents/compare/v0.3.180...v0.3.181) (2026-11-03)
 
 ### Maintenance
