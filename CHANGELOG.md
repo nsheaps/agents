@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.183](https://github.com/nsheaps/agents/compare/v0.3.182...v0.3.183) (2026-11-04)
+
+### Maintenance
+
+* **deps:** update nsheaps/agents digest to 77f8332 ([#390](https://github.com/nsheaps/agents/issues/390)) ([16d2552](https://github.com/nsheaps/agents/commit/16d25527828bef5836b262c766be357194f3e7e9))
+
 ## [0.3.182](https://github.com/nsheaps/agents/compare/v0.3.181...v0.3.182) (2026-11-04)
 
 ### Maintenance
