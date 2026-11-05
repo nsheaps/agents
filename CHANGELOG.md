@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.184](https://github.com/nsheaps/agents/compare/v0.3.183...v0.3.184) (2026-11-05)
+
+### Maintenance
+
+* **deps:** update node.js to v26 ([#392](https://github.com/nsheaps/agents/issues/392)) ([2d08073](https://github.com/nsheaps/agents/commit/2d08073ff656825beb267558072a610f198d4b32)), references [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203)
+
 ## [0.3.183](https://github.com/nsheaps/agents/compare/v0.3.182...v0.3.183) (2026-11-04)
 
 ### Maintenance
