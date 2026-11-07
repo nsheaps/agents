@@ -1,0 +1,29 @@
+{
+  "description": "shared-config hooks: Setup + SessionStart sync (clone shared-config source repos, symlink rules/skills/commands/agents into the project via a deduped shared cache, optionally merge settings). Prefers the github-app token; waits briefly for it to appear in CLAUDE_ENV_FILE. Implemented in Bun/TypeScript.",
+  "hooks": {
+    "Setup": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/src/index.ts\"",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun \"${CLAUDE_PLUGIN_ROOT}/src/index.ts\"",
+            "timeout": 120
+          }
+        ]
+      }
+    ]
+  }
+}
