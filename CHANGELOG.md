@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.188](https://github.com/nsheaps/agents/compare/v0.3.187...v0.3.188) (2026-11-09)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([0eb8ca3](https://github.com/nsheaps/agents/commit/0eb8ca33c2768d00a57f0567020aa49973fa34ad))
+* **deps:** update dependency bun to v1.4.3 ([#396](https://github.com/nsheaps/agents/issues/396)) ([d26314a](https://github.com/nsheaps/agents/commit/d26314ac2b2eccfa3cedb4194f406936ea4ae666))
+
 ## [0.3.187](https://github.com/nsheaps/agents/compare/v0.3.186...v0.3.187) (2026-11-09)
 
 ### Maintenance
