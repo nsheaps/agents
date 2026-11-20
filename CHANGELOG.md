@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.195](https://github.com/nsheaps/agents/compare/v0.3.194...v0.3.195) (2026-11-20)
+
+### Maintenance
+
+* bump plugin versions and update marketplace [skip ci] ([29d27c3](https://github.com/nsheaps/agents/commit/29d27c367da4a473ca7fa9847d758c0c57b46381))
+* **deps:** update dependency pipx:litellm to v1.106.2 ([#403](https://github.com/nsheaps/agents/issues/403)) ([61758ae](https://github.com/nsheaps/agents/commit/61758ae7e4ba38d07f6005302d6cddef78e3b8e0))
+
 ## [0.3.194](https://github.com/nsheaps/agents/compare/v0.3.193...v0.3.194) (2026-11-20)
 
 ### Maintenance
