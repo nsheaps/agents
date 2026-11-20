@@ -1,6 +1,6 @@
 {
   "name": "reddit",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Fetch Reddit posts, comments, and subreddit listings via Reddit's public JSON API. Returns markdown-formatted content suitable for LLM consumption. No authentication required.",
   "author": {
     "name": "Nathan Heaps",
