@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.3.196](https://github.com/nsheaps/agents/compare/v0.3.195...v0.3.196) (2026-11-21)
+
+### Maintenance
+
+* **deps:** update dependency nx to v24 ([#404](https://github.com/nsheaps/agents/issues/404)) ([31ec5be](https://github.com/nsheaps/agents/commit/31ec5be722ce19a07b5a473fab02295deee9c656)), references [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203) [#8203](https://github.com/nsheaps/agents/issues/8203)
+
 ## [0.3.195](https://github.com/nsheaps/agents/compare/v0.3.194...v0.3.195) (2026-11-20)
 
 ### Maintenance
